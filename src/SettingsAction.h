@@ -8,6 +8,7 @@
 #include "ColoringAction.h"
 #include "SubsetAction.h"
 #include "SelectionAction.h"
+#include "MiscellaneousAction.h"
 
 class ScatterplotPlugin;
 
@@ -75,12 +76,14 @@ public:
     ColoringAction& getColoringAction() { return _coloringAction; }
     SubsetAction& getSubsetAction() { return _subsetAction; }
     SelectionAction& getSelectionAction() { return _selectionAction; }
+    MiscellaneousAction& getMiscellaneousAction() { return _miscellaneousAction; }
 
 protected:
-    RenderModeAction    _renderModeAction;
-    PlotAction          _plotAction;
-    PositionAction      _positionAction;
-    ColoringAction      _coloringAction;
-    SubsetAction        _subsetAction;
-    SelectionAction     _selectionAction;
+    RenderModeAction        _renderModeAction;
+    PlotAction              _plotAction;
+    PositionAction          _positionAction;
+    ColoringAction          _coloringAction;
+    SubsetAction            _subsetAction;
+    SelectionAction         _selectionAction;
+    MiscellaneousAction     _miscellaneousAction;
 };

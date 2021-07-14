@@ -15,9 +15,10 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
     _colorByActionGroup(this),
     _constantColorAction(scatterplotPlugin),
     _colorDimensionAction(scatterplotPlugin),
-    _colorDataAction(scatterplotPlugin),
-    _backgroundColorAction(scatterplotPlugin)
+    _colorDataAction(scatterplotPlugin)
 {
+    setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("palette"));
+
     scatterplotPlugin->addAction(&_colorByAction);
     scatterplotPlugin->addAction(&_colorByDimensionAction);
     scatterplotPlugin->addAction(&_colorByColorDataAction);
@@ -33,7 +34,6 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
     _constantColorAction.setToolTip("Constant color");
     _colorDimensionAction.setToolTip("Color dimension");
     _colorDataAction.setToolTip("Color data");
-    _backgroundColorAction.setToolTip("Background color");
 
     _colorByConstantColorAction.setCheckable(true);
     _colorByDimensionAction.setCheckable(true);
@@ -127,8 +127,6 @@ QMenu* ColoringAction::getContextMenu()
             break;
     }
 
-    menu->addAction(&_backgroundColorAction);
-
     return menu;
 }
 
@@ -182,8 +180,6 @@ ColoringAction::Widget::Widget(QWidget* parent, ColoringAction* coloringAction, 
         layout->addWidget(new QLabel("Color by:"));
         layout->addWidget(coloringAction->_colorByAction.createWidget(this));
         layout->addWidget(stackedWidget);
-        layout->addWidget(new QLabel("Background color:"));
-        layout->addWidget(coloringAction->_backgroundColorAction.createWidget(this));
 
         setLayout(layout);
         break;
@@ -196,8 +192,6 @@ ColoringAction::Widget::Widget(QWidget* parent, ColoringAction* coloringAction, 
         layout->addWidget(new QLabel("Color by:"), 0, 0);
         layout->addWidget(coloringAction->_colorByAction.createWidget(this), 0, 1);
         layout->addWidget(stackedWidget, 0, 2);
-        layout->addWidget(new QLabel("Background color:"), 1, 0);
-        layout->addWidget(coloringAction->_backgroundColorAction.createWidget(this), 1, 2);
 
         setPopupLayout(layout);
         break;

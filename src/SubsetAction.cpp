@@ -13,6 +13,8 @@ SubsetAction::SubsetAction(ScatterplotPlugin* scatterplotPlugin) :
     _createSubsetAction(this, "Create subset"),
     _sourceDataAction(this, "Source data")
 {
+    setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("crop"));
+
     _subsetNameAction.setToolTip("Name of the subset");
     _createSubsetAction.setToolTip("Create subset from selected data points");
 

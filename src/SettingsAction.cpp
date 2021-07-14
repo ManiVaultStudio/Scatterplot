@@ -15,17 +15,9 @@ SettingsAction::SettingsAction(ScatterplotPlugin* scatterplotPlugin) :
     _positionAction(scatterplotPlugin),
     _coloringAction(scatterplotPlugin),
     _subsetAction(scatterplotPlugin),
-    _selectionAction(scatterplotPlugin)
+    _selectionAction(scatterplotPlugin),
+    _miscellaneousAction(scatterplotPlugin)
 {
-    const auto& fontAwesome = hdps::Application::getIconFont("FontAwesome");
-
-    _renderModeAction.setIcon(fontAwesome.getIcon("image"));
-    _plotAction.setIcon(fontAwesome.getIcon("paint-brush"));
-    _positionAction.setIcon(fontAwesome.getIcon("ruler-combined"));
-    _coloringAction.setIcon(fontAwesome.getIcon("palette"));
-    _subsetAction.setIcon(fontAwesome.getIcon("crop"));
-    _selectionAction.setIcon(fontAwesome.getIcon("mouse-pointer"));
-
     const auto updateEnabled = [this]() {
         setEnabled(!_scatterplotPlugin->getCurrentDataset().isEmpty());
     };
@@ -49,6 +41,8 @@ QMenu* SettingsAction::getContextMenu()
     menu->addSeparator();
     menu->addMenu(_subsetAction.getContextMenu());
     menu->addMenu(_selectionAction.getContextMenu());
+    menu->addSeparator();
+    menu->addMenu(_miscellaneousAction.getContextMenu());
 
     return menu;
 }
@@ -73,6 +67,7 @@ SettingsAction::Widget::Widget(QWidget* parent, SettingsAction* settingsAction) 
     addStateWidget(&settingsAction->_coloringAction, 8);
     addStateWidget(&settingsAction->_subsetAction, 3);
     addStateWidget(&settingsAction->_selectionAction, 2);
+    addStateWidget(&settingsAction->_miscellaneousAction, 1);
 
     _toolBarLayout.addStretch(1);
 

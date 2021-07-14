@@ -13,6 +13,8 @@ PositionAction::PositionAction(ScatterplotPlugin* scatterplotPlugin) :
     _xDimensionAction(this, "X"),
     _yDimensionAction(this, "Y")
 {
+    setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("ruler-combined"));
+
     _xDimensionAction.setToolTip("X dimension");
     _yDimensionAction.setToolTip("Y dimension");
 

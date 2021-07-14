@@ -26,6 +26,8 @@ SelectionAction::SelectionAction(ScatterplotPlugin* scatterplotPlugin) :
     _invertSelectionAction(this, "Invert selection"),
     _notifyDuringSelectionAction(this, "Notify during selection")
 {
+    setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("mouse-pointer"));
+
     _rectangleAction.setShortcutContext(Qt::WidgetWithChildrenShortcut);
     _brushAction.setShortcutContext(Qt::WidgetWithChildrenShortcut);
     _lassoAction.setShortcutContext(Qt::WidgetWithChildrenShortcut);

@@ -1,5 +1,6 @@
 #include "PlotAction.h"
 #include "ScatterplotWidget.h"
+#include "Application.h"
 
 using namespace hdps::gui;
 
@@ -8,6 +9,8 @@ PlotAction::PlotAction(ScatterplotPlugin* scatterplotPlugin) :
     _pointPlotAction(scatterplotPlugin),
     _densityPlotAction(scatterplotPlugin)
 {
+    setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("paint-brush"));
+
     const auto updateRenderMode = [this]() -> void {
         _pointPlotAction.setVisible(getScatterplotWidget()->getRenderMode() == ScatterplotWidget::SCATTERPLOT);
         _densityPlotAction.setVisible(getScatterplotWidget()->getRenderMode() != ScatterplotWidget::SCATTERPLOT);

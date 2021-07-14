@@ -12,6 +12,8 @@ RenderModeAction::RenderModeAction(ScatterplotPlugin* scatterplotPlugin) :
     _contourPlotAction(this, "Contour"),
     _actionGroup(this)
 {
+    setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("image"));
+
     _scatterPlotAction.setShortcutContext(Qt::WidgetWithChildrenShortcut);
     _densityPlotAction.setShortcutContext(Qt::WidgetWithChildrenShortcut);
     _contourPlotAction.setShortcutContext(Qt::WidgetWithChildrenShortcut);
