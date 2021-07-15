@@ -64,6 +64,7 @@ ScatterplotPlugin::ScatterplotPlugin() :
         if (!analyses.isEmpty())
             contextMenu->addSeparator();
 
+        /*
         for (auto analysis : analyses)
         {
             auto& analysisPlugin = _core->requestAnalysis(analysis.toString());
@@ -75,7 +76,7 @@ ScatterplotPlugin::ScatterplotPlugin() :
 
             contextMenu->addMenu(analysisPlugin.contextMenu(QVariant::fromValue(context)));
         }
-
+        */
         contextMenu->exec(mapToGlobal(point));
     });
 

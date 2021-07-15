@@ -60,7 +60,7 @@ MiscellaneousAction::Widget::Widget(QWidget* parent, MiscellaneousAction* miscel
             auto layout = new QGridLayout();
 
             layout->addWidget(new QLabel("Background color:"), 0, 0);
-            layout->addWidget(miscellaneousAction->_backgroundColorAction.createWidget(this), 0, 1);
+            layout->addWidget(miscellaneousAction->_backgroundColorAction.createWidget(this, true), 0, 1);
             
             setPopupLayout(layout);
             break;

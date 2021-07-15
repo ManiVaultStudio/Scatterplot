@@ -185,6 +185,8 @@ QColor ScatterplotWidget::getBackgroundColor()
 void ScatterplotWidget::setBackgroundColor(QColor color)
 {
     _backgroundColor = color;
+
+    update();
 }
 
 void ScatterplotWidget::setHighlights(const std::vector<char>& highlights)
