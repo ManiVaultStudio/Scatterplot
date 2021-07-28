@@ -61,22 +61,14 @@ ScatterplotPlugin::ScatterplotPlugin() :
 
         const auto analyses = dataSet.getProperty("Analyses", QVariantList()).toList();
         
-        if (!analyses.isEmpty())
-            contextMenu->addSeparator();
+        contextMenu->addSeparator();
 
-        /*
-        for (auto analysis : analyses)
-        {
-            auto& analysisPlugin = _core->requestAnalysis(analysis.toString());
+        auto datasetContextMenu = dataSet.getContextMenu();
 
-            QMap<QString, QString> context;
+        datasetContextMenu->setTitle(_currentDataSet);
 
-            context["Kind"] = "ScatterPlotPlugin";
-            context["CurrentDataset"] = _currentDataSet;
+        contextMenu->addMenu(datasetContextMenu);
 
-            contextMenu->addMenu(analysisPlugin.contextMenu(QVariant::fromValue(context)));
-        }
-        */
         contextMenu->exec(mapToGlobal(point));
     });
 

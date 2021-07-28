@@ -25,16 +25,6 @@ PositionAction::PositionAction(ScatterplotPlugin* scatterplotPlugin) :
     connect(&_yDimensionAction, &OptionAction::currentIndexChanged, [this, scatterplotPlugin](const std::uint32_t& currentIndex) {
         scatterplotPlugin->setYDimension(currentIndex);
     });
-
-    connect(&_yDimensionAction, &OptionAction::optionsChanged, [this, scatterplotPlugin](const QStringList& options) {
-        _xDimensionAction.setCurrentIndex(0);
-        _xDimensionAction.setDefaultIndex(0);
-
-        const auto yIndex = options.count() >= 2 ? 1 : 0;
-
-        _yDimensionAction.setCurrentIndex(yIndex);
-        _yDimensionAction.setDefaultIndex(yIndex);
-    });
 }
 
 QMenu* PositionAction::getContextMenu()
@@ -61,7 +51,15 @@ void PositionAction::setDimensions(const std::uint32_t& numberOfDimensions, cons
     _yDimensionAction.setOptions(dimensionNamesStringList);
 
     _xDimensionAction.setCurrentIndex(0);
-    _yDimensionAction.setCurrentIndex(numberOfDimensions >= 2 ? 1 : 0);
+    _xDimensionAction.setDefaultIndex(0);
+
+    const auto yIndex = dimensionNamesStringList.count() >= 2 ? 1 : 0;
+
+    _yDimensionAction.setCurrentIndex(yIndex);
+    _yDimensionAction.setDefaultIndex(yIndex);
+
+    //_xDimensionAction.setCurrentIndex(0);
+    //_yDimensionAction.setCurrentIndex(numberOfDimensions >= 2 ? 1 : 0);
 }
 
 void PositionAction::setDimensions(const std::vector<QString>& dimensionNames)
