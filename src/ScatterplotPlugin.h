@@ -39,6 +39,8 @@ public:
 
     void onDataEvent(hdps::DataEvent* dataEvent);
 
+    hdps::DataTypes supportedDataTypes() const override;
+
     QString getCurrentDataset() const;
     std::uint32_t getNumberOfPoints() const;
     std::uint32_t getNumberOfSelectedPoints() const;

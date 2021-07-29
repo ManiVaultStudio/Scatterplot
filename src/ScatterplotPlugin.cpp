@@ -3,9 +3,6 @@
 #include "PixelSelectionTool.h"
 #include "ScatterplotWidget.h"
 
-#include "PointData.h"
-#include "ClusterData.h"
-#include "ColorData.h"
 #include "Application.h"
 
 #include "PointData.h"
@@ -192,6 +189,13 @@ void ScatterplotPlugin::onDataEvent(DataEvent* dataEvent)
         if (renamedEvent->oldName == _currentDataSet)
             loadPointData(renamedEvent->dataSetName);
     }
+}
+
+hdps::DataTypes ScatterplotPlugin::supportedDataTypes() const
+{
+    DataTypes supportedTypes;
+    supportedTypes.append(PointType);
+    return supportedTypes;
 }
 
 void ScatterplotPlugin::createSubset(const bool& fromSourceData /*= false*/, const QString& name /*= ""*/)
