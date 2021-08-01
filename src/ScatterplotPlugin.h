@@ -12,7 +12,6 @@ class Points;
 
 class PixelSelectionTool;
 class ScatterplotWidget;
-class DropDataTypesWidget;
 
 namespace hdps
 {
@@ -38,8 +37,6 @@ public:
     void init() override;
 
     void onDataEvent(hdps::DataEvent* dataEvent);
-
-    hdps::DataTypes supportedDataTypes() const override;
 
     QString getCurrentDataset() const;
     std::uint32_t getNumberOfPoints() const;
@@ -129,4 +126,6 @@ public:
     ~ScatterplotPluginFactory(void) override {}
     
     ViewPlugin* produce() override;
+
+    hdps::DataTypes supportedDataTypes() const override;
 };
