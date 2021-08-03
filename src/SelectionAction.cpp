@@ -296,7 +296,7 @@ SelectionAction::Widget::Widget(QWidget* parent, SelectionAction* selectionActio
     auto clearSelectionWidget           = selectionAction->_clearSelectionAction.createWidget(this);
     auto selectAllWidget                = selectionAction->_selectAllAction.createWidget(this);
     auto invertSelectionWidget          = selectionAction->_invertSelectionAction.createWidget(this);
-    auto notifyDuringSelectionWidget    = selectionAction->_notifyDuringSelectionAction.createWidget(this);
+    auto notifyDuringSelectionWidget    = selectionAction->_notifyDuringSelectionAction.createCheckBoxWidget(this);
 
     switch (state)
     {
