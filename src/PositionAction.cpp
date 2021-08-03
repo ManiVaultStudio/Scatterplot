@@ -82,8 +82,8 @@ PositionAction::Widget::Widget(QWidget* parent, PositionAction* positionAction, 
 {
     auto xDimensionLabel    = new QLabel("X-dimension:");
     auto yDimensionLabel    = new QLabel("Y-dimension:");
-    auto xDimensionWidget   = dynamic_cast<OptionAction::Widget*>(positionAction->_xDimensionAction.createWidget(this));
-    auto yDimensionWidget   = dynamic_cast<OptionAction::Widget*>(positionAction->_yDimensionAction.createWidget(this));
+    auto xDimensionWidget   = dynamic_cast<OptionAction::ComboBoxWidget*>(positionAction->_xDimensionAction.createWidget(this));
+    auto yDimensionWidget   = dynamic_cast<OptionAction::ComboBoxWidget*>(positionAction->_yDimensionAction.createWidget(this));
 
     xDimensionLabel->setToolTip(positionAction->_xDimensionAction.toolTip());
     yDimensionLabel->setToolTip(positionAction->_yDimensionAction.toolTip());
