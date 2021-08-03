@@ -56,15 +56,9 @@ ScatterplotPlugin::ScatterplotPlugin() :
         
         DataSet& dataSet = _core->requestData(_currentDataSet);
 
-        const auto analyses = dataSet.getProperty("Analyses", QVariantList()).toList();
-        
         contextMenu->addSeparator();
 
-        auto datasetContextMenu = dataSet.getContextMenu();
-
-        datasetContextMenu->setTitle(_currentDataSet);
-
-        contextMenu->addMenu(datasetContextMenu);
+        dataSet.populateContextMenu(contextMenu);
 
         contextMenu->exec(mapToGlobal(point));
     });
