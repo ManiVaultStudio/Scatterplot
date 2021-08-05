@@ -190,7 +190,9 @@ void ScatterplotPlugin::createSubset(const bool& fromSourceData /*= false*/, con
     auto& loadedPoints  = _core->requestData<Points>(_currentDataSet);
     auto& subsetPoints  = loadedPoints.isDerivedData() && fromSourceData ? DataSet::getSourceData(loadedPoints) : loadedPoints;
 
-    subsetPoints.createSubset();
+    const auto subsetName = subsetPoints.createSubset(loadedPoints.getName());
+
+    _core->getDataHierarchyItem(subsetName).select();
 }
 
 void ScatterplotPlugin::selectPoints()
