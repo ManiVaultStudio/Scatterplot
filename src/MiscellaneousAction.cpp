@@ -11,7 +11,7 @@ MiscellaneousAction::MiscellaneousAction(ScatterplotPlugin* scatterplotPlugin) :
     PluginAction(scatterplotPlugin, "Miscellaneous"),
     _backgroundColorAction(scatterplotPlugin)
 {
-    setIcon(Application::getIconFont("FontAwesome").getIcon("ellipsis-h"));
+    setIcon(Application::getIconFont("FontAwesome").getIcon("cog"));
 
     _backgroundColorAction.setColor(DEFAULT_BACKGROUND_COLOR);
     _backgroundColorAction.setDefaultColor(DEFAULT_BACKGROUND_COLOR);
