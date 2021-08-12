@@ -25,8 +25,8 @@ public:
     public:
         SpacerWidget(const Type& type = Type::Divider);
 
-        static Type getType(const WidgetAction::Widget::State& widgetTypeLeft, const WidgetAction::Widget::State& widgetTypeRight);
-        static Type getType(const WidgetAction::StateWidget* stateWidgetLeft, const WidgetAction::StateWidget* stateWidgetRight);
+        static Type getType(const hdps::gui::WidgetActionWidget::State& widgetTypeLeft, const hdps::gui::WidgetActionWidget::State& widgetTypeRight);
+        static Type getType(const hdps::gui::WidgetActionStateWidget* stateWidgetLeft, const hdps::gui::WidgetActionStateWidget* stateWidgetRight);
 
         void setType(const Type& type);
         static std::int32_t getWidth(const Type& type);
@@ -39,7 +39,7 @@ public:
 
 protected: // Widget
 
-    class Widget : public PluginAction::Widget {
+    class Widget : public hdps::gui::WidgetActionWidget {
     public:
         Widget(QWidget* parent, SettingsAction* settingsAction);
 
@@ -52,16 +52,16 @@ protected: // Widget
         void updateLayout();
 
     protected:
-        QHBoxLayout             _layout;
-        QWidget                 _toolBarWidget;
-        QHBoxLayout             _toolBarLayout;
-        QVector<StateWidget*>   _stateWidgets;
-        QVector<SpacerWidget*>  _spacerWidgets;
+        QHBoxLayout                                     _layout;
+        QWidget                                         _toolBarWidget;
+        QHBoxLayout                                     _toolBarLayout;
+        QVector<hdps::gui::WidgetActionStateWidget*>    _stateWidgets;
+        QVector<SpacerWidget*>                          _spacerWidgets;
 
         friend class SettingsAction;
     };
 
-    QWidget* getWidget(QWidget* parent, const Widget::State& state = Widget::State::Standard) override {
+    QWidget* getWidget(QWidget* parent, const hdps::gui::WidgetActionWidget::State& state = hdps::gui::WidgetActionWidget::State::Standard) override {
         return new Widget(parent, this);
     };
 

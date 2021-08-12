@@ -12,6 +12,8 @@ DensityPlotAction::DensityPlotAction(ScatterplotPlugin* scatterplotPlugin) :
 {
     setToolTip("Density plot settings");
 
+    _scatterplotPlugin->addAction(&_sigmaAction);
+
     const auto updateSigma = [this]() -> void {
         getScatterplotWidget()->setSigma(0.01 * _sigmaAction.getValue());
     };
@@ -53,7 +55,7 @@ QMenu* DensityPlotAction::getContextMenu()
 }
 
 DensityPlotAction::Widget::Widget(QWidget* parent, DensityPlotAction* densityPlotAction, const Widget::State& state) :
-    WidgetAction::Widget(parent, densityPlotAction, state)
+    WidgetActionWidget(parent, densityPlotAction, state)
 {
     switch (state)
     {

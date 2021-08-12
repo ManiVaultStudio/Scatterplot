@@ -41,6 +41,7 @@ SelectionAction::SelectionAction(ScatterplotPlugin* scatterplotPlugin) :
     scatterplotPlugin->addAction(&_brushAction);
     scatterplotPlugin->addAction(&_lassoAction);
     scatterplotPlugin->addAction(&_polygonAction);
+    scatterplotPlugin->addAction(&_brushRadiusAction);
     scatterplotPlugin->addAction(&_modifierAddAction);
     scatterplotPlugin->addAction(&_modifierRemoveAction);
     scatterplotPlugin->addAction(&_clearSelectionAction);
@@ -287,7 +288,7 @@ bool SelectionAction::eventFilter(QObject* object, QEvent* event)
 }
 
 SelectionAction::Widget::Widget(QWidget* parent, SelectionAction* selectionAction, const Widget::State& state) :
-    WidgetAction::Widget(parent, selectionAction, state)
+    WidgetActionWidget(parent, selectionAction, state)
 {
     auto typeWidget                     = selectionAction->_typeAction.createWidget(this);
     auto brushRadiusWidget              = selectionAction->_brushRadiusAction.createWidget(this);

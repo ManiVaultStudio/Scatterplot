@@ -55,7 +55,7 @@ void ColorDimensionAction::setDimensions(const std::vector<QString>& dimensionNa
 }
 
 ColorDimensionAction::Widget::Widget(QWidget* parent, ColorDimensionAction* colorDimensionAction, const Widget::State& state) :
-    WidgetAction::Widget(parent, colorDimensionAction, state)
+    WidgetActionWidget(parent, colorDimensionAction, state)
 {
     auto layout = new QHBoxLayout();
 

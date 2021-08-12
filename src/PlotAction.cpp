@@ -2,6 +2,9 @@
 #include "ScatterplotWidget.h"
 #include "Application.h"
 
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+
 using namespace hdps::gui;
 
 PlotAction::PlotAction(ScatterplotPlugin* scatterplotPlugin) :
@@ -44,7 +47,7 @@ QMenu* PlotAction::getContextMenu()
 }
 
 PlotAction::Widget::Widget(QWidget* parent, PlotAction* plotAction, const Widget::State& state) :
-    WidgetAction::Widget(parent, plotAction, state)
+    WidgetActionWidget(parent, plotAction, state)
 {
     QWidget* pointPlotWidget    = nullptr;
     QWidget* densityPlotWidget  = nullptr;

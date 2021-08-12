@@ -15,6 +15,9 @@ PositionAction::PositionAction(ScatterplotPlugin* scatterplotPlugin) :
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("ruler-combined"));
 
+    _scatterplotPlugin->addAction(&_xDimensionAction);
+    _scatterplotPlugin->addAction(&_yDimensionAction);
+
     _xDimensionAction.setToolTip("X dimension");
     _yDimensionAction.setToolTip("Y dimension");
 
@@ -78,7 +81,7 @@ std::int32_t PositionAction::getYDimension() const
 }
 
 PositionAction::Widget::Widget(QWidget* parent, PositionAction* positionAction, const Widget::State& state) :
-    WidgetAction::Widget(parent, positionAction, state)
+    WidgetActionWidget(parent, positionAction, state)
 {
     auto xDimensionLabel    = new QLabel("X-dimension:");
     auto yDimensionLabel    = new QLabel("Y-dimension:");

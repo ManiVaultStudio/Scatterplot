@@ -64,8 +64,8 @@ QMenu* SubsetAction::getContextMenu()
     return menu;
 }
 
-SubsetAction::Widget::Widget(QWidget* parent, SubsetAction* subsetAction, const Widget::State& state) :
-    WidgetAction::Widget(parent, subsetAction, state)
+SubsetAction::Widget::Widget(QWidget* parent, SubsetAction* subsetAction, const WidgetActionWidget::State& state) :
+    WidgetActionWidget(parent, subsetAction, state)
 {
     auto layout = new QHBoxLayout();
 

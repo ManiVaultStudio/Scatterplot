@@ -7,7 +7,7 @@ class ColorDataAction : public PluginAction
 
 protected: // Widget
 
-    class Widget : public WidgetAction::Widget
+    class Widget : public hdps::gui::WidgetActionWidget
     {
     protected:
         Widget(QWidget* parent, ColorDataAction* colorDataAction, const Widget::State& state);
@@ -15,7 +15,7 @@ protected: // Widget
         friend class ColorDataAction;
     };
 
-    QWidget* getWidget(QWidget* parent, const Widget::State& state = Widget::State::Standard) override {
+    QWidget* getWidget(QWidget* parent, const hdps::gui::WidgetActionWidget::State& state = hdps::gui::WidgetActionWidget::State::Standard) override {
         return new Widget(parent, this, state);
     };
 

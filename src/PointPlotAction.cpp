@@ -1,6 +1,7 @@
 #include "PointPlotAction.h"
 #include "Application.h"
 
+#include "ScatterplotPlugin.h"
 #include "ScatterplotWidget.h"
 
 using namespace hdps::gui;
@@ -10,6 +11,9 @@ PointPlotAction::PointPlotAction(ScatterplotPlugin* scatterplotPlugin) :
     _pointSizeAction(this, "Point size", 1.0, 50.0, DEFAULT_POINT_SIZE, DEFAULT_POINT_SIZE),
     _pointOpacityAction(this, "Point opacity", 0.0, 100.0, DEFAULT_POINT_OPACITY, DEFAULT_POINT_OPACITY)
 {
+    _scatterplotPlugin->addAction(&_pointSizeAction);
+    _scatterplotPlugin->addAction(&_pointOpacityAction);
+
     _pointSizeAction.setSuffix("px");
     _pointOpacityAction.setSuffix("%");
 
@@ -54,7 +58,7 @@ QMenu* PointPlotAction::getContextMenu()
 }
 
 PointPlotAction::Widget::Widget(QWidget* parent, PointPlotAction* pointPlotAction, const Widget::State& state) :
-    WidgetAction::Widget(parent, pointPlotAction, state)
+    WidgetActionWidget(parent, pointPlotAction, state)
 {
     setToolTip("Point plot settings");
 

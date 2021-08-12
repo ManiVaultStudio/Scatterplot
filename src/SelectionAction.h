@@ -9,12 +9,12 @@ class SelectionAction : public PluginAction
 {
 protected: // Widget
 
-    class Widget : public PluginAction::Widget {
+    class Widget : public hdps::gui::WidgetActionWidget {
     public:
-        Widget(QWidget* parent, SelectionAction* selectionAction, const Widget::State& state);
+        Widget(QWidget* parent, SelectionAction* selectionAction, const hdps::gui::WidgetActionWidget::State& state);
     };
 
-    QWidget* getWidget(QWidget* parent, const Widget::State& state = Widget::State::Standard) override {
+    QWidget* getWidget(QWidget* parent, const hdps::gui::WidgetActionWidget::State& state = hdps::gui::WidgetActionWidget::State::Standard) override {
         return new Widget(parent, this, state);
     };
 

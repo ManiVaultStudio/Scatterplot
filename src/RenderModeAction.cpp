@@ -88,7 +88,7 @@ QMenu* RenderModeAction::getContextMenu()
 }
 
 RenderModeAction::Widget::Widget(QWidget* parent, RenderModeAction* renderModeAction, const Widget::State& state) :
-    WidgetAction::Widget(parent, renderModeAction, state)
+    WidgetActionWidget(parent, renderModeAction, state)
 {
     auto layout = new QHBoxLayout();
 

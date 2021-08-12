@@ -13,6 +13,8 @@ MiscellaneousAction::MiscellaneousAction(ScatterplotPlugin* scatterplotPlugin) :
 {
     setIcon(Application::getIconFont("FontAwesome").getIcon("cog"));
 
+    _scatterplotPlugin->addAction(&_backgroundColorAction);
+
     _backgroundColorAction.setColor(DEFAULT_BACKGROUND_COLOR);
     _backgroundColorAction.setDefaultColor(DEFAULT_BACKGROUND_COLOR);
 
@@ -39,7 +41,7 @@ QMenu* MiscellaneousAction::getContextMenu()
 }
 
 MiscellaneousAction::Widget::Widget(QWidget* parent, MiscellaneousAction* miscellaneousAction, const Widget::State& state) :
-    WidgetAction::Widget(parent, miscellaneousAction, state)
+    WidgetActionWidget(parent, miscellaneousAction, state)
 {
     switch (state)
     {

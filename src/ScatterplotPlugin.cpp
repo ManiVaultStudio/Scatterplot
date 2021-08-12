@@ -192,7 +192,7 @@ void ScatterplotPlugin::createSubset(const bool& fromSourceData /*= false*/, con
 
     const auto subsetName = subsetPoints.createSubset(loadedPoints.getName());
 
-    _core->getDataHierarchyItem(subsetName).select();
+    _core->getDataHierarchyItem(subsetName)->select();
 }
 
 void ScatterplotPlugin::selectPoints()

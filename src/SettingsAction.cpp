@@ -48,7 +48,7 @@ QMenu* SettingsAction::getContextMenu()
 }
 
 SettingsAction::Widget::Widget(QWidget* parent, SettingsAction* settingsAction) :
-    WidgetAction::Widget(parent, settingsAction, Widget::State::Standard),
+    WidgetActionWidget(parent, settingsAction, Widget::State::Standard),
     _layout(),
     _toolBarWidget(),
     _toolBarLayout(),
@@ -116,7 +116,7 @@ bool SettingsAction::Widget::eventFilter(QObject* object, QEvent* event)
 
 void SettingsAction::Widget::addStateWidget(WidgetAction* widgetAction, const std::int32_t& priority /*= 0*/)
 {
-    _stateWidgets << new WidgetAction::StateWidget(this, widgetAction, priority);
+    _stateWidgets << new WidgetActionStateWidget(this, widgetAction, priority);
 
     if (_stateWidgets.count() >= 2) {
         _spacerWidgets << new SpacerWidget();
@@ -128,7 +128,7 @@ void SettingsAction::Widget::addStateWidget(WidgetAction* widgetAction, const st
 
 void SettingsAction::Widget::updateLayout()
 {
-    QMap<StateWidget*, Widget::State> states;
+    QMap<WidgetActionStateWidget*, Widget::State> states;
 
     for (auto stateWidget : _stateWidgets)
         states[stateWidget] = Widget::State::Collapsed;
@@ -154,7 +154,7 @@ void SettingsAction::Widget::updateLayout()
 
     auto prioritySortedStateWidgets = _stateWidgets;
 
-    std::sort(prioritySortedStateWidgets.begin(), prioritySortedStateWidgets.end(), [](StateWidget* stateWidgetA, StateWidget* stateWidgetB) {
+    std::sort(prioritySortedStateWidgets.begin(), prioritySortedStateWidgets.end(), [](WidgetActionStateWidget* stateWidgetA, WidgetActionStateWidget* stateWidgetB) {
         return stateWidgetA->getPriority() > stateWidgetB->getPriority();
     });
 
@@ -199,12 +199,12 @@ SettingsAction::SpacerWidget::SpacerWidget(const Type& type /*= State::Divider*/
     setType(type);
 }
 
-SettingsAction::SpacerWidget::Type SettingsAction::SpacerWidget::getType(const WidgetAction::Widget::State& widgetTypeLeft, const WidgetAction::Widget::State& widgetTypeRight)
+SettingsAction::SpacerWidget::Type SettingsAction::SpacerWidget::getType(const WidgetActionWidget::State& widgetTypeLeft, const WidgetActionWidget::State& widgetTypeRight)
 {
-    return widgetTypeLeft == WidgetAction::Widget::State::Collapsed && widgetTypeRight == WidgetAction::Widget::State::Collapsed ? Type::Spacer : Type::Divider;
+    return widgetTypeLeft == WidgetActionWidget::State::Collapsed && widgetTypeRight == WidgetActionWidget::State::Collapsed ? Type::Spacer : Type::Divider;
 }
 
-SettingsAction::SpacerWidget::Type SettingsAction::SpacerWidget::getType(const WidgetAction::StateWidget* stateWidgetLeft, const WidgetAction::StateWidget* stateWidgetRight)
+SettingsAction::SpacerWidget::Type SettingsAction::SpacerWidget::getType(const WidgetActionStateWidget* stateWidgetLeft, const WidgetActionStateWidget* stateWidgetRight)
 {
     return getType(stateWidgetLeft->getState(), stateWidgetRight->getState());
 }

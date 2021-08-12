@@ -16,6 +16,8 @@ ConstantColorAction::ConstantColorAction(ScatterplotPlugin* scatterplotPlugin) :
     _constantColorAction(this, "Constant color", DEFAULT_COLOR, DEFAULT_COLOR),
     _resetAction(this, "Reset")
 {
+    _scatterplotPlugin->addAction(&_constantColorAction);
+
     _constantColorAction.setToolTip("Constant color");
     _resetAction.setToolTip("Reset color settings");
 
@@ -70,7 +72,7 @@ QMenu* ConstantColorAction::getContextMenu()
 }
 
 ConstantColorAction::Widget::Widget(QWidget* parent, ConstantColorAction* colorByConstantAction, const Widget::State& state) :
-    WidgetAction::Widget(parent, colorByConstantAction, state)
+    WidgetActionWidget(parent, colorByConstantAction, state)
 {
     switch (state)
     {
