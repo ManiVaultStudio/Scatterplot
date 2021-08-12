@@ -67,8 +67,12 @@ ScatterplotPlugin::ScatterplotPlugin() :
     _dropWidget->initialize([this](const QMimeData* mimeData) -> DropWidget::DropRegions {
         DropWidget::DropRegions dropRegions;
 
-        const auto mimeText             = mimeData->text();
-        const auto tokens               = mimeText.split("\n");
+        const auto mimeText = mimeData->text();
+        const auto tokens   = mimeText.split("\n");
+
+        if (tokens.count() == 1)
+            return dropRegions;
+
         const auto datasetName          = tokens[0];
         const auto dataType             = DataType(tokens[1]);
         const auto dataTypes            = DataTypes({ PointType , ColorType, ClusterType });
