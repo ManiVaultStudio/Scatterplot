@@ -358,9 +358,9 @@ SelectionAction::Widget::Widget(QWidget* parent, SelectionAction* selectionActio
 
             auto layout = new QGridLayout();
 
-            layout->addWidget(new QLabel("Type:"), 0, 0);
+            layout->addWidget(selectionAction->_typeAction.createLabelWidget(this), 0, 0);
             layout->addWidget(getTypeWidget(), 0, 1);
-            layout->addWidget(new QLabel("Brush radius:"), 1, 0);
+            layout->addWidget(selectionAction->_brushRadiusAction.createLabelWidget(this), 1, 0);
             layout->addWidget(brushRadiusWidget, 1, 1);
             layout->addWidget(getSelectWidget(), 2, 1);
             layout->addWidget(notifyDuringSelectionWidget, 3, 1);

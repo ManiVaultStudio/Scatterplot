@@ -170,6 +170,9 @@ ColoringAction::Widget::Widget(QWidget* parent, ColoringAction* coloringAction, 
     renderModeChanged();
     coloringModeChanged();
 
+    auto labelWidget    = coloringAction->_colorByAction.createLabelWidget(this);
+    auto optionWidget   = coloringAction->_colorByAction.createWidget(this);
+
     switch (state)
     {
     case Widget::State::Standard:
@@ -177,8 +180,8 @@ ColoringAction::Widget::Widget(QWidget* parent, ColoringAction* coloringAction, 
         auto layout = new QHBoxLayout();
 
         layout->setMargin(0);
-        layout->addWidget(new QLabel("Color by:"));
-        layout->addWidget(coloringAction->_colorByAction.createWidget(this));
+        layout->addWidget(labelWidget);
+        layout->addWidget(optionWidget);
         layout->addWidget(stackedWidget);
 
         setLayout(layout);
@@ -189,8 +192,8 @@ ColoringAction::Widget::Widget(QWidget* parent, ColoringAction* coloringAction, 
     {
         auto layout = new QGridLayout();
 
-        layout->addWidget(new QLabel("Color by:"), 0, 0);
-        layout->addWidget(coloringAction->_colorByAction.createWidget(this), 0, 1);
+        layout->addWidget(labelWidget, 0, 0);
+        layout->addWidget(optionWidget, 0, 1);
         layout->addWidget(stackedWidget, 0, 2);
 
         setPopupLayout(layout);

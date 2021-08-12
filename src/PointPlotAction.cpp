@@ -62,8 +62,8 @@ PointPlotAction::Widget::Widget(QWidget* parent, PointPlotAction* pointPlotActio
 {
     setToolTip("Point plot settings");
 
-    auto pointSizelabel     = new QLabel("Point size:");
-    auto pointOpacitylabel  = new QLabel("Point opacity:");
+    auto pointSizelabel     = pointPlotAction->_pointSizeAction.createLabelWidget(this);
+    auto pointOpacitylabel  = pointPlotAction->_pointOpacityAction.createLabelWidget(this);
     auto pointSizeWidget    = pointPlotAction->_pointSizeAction.createWidget(this);
     auto pointOpacityWidget = pointPlotAction->_pointOpacityAction.createWidget(this);
 

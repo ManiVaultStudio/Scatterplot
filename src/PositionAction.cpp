@@ -83,8 +83,8 @@ std::int32_t PositionAction::getYDimension() const
 PositionAction::Widget::Widget(QWidget* parent, PositionAction* positionAction, const Widget::State& state) :
     WidgetActionWidget(parent, positionAction, state)
 {
-    auto xDimensionLabel    = new QLabel("X-dimension:");
-    auto yDimensionLabel    = new QLabel("Y-dimension:");
+    auto xDimensionLabel    = positionAction->_xDimensionAction.createLabelWidget(this);
+    auto yDimensionLabel    = positionAction->_yDimensionAction.createLabelWidget(this);
     auto xDimensionWidget   = dynamic_cast<OptionAction::ComboBoxWidget*>(positionAction->_xDimensionAction.createWidget(this));
     auto yDimensionWidget   = dynamic_cast<OptionAction::ComboBoxWidget*>(positionAction->_yDimensionAction.createWidget(this));
 

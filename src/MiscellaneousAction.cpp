@@ -43,6 +43,9 @@ QMenu* MiscellaneousAction::getContextMenu()
 MiscellaneousAction::Widget::Widget(QWidget* parent, MiscellaneousAction* miscellaneousAction, const Widget::State& state) :
     WidgetActionWidget(parent, miscellaneousAction, state)
 {
+    auto labelWidget    = miscellaneousAction->_backgroundColorAction.createLabelWidget(this);
+    auto colorWidget    = miscellaneousAction->_backgroundColorAction.createWidget(this);
+
     switch (state)
     {
         case Widget::State::Standard:
@@ -50,8 +53,8 @@ MiscellaneousAction::Widget::Widget(QWidget* parent, MiscellaneousAction* miscel
             auto layout = new QHBoxLayout();
             
             layout->setMargin(0);
-            layout->addWidget(new QLabel("Background color:"));
-            layout->addWidget(miscellaneousAction->_backgroundColorAction.createWidget(this));
+            layout->addWidget(labelWidget);
+            layout->addWidget(colorWidget);
 
             setLayout(layout);
             break;
@@ -61,8 +64,8 @@ MiscellaneousAction::Widget::Widget(QWidget* parent, MiscellaneousAction* miscel
         {
             auto layout = new QGridLayout();
 
-            layout->addWidget(new QLabel("Background color:"), 0, 0);
-            layout->addWidget(miscellaneousAction->_backgroundColorAction.createWidget(this), 0, 1);
+            layout->addWidget(labelWidget, 0, 0);
+            layout->addWidget(colorWidget, 0, 1);
             
             setPopupLayout(layout);
             break;
