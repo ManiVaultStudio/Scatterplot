@@ -28,7 +28,7 @@ class ScatterplotPlugin : public ViewPlugin
     Q_OBJECT
     
 public:
-    ScatterplotPlugin();
+    ScatterplotPlugin(const PluginFactory* factory);
     ~ScatterplotPlugin() override;
     
     /** Returns the icon of this plugin */

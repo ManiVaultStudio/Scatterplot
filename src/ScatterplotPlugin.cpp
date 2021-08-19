@@ -30,8 +30,8 @@ Q_PLUGIN_METADATA(IID "nl.tudelft.ScatterplotPlugin")
 
 using namespace hdps;
 
-ScatterplotPlugin::ScatterplotPlugin() :
-    ViewPlugin("Scatterplot View"),
+ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
+    ViewPlugin(factory),
     _currentDataSet(),
     _currentColorDataSet(),
     _points(),
@@ -636,7 +636,7 @@ void ScatterplotPlugin::updateWindowTitle()
 
 ViewPlugin* ScatterplotPluginFactory::produce()
 {
-    return new ScatterplotPlugin();
+    return new ScatterplotPlugin(this);
 }
 
 hdps::DataTypes ScatterplotPluginFactory::supportedDataTypes() const
