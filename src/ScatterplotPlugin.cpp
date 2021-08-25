@@ -2,7 +2,7 @@
 
 #include "PixelSelectionTool.h"
 #include "ScatterplotWidget.h"
-
+#include "DataHierarchyItem.h"
 #include "Application.h"
 
 #include "PointData.h"
@@ -77,14 +77,14 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
         const auto dataType             = DataType(tokens[1]);
         const auto dataTypes            = DataTypes({ PointType , ColorType, ClusterType });
         const auto currentDatasetName   = getCurrentDataset();
-        const auto candidateDataset     = getCore()->requestData<Points>(datasetName);
-        const auto candidateDatasetName = candidateDataset.getName();
 
         if (!dataTypes.contains(dataType))
             dropRegions << new DropWidget::DropRegion(this, "Incompatible data", "This type of data is not supported", false);
 
         if (dataType == PointType) {
-            const auto description = QString("Visualize %1 as points or density/contour map").arg(candidateDatasetName);
+            const auto candidateDataset     = getCore()->requestData<Points>(datasetName);
+            const auto candidateDatasetName = candidateDataset.getName();
+            const auto description          = QString("Visualize %1 as points or density/contour map").arg(candidateDatasetName);
 
             if (currentDatasetName.isEmpty()) {
                 dropRegions << new DropWidget::DropRegion(this, "Position", description, true, [this, candidateDatasetName]() {
@@ -115,6 +115,18 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                         }
                     }
                 }
+            }
+        }
+
+        if (dataType == ClusterType) {
+            const auto candidateDataset     = getCore()->requestData<Clusters>(datasetName);
+            const auto candidateDatasetName = candidateDataset.getName();
+            const auto description          = QString("Color points by %1").arg(candidateDatasetName);
+
+            if (!currentDatasetName.isEmpty()) {
+                dropRegions << new DropWidget::DropRegion(this, "Color", description, true, [this, candidateDatasetName]() {
+                    loadColorData(candidateDatasetName);
+                });
             }
         }
 
@@ -161,6 +173,23 @@ void ScatterplotPlugin::init()
     });
 
     updateWindowTitle();
+
+    connect(&_settingsAction.getColoringAction().getColorByAction(), &OptionAction::currentTextChanged, [this](const QString& currentText) {
+        if (currentText != "Color data")
+            return;
+
+        loadColorData(_currentColorDataSet);
+    });
+
+    registerDataEventByType(ClusterType, [this](hdps::DataEvent* dataEvent) {
+        if (dataEvent->dataSetName != _currentColorDataSet)
+            return;
+
+        if (_settingsAction.getColoringAction().getColorByAction().getCurrentText() != "Color data")
+            return;
+
+        loadColorData(_currentColorDataSet);
+    });
 }
 
 void ScatterplotPlugin::onDataEvent(DataEvent* dataEvent)

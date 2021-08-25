@@ -10,6 +10,8 @@
 #include <QLabel>
 #include <QStackedWidget>
 
+using namespace hdps::gui;
+
 class ColoringAction : public PluginAction
 {
 protected: // Widget
@@ -33,6 +35,7 @@ public:
 
     QMenu* getContextMenu();
     
+    OptionAction& getColorByAction() { return _colorByAction; }
     ConstantColorAction& getConstantColorAction() { return _constantColorAction; }
     ColorDimensionAction& getColorDimensionAction() { return _colorDimensionAction; }
     ColorDataAction& getColorDataAction() { return _colorDataAction; }
@@ -41,14 +44,14 @@ public:
     void setDimensions(const std::vector<QString>& dimensionNames);
 
 protected:
-    hdps::gui::OptionAction     _colorByAction;
-    hdps::gui::TriggerAction    _colorByConstantColorAction;
-    hdps::gui::TriggerAction    _colorByDimensionAction;
-    hdps::gui::TriggerAction    _colorByColorDataAction;
-    QActionGroup                _colorByActionGroup;
-    ConstantColorAction         _constantColorAction;
-    ColorDimensionAction        _colorDimensionAction;
-    ColorDataAction             _colorDataAction;
+    OptionAction            _colorByAction;
+    TriggerAction           _colorByConstantColorAction;
+    TriggerAction           _colorByDimensionAction;
+    TriggerAction           _colorByColorDataAction;
+    QActionGroup            _colorByActionGroup;
+    ConstantColorAction     _constantColorAction;
+    ColorDimensionAction    _colorDimensionAction;
+    ColorDataAction         _colorDataAction;
 
     friend class Widget;
 };
