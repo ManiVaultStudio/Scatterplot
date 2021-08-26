@@ -124,9 +124,14 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
             const auto description          = QString("Color points by %1").arg(candidateDatasetName);
 
             if (!currentDatasetName.isEmpty()) {
-                dropRegions << new DropWidget::DropRegion(this, "Color", description, true, [this, candidateDatasetName]() {
-                    loadColorData(candidateDatasetName);
-                });
+                if (candidateDatasetName == _currentColorDataSet) {
+                    dropRegions << new DropWidget::DropRegion(this, "Color", "Cluster set is already in use", false, [this]() {});
+                }
+                else {
+                    dropRegions << new DropWidget::DropRegion(this, "Color", description, true, [this, candidateDatasetName]() {
+                        loadColorData(candidateDatasetName);
+                    });
+                }
             }
         }
 
