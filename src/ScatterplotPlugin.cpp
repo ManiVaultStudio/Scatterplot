@@ -421,7 +421,7 @@ void ScatterplotPlugin::loadColorData(const QString& dataSetName)
         std::vector<Vector3f> colors(_points.size());
         for (const Cluster& cluster : clusters.getClusters())
         {
-            for (const int& index : cluster.indices)
+            for (const int& index : cluster._indices)
             {
                 if (index < 0 || index > colors.size())
                 {
