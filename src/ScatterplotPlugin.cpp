@@ -375,9 +375,9 @@ bool ScatterplotPlugin::areColorsLoaded() const
     return _colorsDataHierarchyItem != nullptr;
 }
 
-DataHierarchyItems ScatterplotPlugin::getClusterDataHierarchyItems()
+QVector<DataHierarchyItem*> ScatterplotPlugin::getClusterDataHierarchyItems()
 {
-    DataHierarchyItems clusterDataHierarchyItems;
+    QVector<DataHierarchyItem*> clusterDataHierarchyItems;
 
     if (!arePointsLoaded())
         return clusterDataHierarchyItems;

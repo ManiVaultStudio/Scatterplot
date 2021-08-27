@@ -17,6 +17,7 @@ namespace hdps
 {
     class CoreInterface;
     class Vector2f;
+    class DataHierarchyItems;
 
     namespace gui {
         class DropWidget;
@@ -102,7 +103,7 @@ public: // Miscellaneous
     bool areColorsLoaded() const;
 
     /** Get cluster data hierarchy items for the loaded dataset */
-    DataHierarchyItems getClusterDataHierarchyItems();
+    QVector<DataHierarchyItem*> getClusterDataHierarchyItems();
 
 signals:
     void currentDatasetChanged(const QString& datasetName);
