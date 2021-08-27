@@ -22,14 +22,14 @@ SubsetAction::SubsetAction(ScatterplotPlugin* scatterplotPlugin) :
         setEnabled(_scatterplotPlugin->getNumberOfSelectedPoints() >= 1);
     };
 
-    connect(_scatterplotPlugin, qOverload<>(&ScatterplotPlugin::selectionChanged), this, updateActions);
+    connect(_scatterplotPlugin, &ScatterplotPlugin::selectionChanged, this, updateActions);
 
     connect(&_createSubsetAction, &QAction::triggered, this, [this]() {
         _scatterplotPlugin->createSubset(_sourceDataAction.getCurrentIndex() == 1, _subsetNameAction.getString());
     });
 
     const auto onCurrentDatasetChanged = [this]() -> void {
-        const auto datasetName = _scatterplotPlugin->getCurrentDataset();
+        const auto datasetName = _scatterplotPlugin->getPointsDatasetName();
 
         QStringList sourceDataOptions;
 

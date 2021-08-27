@@ -15,11 +15,12 @@ SettingsAction::SettingsAction(ScatterplotPlugin* scatterplotPlugin) :
     _positionAction(scatterplotPlugin),
     _coloringAction(scatterplotPlugin),
     _subsetAction(scatterplotPlugin),
+    _clusterAction(scatterplotPlugin),
     _selectionAction(scatterplotPlugin),
     _miscellaneousAction(scatterplotPlugin)
 {
     const auto updateEnabled = [this]() {
-        setEnabled(!_scatterplotPlugin->getCurrentDataset().isEmpty());
+        setEnabled(_scatterplotPlugin->arePointsLoaded());
     };
 
     connect(scatterplotPlugin, &ScatterplotPlugin::currentDatasetChanged, this, [this, updateEnabled](const QString& datasetName) {
@@ -66,6 +67,7 @@ SettingsAction::Widget::Widget(QWidget* parent, SettingsAction* settingsAction) 
     addStateWidget(&settingsAction->_positionAction, 10);
     addStateWidget(&settingsAction->_coloringAction, 8);
     addStateWidget(&settingsAction->_subsetAction, 3);
+    addStateWidget(&settingsAction->_clusterAction, 0);
     addStateWidget(&settingsAction->_selectionAction, 2);
     addStateWidget(&settingsAction->_miscellaneousAction, 1);
 

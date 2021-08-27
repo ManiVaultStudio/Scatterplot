@@ -38,7 +38,6 @@ public:
 
     void onDataEvent(hdps::DataEvent* dataEvent);
 
-    QString getCurrentDataset() const;
     std::uint32_t getNumberOfPoints() const;
     std::uint32_t getNumberOfSelectedPoints() const;
 
@@ -82,6 +81,29 @@ public: // Data loading
 
     void selectPoints();
 
+public: // Miscellaneous
+
+    /** Get name of the current points dataset (empty string if no points data is loaded) */
+    QString getPointsDatasetName();
+
+    /** Get current dataset data hierarchy item (nullptr if no data is loaded) */
+    DataHierarchyItem* getDatasetDataHierarchyItem();
+
+    /** Returns whether a points dataset is loaded or not */
+    bool arePointsLoaded() const;
+
+    /** Get name of the current color dataset (empty string if no color data is loaded) */
+    QString getColorDatasetName();
+
+    /** Get current color dataset data hierarchy item (nullptr if no color data is loaded) */
+    DataHierarchyItem* getColorDatasetDataHierarchyItem();
+
+    /** Returns whether a color dataset is loaded or not */
+    bool areColorsLoaded() const;
+
+    /** Get cluster data hierarchy items for the loaded dataset */
+    //DataHierarchyItems getClusterDataHierarchyItems();
+
 signals:
     void currentDatasetChanged(const QString& datasetName);
     void selectionChanged();
@@ -97,8 +119,8 @@ private:
     void updateSelection();
     
 private:
-    QString                         _currentDataSet;
-    QString                         _currentColorDataSet;
+    DataHierarchyItem*              _pointsDataHierarchyItem;       /** Currently loaded points data hierarchy item */
+    DataHierarchyItem*              _colorsDataHierarchyItem;       /** Currently loaded color data hierarchy item */
     std::vector<hdps::Vector2f>     _points;
     unsigned int                    _numPoints;
     

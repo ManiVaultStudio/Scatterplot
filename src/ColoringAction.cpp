@@ -175,32 +175,32 @@ ColoringAction::Widget::Widget(QWidget* parent, ColoringAction* coloringAction, 
 
     switch (state)
     {
-    case Widget::State::Standard:
-    {
-        auto layout = new QHBoxLayout();
+        case Widget::State::Standard:
+        {
+            auto layout = new QHBoxLayout();
 
-        layout->setMargin(0);
-        layout->addWidget(labelWidget);
-        layout->addWidget(optionWidget);
-        layout->addWidget(stackedWidget);
+            layout->setMargin(0);
+            layout->addWidget(labelWidget);
+            layout->addWidget(optionWidget);
+            layout->addWidget(stackedWidget);
 
-        setLayout(layout);
-        break;
-    }
+            setLayout(layout);
+            break;
+        }
 
-    case Widget::State::Popup:
-    {
-        auto layout = new QGridLayout();
+        case Widget::State::Popup:
+        {
+            auto layout = new QGridLayout();
 
-        layout->addWidget(labelWidget, 0, 0);
-        layout->addWidget(optionWidget, 0, 1);
-        layout->addWidget(stackedWidget, 0, 2);
+            layout->addWidget(labelWidget, 0, 0);
+            layout->addWidget(optionWidget, 0, 1);
+            layout->addWidget(stackedWidget, 0, 2);
 
-        setPopupLayout(layout);
-        break;
-    }
+            setPopupLayout(layout);
+            break;
+        }
 
-    default:
-        break;
+        default:
+            break;
     }
 }
