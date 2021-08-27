@@ -25,8 +25,11 @@ ManualClusteringAction::ManualClusteringAction(ScatterplotPlugin* scatterplotPlu
     setIcon(Application::getIconFont("FontAwesome").getIcon("th-large"));
 
     const auto updateActions = [this]() -> void {
-        const auto canAddCluster = _scatterplotPlugin->getNumberOfSelectedPoints() >= 1 && _targetAction.getCurrentIndex() >= 0 && !_nameAction.getString().isEmpty();
+        const auto hasSelection     = _targetAction.getCurrentIndex() >= 0;
+        const auto canAddCluster    = hasSelection && !_nameAction.getString().isEmpty();
 
+        _targetAction.setEnabled(hasSelection);
+        _nameAction.setEnabled(hasSelection);
         _colorAction.setEnabled(canAddCluster);
         _addClusterAction.setEnabled(canAddCluster);
     };
@@ -146,7 +149,7 @@ ManualClusteringAction::Widget::Widget(QWidget* parent, ManualClusteringAction* 
             layout->addWidget(manualClusteringAction->_colorAction.createLabelWidget(this), 2, 0);
             layout->addWidget(manualClusteringAction->_colorAction.createWidget(this), 2, 1);
 
-            layout->addWidget(manualClusteringAction->_addClusterAction.createWidget(this), 3, 0);
+            layout->addWidget(manualClusteringAction->_addClusterAction.createWidget(this), 3, 1);
 
             setPopupLayout(layout);
             break;
