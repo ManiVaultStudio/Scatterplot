@@ -50,12 +50,18 @@ public:
     /** Get selected indices in the points dataset */
     const std::vector<std::uint32_t>& getSelectedIndices() const;
 
+    /** Updates available cluster datasets */
+    void updateTargets();
+
+    /** Create default clusters set if none already exist */
+    void createDefaultCustersSet();
+
 public: // Action getters
 
     OptionAction& getTargetAction() { return _targetAction; }
     StringAction& getNameAction() { return _nameAction; }
     ColorAction& getColorAction() { return _colorAction; }
-    TriggerAction& getCreateCluster() { return _createClusterAction; }
+    TriggerAction& getCreateCluster() { return _addClusterAction; }
 
 signals:
 
@@ -71,5 +77,5 @@ protected:
     OptionAction            _targetAction;                  /** Target cluster set action */
     StringAction            _nameAction;                    /** Cluster name action */
     ColorAction             _colorAction;                   /** Cluster color action */
-    TriggerAction           _createClusterAction;           /** Edit and create cluster action */
+    TriggerAction           _addClusterAction;           /** Edit and create cluster action */
 };

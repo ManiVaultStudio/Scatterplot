@@ -46,7 +46,7 @@ SubsetAction::SubsetAction(ScatterplotPlugin* scatterplotPlugin) :
         _sourceDataAction.setEnabled(sourceDataOptions.count() >= 2);
     };
 
-    connect(scatterplotPlugin, &ScatterplotPlugin::currentDatasetChanged, this, [this, onCurrentDatasetChanged](const QString& datasetName) {
+    connect(scatterplotPlugin, &ScatterplotPlugin::currentPointsChanged, this, [this, onCurrentDatasetChanged](const QString& datasetName) {
         onCurrentDatasetChanged();
     });
 

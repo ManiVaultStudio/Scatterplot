@@ -88,7 +88,7 @@ public: // Miscellaneous
     QString getPointsDatasetName();
 
     /** Get current dataset data hierarchy item (nullptr if no data is loaded) */
-    DataHierarchyItem* getDatasetDataHierarchyItem();
+    DataHierarchyItem* getPointsDataHierarchyItem();
 
     /** Returns whether a points dataset is loaded or not */
     bool arePointsLoaded() const;
@@ -106,7 +106,8 @@ public: // Miscellaneous
     QVector<DataHierarchyItem*> getClusterDataHierarchyItems();
 
 signals:
-    void currentDatasetChanged(const QString& datasetName);
+    void currentPointsChanged(const QString& datasetName);
+    void currentColorsChanged(const QString& datasetName);
     void selectionChanged();
 
 public:

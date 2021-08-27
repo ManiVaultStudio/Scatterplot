@@ -26,7 +26,7 @@ DensityPlotAction::DensityPlotAction(ScatterplotPlugin* scatterplotPlugin) :
         _sigmaAction.setUpdateDuringDrag(_scatterplotPlugin->getNumberOfPoints() < 100000);
     };
 
-    connect(scatterplotPlugin, &ScatterplotPlugin::currentDatasetChanged, this, [this, updateSigmaAction](const QString& datasetName) {
+    connect(scatterplotPlugin, &ScatterplotPlugin::currentPointsChanged, this, [this, updateSigmaAction](const QString& datasetName) {
         updateSigmaAction();
     });
 

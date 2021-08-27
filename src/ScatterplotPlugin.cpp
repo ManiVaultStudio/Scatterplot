@@ -350,7 +350,7 @@ QString ScatterplotPlugin::getPointsDatasetName()
     return _pointsDataHierarchyItem == nullptr ? "" : _pointsDataHierarchyItem->getDatasetName();
 }
 
-DataHierarchyItem* ScatterplotPlugin::getDatasetDataHierarchyItem()
+DataHierarchyItem* ScatterplotPlugin::getPointsDataHierarchyItem()
 {
     return _pointsDataHierarchyItem;
 }
@@ -411,7 +411,7 @@ void ScatterplotPlugin::loadPointData(const QString& dataSetName)
 
     updateWindowTitle();
 
-    emit currentDatasetChanged(_pointsDataHierarchyItem->getDatasetName());
+    emit currentPointsChanged(_pointsDataHierarchyItem->getDatasetName());
 
     const auto& points = _pointsDataHierarchyItem->getDataset<Points>();
 
@@ -496,6 +496,8 @@ void ScatterplotPlugin::loadColorData(const QString& dataSetName)
     _dropWidget->setShowDropIndicator(false);
 
     setFocus();
+
+    emit currentColorsChanged(_colorsDataHierarchyItem->getDatasetName());
 }
 
 ScatterplotWidget* ScatterplotPlugin::getScatterplotWidget()

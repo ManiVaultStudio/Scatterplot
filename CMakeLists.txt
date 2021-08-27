@@ -27,7 +27,7 @@ set(PLUGIN
 )
 
 file(GLOB PixelSelectionTool src/*PixelSelectionTool*.*)
-file(GLOB UI src/*Widget*.* src/*Dialog*.*)
+file(GLOB UI src/*Widget*.*)
 file(GLOB Actions src/*Action.*)
 file(GLOB SHADERS src/*.glsl)
 file(GLOB JSON src/*.json)

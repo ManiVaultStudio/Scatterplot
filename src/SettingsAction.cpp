@@ -23,7 +23,7 @@ SettingsAction::SettingsAction(ScatterplotPlugin* scatterplotPlugin) :
         setEnabled(_scatterplotPlugin->arePointsLoaded());
     };
 
-    connect(scatterplotPlugin, &ScatterplotPlugin::currentDatasetChanged, this, [this, updateEnabled](const QString& datasetName) {
+    connect(scatterplotPlugin, &ScatterplotPlugin::currentPointsChanged, this, [this, updateEnabled](const QString& datasetName) {
         updateEnabled();
     });
 
@@ -94,7 +94,7 @@ SettingsAction::Widget::Widget(QWidget* parent, SettingsAction* settingsAction) 
         _stateWidgets[2]->setPriority(positionPriority);
     };
 
-    connect(settingsAction->_scatterplotPlugin, &ScatterplotPlugin::currentDatasetChanged, this, [this, onCurrentDatasetChanged](const QString& datasetName) {
+    connect(settingsAction->_scatterplotPlugin, &ScatterplotPlugin::currentPointsChanged, this, [this, onCurrentDatasetChanged](const QString& datasetName) {
         onCurrentDatasetChanged(datasetName);
     });
 
