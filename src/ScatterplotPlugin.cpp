@@ -123,7 +123,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
             const auto candidateDatasetName = candidateDataset.getName();
             const auto description          = QString("Color points by %1").arg(candidateDatasetName);
 
-            if (!areColorsLoaded()) {
+            if (!arePointsLoaded()) {
                 if (candidateDatasetName == getColorDatasetName()) {
                     dropRegions << new DropWidget::DropRegion(this, "Color", "Cluster set is already in use", false, [this]() {});
                 }
@@ -375,15 +375,14 @@ bool ScatterplotPlugin::areColorsLoaded() const
     return _colorsDataHierarchyItem != nullptr;
 }
 
-/*
 DataHierarchyItems ScatterplotPlugin::getClusterDataHierarchyItems()
 {
     DataHierarchyItems clusterDataHierarchyItems;
 
-    if (_currentPointsDataHierarchyItem == nullptr)
+    if (!arePointsLoaded())
         return clusterDataHierarchyItems;
 
-    for (auto child : _currentPointsDataHierarchyItem->getChildren()) {
+    for (auto child : _pointsDataHierarchyItem->getChildren()) {
         auto childDataHierarchyItem = _core->getDataHierarchyItem(child);
 
         if (childDataHierarchyItem->getDataType() == ClusterType)
@@ -392,7 +391,6 @@ DataHierarchyItems ScatterplotPlugin::getClusterDataHierarchyItems()
 
     return clusterDataHierarchyItems;
 }
-*/
 
 void ScatterplotPlugin::loadPointData(const QString& dataSetName)
 {
