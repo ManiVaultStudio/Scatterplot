@@ -146,7 +146,7 @@ ManualClusteringAction::Widget::Widget(QWidget* parent, ManualClusteringAction* 
             layout->addWidget(manualClusteringAction->_colorAction.createLabelWidget(this), 2, 0);
             layout->addWidget(manualClusteringAction->_colorAction.createWidget(this), 2, 1);
 
-            layout->addWidget(manualClusteringAction->_addClusterAction.createWidget(this), 3, 0, 1, 2);
+            layout->addWidget(manualClusteringAction->_addClusterAction.createWidget(this), 3, 0);
 
             setPopupLayout(layout);
             break;
