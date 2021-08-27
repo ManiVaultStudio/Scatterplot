@@ -68,27 +68,6 @@ ClusterAction::ClusterAction(ScatterplotPlugin* scatterplotPlugin) :
     updateActions();
 }
 
-QMenu* ClusterAction::getContextMenu(QWidget* parent /*= nullptr*/)
-{
-    auto menu = new QMenu(text(), parent);
-
-    menu->addAction(&_addClusterAction);
-
-    return menu;
-}
-
-const std::vector<std::uint32_t>& ClusterAction::getSelectedIndices() const
-{
-    /*
-    auto& points    = _inputDataHierarchyItem->getDataset<Points>();
-    auto& selection = dynamic_cast<Points&>(points.getSelection());
-
-    return selection.indices;
-    */
-
-    return std::vector<std::uint32_t>();
-}
-
 void ClusterAction::updateTargets()
 {
     auto clusterDataHierarchyItems = _scatterplotPlugin->getClusterDataHierarchyItems();
@@ -123,6 +102,8 @@ ClusterAction::Widget::Widget(QWidget* parent, ClusterAction* clusterAction, con
 
     clusterAction->createDefaultCustersSet();
     clusterAction->updateTargets();
+
+    clusterAction->getNameAction().reset();
     clusterAction->getColorAction().setColor(QColor::fromHsl(randomHue, randomSaturation, randomLightness));
 
     switch (state)
