@@ -19,18 +19,24 @@ ManualClusteringAction::ManualClusteringAction(ScatterplotPlugin* scatterplotPlu
     _targetAction(this, "Cluster set"),
     _nameAction(this, "Name"),
     _colorAction(this, "Color"),
-    _addClusterAction(this, "Add")
+    _addClusterAction(this, "Add cluster")
 {
     setText("Manual clustering");
     setIcon(Application::getIconFont("FontAwesome").getIcon("th-large"));
 
-    const auto updateActions = [this]() -> void {
-        const auto hasSelection     = _targetAction.getCurrentIndex() >= 0;
-        const auto canAddCluster    = hasSelection && !_nameAction.getString().isEmpty();
+    _targetAction.setToolTip("Add cluster to");
+    _nameAction.setToolTip("Name of the cluster");
+    _colorAction.setToolTip("Color of the cluster");
+    _addClusterAction.setToolTip("Add cluster");
 
-        _targetAction.setEnabled(hasSelection);
+    const auto updateActions = [this]() -> void {
+        const auto numberOfSelectedPoints   = _scatterplotPlugin->getNumberOfSelectedPoints();
+        const auto hasSelection             = numberOfSelectedPoints >= 1;
+        const auto canAddCluster            = hasSelection && !_nameAction.getString().isEmpty();
+
+        _targetAction.setEnabled(hasSelection && _targetAction.getContext().size() >= 2);
         _nameAction.setEnabled(hasSelection);
-        _colorAction.setEnabled(canAddCluster);
+        _colorAction.setEnabled(hasSelection);
         _addClusterAction.setEnabled(canAddCluster);
     };
 
@@ -57,11 +63,15 @@ ManualClusteringAction::ManualClusteringAction(ScatterplotPlugin* scatterplotPlu
         clusterDataset.addCluster(cluster);
 
         _clusterDataHierarchyItem->notifyDataChanged();
+
+        _nameAction.reset();
     });
 
-    connect(_scatterplotPlugin, &ScatterplotPlugin::currentColorsChanged, this, [this](const QString& datasetName) {
+    connect(_scatterplotPlugin, &ScatterplotPlugin::currentColorsChanged, this, [this, updateActions](const QString& datasetName) {
         if (_scatterplotPlugin->getColorDatasetDataHierarchyItem()->getDataset().getDataType() == ClusterType)
             _clusterDataHierarchyItem = _scatterplotPlugin->getColorDatasetDataHierarchyItem();
+
+        updateActions();
 
         updateTargets();
     });
