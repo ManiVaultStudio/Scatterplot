@@ -1,4 +1,4 @@
-#include "ClusterAction.h"
+#include "ManualClusteringAction.h"
 #include "ScatterplotPlugin.h"
 #include "Application.h"
 #include "DataHierarchyItem.h"
@@ -11,7 +11,7 @@
 using namespace hdps;
 using namespace hdps::gui;
 
-ClusterAction::ClusterAction(ScatterplotPlugin* scatterplotPlugin) :
+ManualClusteringAction::ManualClusteringAction(ScatterplotPlugin* scatterplotPlugin) :
     PluginAction(scatterplotPlugin, "Cluster"),
     EventListener(),
     _inputDataHierarchyItem(nullptr),
@@ -21,7 +21,7 @@ ClusterAction::ClusterAction(ScatterplotPlugin* scatterplotPlugin) :
     _colorAction(this, "Color"),
     _addClusterAction(this, "Add")
 {
-    setText("Add cluster");
+    setText("Manual clustering");
     setIcon(Application::getIconFont("FontAwesome").getIcon("th-large"));
 
     const auto updateActions = [this]() -> void {
@@ -68,7 +68,7 @@ ClusterAction::ClusterAction(ScatterplotPlugin* scatterplotPlugin) :
     updateActions();
 }
 
-void ClusterAction::updateTargets()
+void ManualClusteringAction::updateTargets()
 {
     auto clusterDataHierarchyItems = _scatterplotPlugin->getClusterDataHierarchyItems();
 
@@ -81,18 +81,18 @@ void ClusterAction::updateTargets()
     _targetAction.setCurrentText(_scatterplotPlugin->getColorDatasetName());
 }
 
-void ClusterAction::createDefaultCustersSet()
+void ManualClusteringAction::createDefaultCustersSet()
 {
     if (!_scatterplotPlugin->arePointsLoaded() || _clusterDataHierarchyItem != nullptr)
         return;
 
-    auto clustersDatasetName = _scatterplotPlugin->getCore()->addData("Cluster", "Manual clustering", _scatterplotPlugin->getPointsDatasetName());
+    auto clustersDatasetName = _scatterplotPlugin->getCore()->addData("Cluster", "annotation", _scatterplotPlugin->getPointsDatasetName());
 
     _scatterplotPlugin->loadColorData(clustersDatasetName);
 }
 
-ClusterAction::Widget::Widget(QWidget* parent, ClusterAction* clusterAction, const hdps::gui::WidgetActionWidget::State& state) :
-    WidgetActionWidget(parent, clusterAction, state)
+ManualClusteringAction::Widget::Widget(QWidget* parent, ManualClusteringAction* manualClusteringAction, const WidgetActionWidget::State& state) :
+    WidgetActionWidget(parent, manualClusteringAction, state)
 {
     auto rng = QRandomGenerator::global();
 
@@ -100,11 +100,11 @@ ClusterAction::Widget::Widget(QWidget* parent, ClusterAction* clusterAction, con
     const auto randomSaturation = rng->bounded(150, 255);
     const auto randomLightness  = rng->bounded(100, 200);
 
-    clusterAction->createDefaultCustersSet();
-    clusterAction->updateTargets();
+    manualClusteringAction->createDefaultCustersSet();
+    manualClusteringAction->updateTargets();
 
-    clusterAction->getNameAction().reset();
-    clusterAction->getColorAction().setColor(QColor::fromHsl(randomHue, randomSaturation, randomLightness));
+    manualClusteringAction->getNameAction().reset();
+    manualClusteringAction->getColorAction().setColor(QColor::fromHsl(randomHue, randomSaturation, randomLightness));
 
     switch (state)
     {
@@ -112,10 +112,10 @@ ClusterAction::Widget::Widget(QWidget* parent, ClusterAction* clusterAction, con
         {
             auto layout = new QHBoxLayout();
 
-            auto targetWidget   = clusterAction->_targetAction.createWidget(this);
-            auto nameWidget     = clusterAction->_nameAction.createWidget(this);
-            auto colorWidget    = clusterAction->_colorAction.createWidget(this);
-            auto createWidget   = clusterAction->_addClusterAction.createWidget(this);
+            auto targetWidget   = manualClusteringAction->_targetAction.createWidget(this);
+            auto nameWidget     = manualClusteringAction->_nameAction.createWidget(this);
+            auto colorWidget    = manualClusteringAction->_colorAction.createWidget(this);
+            auto createWidget   = manualClusteringAction->_addClusterAction.createWidget(this);
 
             targetWidget->setFixedWidth(100);
             nameWidget->setFixedWidth(100);
@@ -137,17 +137,17 @@ ClusterAction::Widget::Widget(QWidget* parent, ClusterAction* clusterAction, con
 
             layout->setColumnMinimumWidth(1, 200);
 
-            layout->addWidget(clusterAction->_targetAction.createLabelWidget(this), 0, 0);
-            layout->addWidget(clusterAction->_targetAction.createWidget(this), 0, 1);
+            layout->addWidget(manualClusteringAction->_targetAction.createLabelWidget(this), 0, 0);
+            layout->addWidget(manualClusteringAction->_targetAction.createWidget(this), 0, 1);
 
-            layout->addWidget(clusterAction->_nameAction.createLabelWidget(this), 1, 0);
-            layout->addWidget(clusterAction->_nameAction.createWidget(this), 1, 1);
+            layout->addWidget(manualClusteringAction->_nameAction.createLabelWidget(this), 1, 0);
+            layout->addWidget(manualClusteringAction->_nameAction.createWidget(this), 1, 1);
 
-            layout->addWidget(clusterAction->_colorAction.createLabelWidget(this), 2, 0);
-            layout->addWidget(clusterAction->_colorAction.createWidget(this), 2, 1);
+            layout->addWidget(manualClusteringAction->_colorAction.createLabelWidget(this), 2, 0);
+            layout->addWidget(manualClusteringAction->_colorAction.createWidget(this), 2, 1);
 
-            layout->addWidget(clusterAction->_addClusterAction.createLabelWidget(this), 3, 0);
-            layout->addWidget(clusterAction->_addClusterAction.createWidget(this), 3, 1);
+            layout->addWidget(manualClusteringAction->_addClusterAction.createLabelWidget(this), 3, 0);
+            layout->addWidget(manualClusteringAction->_addClusterAction.createWidget(this), 3, 1);
 
             setPopupLayout(layout);
             break;

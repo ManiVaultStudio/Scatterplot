@@ -11,17 +11,17 @@ using namespace hdps;
 using namespace hdps::gui;
 
 /**
- * Cluster action class
+ * Manual clustering action class
  *
- * Action class for clustering points
+ * Action class for manual clustering
  *
  * @author Thomas Kroes
  */
-class ClusterAction : public PluginAction, public hdps::EventListener
+class ManualClusteringAction : public PluginAction, public hdps::EventListener
 {
     Q_OBJECT
 
-protected
+protected:
 
     class Widget : public WidgetActionWidget
     {
@@ -30,9 +30,9 @@ protected
         /**
          * Constructor
          * @param parent Pointer to parent widget
-         * @param clusterAction Pointer to cluster action
+         * @param manualClusteringAction Pointer to manual clustering action
          */
-        Widget(QWidget* parent, ClusterAction* clusterAction, const WidgetActionWidget::State& state);
+        Widget(QWidget* parent, ManualClusteringAction* manualClusteringAction, const WidgetActionWidget::State& state);
     };
 
     /**
@@ -50,7 +50,7 @@ public:
      * Constructor
      * @param scatterplotPlugin Pointer to scatter plot plugin
      */
-    ClusterAction(ScatterplotPlugin* scatterplotPlugin);
+    ManualClusteringAction(ScatterplotPlugin* scatterplotPlugin);
 
     /** Updates available cluster datasets */
     void updateTargets();
@@ -71,5 +71,5 @@ protected:
     OptionAction            _targetAction;                  /** Target cluster set action */
     StringAction            _nameAction;                    /** Cluster name action */
     ColorAction             _colorAction;                   /** Cluster color action */
-    TriggerAction           _addClusterAction;           /** Edit and create cluster action */
+    TriggerAction           _addClusterAction;              /** Add manual cluster action */
 };

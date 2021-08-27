@@ -8,7 +8,7 @@
 #include "ColoringAction.h"
 #include "SubsetAction.h"
 #include "SelectionAction.h"
-#include "ClusterAction.h"
+#include "ManualClusteringAction.h"
 #include "MiscellaneousAction.h"
 
 class ScatterplotPlugin;
@@ -85,7 +85,7 @@ protected:
     PositionAction          _positionAction;
     ColoringAction          _coloringAction;
     SubsetAction            _subsetAction;
-    ClusterAction           _clusterAction;
+    ManualClusteringAction           _clusterAction;
     SelectionAction         _selectionAction;
     MiscellaneousAction     _miscellaneousAction;
 };
