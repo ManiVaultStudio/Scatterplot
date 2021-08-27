@@ -25,7 +25,7 @@ ManualClusteringAction::ManualClusteringAction(ScatterplotPlugin* scatterplotPlu
     setIcon(Application::getIconFont("FontAwesome").getIcon("th-large"));
 
     const auto updateActions = [this]() -> void {
-        const auto canAddCluster = _targetAction.getCurrentIndex() >= 0 && !_nameAction.getString().isEmpty();
+        const auto canAddCluster = _scatterplotPlugin->getNumberOfSelectedPoints() >= 1 && _targetAction.getCurrentIndex() >= 0 && !_nameAction.getString().isEmpty();
 
         _colorAction.setEnabled(canAddCluster);
         _addClusterAction.setEnabled(canAddCluster);
