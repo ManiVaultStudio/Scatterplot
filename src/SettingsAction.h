@@ -11,6 +11,8 @@
 #include "ManualClusteringAction.h"
 #include "MiscellaneousAction.h"
 
+using namespace hdps::gui;
+
 class ScatterplotPlugin;
 
 class SettingsAction : public PluginAction
@@ -26,8 +28,8 @@ public:
     public:
         SpacerWidget(const Type& type = Type::Divider);
 
-        static Type getType(const hdps::gui::WidgetActionWidget::State& widgetTypeLeft, const hdps::gui::WidgetActionWidget::State& widgetTypeRight);
-        static Type getType(const hdps::gui::WidgetActionStateWidget* stateWidgetLeft, const hdps::gui::WidgetActionStateWidget* stateWidgetRight);
+        static Type getType(const WidgetActionWidget::State& widgetTypeLeft, const WidgetActionWidget::State& widgetTypeRight);
+        static Type getType(const WidgetActionStateWidget* stateWidgetLeft, const WidgetActionStateWidget* stateWidgetRight);
 
         void setType(const Type& type);
         static std::int32_t getWidth(const Type& type);
@@ -40,7 +42,7 @@ public:
 
 protected: // Widget
 
-    class Widget : public hdps::gui::WidgetActionWidget {
+    class Widget : public WidgetActionWidget {
     public:
         Widget(QWidget* parent, SettingsAction* settingsAction);
 
@@ -53,16 +55,16 @@ protected: // Widget
         void updateLayout();
 
     protected:
-        QHBoxLayout                                     _layout;
-        QWidget                                         _toolBarWidget;
-        QHBoxLayout                                     _toolBarLayout;
-        QVector<hdps::gui::WidgetActionStateWidget*>    _stateWidgets;
-        QVector<SpacerWidget*>                          _spacerWidgets;
+        QHBoxLayout                         _layout;
+        QWidget                             _toolBarWidget;
+        QHBoxLayout                         _toolBarLayout;
+        QVector<WidgetActionStateWidget*>   _stateWidgets;
+        QVector<SpacerWidget*>              _spacerWidgets;
 
         friend class SettingsAction;
     };
 
-    QWidget* getWidget(QWidget* parent, const hdps::gui::WidgetActionWidget::State& state = hdps::gui::WidgetActionWidget::State::Standard) override {
+    QWidget* getWidget(QWidget* parent, const WidgetActionWidget::State& state = WidgetActionWidget::State::Standard) override {
         return new Widget(parent, this);
     };
 
@@ -80,12 +82,12 @@ public:
     MiscellaneousAction& getMiscellaneousAction() { return _miscellaneousAction; }
 
 protected:
-    RenderModeAction        _renderModeAction;
-    PlotAction              _plotAction;
-    PositionAction          _positionAction;
-    ColoringAction          _coloringAction;
-    SubsetAction            _subsetAction;
-    ManualClusteringAction           _clusterAction;
-    SelectionAction         _selectionAction;
-    MiscellaneousAction     _miscellaneousAction;
+    RenderModeAction            _renderModeAction;
+    PlotAction                  _plotAction;
+    PositionAction              _positionAction;
+    ColoringAction              _coloringAction;
+    SubsetAction                _subsetAction;
+    ManualClusteringAction      _manualClusteringAction;
+    SelectionAction             _selectionAction;
+    MiscellaneousAction         _miscellaneousAction;
 };

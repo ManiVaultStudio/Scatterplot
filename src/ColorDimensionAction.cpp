@@ -61,7 +61,7 @@ ColorDimensionAction::Widget::Widget(QWidget* parent, ColorDimensionAction* colo
 
     auto colorDimensionWidget = dynamic_cast<OptionAction::ComboBoxWidget*>(colorDimensionAction->_colorDimensionAction.createWidget(this));
     
-    colorDimensionWidget->getComboBox()->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+    colorDimensionWidget->setSizeAdjustPolicy(QComboBox::AdjustToContents);
 
     layout->setMargin(0);
     layout->addWidget(colorDimensionWidget);

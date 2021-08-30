@@ -5,16 +5,18 @@
 #include <QHBoxLayout>
 #include <QLabel>
 
+using namespace hdps::gui;
+
 class PositionAction : public PluginAction
 {
 protected: // Widget
 
-    class Widget : public hdps::gui::WidgetActionWidget {
+    class Widget : public WidgetActionWidget {
     public:
-        Widget(QWidget* parent, PositionAction* positionAction, const hdps::gui::WidgetActionWidget::State& state);
+        Widget(QWidget* parent, PositionAction* positionAction, const WidgetActionWidget::State& state);
     };
 
-    QWidget* getWidget(QWidget* parent, const hdps::gui::WidgetActionWidget::State& state = hdps::gui::WidgetActionWidget::State::Standard) override {
+    QWidget* getWidget(QWidget* parent, const WidgetActionWidget::State& state = WidgetActionWidget::State::Standard) override {
         return new Widget(parent, this, state);
     };
 
@@ -30,8 +32,8 @@ public:
     std::int32_t getYDimension() const;
 
 protected:
-    hdps::gui::OptionAction     _xDimensionAction;
-    hdps::gui::OptionAction     _yDimensionAction;
+    OptionAction    _xDimensionAction;
+    OptionAction    _yDimensionAction;
 
     friend class Widget;
 };

@@ -91,8 +91,8 @@ PositionAction::Widget::Widget(QWidget* parent, PositionAction* positionAction, 
     xDimensionLabel->setToolTip(positionAction->_xDimensionAction.toolTip());
     yDimensionLabel->setToolTip(positionAction->_yDimensionAction.toolTip());
     
-    xDimensionWidget->getComboBox()->setSizeAdjustPolicy(QComboBox::AdjustToContents);
-    yDimensionWidget->getComboBox()->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+    xDimensionWidget->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+    yDimensionWidget->setSizeAdjustPolicy(QComboBox::AdjustToContents);
 
     switch (state)
     {

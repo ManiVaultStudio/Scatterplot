@@ -15,7 +15,7 @@ SettingsAction::SettingsAction(ScatterplotPlugin* scatterplotPlugin) :
     _positionAction(scatterplotPlugin),
     _coloringAction(scatterplotPlugin),
     _subsetAction(scatterplotPlugin),
-    _clusterAction(scatterplotPlugin),
+    _manualClusteringAction(scatterplotPlugin),
     _selectionAction(scatterplotPlugin),
     _miscellaneousAction(scatterplotPlugin)
 {
@@ -67,7 +67,7 @@ SettingsAction::Widget::Widget(QWidget* parent, SettingsAction* settingsAction) 
     addStateWidget(&settingsAction->_positionAction, 10);
     addStateWidget(&settingsAction->_coloringAction, 8);
     addStateWidget(&settingsAction->_subsetAction, 3);
-    addStateWidget(&settingsAction->_clusterAction, 0);
+    addStateWidget(&settingsAction->_manualClusteringAction, 0);
     addStateWidget(&settingsAction->_selectionAction, 2);
     addStateWidget(&settingsAction->_miscellaneousAction, 1);
 

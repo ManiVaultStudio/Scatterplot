@@ -4,16 +4,18 @@
 #include "PointPlotAction.h"
 #include "DensityPlotAction.h"
 
+using namespace hdps::gui;
+
 class PlotAction : public PluginAction
 {
 protected: // Widget
 
-    class Widget : public hdps::gui::WidgetActionWidget {
+    class Widget : public WidgetActionWidget {
     public:
-        Widget(QWidget* parent, PlotAction* plotAction, const hdps::gui::WidgetActionWidget::State& state);
+        Widget(QWidget* parent, PlotAction* plotAction, const WidgetActionWidget::State& state);
     };
 
-    QWidget* getWidget(QWidget* parent, const hdps::gui::WidgetActionWidget::State& state = hdps::gui::WidgetActionWidget::State::Standard) override {
+    QWidget* getWidget(QWidget* parent, const WidgetActionWidget::State& state = WidgetActionWidget::State::Standard) override {
         return new Widget(parent, this, state);
     };
 

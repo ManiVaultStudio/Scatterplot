@@ -2,15 +2,17 @@
 
 #include "PluginAction.h"
 
+using namespace hdps::gui;
+
 class ConstantColorAction : public PluginAction
 {
 protected:
-    class Widget : public hdps::gui::WidgetActionWidget {
+    class Widget : public WidgetActionWidget {
     public:
-        Widget(QWidget* parent, ConstantColorAction* colorByConstantAction, const hdps::gui::WidgetActionWidget::State& state);
+        Widget(QWidget* parent, ConstantColorAction* colorByConstantAction, const WidgetActionWidget::State& state);
     };
 
-    QWidget* getWidget(QWidget* parent, const hdps::gui::WidgetActionWidget::State& state = hdps::gui::WidgetActionWidget::State::Standard) override {
+    QWidget* getWidget(QWidget* parent, const WidgetActionWidget::State& state = WidgetActionWidget::State::Standard) override {
         return new Widget(parent, this, state);
     };
 
@@ -20,8 +22,8 @@ public:
     QMenu* getContextMenu();
 
 protected:
-    hdps::gui::ColorAction      _constantColorAction;
-    hdps::gui::TriggerAction    _resetAction;
+    ColorAction     _constantColorAction;
+    TriggerAction   _resetAction;
 
     static const QColor DEFAULT_COLOR;
 

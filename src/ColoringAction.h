@@ -21,12 +21,12 @@ protected: // Widget
         QSize minimumSizeHint() const override { return currentWidget()->minimumSizeHint(); }
     };
 
-    class Widget : public hdps::gui::WidgetActionWidget {
+    class Widget : public WidgetActionWidget {
     public:
-        Widget(QWidget* parent, ColoringAction* coloringAction, const hdps::gui::WidgetActionWidget::State& state);
+        Widget(QWidget* parent, ColoringAction* coloringAction, const WidgetActionWidget::State& state);
     };
 
-    QWidget* getWidget(QWidget* parent, const hdps::gui::WidgetActionWidget::State& state = hdps::gui::WidgetActionWidget::State::Standard) override {
+    QWidget* getWidget(QWidget* parent, const WidgetActionWidget::State& state = WidgetActionWidget::State::Standard) override {
         return new Widget(parent, this, state);
     };
 

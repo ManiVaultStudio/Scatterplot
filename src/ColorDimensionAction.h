@@ -2,16 +2,18 @@
 
 #include "PluginAction.h"
 
+using namespace hdps::gui;
+
 class ColorDimensionAction : public PluginAction
 {
 protected: // Widget
 
-    class Widget : public hdps::gui::WidgetActionWidget {
+    class Widget : public ::WidgetActionWidget {
     public:
         Widget(QWidget* parent, ColorDimensionAction* colorDimensionAction, const Widget::State& state);
     };
 
-    QWidget* getWidget(QWidget* parent, const hdps::gui::WidgetActionWidget::State& state = hdps::gui::WidgetActionWidget::State::Standard) override {
+    QWidget* getWidget(QWidget* parent, const WidgetActionWidget::State& state = WidgetActionWidget::State::Standard) override {
         return new Widget(parent, this, state);
     };
 
@@ -24,7 +26,7 @@ public:
     void setDimensions(const std::vector<QString>& dimensionNames);
 
 protected:
-    hdps::gui::OptionAction _colorDimensionAction;
+    OptionAction _colorDimensionAction;
 
     friend class Widget;
 };

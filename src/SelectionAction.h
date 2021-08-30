@@ -5,16 +5,18 @@
 #include <QActionGroup>
 #include <QDebug>
 
+using namespace hdps::gui;
+
 class SelectionAction : public PluginAction
 {
 protected: // Widget
 
-    class Widget : public hdps::gui::WidgetActionWidget {
+    class Widget : public WidgetActionWidget {
     public:
-        Widget(QWidget* parent, SelectionAction* selectionAction, const hdps::gui::WidgetActionWidget::State& state);
+        Widget(QWidget* parent, SelectionAction* selectionAction, const WidgetActionWidget::State& state);
     };
 
-    QWidget* getWidget(QWidget* parent, const hdps::gui::WidgetActionWidget::State& state = hdps::gui::WidgetActionWidget::State::Standard) override {
+    QWidget* getWidget(QWidget* parent, const WidgetActionWidget::State& state = WidgetActionWidget::State::Standard) override {
         return new Widget(parent, this, state);
     };
 
@@ -33,20 +35,20 @@ public: // Event handling
     bool eventFilter(QObject* object, QEvent* event) override;
 
 protected:
-    hdps::gui::OptionAction     _typeAction;
-    hdps::gui::TriggerAction    _rectangleAction;
-    hdps::gui::TriggerAction    _brushAction;
-    hdps::gui::TriggerAction    _lassoAction;
-    hdps::gui::TriggerAction    _polygonAction;
-    QActionGroup                _typeActionGroup;
-    hdps::gui::DecimalAction    _brushRadiusAction;
-    hdps::gui::ToggleAction     _modifierAddAction;
-    hdps::gui::ToggleAction     _modifierRemoveAction;
-    QActionGroup                _modifierActionGroup;
-    hdps::gui::TriggerAction    _clearSelectionAction;
-    hdps::gui::TriggerAction    _selectAllAction;
-    hdps::gui::TriggerAction    _invertSelectionAction;
-    hdps::gui::ToggleAction     _notifyDuringSelectionAction;
+    OptionAction    _typeAction;
+    TriggerAction   _rectangleAction;
+    TriggerAction   _brushAction;
+    TriggerAction   _lassoAction;
+    TriggerAction   _polygonAction;
+    QActionGroup    _typeActionGroup;
+    DecimalAction   _brushRadiusAction;
+    ToggleAction    _modifierAddAction;
+    ToggleAction    _modifierRemoveAction;
+    QActionGroup    _modifierActionGroup;
+    TriggerAction   _clearSelectionAction;
+    TriggerAction   _selectAllAction;
+    TriggerAction   _invertSelectionAction;
+    ToggleAction    _notifyDuringSelectionAction;
 
     friend class Widget;
 };
