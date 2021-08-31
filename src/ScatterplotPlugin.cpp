@@ -474,14 +474,17 @@ void ScatterplotPlugin::loadColorData(const QString& dataSetName)
         std::vector<Vector3f> colors(_points.size());
         for (const Cluster& cluster : clusters.getClusters())
         {
-            for (const int& index : cluster._indices)
+            for (const int& index : cluster.getIndices())
             {
                 if (index < 0 || index > colors.size())
                 {
                     qWarning("Cluster index is out of range of data, aborting attempt to color plot");
                     return;
                 }
-                colors[index] = Vector3f(cluster._color.redF(), cluster._color.greenF(), cluster._color.blueF());
+
+                const auto clusterColor = cluster.getColor();
+
+                colors[index] = Vector3f(clusterColor.redF(), clusterColor.greenF(), clusterColor.blueF());
             }
         }
 

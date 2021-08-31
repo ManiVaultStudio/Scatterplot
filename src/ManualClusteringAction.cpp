@@ -56,9 +56,9 @@ ManualClusteringAction::ManualClusteringAction(ScatterplotPlugin* scatterplotPlu
 
         Cluster cluster;
 
-        cluster._name       = _nameAction.getString();
-        cluster._color      = _colorAction.getColor();
-        cluster._indices    = selection.indices;
+        cluster.setName(_nameAction.getString());
+        cluster.setColor(_colorAction.getColor());
+        cluster.setIndices(selection.indices);
 
         clusterDataset.addCluster(cluster);
 
