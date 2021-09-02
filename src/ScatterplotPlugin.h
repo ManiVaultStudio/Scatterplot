@@ -94,7 +94,7 @@ public: // Miscellaneous
     /** Returns whether a color dataset is loaded or not */
     bool areColorsLoaded() const;
 
-    /** Get cluster data hierarchy items for the loaded dataset */
+    /** Get cluster dataset names for the loaded points dataset */
     QStringList getClusterDatasetNames();
 
 signals:
@@ -113,10 +113,10 @@ private:
     void updateSelection();
     
 private:
-    DatasetRef<Points>              _pointsDataset;     /** Currently loaded points data hierarchy item */
-    DatasetRef<DataSet>             _colorsDataset;     /** Currently loaded color data hierarchy item */
-    std::vector<hdps::Vector2f>     _points;            /** Point positions */
-    unsigned int                    _numPoints;         /** Number of point positions */
+    DatasetRef<Points>              _points;        /** Currently loaded points dataset */
+    DatasetRef<DataSet>             _colors;        /** Currently loaded color dataset (if any) */
+    std::vector<hdps::Vector2f>     _positions;     /** Point positions */
+    unsigned int                    _numPoints;     /** Number of point positions */
     
     
 protected:
