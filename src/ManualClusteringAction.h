@@ -1,14 +1,14 @@
 #pragma once
 
 #include "PluginAction.h"
-#include "event/EventListener.h"
 
-namespace hdps {
-    class DataHierarchyItem;
-}
+#include "util/DatasetRef.h"
 
 using namespace hdps;
 using namespace hdps::gui;
+using namespace hdps::util;
+
+class Clusters;
 
 /**
  * Manual clustering action class
@@ -17,7 +17,7 @@ using namespace hdps::gui;
  *
  * @author Thomas Kroes
  */
-class ManualClusteringAction : public PluginAction, public hdps::EventListener
+class ManualClusteringAction : public PluginAction
 {
     Q_OBJECT
 
@@ -66,10 +66,9 @@ public: // Action getters
     TriggerAction& getCreateCluster() { return _addClusterAction; }
 
 protected:
-    DataHierarchyItem*      _inputDataHierarchyItem;        /** Pointer to the input data hierarchy item */
-    DataHierarchyItem*      _clusterDataHierarchyItem;      /** Pointer to the output cluster data hierarchy item */
-    OptionAction            _targetAction;                  /** Target cluster set action */
-    StringAction            _nameAction;                    /** Cluster name action */
-    ColorAction             _colorAction;                   /** Cluster color action */
-    TriggerAction           _addClusterAction;              /** Add manual cluster action */
+    DatasetRef<Clusters>    _clustersDataset;       /** Reference to the output cluster data */
+    OptionAction            _targetAction;          /** Target cluster set action */
+    StringAction            _nameAction;            /** Cluster name action */
+    ColorAction             _colorAction;           /** Cluster color action */
+    TriggerAction           _addClusterAction;      /** Add manual cluster action */
 };

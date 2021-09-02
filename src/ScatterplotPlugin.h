@@ -2,11 +2,14 @@
 
 #include <ViewPlugin.h>
 
+#include "util/DatasetRef.h"
+
 #include "Common.h"
 
 #include "SettingsAction.h"
 
 using namespace hdps::plugin;
+using namespace hdps::util;
 
 class Points;
 
@@ -61,11 +64,6 @@ public: // Selection
 
     PixelSelectionTool* getSelectionTool();
 
-private:
-
-    /** Updates the window title (includes the name of the loaded dataset) */
-    void updateWindowTitle();
-
 public: // Data loading
 
     /**
@@ -84,26 +82,20 @@ public: // Data loading
 
 public: // Miscellaneous
 
-    /** Get name of the current points dataset (empty string if no points data is loaded) */
-    QString getPointsDatasetName();
-
-    /** Get current dataset data hierarchy item (nullptr if no data is loaded) */
-    DataHierarchyItem* getPointsDataHierarchyItem();
+    /** Get current points dataset */
+    DatasetRef<Points>& getPointsDataset();
 
     /** Returns whether a points dataset is loaded or not */
     bool arePointsLoaded() const;
 
-    /** Get name of the current color dataset (empty string if no color data is loaded) */
-    QString getColorDatasetName();
-
-    /** Get current color dataset data hierarchy item (nullptr if no color data is loaded) */
-    DataHierarchyItem* getColorDatasetDataHierarchyItem();
+    /** Get current color dataset */
+    DatasetRef<DataSet>& getColorDataset();
 
     /** Returns whether a color dataset is loaded or not */
     bool areColorsLoaded() const;
 
     /** Get cluster data hierarchy items for the loaded dataset */
-    QVector<DataHierarchyItem*> getClusterDataHierarchyItems();
+    QStringList getClusterDatasetNames();
 
 signals:
     void currentPointsChanged(const QString& datasetName);
@@ -121,10 +113,10 @@ private:
     void updateSelection();
     
 private:
-    DataHierarchyItem*              _pointsDataHierarchyItem;       /** Currently loaded points data hierarchy item */
-    DataHierarchyItem*              _colorsDataHierarchyItem;       /** Currently loaded color data hierarchy item */
-    std::vector<hdps::Vector2f>     _points;
-    unsigned int                    _numPoints;
+    DatasetRef<Points>              _pointsDataset;     /** Currently loaded points data hierarchy item */
+    DatasetRef<DataSet>             _colorsDataset;     /** Currently loaded color data hierarchy item */
+    std::vector<hdps::Vector2f>     _points;            /** Point positions */
+    unsigned int                    _numPoints;         /** Number of point positions */
     
     
 protected:

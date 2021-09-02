@@ -13,9 +13,7 @@ using namespace hdps::gui;
 
 ManualClusteringAction::ManualClusteringAction(ScatterplotPlugin* scatterplotPlugin) :
     PluginAction(scatterplotPlugin, "Cluster"),
-    EventListener(),
-    _inputDataHierarchyItem(nullptr),
-    _clusterDataHierarchyItem(nullptr),
+    _clustersDataset(),
     _targetAction(this, "Cluster set"),
     _nameAction(this, "Name"),
     _colorAction(this, "Color"),
@@ -45,14 +43,11 @@ ManualClusteringAction::ManualClusteringAction(ScatterplotPlugin* scatterplotPlu
     });
 
     connect(&_addClusterAction, &TriggerAction::triggered, this, [this]() {
-        if (!_scatterplotPlugin->arePointsLoaded() || _clusterDataHierarchyItem == nullptr)
+        if (!_scatterplotPlugin->arePointsLoaded() || !_clustersDataset.isValid())
             return;
 
-        auto clusters = _clusterDataHierarchyItem->getDataset<Clusters>();
-
-        auto& points            = _scatterplotPlugin->getPointsDataHierarchyItem()->getDataset<Points>();
-        auto& selection         = dynamic_cast<Points&>(points.getSelection());
-        auto& clusterDataset    = _clusterDataHierarchyItem->getDataset<Clusters>();
+        // Get points selection dataset
+        auto& selection = dynamic_cast<Points&>(_scatterplotPlugin->getPointsDataset()->getSelection());
 
         Cluster cluster;
 
@@ -60,16 +55,20 @@ ManualClusteringAction::ManualClusteringAction(ScatterplotPlugin* scatterplotPlu
         cluster.setColor(_colorAction.getColor());
         cluster.setIndices(selection.indices);
 
-        clusterDataset.addCluster(cluster);
+        _clustersDataset->addCluster(cluster);
 
-        _clusterDataHierarchyItem->notifyDataChanged();
+        _clustersDataset.notifyDataChanged();
 
         _nameAction.reset();
     });
 
+    connect(_scatterplotPlugin, &ScatterplotPlugin::currentPointsChanged, this, [this, updateActions](const QString& datasetName) {
+        _clustersDataset.reset();
+    });
+
     connect(_scatterplotPlugin, &ScatterplotPlugin::currentColorsChanged, this, [this, updateActions](const QString& datasetName) {
-        if (_scatterplotPlugin->getColorDatasetDataHierarchyItem()->getDataset().getDataType() == ClusterType)
-            _clusterDataHierarchyItem = _scatterplotPlugin->getColorDatasetDataHierarchyItem();
+        if (_scatterplotPlugin->getColorDataset()->getDataType() == ClusterType)
+            _clustersDataset.setDatasetName(datasetName);
 
         updateActions();
 
@@ -83,23 +82,18 @@ ManualClusteringAction::ManualClusteringAction(ScatterplotPlugin* scatterplotPlu
 
 void ManualClusteringAction::updateTargets()
 {
-    auto clusterDataHierarchyItems = _scatterplotPlugin->getClusterDataHierarchyItems();
-
-    QStringList clusterDatasetNames;
-
-    for (auto clusterDataHierarchyItem : clusterDataHierarchyItems)
-        clusterDatasetNames << clusterDataHierarchyItem->getDatasetName();
+    auto clusterDatasetNames = _scatterplotPlugin->getClusterDatasetNames();
 
     _targetAction.setOptions(clusterDatasetNames);
-    _targetAction.setCurrentText(_scatterplotPlugin->getColorDatasetName());
+    _targetAction.setCurrentText(_clustersDataset.getDatasetName());
 }
 
 void ManualClusteringAction::createDefaultCustersSet()
 {
-    if (!_scatterplotPlugin->arePointsLoaded() || _clusterDataHierarchyItem != nullptr)
+    if (!_scatterplotPlugin->arePointsLoaded() || _clustersDataset.isValid())
         return;
 
-    auto clustersDatasetName = _scatterplotPlugin->getCore()->addData("Cluster", "annotation", _scatterplotPlugin->getPointsDatasetName());
+    auto clustersDatasetName = _scatterplotPlugin->getCore()->addData("Cluster", "annotation", _scatterplotPlugin->getPointsDataset()->getName());
 
     _scatterplotPlugin->loadColorData(clustersDatasetName);
 }

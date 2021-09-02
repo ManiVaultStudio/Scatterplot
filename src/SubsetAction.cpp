@@ -29,7 +29,10 @@ SubsetAction::SubsetAction(ScatterplotPlugin* scatterplotPlugin) :
     });
 
     const auto onCurrentDatasetChanged = [this]() -> void {
-        const auto datasetName = _scatterplotPlugin->getPointsDatasetName();
+        if (!_scatterplotPlugin->arePointsLoaded())
+            return;
+
+        const auto datasetName = _scatterplotPlugin->getPointsDataset()->getName();
 
         QStringList sourceDataOptions;
 
