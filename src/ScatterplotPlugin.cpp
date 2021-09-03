@@ -233,6 +233,15 @@ void ScatterplotPlugin::init()
         updateWindowTitle();
     });
 
+    const auto updateColorsDatasetName = [this]() -> void {
+        _settingsAction.getColoringAction().getColorDataAction().getDatasetNameAction().setString(_colors.getDatasetName());
+    };
+
+    connect(&_colors, &DatasetRef<Points>::datasetNameChanged, this, [this, updateColorsDatasetName](const QString& oldDatasetName, const QString& newDatasetName) {
+        updateColorsDatasetName();
+    });
+
+    updateColorsDatasetName();
     updateWindowTitle();
 }
 
