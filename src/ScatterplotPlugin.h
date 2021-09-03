@@ -40,8 +40,6 @@ public:
 
     void init() override;
 
-    void onDataEvent(hdps::DataEvent* dataEvent);
-
     std::uint32_t getNumberOfPoints() const;
     std::uint32_t getNumberOfSelectedPoints() const;
 

@@ -159,16 +159,56 @@ void ScatterplotPlugin::init()
 
     connect(_scatterPlotWidget, &ScatterplotWidget::initialized, this, &ScatterplotPlugin::updateData);
 
-    registerDataEventByType(PointType, std::bind(&ScatterplotPlugin::onDataEvent, this, std::placeholders::_1));
+    registerDataEventByType(PointType, [this](DataEvent* dataEvent) {
+        if (!_points.isValid())
+            return;
 
-    QObject::connect(_pixelSelectionTool, &PixelSelectionTool::areaChanged, [this]() {
+        switch (dataEvent->getType())
+        {
+            case EventType::DataChanged:
+            {
+                if (dataEvent->dataSetName != _points.getDatasetName())
+                    return;
+
+                updateData();
+
+                break;
+            }
+
+            case EventType::SelectionChanged:
+            {
+                if (!arePointsLoaded())
+                    return;
+
+                if (dataEvent->dataSetName == _points.getDatasetName())
+                    updateSelection();
+
+                break;
+            }
+
+            default:
+                break;
+        }
+    });
+
+    registerDataEventByType(ClusterType, [this](hdps::DataEvent* dataEvent) {
+        if (dataEvent->dataSetName != _colors.getDatasetName())
+            return;
+
+        if (_settingsAction.getColoringAction().getColorByAction().getCurrentText() != "Color data")
+            return;
+
+        loadColorData(_colors.getDatasetName());
+    });
+
+    connect(_pixelSelectionTool, &PixelSelectionTool::areaChanged, [this]() {
         if (!_pixelSelectionTool->isNotifyDuringSelection())
             return;
 
         selectPoints();
     });
 
-    QObject::connect(_pixelSelectionTool, &PixelSelectionTool::ended, [this]() {
+    connect(_pixelSelectionTool, &PixelSelectionTool::ended, [this]() {
         if (_pixelSelectionTool->isNotifyDuringSelection())
             return;
 
@@ -177,16 +217,6 @@ void ScatterplotPlugin::init()
 
     connect(&_settingsAction.getColoringAction().getColorByAction(), &OptionAction::currentTextChanged, [this](const QString& currentText) {
         if (currentText != "Color data")
-            return;
-
-        loadColorData(_colors.getDatasetName());
-    });
-
-    registerDataEventByType(ClusterType, [this](hdps::DataEvent* dataEvent) {
-        if (dataEvent->dataSetName != _colors.getDatasetName())
-            return;
-
-        if (_settingsAction.getColoringAction().getColorByAction().getCurrentText() != "Color data")
             return;
 
         loadColorData(_colors.getDatasetName());
@@ -204,28 +234,6 @@ void ScatterplotPlugin::init()
     });
 
     updateWindowTitle();
-}
-
-void ScatterplotPlugin::onDataEvent(DataEvent* dataEvent)
-{
-    if (!_points.isValid())
-        return;
-
-    if (dataEvent->getType() == EventType::DataChanged)
-    {
-        if (dataEvent->dataSetName != _points.getDatasetName())
-            return;
-
-        updateData();
-    }
-    if (dataEvent->getType() == EventType::SelectionChanged)
-    {
-        if (!arePointsLoaded())
-            return;
-        
-        if (dataEvent->dataSetName == _points.getDatasetName())
-            updateSelection();
-    }
 }
 
 void ScatterplotPlugin::createSubset(const bool& fromSourceData /*= false*/, const QString& name /*= ""*/)
@@ -385,11 +393,12 @@ QStringList ScatterplotPlugin::getClusterDatasetNames()
 
     auto pointsDataHierarchyItem = _core->getDataHierarchyItem(_points.getDatasetName());
 
-    for (auto child : pointsDataHierarchyItem->getChildren()) {
-        auto childDataHierarchyItem = _core->getDataHierarchyItem(child);
+    if (pointsDataHierarchyItem == nullptr)
+        return clusterDatasetNames;
 
-        if (childDataHierarchyItem->getDataType() == ClusterType)
-            clusterDatasetNames << childDataHierarchyItem->getDatasetName();
+    for (auto child : pointsDataHierarchyItem->getChildren()) {
+        if (child->getDataType() == ClusterType)
+            clusterDatasetNames << child->getDatasetName();
     }
 
     return clusterDatasetNames;
@@ -435,35 +444,33 @@ void ScatterplotPlugin::loadColorData(const QString& dataSetName)
 {
     _colors.setDatasetName(dataSetName);
 
-    DataSet& dataSet = _core->requestData(dataSetName);
-
-    DataType dataType = dataSet.getDataType();
+    DataType dataType = _colors->getDataType();
 
     if (dataType == PointType)
     {
-        Points& points = static_cast<Points&>(dataSet);
-
         std::vector<float> scalars;
-        if (points.getNumPoints() != _numPoints)
+
+        if (_points->getNumPoints() != _numPoints)
         {
             qWarning("Number of points used for coloring does not match number of points in data, aborting attempt to color plot");
             return;
         }
 
-        points.visitFromBeginToEnd([&scalars](auto begin, auto end)
-            {
-                scalars.insert(scalars.begin(), begin, end);
-            });
+        _points->visitFromBeginToEnd([&scalars](auto begin, auto end) {
+            scalars.insert(scalars.begin(), begin, end);
+        });
 
         _scatterPlotWidget->setScalars(scalars);
         _scatterPlotWidget->setScalarEffect(PointEffect::Color);
+
         updateData();
     }
     if (dataType == ClusterType)
     {
-        Clusters& clusters = static_cast<Clusters&>(dataSet);
+        auto& clusters = static_cast<Clusters&>(*_colors);
         
         std::vector<Vector3f> colors(_positions.size());
+
         for (const Cluster& cluster : clusters.getClusters())
         {
             for (const int& index : cluster.getIndices())
@@ -489,8 +496,6 @@ void ScatterplotPlugin::loadColorData(const QString& dataSetName)
     _settingsAction.getColoringAction().getColorDataAction().getDatasetNameAction().setString(dataSetName);
 
     _dropWidget->setShowDropIndicator(false);
-
-    setFocus();
 
     emit currentColorsChanged(_colors.getDatasetName());
 }
