@@ -20,7 +20,6 @@ namespace hdps
 {
     class CoreInterface;
     class Vector2f;
-    class DataHierarchyItems;
 
     namespace gui {
         class DropWidget;

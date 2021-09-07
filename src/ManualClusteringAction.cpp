@@ -1,7 +1,6 @@
 #include "ManualClusteringAction.h"
 #include "ScatterplotPlugin.h"
 #include "Application.h"
-#include "DataHierarchyItem.h"
 #include "PointData.h"
 #include "ClusterData.h"
 
