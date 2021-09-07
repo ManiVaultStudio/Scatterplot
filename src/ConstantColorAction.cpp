@@ -52,7 +52,7 @@ ConstantColorAction::ConstantColorAction(ScatterplotPlugin* scatterplotPlugin) :
             updateConstantColor();
     });
 
-    connect(_scatterplotPlugin, &ScatterplotPlugin::currentPointsChanged, this, [this, updateConstantColor](const QString& datasetName) {
+    connect(&_scatterplotPlugin->getPointsDataset(), &DatasetRef<Points>::datasetNameChanged, this, [this, updateConstantColor](const QString& oldDatasetName, const QString& newDatasetName) {
         if (getScatterplotWidget()->getColoringMode() == ScatterplotWidget::ColoringMode::ConstantColor)
             updateConstantColor();
     });

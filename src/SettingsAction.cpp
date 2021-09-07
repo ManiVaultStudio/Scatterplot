@@ -20,10 +20,10 @@ SettingsAction::SettingsAction(ScatterplotPlugin* scatterplotPlugin) :
     _miscellaneousAction(scatterplotPlugin)
 {
     const auto updateEnabled = [this]() {
-        setEnabled(_scatterplotPlugin->arePointsLoaded());
+        setEnabled(_scatterplotPlugin->getPointsDataset().isValid());
     };
 
-    connect(scatterplotPlugin, &ScatterplotPlugin::currentPointsChanged, this, [this, updateEnabled](const QString& datasetName) {
+    connect(&scatterplotPlugin->getPointsDataset(), &DatasetRef<Points>::datasetNameChanged, this, [this, updateEnabled](const QString& oldDatasetName, const QString& newDatasetName) {
         updateEnabled();
     });
 
@@ -94,8 +94,8 @@ SettingsAction::Widget::Widget(QWidget* parent, SettingsAction* settingsAction) 
         _stateWidgets[2]->setPriority(positionPriority);
     };
 
-    connect(settingsAction->_scatterplotPlugin, &ScatterplotPlugin::currentPointsChanged, this, [this, onCurrentDatasetChanged](const QString& datasetName) {
-        onCurrentDatasetChanged(datasetName);
+    connect(&settingsAction->_scatterplotPlugin->getPointsDataset(), &DatasetRef<Points>::datasetNameChanged, this, [this, onCurrentDatasetChanged](const QString& oldDatasetName, const QString& newDatasetName) {
+        onCurrentDatasetChanged(newDatasetName);
     });
 
     onCurrentDatasetChanged();

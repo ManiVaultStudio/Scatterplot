@@ -61,42 +61,34 @@ public: // Selection
 
     PixelSelectionTool* getSelectionTool();
 
-public: // Data loading
+protected: // Data loading
 
     /**
      * Load point data
      * @param dataSetName Name of the point dataset
      */
-    void loadPointData(const QString& dataSetName);
+    void loadPoints(const QString& dataSetName);
 
     /**
      * Load color data
      * @param dataSetName Name of the color/cluster dataset
      */
-    void loadColorData(const QString& dataSetName);
-
-    void selectPoints();
+    void loadColors(const QString& dataSetName);
 
 public: // Miscellaneous
 
     /** Get current points dataset */
     DatasetRef<Points>& getPointsDataset();
 
-    /** Returns whether a points dataset is loaded or not */
-    bool arePointsLoaded() const;
-
     /** Get current color dataset */
-    DatasetRef<DataSet>& getColorDataset();
-
-    /** Returns whether a color dataset is loaded or not */
-    bool areColorsLoaded() const;
+    DatasetRef<DataSet>& getColorsDataset();
 
     /** Get cluster dataset names for the loaded points dataset */
     QStringList getClusterDatasetNames();
 
+    void selectPoints();
+
 signals:
-    void currentPointsChanged(const QString& datasetName);
-    void currentColorsChanged(const QString& datasetName);
     void selectionChanged();
 
 public:

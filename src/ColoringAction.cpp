@@ -79,7 +79,7 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
         coloringModeChanged();
     });
 
-    connect(_scatterplotPlugin, &ScatterplotPlugin::currentPointsChanged, this, [this, coloringModeChanged](const QString& datasetName) {
+    connect(&_scatterplotPlugin->getPointsDataset(), &DatasetRef<Points>::datasetNameChanged, this, [this, coloringModeChanged](const QString& oldDatasetName, const QString& newDatasetName) {
         coloringModeChanged();
     });
 

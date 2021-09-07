@@ -29,7 +29,7 @@ SubsetAction::SubsetAction(ScatterplotPlugin* scatterplotPlugin) :
     });
 
     const auto onCurrentDatasetChanged = [this]() -> void {
-        if (!_scatterplotPlugin->arePointsLoaded())
+        if (!_scatterplotPlugin->getPointsDataset().isValid())
             return;
 
         const auto datasetName = _scatterplotPlugin->getPointsDataset()->getName();
@@ -49,7 +49,7 @@ SubsetAction::SubsetAction(ScatterplotPlugin* scatterplotPlugin) :
         _sourceDataAction.setEnabled(sourceDataOptions.count() >= 2);
     };
 
-    connect(scatterplotPlugin, &ScatterplotPlugin::currentPointsChanged, this, [this, onCurrentDatasetChanged](const QString& datasetName) {
+    connect(&scatterplotPlugin->getPointsDataset(), &DatasetRef<Points>::datasetNameChanged, this, [this, onCurrentDatasetChanged](const QString& oldDatasetName, const QString& newDatasetName) {
         onCurrentDatasetChanged();
     });
 
