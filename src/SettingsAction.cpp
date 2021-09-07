@@ -196,8 +196,9 @@ SettingsAction::SpacerWidget::SpacerWidget(const Type& type /*= State::Divider*/
 
     _layout->setMargin(2);
     _layout->setSpacing(0);
+    _layout->setAlignment(Qt::AlignCenter);
     _layout->addWidget(_verticalLine);
-
+    
     setType(type);
 }
 

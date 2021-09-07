@@ -88,9 +88,6 @@ PositionAction::Widget::Widget(QWidget* parent, PositionAction* positionAction, 
     auto xDimensionWidget   = dynamic_cast<OptionAction::ComboBoxWidget*>(positionAction->_xDimensionAction.createWidget(this));
     auto yDimensionWidget   = dynamic_cast<OptionAction::ComboBoxWidget*>(positionAction->_yDimensionAction.createWidget(this));
 
-    xDimensionLabel->setToolTip(positionAction->_xDimensionAction.toolTip());
-    yDimensionLabel->setToolTip(positionAction->_yDimensionAction.toolTip());
-    
     xDimensionWidget->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     yDimensionWidget->setSizeAdjustPolicy(QComboBox::AdjustToContents);
 
