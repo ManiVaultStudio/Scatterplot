@@ -11,7 +11,7 @@ MiscellaneousAction::MiscellaneousAction(ScatterplotPlugin* scatterplotPlugin) :
     PluginAction(scatterplotPlugin, "Miscellaneous"),
     _backgroundColorAction(scatterplotPlugin, "Background color")
 {
-    setIcon(Application::getIconFont("FontAwesome").getIcon("cog"));
+    setIcon(Application::getIconFont("FontAwesome").getIcon("bars"));
 
     _scatterplotPlugin->addAction(&_backgroundColorAction);
 

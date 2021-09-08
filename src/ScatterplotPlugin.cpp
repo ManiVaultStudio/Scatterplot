@@ -422,7 +422,7 @@ void ScatterplotPlugin::loadPoints(const QString& dataSetName)
     _colors.reset();
 
     if (_points.isValid()) {
-        _scatterPlotWidget->resetColorMap();
+        _settingsAction.getColoringAction().getColorMapAction().reset();
 
         // For source data determine whether to use dimension names or make them up
         if (_points->getDimensionNames().size() == _points->getNumDimensions())

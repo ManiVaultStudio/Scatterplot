@@ -9,8 +9,6 @@
 #include "graphics/Bounds.h"
 #include "graphics/Selection.h"
 
-#include "widgets/ColormapWidget.h"
-
 #include "PixelSelectionToolRenderer.h"
 
 #include <QOpenGLWidget>
@@ -88,15 +86,16 @@ public:
         return _dataBounds;
     }
 
-    /** Resets the current color map to the default color map */
-    void resetColorMap();
-
 protected:
     void initializeGL()         Q_DECL_OVERRIDE;
     void resizeGL(int w, int h) Q_DECL_OVERRIDE;
     void paintGL()              Q_DECL_OVERRIDE;
-
     void cleanup();
+    
+public:
+
+    /** Assign a color map image to the point and density renderers */
+    void setColorMap(const QImage& colorMapImage);
 
 signals:
     void initialized();
@@ -122,9 +121,6 @@ signals:
 public slots:
     void computeDensity();
 
-    void colormapChanged(QString colormapName);
-    void colormapdiscreteChanged(bool isDiscrete);
-
 private:
     const Matrix3f              toClipCoordinates = Matrix3f(2, 0, 0, 2, -1, -1);
     Matrix3f                    toNormalisedCoordinates;
@@ -136,8 +132,8 @@ private:
     PointRenderer               _pointRenderer;                     
     DensityRenderer             _densityRenderer;                   
     PixelSelectionToolRenderer  _pixelSelectionToolRenderer;        
-    ColormapWidget              _colormapWidget;                    
     QSize                       _windowSize;                        /** Size of the scatterplot widget */
     Bounds                      _dataBounds;                        /** Bounds of the loaded data */
     PixelSelectionTool&         _pixelSelectionTool;                
+    QImage                      _colorMapImage;
 };

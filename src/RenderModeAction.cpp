@@ -92,6 +92,8 @@ RenderModeAction::Widget::Widget(QWidget* parent, RenderModeAction* renderModeAc
 {
     auto layout = new QHBoxLayout();
 
+    layout->setSpacing(3);
+
     layout->addWidget(renderModeAction->_scatterPlotAction.createPushButtonWidget(this));
     layout->addWidget(renderModeAction->_densityPlotAction.createPushButtonWidget(this));
     layout->addWidget(renderModeAction->_contourPlotAction.createPushButtonWidget(this));

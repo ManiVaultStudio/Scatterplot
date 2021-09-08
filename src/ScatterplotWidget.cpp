@@ -33,7 +33,6 @@ namespace
 ScatterplotWidget::ScatterplotWidget(PixelSelectionTool& pixelSelectionTool) :
     _densityRenderer(DensityRenderer::RenderMode::DENSITY),
     _backgroundColor(1, 1, 1),
-    _colormapWidget(this),
     _pointRenderer(),
     _pixelSelectionToolRenderer(pixelSelectionTool),
     _pixelSelectionTool(pixelSelectionTool)
@@ -53,8 +52,6 @@ ScatterplotWidget::ScatterplotWidget(PixelSelectionTool& pixelSelectionTool) :
     });
 
     _pointRenderer.setPointScaling(Absolute);
-
-    resetColorMap();
 }
 
 bool ScatterplotWidget::isInitialized()
@@ -118,20 +115,6 @@ void ScatterplotWidget::computeDensity()
     _densityRenderer.computeDensity();
 
     emit densityComputationEnded();
-
-    update();
-}
-
-void ScatterplotWidget::colormapChanged(QString colormapName)
-{
-    _pointRenderer.setColormap(colormapName);
-    _densityRenderer.setColormap(colormapName);
-    update();
-}
-
-void ScatterplotWidget::colormapdiscreteChanged(bool isDiscrete)
-{
-    //_renderer->setColormapDiscrete(isDiscrete);
 
     update();
 }
@@ -242,35 +225,17 @@ void ScatterplotWidget::setSigma(const float sigma)
     update();
 }
 
-void ScatterplotWidget::resetColorMap()
-{
-    _colormapWidget.setColormap(0, true);
-
-    if (!_isInitialized)
-        return;
-
-    makeCurrent();
-
-    _pointRenderer.setColormap(_colormapWidget.getActiveColormap());
-    _densityRenderer.setColormap(_colormapWidget.getActiveColormap());
-
-    update();
-}
-
 void ScatterplotWidget::initializeGL()
 {
     initializeOpenGLFunctions();
+
     qDebug() << "Initializing scatterplot widget with context: " << context();
+
     std::string versionString = std::string((const char*) glGetString(GL_VERSION));
+
     qDebug() << versionString.c_str();
 
     connect(context(), &QOpenGLContext::aboutToBeDestroyed, this, &ScatterplotWidget::cleanup);
-
-    _colormapWidget.move(width() - 71, 10);
-    _colormapWidget.show();
-
-    QObject::connect(&_colormapWidget, &ColormapWidget::colormapSelected, this, &ScatterplotWidget::colormapChanged);
-    QObject::connect(&_colormapWidget, &ColormapWidget::discreteSelected, this, &ScatterplotWidget::colormapdiscreteChanged);
 
     _pointRenderer.init();
     _densityRenderer.init();
@@ -278,12 +243,13 @@ void ScatterplotWidget::initializeGL()
 
     // Set a default color map for both renderers
     _pointRenderer.setScalarEffect(PointEffect::Color);
-    _pointRenderer.setColormap(_colormapWidget.getActiveColormap());
-    _densityRenderer.setColormap(_colormapWidget.getActiveColormap());
+
+    // Initialize the point and density renderer with a color map
+    setColorMap(_colorMapImage);
 
     _isInitialized = true;
-    emit initialized();
 
+    emit initialized();
 }
 
 void ScatterplotWidget::resizeGL(int w, int h)
@@ -306,16 +272,7 @@ void ScatterplotWidget::resizeGL(int w, int h)
     float wDiff = ((wAspect - 1) / 2.0);
     float hDiff = ((hAspect - 1) / 2.0);
 
-    
     toIsotropicCoordinates = Matrix3f(wAspect, 0, 0, hAspect, -wDiff, -hDiff);
-
-    if (_colormapWidget._isOpen)
-    {
-        _colormapWidget.move(width() - (64 + 14 + 15 * 36 + 15), 10);
-    }
-    else {
-        _colormapWidget.move(width() - 71, 10);
-    }
 }
 
 void ScatterplotWidget::paintGL()
@@ -356,6 +313,21 @@ void ScatterplotWidget::cleanup()
     _pointRenderer.destroy();
     _densityRenderer.destroy();
     _pixelSelectionToolRenderer.destroy();
+}
+
+void ScatterplotWidget::setColorMap(const QImage& colorMapImage)
+{
+    makeCurrent();
+
+    _colorMapImage = colorMapImage;
+
+    //if (!_isInitialized)
+        //return;
+
+    _pointRenderer.setColormap(_colorMapImage);
+    _densityRenderer.setColormap(_colorMapImage);
+
+    update();
 }
 
 ScatterplotWidget::~ScatterplotWidget()

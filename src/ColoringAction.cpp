@@ -15,7 +15,8 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
     _colorByActionGroup(this),
     _constantColorAction(scatterplotPlugin),
     _colorDimensionAction(scatterplotPlugin),
-    _colorDataAction(scatterplotPlugin)
+    _colorDataAction(scatterplotPlugin),
+    _colorMapAction(this, "Color map")
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("palette"));
 
@@ -65,26 +66,41 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
         getScatterplotWidget()->setColoringMode(ScatterplotWidget::ColoringMode::ColorData);
     });
 
-    const auto coloringModeChanged = [this]() -> void {
+    const auto updateColorMap = [this]() -> void {
+        getScatterplotWidget()->setColorMap(_colorMapAction.getColorMapImage());
+    };
+
+    connect(&_colorMapAction, &ColorMapAction::imageChanged, this, [this, updateColorMap](const QImage& image) {
+        updateColorMap();
+    });
+
+    const auto updateActions = [this]() -> void {
         const auto coloringMode = getScatterplotWidget()->getColoringMode();
+        const auto renderMode   = getScatterplotWidget()->getRenderMode();
 
         _colorByAction.setCurrentIndex(static_cast<std::int32_t>(coloringMode));
 
         _colorByConstantColorAction.setChecked(coloringMode == ScatterplotWidget::ColoringMode::ConstantColor);
         _colorByDimensionAction.setChecked(coloringMode == ScatterplotWidget::ColoringMode::ColorDimension);
         _colorByColorDataAction.setChecked(coloringMode == ScatterplotWidget::ColoringMode::ColorData);
+        _colorMapAction.setEnabled(renderMode == ScatterplotWidget::LANDSCAPE || coloringMode == ScatterplotWidget::ColoringMode::ColorDimension);
     };
 
-    connect(getScatterplotWidget(), &ScatterplotWidget::coloringModeChanged, this, [this, coloringModeChanged](const ScatterplotWidget::ColoringMode& coloringMode) {
-        coloringModeChanged();
+    connect(getScatterplotWidget(), &ScatterplotWidget::coloringModeChanged, this, [this, updateActions](const ScatterplotWidget::ColoringMode& coloringMode) {
+        updateActions();
     });
 
-    connect(&_scatterplotPlugin->getPointsDataset(), &DatasetRef<Points>::datasetNameChanged, this, [this, coloringModeChanged](const QString& oldDatasetName, const QString& newDatasetName) {
-        coloringModeChanged();
+    connect(getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, [this, updateActions](const ScatterplotWidget::RenderMode& renderMode) {
+        updateActions();
+    });
+
+    connect(&_scatterplotPlugin->getPointsDataset(), &DatasetRef<Points>::datasetNameChanged, this, [this, updateActions, updateColorMap](const QString& oldDatasetName, const QString& newDatasetName) {
+        updateActions();
+        updateColorMap();
     });
 
     updateColoringMode();
-    coloringModeChanged();
+    updateActions();
 }
 
 QMenu* ColoringAction::getContextMenu()
