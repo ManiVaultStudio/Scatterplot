@@ -95,6 +95,10 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
     });
 
     connect(&_scatterplotPlugin->getPointsDataset(), &DatasetRef<Points>::datasetNameChanged, this, [this, updateActions, updateColorMap](const QString& oldDatasetName, const QString& newDatasetName) {
+        _colorByAction.reset();
+        _colorByConstantColorAction.reset();
+        _colorByColorDataAction.reset();
+
         updateActions();
         updateColorMap();
     });
