@@ -225,6 +225,18 @@ void ScatterplotWidget::setSigma(const float sigma)
     update();
 }
 
+hdps::Vector3f ScatterplotWidget::getColorMapRange() const
+{
+    return _pointRenderer.getColorMapRange();
+}
+
+void ScatterplotWidget::setColorMapRange(const float& min, const float& max)
+{
+    _pointRenderer.setColorMapRange(min, max);
+
+    update();
+}
+
 void ScatterplotWidget::initializeGL()
 {
     initializeOpenGLFunctions();

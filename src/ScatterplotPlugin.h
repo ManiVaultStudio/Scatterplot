@@ -100,7 +100,7 @@ private:
     void calculatePositions(const Points& points);
     void calculateScalars(std::vector<float>& scalars, const Points& points, int colorIndex);
     void updateSelection();
-    
+
 private:
     DatasetRef<Points>              _points;        /** Currently loaded points dataset */
     DatasetRef<DataSet>             _colors;        /** Currently loaded color dataset (if any) */

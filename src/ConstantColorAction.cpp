@@ -25,13 +25,11 @@ ConstantColorAction::ConstantColorAction(ScatterplotPlugin* scatterplotPlugin) :
         if (_scatterplotPlugin->getNumberOfPoints() == 0)
             return;
 
-        std::vector<Vector3f> colors(_scatterplotPlugin->getNumberOfPoints());
+        QPixmap colorPixmap(1, 1);
 
-        const auto color = _constantColorAction.getColor();
-
-        std::fill(colors.begin(), colors.end(), Vector3f(color.redF(), color.greenF(), color.blueF()));
-
-        getScatterplotWidget()->setColors(colors);
+        colorPixmap.fill(_constantColorAction.getColor());
+        
+        getScatterplotWidget()->setColorMap(colorPixmap.toImage());
     };
 
     const auto updateResetAction = [this]() -> void {
@@ -45,6 +43,11 @@ ConstantColorAction::ConstantColorAction(ScatterplotPlugin* scatterplotPlugin) :
 
     connect(&_resetAction, &QAction::triggered, this, [this, updateResetAction](const QColor& color) {
         _constantColorAction.setColor(DEFAULT_COLOR);
+    });
+
+    connect(getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, [this, updateConstantColor](const ScatterplotWidget::RenderMode& renderMode) {
+        if (renderMode == ScatterplotWidget::RenderMode::SCATTERPLOT)
+            updateConstantColor();
     });
 
     connect(getScatterplotWidget(), &ScatterplotWidget::coloringModeChanged, this, [this, updateConstantColor](const ScatterplotWidget::ColoringMode& coloringMode) {

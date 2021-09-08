@@ -46,12 +46,33 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
     _colorByActionGroup.addAction(&_colorByDimensionAction);
     _colorByActionGroup.addAction(&_colorByColorDataAction);
 
+    auto& rangeMinAction = _colorMapAction.getSettingsAction().getRangeMinAction();
+    auto& rangeMaxAction = _colorMapAction.getSettingsAction().getRangeMaxAction();
+
+    const auto updateScalarRangeActions = [this, &rangeMinAction, &rangeMaxAction]() {
+        const auto renderMode       = getScatterplotWidget()->getRenderMode();
+        const auto scalarRange      = getScatterplotWidget()->getColorMapRange();
+        const auto scalarRangeMin   = renderMode == ScatterplotWidget::RenderMode::LANDSCAPE ? 0.0f : scalarRange.x;
+        const auto scalarRangeMax   = renderMode == ScatterplotWidget::RenderMode::LANDSCAPE ? 1.0f : scalarRange.y;
+
+        rangeMinAction.setMinimum(scalarRangeMin);
+        rangeMinAction.setMaximum(scalarRangeMax);
+        rangeMinAction.setValue(scalarRangeMin);
+        rangeMinAction.setDefaultValue(scalarRangeMin);
+
+        rangeMaxAction.setMinimum(scalarRangeMin);
+        rangeMaxAction.setMaximum(scalarRangeMax);
+        rangeMaxAction.setValue(scalarRangeMax);
+        rangeMaxAction.setDefaultValue(scalarRangeMax);
+    };
+
     const auto updateColoringMode = [this]() {
         getScatterplotWidget()->setColoringMode(static_cast<ScatterplotWidget::ColoringMode>(_colorByAction.getCurrentIndex()));
     };
 
-    connect(&_colorByAction, &OptionAction::currentIndexChanged, this, [this, updateColoringMode](const std::uint32_t& currentIndex) {
+    connect(&_colorByAction, &OptionAction::currentIndexChanged, this, [this, updateColoringMode, updateScalarRangeActions](const std::uint32_t& currentIndex) {
         updateColoringMode();
+        updateScalarRangeActions();
     });
 
     connect(&_colorByConstantColorAction, &QAction::triggered, this, [this]() {
@@ -67,7 +88,26 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
     });
 
     const auto updateColorMap = [this]() -> void {
-        getScatterplotWidget()->setColorMap(_colorMapAction.getColorMapImage());
+        switch (getScatterplotWidget()->getRenderMode())
+        {
+            case ScatterplotWidget::RenderMode::SCATTERPLOT:
+            {
+                if (getScatterplotWidget()->getColoringMode() == ScatterplotWidget::ColoringMode::ColorDimension)
+                    getScatterplotWidget()->setColorMap(_colorMapAction.getColorMapImage());
+
+                break;
+            }
+
+            case ScatterplotWidget::RenderMode::LANDSCAPE:
+            {
+                getScatterplotWidget()->setColorMap(_colorMapAction.getColorMapImage());
+
+                break;
+            }
+
+            default:
+                break;
+        }
     };
 
     connect(&_colorMapAction, &ColorMapAction::imageChanged, this, [this, updateColorMap](const QImage& image) {
@@ -86,12 +126,35 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
         _colorMapAction.setEnabled(renderMode == ScatterplotWidget::LANDSCAPE || coloringMode == ScatterplotWidget::ColoringMode::ColorDimension);
     };
 
-    connect(getScatterplotWidget(), &ScatterplotWidget::coloringModeChanged, this, [this, updateActions](const ScatterplotWidget::ColoringMode& coloringMode) {
-        updateActions();
+    connect(&_colorDimensionAction.getCurrentDimensionAction(), &OptionAction::currentIndexChanged, this, [this, updateScalarRangeActions](const std::int32_t& currentIndex) {
+        updateScalarRangeActions();
     });
 
-    connect(getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, [this, updateActions](const ScatterplotWidget::RenderMode& renderMode) {
+    const auto updateColorMapRange = [this, &rangeMinAction, &rangeMaxAction]() {
+        getScatterplotWidget()->setColorMapRange(rangeMinAction.getValue(), rangeMaxAction.getValue());
+    };
+
+    connect(&rangeMinAction, &DecimalAction::valueChanged, this, [this, updateColorMapRange](const float& value) {
+        updateColorMapRange();
+    });
+
+    connect(&rangeMaxAction, &DecimalAction::valueChanged, this, [this, updateColorMapRange](const float& value) {
+        updateColorMapRange();
+    });
+
+    connect(&_colorByAction, &OptionAction::currentIndexChanged, this, [this, updateActions, updateColorMap](const std::uint32_t& currentIndex) {
         updateActions();
+        updateColorMap();
+    });
+
+    connect(getScatterplotWidget(), &ScatterplotWidget::coloringModeChanged, this, [this, updateColorMap](const ScatterplotWidget::ColoringMode& coloringMode) {
+        updateColorMap();
+    });
+
+    connect(getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, [this, updateActions, updateScalarRangeActions, updateColorMap](const ScatterplotWidget::RenderMode& renderMode) {
+        updateActions();
+        updateScalarRangeActions();
+        updateColorMap();
     });
 
     connect(&_scatterplotPlugin->getPointsDataset(), &DatasetRef<Points>::datasetNameChanged, this, [this, updateActions, updateColorMap](const QString& oldDatasetName, const QString& newDatasetName) {
@@ -105,6 +168,7 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
 
     updateColoringMode();
     updateActions();
+    updateScalarRangeActions();
 }
 
 QMenu* ColoringAction::getContextMenu()

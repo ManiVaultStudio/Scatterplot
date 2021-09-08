@@ -25,8 +25,10 @@ public:
     void setDimensions(const std::uint32_t& numberOfDimensions, const std::vector<QString>& dimensionNames = std::vector<QString>());
     void setDimensions(const std::vector<QString>& dimensionNames);
 
+    OptionAction& getCurrentDimensionAction() { return _currentDimensionAction; }
+
 protected:
-    OptionAction _colorDimensionAction;
+    OptionAction _currentDimensionAction;
 
     friend class Widget;
 };

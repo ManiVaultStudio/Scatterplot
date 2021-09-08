@@ -86,6 +86,9 @@ public:
         return _dataBounds;
     }
 
+    Vector3f getColorMapRange() const;
+    void setColorMapRange(const float& min, const float& max);
+
 protected:
     void initializeGL()         Q_DECL_OVERRIDE;
     void resizeGL(int w, int h) Q_DECL_OVERRIDE;
