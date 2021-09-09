@@ -181,7 +181,7 @@ void ScatterplotWidget::setHighlights(const std::vector<char>& highlights)
 
 void ScatterplotWidget::setScalars(const std::vector<float>& scalars)
 {
-    _pointRenderer.setScalars(scalars);
+    _pointRenderer.setColorChannelScalars(scalars);
     
     update();
 }
