@@ -95,6 +95,16 @@ protected:
     void paintGL()              Q_DECL_OVERRIDE;
     void cleanup();
     
+public: // Const access to renderers
+
+    const PointRenderer& getPointRenderer() const { 
+        return _pointRenderer;
+    }
+
+    const DensityRenderer& getDensityRenderer() const {
+        return _densityRenderer;
+    }
+
 public:
 
     /** Assign a color map image to the point and density renderers */

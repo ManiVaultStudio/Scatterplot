@@ -95,6 +95,7 @@ public:
     ScatterplotWidget* getScatterplotWidget();
     hdps::CoreInterface* getCore();
 
+    SettingsAction& getSettingsAction() { return _settingsAction; }
 private:
     void updateData();
     void calculatePositions(const Points& points);

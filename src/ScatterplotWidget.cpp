@@ -227,12 +227,38 @@ void ScatterplotWidget::setSigma(const float sigma)
 
 hdps::Vector3f ScatterplotWidget::getColorMapRange() const
 {
-    return _pointRenderer.getColorMapRange();
+    switch (_renderMode) {
+        case SCATTERPLOT:
+            return _pointRenderer.getColorMapRange();
+
+        case LANDSCAPE:
+            return _densityRenderer.getColorMapRange();
+
+        default:
+            break;
+    }
+    
+    return Vector3f();
 }
 
 void ScatterplotWidget::setColorMapRange(const float& min, const float& max)
 {
-    _pointRenderer.setColorMapRange(min, max);
+    switch (_renderMode) {
+        case SCATTERPLOT:
+        {
+            _pointRenderer.setColorMapRange(min, max);
+            break;
+        }
+
+        case LANDSCAPE:
+        {
+            _densityRenderer.setColorMapRange(min, max);
+            break;
+        }
+
+        default:
+            break;
+    }
 
     update();
 }

@@ -24,7 +24,7 @@ public:
     QMenu* getContextMenu();
 
 protected:
-    DecimalAction   _sigmaAction;
+    DecimalAction       _sigmaAction;
 
     static constexpr double DEFAULT_SIGMA = 25.0;
 
