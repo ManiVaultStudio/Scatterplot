@@ -33,9 +33,6 @@ class ScatterplotPlugin : public ViewPlugin
 public:
     ScatterplotPlugin(const PluginFactory* factory);
     ~ScatterplotPlugin() override;
-    
-    /** Returns the icon of this plugin */
-    QIcon getIcon() const override;
 
     void init() override;
 
@@ -130,7 +127,10 @@ class ScatterplotPluginFactory : public ViewPluginFactory
 public:
     ScatterplotPluginFactory(void) {}
     ~ScatterplotPluginFactory(void) override {}
-    
+
+    /** Returns the plugin icon */
+    QIcon getIcon() const override;
+
     ViewPlugin* produce() override;
 
     hdps::DataTypes supportedDataTypes() const override;

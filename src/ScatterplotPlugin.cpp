@@ -141,11 +141,6 @@ ScatterplotPlugin::~ScatterplotPlugin()
 {
 }
 
-QIcon ScatterplotPlugin::getIcon() const
-{
-    return Application::getIconFont("FontAwesome").getIcon("braille");
-}
-
 void ScatterplotPlugin::init()
 {
     auto layout = new QVBoxLayout();
@@ -718,6 +713,11 @@ void ScatterplotPlugin::invertSelection()
     selectionSet.indices = std::vector<std::uint32_t>(selectionIndicesSet.begin(), selectionIndicesSet.end());
 
     _points.notifySelectionChanged();
+}
+
+QIcon ScatterplotPluginFactory::getIcon() const
+{
+    return Application::getIconFont("FontAwesome").getIcon("braille");
 }
 
 ViewPlugin* ScatterplotPluginFactory::produce()
