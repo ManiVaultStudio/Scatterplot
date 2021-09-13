@@ -270,7 +270,8 @@ void ScatterplotPlugin::selectPoints()
 
     auto selectionAreaImage = _pixelSelectionTool->getAreaPixmap().toImage();
 
-    Points& selectionSet = dynamic_cast<Points&>(_points->getSelection());
+
+    Points& selectionSet = static_cast<Points&>(_points->getSelection());
 
     std::vector<std::uint32_t> targetIndices;
 
@@ -342,42 +343,7 @@ void ScatterplotPlugin::selectPoints()
             break;
     }
 
-    selectionSetIndices = targetIndices; // Global selection indices
-    
-    // TEMP HSNE selection
-    {
-        // Transmute local indices by drill indices specifying relation to full hierarchy scale
-        if (_points->hasProperty("drill_indices"))
-        {
-            QList<uint32_t> drillIndices = _points->getProperty("drill_indices").value<QList<uint32_t>>();
-
-            for (int i = 0; i < localIndices.size(); i++)
-                localIndices[i] = drillIndices[localIndices[i]];
-        }
-
-        // Check if shown dataset is an HSNE embedding with a hierarchy
-        if (_points->hasProperty("scale"))
-        {
-            int scale = _points->getProperty("scale").value<int>();
-
-            if (scale > 0)
-            {
-                // Store the additionally selected points in a separate array not to cloud the for loop
-                std::vector<unsigned int> extraSelectionIndices;
-                extraSelectionIndices.reserve(selectionSetIndices.size()); // Reserve space at least as big as the current selected
-
-                std::vector<std::vector<unsigned int>> landmarkMap = _points->getProperty("landmarkMap").value<std::vector<std::vector<unsigned int>>>();
-                //qDebug() << "Called broaden func: " << selectionSetIndices.size();
-                //qDebug() << landmarkMap.size() << landmarkMap[scale].size();
-                
-                for (unsigned int localIndex : localIndices)
-                    extraSelectionIndices.insert(extraSelectionIndices.end(), landmarkMap[localIndex].begin(), landmarkMap[localIndex].end());
-
-                selectionSetIndices.insert(selectionSetIndices.end(), extraSelectionIndices.begin(), extraSelectionIndices.end());
-                //qDebug() << "Broadened selection: " << selectionSetIndices.size();
-            }
-        }
-    }
+    _points->setSelection(targetIndices);
 
     _core->notifySelectionChanged(_points->getName());
 }
