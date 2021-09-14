@@ -1,6 +1,7 @@
 #pragma once
 
 #include "PluginAction.h"
+#include "PixelSelectionTool.h"
 
 #include <QActionGroup>
 #include <QDebug>
@@ -33,6 +34,21 @@ public: // Event handling
      * @param event Event that occurred
      */
     bool eventFilter(QObject* object, QEvent* event) override;
+
+public: // Action getters
+
+    TriggerAction& getRectangleAction() { return _rectangleAction; }
+    TriggerAction& getBrushAction() { return _brushAction; }
+    TriggerAction& getLassoAction() { return _lassoAction; }
+    TriggerAction& getPolygonAction() { return _polygonAction; }
+
+protected:
+
+    /**
+     * Get the icon for the specified selection type
+     * @param selectionType The type of selection e.g. brush rectangle etc.
+     */
+    QIcon getIcon(const PixelSelectionTool::Type& selectionType);
 
 protected:
     OptionAction    _typeAction;

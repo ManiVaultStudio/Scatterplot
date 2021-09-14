@@ -131,6 +131,9 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                     });
                 }
             }
+            else {
+                dropRegions << new DropWidget::DropRegion(this, "No points data loaded", "Clusters can only be visualized in concert with points data", false);
+            }
         }
 
         return dropRegions;
