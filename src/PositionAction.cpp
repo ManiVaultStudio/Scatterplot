@@ -18,6 +18,7 @@ PositionAction::PositionAction(ScatterplotPlugin* scatterplotPlugin) :
     _scatterplotPlugin->addAction(&_xDimensionAction);
     _scatterplotPlugin->addAction(&_yDimensionAction);
 
+
     _xDimensionAction.setToolTip("X dimension");
     _yDimensionAction.setToolTip("Y dimension");
 
@@ -85,11 +86,11 @@ PositionAction::Widget::Widget(QWidget* parent, PositionAction* positionAction, 
 {
     auto xDimensionLabel    = positionAction->_xDimensionAction.createLabelWidget(this);
     auto yDimensionLabel    = positionAction->_yDimensionAction.createLabelWidget(this);
-    auto xDimensionWidget   = dynamic_cast<OptionAction::ComboBoxWidget*>(positionAction->_xDimensionAction.createWidget(this));
-    auto yDimensionWidget   = dynamic_cast<OptionAction::ComboBoxWidget*>(positionAction->_yDimensionAction.createWidget(this));
+    auto xDimensionWidget   = positionAction->_xDimensionAction.createWidget(this);
+    auto yDimensionWidget   = positionAction->_yDimensionAction.createWidget(this);
 
-    xDimensionWidget->setSizeAdjustPolicy(QComboBox::AdjustToContents);
-    yDimensionWidget->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+    xDimensionWidget->findChild<QComboBox*>("ComboBox")->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+    yDimensionWidget->findChild<QComboBox*>("ComboBox")->setSizeAdjustPolicy(QComboBox::AdjustToContents);
 
     switch (state)
     {
