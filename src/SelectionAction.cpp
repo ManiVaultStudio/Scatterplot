@@ -1,8 +1,9 @@
 #include "SelectionAction.h"
-#include "PixelSelectionTool.h"
 #include "Application.h"
 #include "ScatterplotPlugin.h"
 #include "ScatterplotWidget.h"
+
+#include "util/PixelSelectionTool.h"
 
 #include <QHBoxLayout>
 #include <QPushButton>

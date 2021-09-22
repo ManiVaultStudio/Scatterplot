@@ -26,7 +26,6 @@ set(PLUGIN
     src/ScatterplotPlugin.cpp
 )
 
-file(GLOB PixelSelectionTool src/*PixelSelectionTool*.*)
 file(GLOB UI src/*Widget*.*)
 file(GLOB Actions src/*Action.*)
 file(GLOB SHADERS src/*.glsl)
@@ -38,7 +37,6 @@ set(SOURCES ${PLUGIN} ${PixelSelectionTool} ${UI} ${Actions})
 set(AUX ${JSON} ${QRC})
 
 source_group(Plugin FILES ${PLUGIN})
-source_group(PixelSelectionTool FILES ${PixelSelectionTool})
 source_group(UI FILES ${UI})
 source_group(Actions FILES ${Actions})
 source_group(Shaders FILES ${SHADERS})

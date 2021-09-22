@@ -1,7 +1,7 @@
 #include "ScatterplotWidget.h"
-#include "PixelSelectionTool.h"
 #include "Application.h"
 
+#include "util/PixelSelectionTool.h"
 #include "util/Math.h"
 
 #include <vector>

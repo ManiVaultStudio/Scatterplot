@@ -1,7 +1,7 @@
 #pragma once
 
 #include "PluginAction.h"
-#include "PixelSelectionTool.h"
+#include "util/PixelSelectionTool.h"
 
 #include <QActionGroup>
 #include <QDebug>

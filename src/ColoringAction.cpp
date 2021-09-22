@@ -53,7 +53,7 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
         const auto colorMapRangeMin = colorMapRange.x;
         const auto colorMapRangeMax = colorMapRange.y;
 
-        _colorMapAction.getSettingsAction().getHorizontalRangeAction().getRangeAction().initialize(colorMapRangeMin, colorMapRangeMax, colorMapRangeMin, colorMapRangeMax, colorMapRangeMin, colorMapRangeMax);
+        _colorMapAction.getSettingsAction().getHorizontalAxisAction().getRangeAction().initialize(colorMapRangeMin, colorMapRangeMax, colorMapRangeMin, colorMapRangeMax, colorMapRangeMin, colorMapRangeMax);
     };
 
     const auto updateColoringMode = [this]() {
@@ -121,11 +121,11 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
     });
 
     const auto updateColorMapRange = [this]() {
-        auto& rangeAction = _colorMapAction.getSettingsAction().getHorizontalRangeAction().getRangeAction();
+        auto& rangeAction = _colorMapAction.getSettingsAction().getHorizontalAxisAction().getRangeAction();
         getScatterplotWidget()->setColorMapRange(rangeAction.getMinimum(), rangeAction.getMaximum());
     };
 
-    connect(&_colorMapAction.getSettingsAction().getHorizontalRangeAction().getRangeAction(), &DecimalRangeAction::rangeChanged, this, [this, updateColorMapRange](const float& minimum, const float& maximum) {
+    connect(&_colorMapAction.getSettingsAction().getHorizontalAxisAction().getRangeAction(), &DecimalRangeAction::rangeChanged, this, [this, updateColorMapRange](const float& minimum, const float& maximum) {
         updateColorMapRange();
     });
 

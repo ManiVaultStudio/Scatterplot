@@ -9,7 +9,7 @@
 #include "graphics/Bounds.h"
 #include "graphics/Selection.h"
 
-#include "PixelSelectionToolRenderer.h"
+#include "renderers/PixelSelectionToolRenderer.h"
 
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions_3_3_Core>

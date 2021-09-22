@@ -1,9 +1,9 @@
 #include "ScatterplotPlugin.h"
-
-#include "PixelSelectionTool.h"
 #include "ScatterplotWidget.h"
 #include "DataHierarchyItem.h"
 #include "Application.h"
+
+#include "util/PixelSelectionTool.h"
 
 #include "PointData.h"
 #include "ClusterData.h"
