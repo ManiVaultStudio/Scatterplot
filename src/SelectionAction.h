@@ -43,14 +43,6 @@ public: // Action getters
     TriggerAction& getPolygonAction() { return _polygonAction; }
 
 protected:
-
-    /**
-     * Get the icon for the specified selection type
-     * @param selectionType The type of selection e.g. brush rectangle etc.
-     */
-    QIcon getIcon(const PixelSelectionTool::Type& selectionType);
-
-protected:
     OptionAction    _typeAction;
     TriggerAction   _rectangleAction;
     TriggerAction   _brushAction;
