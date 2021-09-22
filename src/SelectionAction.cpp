@@ -7,8 +7,6 @@
 
 #include <QHBoxLayout>
 #include <QPushButton>
-#include <QPainter>
-#include <QPainterPath>
 
 using namespace hdps::gui;
 
