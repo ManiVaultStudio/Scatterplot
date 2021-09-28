@@ -29,6 +29,7 @@
 Q_PLUGIN_METADATA(IID "nl.tudelft.ScatterplotPlugin")
 
 using namespace hdps;
+using namespace hdps::util;
 
 ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     ViewPlugin(factory),
@@ -36,7 +37,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     _colors(),
     _positions(),
     _numPoints(0),
-    _pixelSelectionTool(new PixelSelectionTool(this, false)),
+    _pixelSelectionTool(new util::PixelSelectionTool(this, false)),
     _scatterPlotWidget(new ScatterplotWidget(*_pixelSelectionTool)),
     _dropWidget(nullptr),
     _settingsAction(this)
@@ -307,17 +308,17 @@ void ScatterplotPlugin::selectPoints()
 
     switch (_pixelSelectionTool->getModifier())
     {
-        case PixelSelectionTool::Modifier::Replace:
+        case PixelSelectionModifierType::Replace:
             break;
 
-        case PixelSelectionTool::Modifier::Add:
-        case PixelSelectionTool::Modifier::Remove:
+        case PixelSelectionModifierType::Add:
+        case PixelSelectionModifierType::Remove:
         {
             QSet<std::uint32_t> set(selectionSetIndices.begin(), selectionSetIndices.end());
 
             switch (_pixelSelectionTool->getModifier())
             {
-                case PixelSelectionTool::Modifier::Add:
+                case PixelSelectionModifierType::Add:
                 {
                     for (const auto& targetIndex : targetIndices)
                         set.insert(targetIndex);
@@ -325,7 +326,7 @@ void ScatterplotPlugin::selectPoints()
                     break;
                 }
 
-                case PixelSelectionTool::Modifier::Remove:
+                case PixelSelectionModifierType::Remove:
                 {
                     for (const auto& targetIndex : targetIndices)
                         set.remove(targetIndex);

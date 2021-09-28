@@ -2,6 +2,7 @@
 
 #include "renderers/PointRenderer.h"
 #include "renderers/DensityRenderer.h"
+#include "util/PixelSelectionTool.h"
 
 #include "graphics/Vector2f.h"
 #include "graphics/Vector3f.h"
@@ -9,18 +10,15 @@
 #include "graphics/Bounds.h"
 #include "graphics/Selection.h"
 
-#include "renderers/PixelSelectionToolRenderer.h"
-
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions_3_3_Core>
 
 #include <QMouseEvent>
 #include <QMenu>
 
-class PixelSelectionTool;
-
 using namespace hdps;
 using namespace hdps::gui;
+using namespace hdps::util;
 
 class ScatterplotWidget : public QOpenGLWidget, QOpenGLFunctions_3_3_Core
 {
@@ -144,7 +142,6 @@ private:
     ColoringMode                _coloringMode = ColoringMode::ConstantColor;
     PointRenderer               _pointRenderer;                     
     DensityRenderer             _densityRenderer;                   
-    PixelSelectionToolRenderer  _pixelSelectionToolRenderer;        
     QSize                       _windowSize;                        /** Size of the scatterplot widget */
     Bounds                      _dataBounds;                        /** Bounds of the loaded data */
     PixelSelectionTool&         _pixelSelectionTool;                

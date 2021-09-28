@@ -38,10 +38,10 @@ SelectionAction::SelectionAction(ScatterplotPlugin* scatterplotPlugin) :
     _invertSelectionAction.setShortcutContext(Qt::WidgetWithChildrenShortcut);
     _notifyDuringSelectionAction.setShortcutContext(Qt::WidgetWithChildrenShortcut);
 
-    _rectangleAction.setIcon(PixelSelectionTool::getIcon(PixelSelectionTool::Type::Rectangle));
-    _brushAction.setIcon(PixelSelectionTool::getIcon(PixelSelectionTool::Type::Brush));
-    _lassoAction.setIcon(PixelSelectionTool::getIcon(PixelSelectionTool::Type::Lasso));
-    _polygonAction.setIcon(PixelSelectionTool::getIcon(PixelSelectionTool::Type::Polygon));
+    _rectangleAction.setIcon(PixelSelectionTool::getIcon(PixelSelectionType::Rectangle));
+    _brushAction.setIcon(PixelSelectionTool::getIcon(PixelSelectionType::Brush));
+    _lassoAction.setIcon(PixelSelectionTool::getIcon(PixelSelectionType::Lasso));
+    _polygonAction.setIcon(PixelSelectionTool::getIcon(PixelSelectionType::Polygon));
 
     scatterplotPlugin->addAction(&_rectangleAction);
     scatterplotPlugin->addAction(&_brushAction);
@@ -89,7 +89,7 @@ SelectionAction::SelectionAction(ScatterplotPlugin* scatterplotPlugin) :
     _modifierAddAction.setIcon(fontAwesome.getIcon("plus"));
     _modifierRemoveAction.setIcon(fontAwesome.getIcon("minus"));
 
-    _typeAction.setOptions(_scatterplotPlugin->getSelectionTool()->types.keys());
+    _typeAction.setOptions(pixelSelectionTypes.values());
 
     _typeActionGroup.addAction(&_rectangleAction);
     _typeActionGroup.addAction(&_brushAction);
@@ -102,37 +102,37 @@ SelectionAction::SelectionAction(ScatterplotPlugin* scatterplotPlugin) :
     _modifierActionGroup.addAction(&_modifierRemoveAction);
 
     connect(&_typeAction, &OptionAction::currentTextChanged, [this](const QString& currentText) {
-        _scatterplotPlugin->getSelectionTool()->setType(PixelSelectionTool::getTypeEnum(currentText));
+        _scatterplotPlugin->getSelectionTool()->setType(getPixelSelectionTypeEnum(currentText));
     });
 
     connect(&_rectangleAction, &QAction::triggered, this, [this]() {
-        _scatterplotPlugin->getSelectionTool()->setType(PixelSelectionTool::Type::Rectangle);
+        _scatterplotPlugin->getSelectionTool()->setType(PixelSelectionType::Rectangle);
     });
 
     connect(&_brushAction, &QAction::triggered, this, [this]() {
-        _scatterplotPlugin->getSelectionTool()->setType(PixelSelectionTool::Type::Brush);
+        _scatterplotPlugin->getSelectionTool()->setType(PixelSelectionType::Brush);
     });
 
     connect(&_lassoAction, &QAction::triggered, this, [this]() {
-        _scatterplotPlugin->getSelectionTool()->setType(PixelSelectionTool::Type::Lasso);
+        _scatterplotPlugin->getSelectionTool()->setType(PixelSelectionType::Lasso);
     });
 
     connect(&_polygonAction, &QAction::triggered, this, [this]() {
-        _scatterplotPlugin->getSelectionTool()->setType(PixelSelectionTool::Type::Polygon);
+        _scatterplotPlugin->getSelectionTool()->setType(PixelSelectionType::Polygon);
     });
 
     const auto updateType = [this]() {
         const auto type = _scatterplotPlugin->getSelectionTool()->getType();
 
-        _typeAction.setCurrentText(PixelSelectionTool::getTypeName(type));
-        _rectangleAction.setChecked(type == PixelSelectionTool::Type::Rectangle);
-        _brushAction.setChecked(type == PixelSelectionTool::Type::Brush);
-        _lassoAction.setChecked(type == PixelSelectionTool::Type::Lasso);
-        _polygonAction.setChecked(type == PixelSelectionTool::Type::Polygon);
-        _brushRadiusAction.setEnabled(type == PixelSelectionTool::Type::Brush);
+        _typeAction.setCurrentText(getPixelSelectionTypeName(type));
+        _rectangleAction.setChecked(type == PixelSelectionType::Rectangle);
+        _brushAction.setChecked(type == PixelSelectionType::Brush);
+        _lassoAction.setChecked(type == PixelSelectionType::Lasso);
+        _polygonAction.setChecked(type == PixelSelectionType::Polygon);
+        _brushRadiusAction.setEnabled(type == PixelSelectionType::Brush);
     };
 
-    connect(_scatterplotPlugin->getSelectionTool(), &PixelSelectionTool::typeChanged, this, [this, updateType](const PixelSelectionTool::Type& type) {
+    connect(_scatterplotPlugin->getSelectionTool(), &PixelSelectionTool::typeChanged, this, [this, updateType](const PixelSelectionType& type) {
         updateType();
     });
 
@@ -147,11 +147,11 @@ SelectionAction::SelectionAction(ScatterplotPlugin* scatterplotPlugin) :
     });
 
     connect(&_modifierAddAction, &QAction::toggled, [this](bool checked) {
-        _scatterplotPlugin->getSelectionTool()->setModifier(checked ? PixelSelectionTool::Modifier::Add : PixelSelectionTool::Modifier::Replace);
+        _scatterplotPlugin->getSelectionTool()->setModifier(checked ? PixelSelectionModifierType::Add : PixelSelectionModifierType::Replace);
     });
 
     connect(&_modifierRemoveAction, &QAction::toggled, [this](bool checked) {
-        _scatterplotPlugin->getSelectionTool()->setModifier(checked ? PixelSelectionTool::Modifier::Remove : PixelSelectionTool::Modifier::Replace);
+        _scatterplotPlugin->getSelectionTool()->setModifier(checked ? PixelSelectionModifierType::Remove : PixelSelectionModifierType::Replace);
     });
 
     connect(&_selectAllAction, &QAction::triggered, [this]() {

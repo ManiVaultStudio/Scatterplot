@@ -3,14 +3,14 @@
 
 #include "util/PixelSelectionTool.h"
 #include "util/Math.h"
+#include "util/Exception.h"
 
 #include <vector>
 
 #include <QSize>
+#include <QPainter>
 #include <QDebug>
 #include <math.h>
-
-using namespace hdps::util;
 
 namespace
 {
@@ -34,7 +34,6 @@ ScatterplotWidget::ScatterplotWidget(PixelSelectionTool& pixelSelectionTool) :
     _densityRenderer(DensityRenderer::RenderMode::DENSITY),
     _backgroundColor(1, 1, 1),
     _pointRenderer(),
-    _pixelSelectionToolRenderer(pixelSelectionTool),
     _pixelSelectionTool(pixelSelectionTool)
 {
     setContextMenuPolicy(Qt::CustomContextMenu);
@@ -43,15 +42,12 @@ ScatterplotWidget::ScatterplotWidget(PixelSelectionTool& pixelSelectionTool) :
 
     this->installEventFilter(&_pixelSelectionTool);
 
-    QObject::connect(&_pixelSelectionTool, &PixelSelectionTool::shapeChanged, [this]() {
-        if (!isInitialized())
-            return;
-
-        _pixelSelectionToolRenderer.update();
-        update();
-    });
-
     _pointRenderer.setPointScaling(Absolute);
+
+    QObject::connect(&_pixelSelectionTool, &PixelSelectionTool::shapeChanged, [this]() {
+        if (isInitialized())
+            update();
+    });
 }
 
 bool ScatterplotWidget::isInitialized()
@@ -277,7 +273,6 @@ void ScatterplotWidget::initializeGL()
 
     _pointRenderer.init();
     _densityRenderer.init();
-    _pixelSelectionToolRenderer.init();
 
     // Set a default color map for both renderers
     _pointRenderer.setScalarEffect(PointEffect::Color);
@@ -297,7 +292,6 @@ void ScatterplotWidget::resizeGL(int w, int h)
 
     _pointRenderer.resize(QSize(w, h));
     _densityRenderer.resize(QSize(w, h));
-    _pixelSelectionToolRenderer.resize(QSize(w, h));
 
     // Set matrix for normalizing from pixel coordinates to [0, 1]
     toNormalisedCoordinates = Matrix3f(1.0f / w, 0, 0, 1.0f / h, 0, 0);
@@ -315,31 +309,54 @@ void ScatterplotWidget::resizeGL(int w, int h)
 
 void ScatterplotWidget::paintGL()
 {
-    // Bind the framebuffer belonging to the widget
-    glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebufferObject());
+    try {
+        QPainter painter;
 
-    // Clear the widget to the background color
-    glClearColor(_backgroundColor.redF(), _backgroundColor.greenF(), _backgroundColor.blueF(), _backgroundColor.alphaF());
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
-    // Reset the blending function
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        // Begin mixed OpenGL/native painting
+        painter.begin(this);
+        {
+            // Draw layers with OpenGL
+            painter.beginNativePainting();
+            {
+                // Bind the framebuffer belonging to the widget
+                glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebufferObject());
 
-    switch (_renderMode)
-    {
-        case SCATTERPLOT:
-            _pointRenderer.render();
-            break;
+                // Clear the widget to the background color
+                glClearColor(_backgroundColor.redF(), _backgroundColor.greenF(), _backgroundColor.blueF(), _backgroundColor.alphaF());
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        case DENSITY:
-        case LANDSCAPE:
-            _densityRenderer.setRenderMode(_renderMode == DENSITY ? DensityRenderer::DENSITY : DensityRenderer::LANDSCAPE);
-            _densityRenderer.render();
-            break;
+                // Reset the blending function
+                glEnable(GL_BLEND);
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+                switch (_renderMode)
+                {
+                    case SCATTERPLOT:
+                        _pointRenderer.render();
+                        break;
+
+                    case DENSITY:
+                    case LANDSCAPE:
+                        _densityRenderer.setRenderMode(_renderMode == DENSITY ? DensityRenderer::DENSITY : DensityRenderer::LANDSCAPE);
+                        _densityRenderer.render();
+                        break;
+                }
+            }
+            painter.endNativePainting();
+
+            // Draw the pixel selection tool overlays
+            painter.drawPixmap(rect(), _pixelSelectionTool.getAreaPixmap());
+            painter.drawPixmap(rect(), _pixelSelectionTool.getShapePixmap());
+        }
+        painter.end();
     }
-
-    _pixelSelectionToolRenderer.render();
+    catch (std::exception& e)
+    {
+        exceptionMessageBox("Rendering failed", e);
+    }
+    catch (...) {
+        exceptionMessageBox("Rendering failed");
+    }
 }
 
 void ScatterplotWidget::cleanup()
@@ -350,7 +367,6 @@ void ScatterplotWidget::cleanup()
     makeCurrent();
     _pointRenderer.destroy();
     _densityRenderer.destroy();
-    _pixelSelectionToolRenderer.destroy();
 }
 
 void ScatterplotWidget::setColorMap(const QImage& colorMapImage)

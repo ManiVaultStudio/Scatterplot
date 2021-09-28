@@ -3,6 +3,7 @@
 #include <ViewPlugin.h>
 
 #include "util/DatasetRef.h"
+#include "util/PixelSelectionTool.h"
 
 #include "Common.h"
 
@@ -13,7 +14,6 @@ using namespace hdps::util;
 
 class Points;
 
-class PixelSelectionTool;
 class ScatterplotWidget;
 
 namespace hdps
