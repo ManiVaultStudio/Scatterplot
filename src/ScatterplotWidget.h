@@ -39,7 +39,7 @@ public:
     };
 
 public:
-    ScatterplotWidget(PixelSelectionTool& pixelSelectionTool);
+    ScatterplotWidget();
     ~ScatterplotWidget();
 
     /** Returns true when the widget was initialized and is ready to be used. */
@@ -56,6 +56,9 @@ public:
     /** Get/set coloring mode */
     ColoringMode getColoringMode() const;
     void setColoringMode(const ColoringMode& coloringMode);
+
+    /** Get reference to the pixel selection tool */
+    PixelSelectionTool& getPixelSelectionTool();
 
     /**
      * Feed 2-dimensional data to the scatterplot.
@@ -133,17 +136,17 @@ public slots:
     void computeDensity();
 
 private:
-    const Matrix3f              toClipCoordinates = Matrix3f(2, 0, 0, 2, -1, -1);
-    Matrix3f                    toNormalisedCoordinates;
-    Matrix3f                    toIsotropicCoordinates;
-    bool                        _isInitialized = false;
-    RenderMode                  _renderMode = SCATTERPLOT;
-    QColor                      _backgroundColor;
-    ColoringMode                _coloringMode = ColoringMode::ConstantColor;
-    PointRenderer               _pointRenderer;                     
-    DensityRenderer             _densityRenderer;                   
-    QSize                       _windowSize;                        /** Size of the scatterplot widget */
-    Bounds                      _dataBounds;                        /** Bounds of the loaded data */
-    PixelSelectionTool&         _pixelSelectionTool;                
-    QImage                      _colorMapImage;
+    const Matrix3f          toClipCoordinates = Matrix3f(2, 0, 0, 2, -1, -1);
+    Matrix3f                toNormalisedCoordinates;
+    Matrix3f                toIsotropicCoordinates;
+    bool                    _isInitialized = false;
+    RenderMode              _renderMode = SCATTERPLOT;
+    QColor                  _backgroundColor;
+    ColoringMode            _coloringMode = ColoringMode::ConstantColor;
+    PointRenderer           _pointRenderer;                     
+    DensityRenderer         _densityRenderer;                   
+    QSize                   _windowSize;                        /** Size of the scatterplot widget */
+    Bounds                  _dataBounds;                        /** Bounds of the loaded data */
+    QImage                  _colorMapImage;
+    PixelSelectionTool      _pixelSelectionTool;
 };

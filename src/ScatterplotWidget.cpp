@@ -30,24 +30,52 @@ namespace
     }
 }
 
-ScatterplotWidget::ScatterplotWidget(PixelSelectionTool& pixelSelectionTool) :
+ScatterplotWidget::ScatterplotWidget() :
     _densityRenderer(DensityRenderer::RenderMode::DENSITY),
     _backgroundColor(1, 1, 1),
     _pointRenderer(),
-    _pixelSelectionTool(pixelSelectionTool)
+    _pixelSelectionTool(this)
 {
     setContextMenuPolicy(Qt::CustomContextMenu);
     setAcceptDrops(true);
     setMouseTracking(true);
-
-    this->installEventFilter(&_pixelSelectionTool);
+    setFocusPolicy(Qt::ClickFocus);
 
     _pointRenderer.setPointScaling(Absolute);
+
+    // Configure pixel selection tool
+    _pixelSelectionTool.setEnabled(true);
+    _pixelSelectionTool.setMainColor(QColor(Qt::black));
 
     QObject::connect(&_pixelSelectionTool, &PixelSelectionTool::shapeChanged, [this]() {
         if (isInitialized())
             update();
     });
+
+    QSurfaceFormat surfaceFormat;
+
+    surfaceFormat.setRenderableType(QSurfaceFormat::OpenGL);
+
+#ifdef __APPLE__
+    // Ask for an OpenGL 3.3 Core Context as the default
+    surfaceFormat.setVersion(3, 3);
+    surfaceFormat.setProfile(QSurfaceFormat::CoreProfile);
+    surfaceFormat.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
+    //QSurfaceFormat::setDefaultFormat(defaultFormat);
+#else
+    // Ask for an OpenGL 4.3 Core Context as the default
+    surfaceFormat.setVersion(4, 3);
+    surfaceFormat.setProfile(QSurfaceFormat::CoreProfile);
+    surfaceFormat.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
+#endif
+
+#ifdef _DEBUG
+    surfaceFormat.setOption(QSurfaceFormat::DebugContext);
+#endif
+
+    surfaceFormat.setSamples(16);
+
+    setFormat(surfaceFormat);
 }
 
 bool ScatterplotWidget::isInitialized()
@@ -102,6 +130,11 @@ void ScatterplotWidget::setColoringMode(const ColoringMode& coloringMode)
     _coloringMode = coloringMode;
 
     emit coloringModeChanged(_coloringMode);
+}
+
+PixelSelectionTool& ScatterplotWidget::getPixelSelectionTool()
+{
+    return _pixelSelectionTool;
 }
 
 void ScatterplotWidget::computeDensity()
@@ -313,41 +346,45 @@ void ScatterplotWidget::paintGL()
         QPainter painter;
 
         // Begin mixed OpenGL/native painting
-        painter.begin(this);
+        if (!painter.begin(this))
+            throw std::runtime_error("Unable to begin painting");
+
+        // Draw layers with OpenGL
+        painter.beginNativePainting();
         {
-            // Draw layers with OpenGL
-            painter.beginNativePainting();
+            // Bind the framebuffer belonging to the widget
+            //glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebufferObject());
+
+            // Clear the widget to the background color
+            glClearColor(_backgroundColor.redF(), _backgroundColor.greenF(), _backgroundColor.blueF(), _backgroundColor.alphaF());
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            // Reset the blending function
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+               
+            switch (_renderMode)
             {
-                // Bind the framebuffer belonging to the widget
-                glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebufferObject());
+                case SCATTERPLOT:
+                    _pointRenderer.render();
+                    break;
 
-                // Clear the widget to the background color
-                glClearColor(_backgroundColor.redF(), _backgroundColor.greenF(), _backgroundColor.blueF(), _backgroundColor.alphaF());
-                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-                // Reset the blending function
-                glEnable(GL_BLEND);
-                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-                switch (_renderMode)
-                {
-                    case SCATTERPLOT:
-                        _pointRenderer.render();
-                        break;
-
-                    case DENSITY:
-                    case LANDSCAPE:
-                        _densityRenderer.setRenderMode(_renderMode == DENSITY ? DensityRenderer::DENSITY : DensityRenderer::LANDSCAPE);
-                        _densityRenderer.render();
-                        break;
-                }
+                case DENSITY:
+                case LANDSCAPE:
+                    _densityRenderer.setRenderMode(_renderMode == DENSITY ? DensityRenderer::DENSITY : DensityRenderer::LANDSCAPE);
+                    _densityRenderer.render();
+                    break;
             }
-            painter.endNativePainting();
-
-            // Draw the pixel selection tool overlays
+                
+        }
+        painter.endNativePainting();
+        
+        // Draw the pixel selection tool overlays if the pixel selection tool is enabled
+        if (_pixelSelectionTool.isEnabled()) {
             painter.drawPixmap(rect(), _pixelSelectionTool.getAreaPixmap());
             painter.drawPixmap(rect(), _pixelSelectionTool.getShapePixmap());
         }
+        
         painter.end();
     }
     catch (std::exception& e)

@@ -10,299 +10,35 @@
 
 using namespace hdps::gui;
 
-SelectionAction::SelectionAction(ScatterplotPlugin* scatterplotPlugin) :
-    PluginAction(scatterplotPlugin, "Selection"),
-    _typeAction(this, "Type"),
-    _rectangleAction(this, "Rectangle"),
-    _brushAction(this, "Brush"),
-    _lassoAction(this, "Lasso"),
-    _polygonAction(this, "Polygon"),
-    _typeActionGroup(this),
-    _brushRadiusAction(this, "Brush radius", PixelSelectionTool::BRUSH_RADIUS_MIN, PixelSelectionTool::BRUSH_RADIUS_MAX, PixelSelectionTool::BRUSH_RADIUS_DEFAULT, PixelSelectionTool::BRUSH_RADIUS_DEFAULT),
-    _modifierAddAction(this, "Add to selection"),
-    _modifierRemoveAction(this, "Remove from selection"),
-    _modifierActionGroup(this),
-    _clearSelectionAction(this, "Select none"),
-    _selectAllAction(this, "Select all"),
-    _invertSelectionAction(this, "Invert selection"),
-    _notifyDuringSelectionAction(this, "Notify during selection")
+SelectionAction::SelectionAction(ScatterplotPlugin& scatterplotPlugin) :
+    PixelSelectionAction(&scatterplotPlugin, scatterplotPlugin.getScatterplotWidget()->getPixelSelectionTool()),
+    _scatterplotPlugin(scatterplotPlugin)
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("mouse-pointer"));
-
-    _rectangleAction.setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    _brushAction.setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    _lassoAction.setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    _polygonAction.setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    _clearSelectionAction.setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    _selectAllAction.setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    _invertSelectionAction.setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    _notifyDuringSelectionAction.setShortcutContext(Qt::WidgetWithChildrenShortcut);
-
-    _rectangleAction.setIcon(PixelSelectionTool::getIcon(PixelSelectionType::Rectangle));
-    _brushAction.setIcon(PixelSelectionTool::getIcon(PixelSelectionType::Brush));
-    _lassoAction.setIcon(PixelSelectionTool::getIcon(PixelSelectionType::Lasso));
-    _polygonAction.setIcon(PixelSelectionTool::getIcon(PixelSelectionType::Polygon));
-
-    scatterplotPlugin->addAction(&_rectangleAction);
-    scatterplotPlugin->addAction(&_brushAction);
-    scatterplotPlugin->addAction(&_lassoAction);
-    scatterplotPlugin->addAction(&_polygonAction);
-    scatterplotPlugin->addAction(&_brushRadiusAction);
-    scatterplotPlugin->addAction(&_modifierAddAction);
-    scatterplotPlugin->addAction(&_modifierRemoveAction);
-    scatterplotPlugin->addAction(&_clearSelectionAction);
-    scatterplotPlugin->addAction(&_selectAllAction);
-    scatterplotPlugin->addAction(&_invertSelectionAction);
-    scatterplotPlugin->addAction(&_notifyDuringSelectionAction);
-
-    _rectangleAction.setCheckable(true);
-    _brushAction.setCheckable(true);
-    _lassoAction.setCheckable(true);
-    _polygonAction.setCheckable(true);
-    _modifierAddAction.setCheckable(true);
-    _modifierRemoveAction.setCheckable(true);
-    _notifyDuringSelectionAction.setCheckable(true);
-
-    _rectangleAction.setShortcut(QKeySequence("R"));
-    _brushAction.setShortcut(QKeySequence("B"));
-    _lassoAction.setShortcut(QKeySequence("L"));
-    _polygonAction.setShortcut(QKeySequence("P"));
-    _clearSelectionAction.setShortcut(QKeySequence("E"));
-    _selectAllAction.setShortcut(QKeySequence("A"));
-    _invertSelectionAction.setShortcut(QKeySequence("I"));
-    _notifyDuringSelectionAction.setShortcut(QKeySequence("U"));
-
-    _rectangleAction.setToolTip("Select data points inside a rectangle (R)");
-    _brushAction.setToolTip("Select data points using a brush tool (B)");
-    _lassoAction.setToolTip("Select data points using a lasso (L)");
-    _polygonAction.setToolTip("Select data points by drawing a polygon (P)");
-    _brushRadiusAction.setToolTip("Brush selection tool radius");
-    _modifierAddAction.setToolTip("Add items to the existing selection");
-    _modifierRemoveAction.setToolTip("Remove items from the existing selection");
-    _clearSelectionAction.setToolTip("Clears the selection (E)");
-    _selectAllAction.setToolTip("Select all data points (A)");
-    _invertSelectionAction.setToolTip("Invert the selection (I)");
-    _notifyDuringSelectionAction.setToolTip("Notify during selection or only at the end of the selection process (U)");
-
-    const auto& fontAwesome = hdps::Application::getIconFont("FontAwesome");
-
-    _modifierAddAction.setIcon(fontAwesome.getIcon("plus"));
-    _modifierRemoveAction.setIcon(fontAwesome.getIcon("minus"));
-
-    _typeAction.setOptions(pixelSelectionTypes.values());
-
-    _typeActionGroup.addAction(&_rectangleAction);
-    _typeActionGroup.addAction(&_brushAction);
-    _typeActionGroup.addAction(&_lassoAction);
-    _typeActionGroup.addAction(&_polygonAction);
     
-    _brushRadiusAction.setSuffix("px");
-
-    _modifierActionGroup.addAction(&_modifierAddAction);
-    _modifierActionGroup.addAction(&_modifierRemoveAction);
-
-    connect(&_typeAction, &OptionAction::currentTextChanged, [this](const QString& currentText) {
-        _scatterplotPlugin->getSelectionTool()->setType(getPixelSelectionTypeEnum(currentText));
+    connect(&getSelectAllAction(), &QAction::triggered, [this]() {
+        _scatterplotPlugin.selectAll();
     });
 
-    connect(&_rectangleAction, &QAction::triggered, this, [this]() {
-        _scatterplotPlugin->getSelectionTool()->setType(PixelSelectionType::Rectangle);
+    connect(&getClearSelectionAction(), &QAction::triggered, [this]() {
+        _scatterplotPlugin.clearSelection();
     });
 
-    connect(&_brushAction, &QAction::triggered, this, [this]() {
-        _scatterplotPlugin->getSelectionTool()->setType(PixelSelectionType::Brush);
+    connect(&getInvertSelectionAction(), &QAction::triggered, [this]() {
+        _scatterplotPlugin.invertSelection();
     });
-
-    connect(&_lassoAction, &QAction::triggered, this, [this]() {
-        _scatterplotPlugin->getSelectionTool()->setType(PixelSelectionType::Lasso);
-    });
-
-    connect(&_polygonAction, &QAction::triggered, this, [this]() {
-        _scatterplotPlugin->getSelectionTool()->setType(PixelSelectionType::Polygon);
-    });
-
-    const auto updateType = [this]() {
-        const auto type = _scatterplotPlugin->getSelectionTool()->getType();
-
-        _typeAction.setCurrentText(getPixelSelectionTypeName(type));
-        _rectangleAction.setChecked(type == PixelSelectionType::Rectangle);
-        _brushAction.setChecked(type == PixelSelectionType::Brush);
-        _lassoAction.setChecked(type == PixelSelectionType::Lasso);
-        _polygonAction.setChecked(type == PixelSelectionType::Polygon);
-        _brushRadiusAction.setEnabled(type == PixelSelectionType::Brush);
-    };
-
-    connect(_scatterplotPlugin->getSelectionTool(), &PixelSelectionTool::typeChanged, this, [this, updateType](const PixelSelectionType& type) {
-        updateType();
-    });
-
-    updateType();
-
-    connect(_scatterplotPlugin->getSelectionTool(), &PixelSelectionTool::brushRadiusChanged, this, [this](const float& brushRadius) {
-        _brushRadiusAction.setValue(brushRadius);
-    });
-
-    connect(&_brushRadiusAction, &DecimalAction::valueChanged, this, [this](const double& value) {
-        _scatterplotPlugin->getSelectionTool()->setBrushRadius(value);
-    });
-
-    connect(&_modifierAddAction, &QAction::toggled, [this](bool checked) {
-        _scatterplotPlugin->getSelectionTool()->setModifier(checked ? PixelSelectionModifierType::Add : PixelSelectionModifierType::Replace);
-    });
-
-    connect(&_modifierRemoveAction, &QAction::toggled, [this](bool checked) {
-        _scatterplotPlugin->getSelectionTool()->setModifier(checked ? PixelSelectionModifierType::Remove : PixelSelectionModifierType::Replace);
-    });
-
-    connect(&_selectAllAction, &QAction::triggered, [this]() {
-        _scatterplotPlugin->selectAll();
-    });
-
-    connect(&_clearSelectionAction, &QAction::triggered, [this]() {
-        _scatterplotPlugin->clearSelection();
-    });
-
-    connect(&_invertSelectionAction, &QAction::triggered, [this]() {
-        _scatterplotPlugin->invertSelection();
-    });
-
-    const auto updateNotifyDuringSelection = [this]() -> void {
-        _notifyDuringSelectionAction.setChecked(_scatterplotPlugin->getSelectionTool()->isNotifyDuringSelection());
-    };
-    
-    connect(_scatterplotPlugin->getSelectionTool(), &PixelSelectionTool::notifyDuringSelectionChanged, this, [this, updateNotifyDuringSelection](const bool& notifyDuringSelection) {
-        updateNotifyDuringSelection();
-    });
-
-    updateNotifyDuringSelection();
-
-    connect(&_notifyDuringSelectionAction, &QAction::toggled, [this](bool toggled) {
-        _scatterplotPlugin->getSelectionTool()->setNotifyDuringSelection(toggled);
-    });
-
-    const auto updateSelectionButtons = [this]() {
-        _clearSelectionAction.setEnabled(_scatterplotPlugin->canClearSelection());
-        _selectAllAction.setEnabled(_scatterplotPlugin->canSelectAll());
-        _invertSelectionAction.setEnabled(_scatterplotPlugin->canInvertSelection());
-    };
-
-    connect(_scatterplotPlugin, qOverload<>(&ScatterplotPlugin::selectionChanged), this, [this, updateSelectionButtons]() {
-        updateSelectionButtons();
-    });
-
-    updateSelectionButtons();
-
-    _scatterplotPlugin->installEventFilter(this);
-}
-
-QMenu* SelectionAction::getContextMenu()
-{
-    auto menu = new QMenu("Selection");
-
-    const auto addActionToMenu = [menu](QAction* action) -> void {
-        auto actionMenu = new QMenu(action->text());
-
-        actionMenu->addAction(action);
-
-        menu->addMenu(actionMenu);
-    };
-
-    menu->setEnabled(_scatterplotPlugin->getScatterplotWidget()->getRenderMode() == ScatterplotWidget::RenderMode::SCATTERPLOT);
-
-    menu->addAction(&_rectangleAction);
-    menu->addAction(&_brushAction);
-    menu->addAction(&_lassoAction);
-    menu->addAction(&_polygonAction);
-
-    menu->addSeparator();
-
-    addActionToMenu(&_brushRadiusAction);
-
-    menu->addSeparator();
-
-    menu->addAction(&_modifierAddAction);
-    menu->addAction(&_modifierRemoveAction);
-
-    menu->addSeparator();
-
-    menu->addAction(&_clearSelectionAction);
-    menu->addAction(&_selectAllAction);
-    menu->addAction(&_invertSelectionAction);
-
-    menu->addSeparator();
-    
-    menu->addAction(&_notifyDuringSelectionAction);
-
-    return menu;
-}
-
-bool SelectionAction::eventFilter(QObject* object, QEvent* event)
-{
-    const auto keyEvent = dynamic_cast<QKeyEvent*>(event);
-
-    if (!keyEvent)
-        return QObject::eventFilter(object, event);
-
-    if (keyEvent->isAutoRepeat())
-        return QObject::eventFilter(object, event);
-
-    switch (keyEvent->type())
-    {
-        case QEvent::KeyPress:
-        {
-            switch (keyEvent->key())
-            {
-                case Qt::Key_Shift:
-                    _modifierAddAction.setChecked(true);
-                    break;
-
-                case Qt::Key_Control:
-                    _modifierRemoveAction.setChecked(true);
-                    break;
-
-                default:
-                    break;
-            }
-
-            break;
-        }
-
-        case QEvent::KeyRelease:
-        {
-            switch (keyEvent->key())
-            {
-                case Qt::Key_Shift:
-                    _modifierAddAction.setChecked(false);
-                    break;
-
-                case Qt::Key_Control:
-                    _modifierRemoveAction.setChecked(false);
-                    break;
-
-                default:
-                    break;
-            }
-
-            break;
-        }
-
-        default:
-            break;
-    }
-
-    return QObject::eventFilter(object, event);
 }
 
 SelectionAction::Widget::Widget(QWidget* parent, SelectionAction* selectionAction, const Widget::State& state) :
     WidgetActionWidget(parent, selectionAction, state)
 {
-    auto typeWidget                     = selectionAction->_typeAction.createWidget(this);
-    auto brushRadiusWidget              = selectionAction->_brushRadiusAction.createWidget(this);
-    auto modifierAddWidget              = selectionAction->_modifierAddAction.createPushButtonWidget(this);
-    auto modifierRemoveWidget           = selectionAction->_modifierRemoveAction.createPushButtonWidget(this);
-    auto clearSelectionWidget           = selectionAction->_clearSelectionAction.createWidget(this);
-    auto selectAllWidget                = selectionAction->_selectAllAction.createWidget(this);
-    auto invertSelectionWidget          = selectionAction->_invertSelectionAction.createWidget(this);
+    auto typeWidget                     = selectionAction->getTypeAction().createWidget(this);
+    auto brushRadiusWidget              = selectionAction->getBrushRadiusAction().createWidget(this);
+    auto modifierAddWidget              = selectionAction->getModifierAddAction().createPushButtonWidget(this);
+    auto modifierSubtractWidget         = selectionAction->getModifierSubtractAction().createPushButtonWidget(this);
+    auto clearSelectionWidget           = selectionAction->getClearSelectionAction().createWidget(this);
+    auto selectAllWidget                = selectionAction->getSelectAllAction().createWidget(this);
+    auto invertSelectionWidget          = selectionAction->getInvertSelectionAction().createWidget(this);
     auto notifyDuringSelectionWidget    = selectionAction->_notifyDuringSelectionAction.createCheckBoxWidget(this);
 
     switch (state)
@@ -315,7 +51,7 @@ SelectionAction::Widget::Widget(QWidget* parent, SelectionAction* selectionActio
             layout->addWidget(typeWidget);
             layout->addWidget(brushRadiusWidget);
             layout->addWidget(modifierAddWidget);
-            layout->addWidget(modifierRemoveWidget);
+            layout->addWidget(modifierSubtractWidget);
             layout->addWidget(clearSelectionWidget);
             layout->addWidget(selectAllWidget);
             layout->addWidget(invertSelectionWidget);
@@ -329,14 +65,14 @@ SelectionAction::Widget::Widget(QWidget* parent, SelectionAction* selectionActio
         {
             const auto getTypeWidget = [&, this]() -> QWidget* {
                 modifierAddWidget->getPushButton()->setText("");
-                modifierRemoveWidget->getPushButton()->setText("");
+                modifierSubtractWidget->getPushButton()->setText("");
 
                 auto layout = new QHBoxLayout();
 
                 layout->setMargin(0);
                 layout->addWidget(typeWidget);
                 layout->addWidget(modifierAddWidget);
-                layout->addWidget(modifierRemoveWidget);
+                layout->addWidget(modifierSubtractWidget);
                 layout->itemAt(0)->widget()->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
                 auto widget = new QWidget();
@@ -364,7 +100,7 @@ SelectionAction::Widget::Widget(QWidget* parent, SelectionAction* selectionActio
 
             auto layout = new QGridLayout();
 
-            layout->addWidget(selectionAction->_typeAction.createLabelWidget(this), 0, 0);
+            layout->addWidget(selectionAction->getTypeAction().createLabelWidget(this), 0, 0);
             layout->addWidget(getTypeWidget(), 0, 1);
             layout->addWidget(selectionAction->_brushRadiusAction.createLabelWidget(this), 1, 0);
             layout->addWidget(brushRadiusWidget, 1, 1);

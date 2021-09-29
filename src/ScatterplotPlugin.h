@@ -56,8 +56,6 @@ public: // Selection
     void clearSelection();
     void invertSelection();
 
-    PixelSelectionTool* getSelectionTool();
-
 protected: // Data loading
 
     /**
@@ -107,7 +105,6 @@ private:
     
     
 protected:
-    PixelSelectionTool*         _pixelSelectionTool;
     ScatterplotWidget*          _scatterPlotWidget;
     hdps::gui::DropWidget*      _dropWidget;
     SettingsAction              _settingsAction;

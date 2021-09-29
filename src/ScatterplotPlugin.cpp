@@ -37,12 +37,11 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     _colors(),
     _positions(),
     _numPoints(0),
-    _pixelSelectionTool(new util::PixelSelectionTool(this, false)),
-    _scatterPlotWidget(new ScatterplotWidget(*_pixelSelectionTool)),
+    _scatterPlotWidget(new ScatterplotWidget()),
     _dropWidget(nullptr),
     _settingsAction(this)
 {
-    _scatterPlotWidget->setMouseTracking(true);
+    setMouseTracking(true);
 
     _dropWidget = new DropWidget(_scatterPlotWidget);
 
@@ -216,15 +215,15 @@ void ScatterplotPlugin::init()
         }
     });
 
-    connect(_pixelSelectionTool, &PixelSelectionTool::areaChanged, [this]() {
-        if (!_pixelSelectionTool->isNotifyDuringSelection())
+    connect(&_scatterPlotWidget->getPixelSelectionTool(), &PixelSelectionTool::areaChanged, [this]() {
+        if (!_scatterPlotWidget->getPixelSelectionTool().isNotifyDuringSelection())
             return;
 
         selectPoints();
     });
 
-    connect(_pixelSelectionTool, &PixelSelectionTool::ended, [this]() {
-        if (_pixelSelectionTool->isNotifyDuringSelection())
+    connect(&_scatterPlotWidget->getPixelSelectionTool(), &PixelSelectionTool::ended, [this]() {
+        if (_scatterPlotWidget->getPixelSelectionTool().isNotifyDuringSelection())
             return;
 
         selectPoints();
@@ -269,10 +268,10 @@ void ScatterplotPlugin::createSubset(const bool& fromSourceData /*= false*/, con
 
 void ScatterplotPlugin::selectPoints()
 {
-    if (!_points.isValid() || !_pixelSelectionTool->isActive())
+    if (!_points.isValid() || !_scatterPlotWidget->getPixelSelectionTool().isActive())
         return;
 
-    auto selectionAreaImage = _pixelSelectionTool->getAreaPixmap().toImage();
+    auto selectionAreaImage = _scatterPlotWidget->getPixelSelectionTool().getAreaPixmap().toImage();
 
 
     Points& selectionSet = static_cast<Points&>(_points->getSelection());
@@ -306,7 +305,7 @@ void ScatterplotPlugin::selectPoints()
     
     auto& selectionSetIndices = selectionSet.indices;
 
-    switch (_pixelSelectionTool->getModifier())
+    switch (_scatterPlotWidget->getPixelSelectionTool().getModifier())
     {
         case PixelSelectionModifierType::Replace:
             break;
@@ -316,7 +315,7 @@ void ScatterplotPlugin::selectPoints()
         {
             QSet<std::uint32_t> set(selectionSetIndices.begin(), selectionSetIndices.end());
 
-            switch (_pixelSelectionTool->getModifier())
+            switch (_scatterPlotWidget->getPixelSelectionTool().getModifier())
             {
                 case PixelSelectionModifierType::Add:
                 {
@@ -401,7 +400,7 @@ void ScatterplotPlugin::loadPoints(const QString& dataSetName)
         else
             _settingsAction.getColoringAction().setDimensions(DataSet::getSourceData(*_points).getNumDimensions());
 
-        _pixelSelectionTool->setEnabled(_points.isValid());
+        _scatterPlotWidget->getPixelSelectionTool().setEnabled(_points.isValid());
 
         _dropWidget->setShowDropIndicator(false);
 
@@ -565,11 +564,6 @@ void ScatterplotPlugin::updateSelection()
     _scatterPlotWidget->setHighlights(highlights);
 
     emit selectionChanged();
-}
-
-PixelSelectionTool* ScatterplotPlugin::getSelectionTool()
-{
-    return _pixelSelectionTool;
 }
 
 std::uint32_t ScatterplotPlugin::getNumberOfPoints() const

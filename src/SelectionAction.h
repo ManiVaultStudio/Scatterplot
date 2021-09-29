@@ -1,14 +1,16 @@
 #pragma once
 
-#include "PluginAction.h"
+#include "actions/PixelSelectionAction.h"
 #include "util/PixelSelectionTool.h"
 
 #include <QActionGroup>
 #include <QDebug>
 
+class ScatterplotPlugin;
+
 using namespace hdps::gui;
 
-class SelectionAction : public PluginAction
+class SelectionAction : public PixelSelectionAction
 {
 protected: // Widget
 
@@ -22,41 +24,8 @@ protected: // Widget
     };
 
 public:
-    SelectionAction(ScatterplotPlugin* scatterplotPlugin);
-
-    QMenu* getContextMenu();
-
-public: // Event handling
-
-    /**
-     * Listens to the events of target \p object
-     * @param object Target object to watch for events
-     * @param event Event that occurred
-     */
-    bool eventFilter(QObject* object, QEvent* event) override;
-
-public: // Action getters
-
-    TriggerAction& getRectangleAction() { return _rectangleAction; }
-    TriggerAction& getBrushAction() { return _brushAction; }
-    TriggerAction& getLassoAction() { return _lassoAction; }
-    TriggerAction& getPolygonAction() { return _polygonAction; }
+    SelectionAction(ScatterplotPlugin& scatterplotPlugin);
 
 protected:
-    OptionAction    _typeAction;
-    TriggerAction   _rectangleAction;
-    TriggerAction   _brushAction;
-    TriggerAction   _lassoAction;
-    TriggerAction   _polygonAction;
-    QActionGroup    _typeActionGroup;
-    DecimalAction   _brushRadiusAction;
-    ToggleAction    _modifierAddAction;
-    ToggleAction    _modifierRemoveAction;
-    QActionGroup    _modifierActionGroup;
-    TriggerAction   _clearSelectionAction;
-    TriggerAction   _selectAllAction;
-    TriggerAction   _invertSelectionAction;
-    ToggleAction    _notifyDuringSelectionAction;
-
-    friend class Widget;
+    ScatterplotPlugin&  _scatterplotPlugin;     /** Reference to scatter plot plugin */
 };
