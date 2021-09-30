@@ -34,12 +34,12 @@ SelectionAction::Widget::Widget(QWidget* parent, SelectionAction* selectionActio
 {
     auto typeWidget                     = selectionAction->getTypeAction().createWidget(this);
     auto brushRadiusWidget              = selectionAction->getBrushRadiusAction().createWidget(this);
-    auto modifierAddWidget              = selectionAction->getModifierAddAction().createPushButtonWidget(this);
-    auto modifierSubtractWidget         = selectionAction->getModifierSubtractAction().createPushButtonWidget(this);
+    auto modifierAddWidget              = selectionAction->getModifierAddAction().createWidget(this, ToggleAction::PushButtonIcon);
+    auto modifierSubtractWidget         = selectionAction->getModifierSubtractAction().createWidget(this, ToggleAction::PushButtonIcon);
     auto clearSelectionWidget           = selectionAction->getClearSelectionAction().createWidget(this);
     auto selectAllWidget                = selectionAction->getSelectAllAction().createWidget(this);
     auto invertSelectionWidget          = selectionAction->getInvertSelectionAction().createWidget(this);
-    auto notifyDuringSelectionWidget    = selectionAction->_notifyDuringSelectionAction.createCheckBoxWidget(this);
+    auto notifyDuringSelectionWidget    = selectionAction->_notifyDuringSelectionAction.createWidget(this);
 
     switch (state)
     {
@@ -64,9 +64,6 @@ SelectionAction::Widget::Widget(QWidget* parent, SelectionAction* selectionActio
         case Widget::State::Popup:
         {
             const auto getTypeWidget = [&, this]() -> QWidget* {
-                modifierAddWidget->getPushButton()->setText("");
-                modifierSubtractWidget->getPushButton()->setText("");
-
                 auto layout = new QHBoxLayout();
 
                 layout->setMargin(0);

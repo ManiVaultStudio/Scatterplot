@@ -94,9 +94,9 @@ RenderModeAction::Widget::Widget(QWidget* parent, RenderModeAction* renderModeAc
 
     layout->setSpacing(3);
 
-    layout->addWidget(renderModeAction->_scatterPlotAction.createPushButtonWidget(this));
-    layout->addWidget(renderModeAction->_densityPlotAction.createPushButtonWidget(this));
-    layout->addWidget(renderModeAction->_contourPlotAction.createPushButtonWidget(this));
+    layout->addWidget(renderModeAction->_scatterPlotAction.createWidget(this, ToggleAction::PushButton));
+    layout->addWidget(renderModeAction->_densityPlotAction.createWidget(this, ToggleAction::PushButton));
+    layout->addWidget(renderModeAction->_contourPlotAction.createWidget(this, ToggleAction::PushButton));
 
     switch (state)
     {
