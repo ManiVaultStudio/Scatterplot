@@ -46,7 +46,7 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
     _colorByActionGroup.addAction(&_colorByDimensionAction);
     _colorByActionGroup.addAction(&_colorByColorDataAction);
 
-    _colorMapAction.setWidgetFlags(ColorMapAction::All);
+    //_colorMapAction.setDefaultWidgetFlags(ColorMapAction::All);
 
     const auto updateScalarRangeActions = [this]() {
         const auto colorMapRange    = getScatterplotWidget()->getColorMapRange();

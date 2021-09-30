@@ -56,8 +56,8 @@ PlotAction::Widget::Widget(QWidget* parent, PlotAction* plotAction, const Widget
     {
         case Widget::State::Standard:
         {
-            pointPlotWidget     = plotAction->_pointPlotAction.getWidget(this, State::Standard);
-            densityPlotWidget   = plotAction->_densityPlotAction.getWidget(this, State::Standard);
+            pointPlotWidget     = plotAction->_pointPlotAction.createWidget(this);
+            densityPlotWidget   = plotAction->_densityPlotAction.createWidget(this);
             
             auto layout = new QHBoxLayout();
 
@@ -71,8 +71,8 @@ PlotAction::Widget::Widget(QWidget* parent, PlotAction* plotAction, const Widget
 
         case Widget::State::Popup:
         {
-            pointPlotWidget     = plotAction->_pointPlotAction.getWidget(this, State::Popup);
-            densityPlotWidget   = plotAction->_densityPlotAction.getWidget(this, State::Popup);
+            pointPlotWidget     = plotAction->_pointPlotAction.getWidget(this, -1, State::Popup);
+            densityPlotWidget   = plotAction->_densityPlotAction.getWidget(this, -1, State::Popup);
             
             auto layout = new QVBoxLayout();
 

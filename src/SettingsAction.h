@@ -64,7 +64,7 @@ protected: // Widget
         friend class SettingsAction;
     };
 
-    QWidget* getWidget(QWidget* parent, const WidgetActionWidget::State& state = WidgetActionWidget::State::Standard) override {
+    QWidget* getWidget(QWidget* parent, const std::int32_t& widgetFlags, const WidgetActionWidget::State& state = WidgetActionWidget::State::Standard) override {
         return new Widget(parent, this);
     };
 

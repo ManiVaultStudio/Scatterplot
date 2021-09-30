@@ -16,7 +16,7 @@ protected: // Widget
         Widget(QWidget* parent, PositionAction* positionAction, const WidgetActionWidget::State& state);
     };
 
-    QWidget* getWidget(QWidget* parent, const WidgetActionWidget::State& state = WidgetActionWidget::State::Standard) override {
+    QWidget* getWidget(QWidget* parent, const std::int32_t& widgetFlags, const WidgetActionWidget::State& state = WidgetActionWidget::State::Standard) override {
         return new Widget(parent, this, state);
     };
 
