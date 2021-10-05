@@ -11,6 +11,8 @@
 #include "ManualClusteringAction.h"
 #include "MiscellaneousAction.h"
 
+#include "actions/WidgetActionStateWidget.h"
+
 using namespace hdps::gui;
 
 class ScatterplotPlugin;
@@ -29,7 +31,7 @@ public:
         SpacerWidget(const Type& type = Type::Divider);
 
         static Type getType(const WidgetActionWidget::State& widgetTypeLeft, const WidgetActionWidget::State& widgetTypeRight);
-        static Type getType(const WidgetActionStateWidget* stateWidgetLeft, const WidgetActionStateWidget* stateWidgetRight);
+        static Type getType(const hdps::gui::WidgetActionStateWidget* stateWidgetLeft, const hdps::gui::WidgetActionStateWidget* stateWidgetRight);
 
         void setType(const Type& type);
         static std::int32_t getWidth(const Type& type);
