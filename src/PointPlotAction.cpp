@@ -57,8 +57,8 @@ QMenu* PointPlotAction::getContextMenu()
     return menu;
 }
 
-PointPlotAction::Widget::Widget(QWidget* parent, PointPlotAction* pointPlotAction, const Widget::State& state) :
-    WidgetActionWidget(parent, pointPlotAction, state)
+PointPlotAction::Widget::Widget(QWidget* parent, PointPlotAction* pointPlotAction, const std::int32_t& widgetFlags) :
+    WidgetActionWidget(parent, pointPlotAction, widgetFlags)
 {
     setToolTip("Point plot settings");
 
@@ -67,37 +67,26 @@ PointPlotAction::Widget::Widget(QWidget* parent, PointPlotAction* pointPlotActio
     auto pointSizeWidget    = pointPlotAction->_pointSizeAction.createWidget(this);
     auto pointOpacityWidget = pointPlotAction->_pointOpacityAction.createWidget(this);
 
-    switch (state)
-    {
-        case Widget::State::Standard:
-        {
-            auto layout = new QHBoxLayout();
+    if (widgetFlags & PopupLayout) {
+        auto layout = new QGridLayout();
 
-            layout->setMargin(0);
-            layout->addWidget(pointSizelabel);
-            layout->addWidget(pointSizeWidget);
-            layout->addWidget(pointOpacitylabel);
-            layout->addWidget(pointOpacityWidget);
+        layout->setMargin(0);
+        layout->addWidget(pointSizelabel, 0, 0);
+        layout->addWidget(pointSizeWidget, 0, 2);
+        layout->addWidget(pointOpacitylabel, 1, 0);
+        layout->addWidget(pointOpacityWidget, 1, 2);
 
-            setLayout(layout);
-            break;
-        }
+        setLayout(layout);
+    }
+    else {
+        auto layout = new QHBoxLayout();
 
-        case Widget::State::Popup:
-        {
-            auto layout = new QGridLayout();
+        layout->setMargin(0);
+        layout->addWidget(pointSizelabel);
+        layout->addWidget(pointSizeWidget);
+        layout->addWidget(pointOpacitylabel);
+        layout->addWidget(pointOpacityWidget);
 
-            layout->setMargin(0);
-            layout->addWidget(pointSizelabel, 0, 0);
-            layout->addWidget(pointSizeWidget, 0, 2);
-            layout->addWidget(pointOpacitylabel, 1, 0);
-            layout->addWidget(pointOpacityWidget, 1, 2);
-
-            setLayout(layout);
-            break;
-        }
-
-        default:
-            break;
+        setLayout(layout);
     }
 }

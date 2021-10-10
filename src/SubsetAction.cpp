@@ -67,26 +67,20 @@ QMenu* SubsetAction::getContextMenu()
     return menu;
 }
 
-SubsetAction::Widget::Widget(QWidget* parent, SubsetAction* subsetAction, const WidgetActionWidget::State& state) :
-    WidgetActionWidget(parent, subsetAction, state)
+SubsetAction::Widget::Widget(QWidget* parent, SubsetAction* subsetAction, const std::int32_t& widgetFlags) :
+    WidgetActionWidget(parent, subsetAction)
 {
     auto layout = new QHBoxLayout();
 
     layout->addWidget(subsetAction->_createSubsetAction.createWidget(this));
     layout->addWidget(subsetAction->_sourceDataAction.createWidget(this));
 
-    switch (state)
+    if (widgetFlags & PopupLayout)
     {
-        case Widget::State::Standard:
-            layout->setMargin(0);
-            setLayout(layout);
-            break;
-
-        case Widget::State::Popup:
-            setPopupLayout(layout);
-            break;
-
-        default:
-            break;
+        setPopupLayout(layout);
+            
+    } else {
+        layout->setMargin(0);
+        setLayout(layout);
     }
 }

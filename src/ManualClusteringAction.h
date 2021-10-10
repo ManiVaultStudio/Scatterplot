@@ -19,8 +19,6 @@ class Clusters;
  */
 class ManualClusteringAction : public PluginAction
 {
-    Q_OBJECT
-
 protected:
 
     class Widget : public WidgetActionWidget
@@ -31,17 +29,18 @@ protected:
          * Constructor
          * @param parent Pointer to parent widget
          * @param manualClusteringAction Pointer to manual clustering action
+         * @param widgetFlags Widget flags for the configuration of the widget (type)
          */
-        Widget(QWidget* parent, ManualClusteringAction* manualClusteringAction, const WidgetActionWidget::State& state);
+        Widget(QWidget* parent, ManualClusteringAction* manualClusteringAction, const std::int32_t& widgetFlags);
     };
 
     /**
      * Get widget representation of the cluster action
      * @param parent Pointer to parent widget
-     * @param state Widget state
+     * @param widgetFlags Widget flags for the configuration of the widget (type)
      */
-    QWidget* getWidget(QWidget* parent, const std::int32_t& widgetFlags, const WidgetActionWidget::State& state = WidgetActionWidget::State::Standard) override {
-        return new Widget(parent, this, state);
+    QWidget* getWidget(QWidget* parent, const std::int32_t& widgetFlags) override {
+        return new Widget(parent, this, widgetFlags);
     };
 
 public:

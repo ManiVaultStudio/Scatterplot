@@ -87,8 +87,8 @@ QMenu* RenderModeAction::getContextMenu()
     return menu;
 }
 
-RenderModeAction::Widget::Widget(QWidget* parent, RenderModeAction* renderModeAction, const Widget::State& state) :
-    WidgetActionWidget(parent, renderModeAction, state)
+RenderModeAction::Widget::Widget(QWidget* parent, RenderModeAction* renderModeAction, const std::int32_t& widgetFlags) :
+    WidgetActionWidget(parent, renderModeAction, widgetFlags)
 {
     auto layout = new QHBoxLayout();
 
@@ -98,18 +98,11 @@ RenderModeAction::Widget::Widget(QWidget* parent, RenderModeAction* renderModeAc
     layout->addWidget(renderModeAction->_densityPlotAction.createWidget(this, ToggleAction::PushButton));
     layout->addWidget(renderModeAction->_contourPlotAction.createWidget(this, ToggleAction::PushButton));
 
-    switch (state)
-    {
-        case Widget::State::Standard:
-            layout->setMargin(0);
-            setLayout(layout);
-            break;
-
-        case Widget::State::Popup:
-            setPopupLayout(layout);
-            break;
-
-        default:
-            break;
+    if (widgetFlags & PopupLayout) {
+        setPopupLayout(layout);
+    }
+    else {
+        layout->setMargin(0);
+        setLayout(layout);
     }
 }

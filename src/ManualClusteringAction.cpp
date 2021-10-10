@@ -102,8 +102,8 @@ void ManualClusteringAction::createDefaultCustersSet()
     _scatterplotPlugin->getColorsDataset().setDatasetName(clustersDatasetName);
 }
 
-ManualClusteringAction::Widget::Widget(QWidget* parent, ManualClusteringAction* manualClusteringAction, const WidgetActionWidget::State& state) :
-    WidgetActionWidget(parent, manualClusteringAction, state)
+ManualClusteringAction::Widget::Widget(QWidget* parent, ManualClusteringAction* manualClusteringAction, const std::int32_t& widgetFlags) :
+    WidgetActionWidget(parent, manualClusteringAction, widgetFlags)
 {
     auto rng = QRandomGenerator::global();
 
@@ -117,53 +117,42 @@ ManualClusteringAction::Widget::Widget(QWidget* parent, ManualClusteringAction* 
     manualClusteringAction->getNameAction().reset();
     manualClusteringAction->getColorAction().setColor(QColor::fromHsl(randomHue, randomSaturation, randomLightness));
 
-    switch (state)
-    {
-        case Widget::State::Standard:
-        {
-            auto layout = new QHBoxLayout();
+    if (widgetFlags & PopupLayout) {
+        auto layout = new QGridLayout();
 
-            auto targetWidget   = manualClusteringAction->_targetAction.createWidget(this);
-            auto nameWidget     = manualClusteringAction->_nameAction.createWidget(this);
-            auto colorWidget    = manualClusteringAction->_colorAction.createWidget(this);
-            auto createWidget   = manualClusteringAction->_addClusterAction.createWidget(this);
+        layout->setColumnMinimumWidth(1, 200);
 
-            targetWidget->setFixedWidth(100);
-            nameWidget->setFixedWidth(100);
-            colorWidget->setFixedWidth(26);
-            createWidget->setFixedWidth(50);
+        layout->addWidget(manualClusteringAction->_targetAction.createLabelWidget(this), 0, 0);
+        layout->addWidget(manualClusteringAction->_targetAction.createWidget(this), 0, 1);
 
-            layout->addWidget(targetWidget);
-            layout->addWidget(nameWidget);
-            layout->addWidget(colorWidget);
-            layout->addWidget(createWidget);
+        layout->addWidget(manualClusteringAction->_nameAction.createLabelWidget(this), 1, 0);
+        layout->addWidget(manualClusteringAction->_nameAction.createWidget(this), 1, 1);
 
-            setLayout(layout);
-            break;
-        }
+        layout->addWidget(manualClusteringAction->_colorAction.createLabelWidget(this), 2, 0);
+        layout->addWidget(manualClusteringAction->_colorAction.createWidget(this), 2, 1);
 
-        case Widget::State::Popup:
-        {
-            auto layout = new QGridLayout();
+        layout->addWidget(manualClusteringAction->_addClusterAction.createWidget(this), 3, 1);
 
-            layout->setColumnMinimumWidth(1, 200);
+        setPopupLayout(layout);
+    }
+    else {
+        auto layout = new QHBoxLayout();
 
-            layout->addWidget(manualClusteringAction->_targetAction.createLabelWidget(this), 0, 0);
-            layout->addWidget(manualClusteringAction->_targetAction.createWidget(this), 0, 1);
+        auto targetWidget = manualClusteringAction->_targetAction.createWidget(this);
+        auto nameWidget = manualClusteringAction->_nameAction.createWidget(this);
+        auto colorWidget = manualClusteringAction->_colorAction.createWidget(this);
+        auto createWidget = manualClusteringAction->_addClusterAction.createWidget(this);
 
-            layout->addWidget(manualClusteringAction->_nameAction.createLabelWidget(this), 1, 0);
-            layout->addWidget(manualClusteringAction->_nameAction.createWidget(this), 1, 1);
+        targetWidget->setFixedWidth(100);
+        nameWidget->setFixedWidth(100);
+        colorWidget->setFixedWidth(26);
+        createWidget->setFixedWidth(50);
 
-            layout->addWidget(manualClusteringAction->_colorAction.createLabelWidget(this), 2, 0);
-            layout->addWidget(manualClusteringAction->_colorAction.createWidget(this), 2, 1);
+        layout->addWidget(targetWidget);
+        layout->addWidget(nameWidget);
+        layout->addWidget(colorWidget);
+        layout->addWidget(createWidget);
 
-            layout->addWidget(manualClusteringAction->_addClusterAction.createWidget(this), 3, 1);
-
-            setPopupLayout(layout);
-            break;
-        }
-
-        default:
-            break;
+        setLayout(layout);
     }
 }

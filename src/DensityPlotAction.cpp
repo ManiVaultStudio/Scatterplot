@@ -63,25 +63,14 @@ QMenu* DensityPlotAction::getContextMenu()
     return menu;
 }
 
-DensityPlotAction::Widget::Widget(QWidget* parent, DensityPlotAction* densityPlotAction, const Widget::State& state) :
-    WidgetActionWidget(parent, densityPlotAction, state)
+DensityPlotAction::Widget::Widget(QWidget* parent, DensityPlotAction* densityPlotAction) :
+    WidgetActionWidget(parent, densityPlotAction)
 {
-    switch (state)
-    {
-        case Widget::State::Standard:
-        case Widget::State::Popup:
-        {
-            auto layout = new QHBoxLayout();
+    auto layout = new QHBoxLayout();
 
-            layout->setMargin(0);
-            layout->addWidget(densityPlotAction->_sigmaAction.createLabelWidget(this));
-            layout->addWidget(densityPlotAction->_sigmaAction.createWidget(this));
+    layout->setMargin(0);
+    layout->addWidget(densityPlotAction->_sigmaAction.createLabelWidget(this));
+    layout->addWidget(densityPlotAction->_sigmaAction.createWidget(this));
 
-            setLayout(layout);
-            break;
-        }
-
-        default:
-            break;
-    }
+    setLayout(layout);
 }

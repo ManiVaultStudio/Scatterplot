@@ -29,8 +29,8 @@ SelectionAction::SelectionAction(ScatterplotPlugin& scatterplotPlugin) :
     });
 }
 
-SelectionAction::Widget::Widget(QWidget* parent, SelectionAction* selectionAction, const Widget::State& state) :
-    WidgetActionWidget(parent, selectionAction, state)
+SelectionAction::Widget::Widget(QWidget* parent, SelectionAction* selectionAction, const std::int32_t& widgetFlags) :
+    WidgetActionWidget(parent, selectionAction, widgetFlags)
 {
     auto typeWidget                     = selectionAction->getTypeAction().createWidget(this);
     auto brushRadiusWidget              = selectionAction->getBrushRadiusAction().createWidget(this);
@@ -41,75 +41,64 @@ SelectionAction::Widget::Widget(QWidget* parent, SelectionAction* selectionActio
     auto invertSelectionWidget          = selectionAction->getInvertSelectionAction().createWidget(this);
     auto notifyDuringSelectionWidget    = selectionAction->_notifyDuringSelectionAction.createWidget(this);
 
-    switch (state)
-    {
-        case Widget::State::Standard:
-        {
+    if (widgetFlags & PopupLayout) {
+        const auto getTypeWidget = [&, this]() -> QWidget* {
             auto layout = new QHBoxLayout();
 
             layout->setMargin(0);
             layout->addWidget(typeWidget);
-            layout->addWidget(brushRadiusWidget);
             layout->addWidget(modifierAddWidget);
             layout->addWidget(modifierSubtractWidget);
+            layout->itemAt(0)->widget()->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+
+            auto widget = new QWidget();
+
+            widget->setLayout(layout);
+
+            return widget;
+        };
+
+        const auto getSelectWidget = [&, this]() -> QWidget* {
+            auto layout = new QHBoxLayout();
+
+            layout->setMargin(0);
             layout->addWidget(clearSelectionWidget);
             layout->addWidget(selectAllWidget);
             layout->addWidget(invertSelectionWidget);
-            layout->addWidget(notifyDuringSelectionWidget);
+            layout->addStretch(1);
 
-            setLayout(layout);
-            break;
-        }
+            auto widget = new QWidget();
 
-        case Widget::State::Popup:
-        {
-            const auto getTypeWidget = [&, this]() -> QWidget* {
-                auto layout = new QHBoxLayout();
+            widget->setLayout(layout);
 
-                layout->setMargin(0);
-                layout->addWidget(typeWidget);
-                layout->addWidget(modifierAddWidget);
-                layout->addWidget(modifierSubtractWidget);
-                layout->itemAt(0)->widget()->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+            return widget;
+        };
 
-                auto widget = new QWidget();
+        auto layout = new QGridLayout();
 
-                widget->setLayout(layout);
+        layout->addWidget(selectionAction->getTypeAction().createLabelWidget(this), 0, 0);
+        layout->addWidget(getTypeWidget(), 0, 1);
+        layout->addWidget(selectionAction->_brushRadiusAction.createLabelWidget(this), 1, 0);
+        layout->addWidget(brushRadiusWidget, 1, 1);
+        layout->addWidget(getSelectWidget(), 2, 1);
+        layout->addWidget(notifyDuringSelectionWidget, 3, 1);
+        layout->itemAtPosition(1, 1)->widget()->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
-                return widget;
-            };
+        setPopupLayout(layout);
+    }
+    else {
+        auto layout = new QHBoxLayout();
 
-            const auto getSelectWidget = [&, this]() -> QWidget* {
-                auto layout = new QHBoxLayout();
+        layout->setMargin(0);
+        layout->addWidget(typeWidget);
+        layout->addWidget(brushRadiusWidget);
+        layout->addWidget(modifierAddWidget);
+        layout->addWidget(modifierSubtractWidget);
+        layout->addWidget(clearSelectionWidget);
+        layout->addWidget(selectAllWidget);
+        layout->addWidget(invertSelectionWidget);
+        layout->addWidget(notifyDuringSelectionWidget);
 
-                layout->setMargin(0);
-                layout->addWidget(clearSelectionWidget);
-                layout->addWidget(selectAllWidget);
-                layout->addWidget(invertSelectionWidget);
-                layout->addStretch(1);
-
-                auto widget = new QWidget();
-
-                widget->setLayout(layout);
-
-                return widget;
-            };
-
-            auto layout = new QGridLayout();
-
-            layout->addWidget(selectionAction->getTypeAction().createLabelWidget(this), 0, 0);
-            layout->addWidget(getTypeWidget(), 0, 1);
-            layout->addWidget(selectionAction->_brushRadiusAction.createLabelWidget(this), 1, 0);
-            layout->addWidget(brushRadiusWidget, 1, 1);
-            layout->addWidget(getSelectWidget(), 2, 1);
-            layout->addWidget(notifyDuringSelectionWidget, 3, 1);
-            layout->itemAtPosition(1, 1)->widget()->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-
-            setPopupLayout(layout);
-            break;
-        }
-
-        default:
-            break;
+        setLayout(layout);
     }
 }

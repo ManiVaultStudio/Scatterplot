@@ -27,8 +27,8 @@ QMenu* ColorDataAction::getContextMenu()
     return menu;
 }
 
-ColorDataAction::Widget::Widget(QWidget* parent, ColorDataAction* colorDataAction, const Widget::State& state) :
-    WidgetActionWidget(parent, colorDataAction, state)
+ColorDataAction::Widget::Widget(QWidget* parent, ColorDataAction* colorDataAction) :
+    WidgetActionWidget(parent, colorDataAction)
 {
     auto layout = new QVBoxLayout();
 

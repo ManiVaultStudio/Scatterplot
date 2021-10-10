@@ -16,11 +16,11 @@ protected: // Widget
 
     class Widget : public WidgetActionWidget {
     public:
-        Widget(QWidget* parent, SelectionAction* selectionAction, const WidgetActionWidget::State& state);
+        Widget(QWidget* parent, SelectionAction* selectionAction, const std::int32_t& widgetFlags);
     };
 
-    QWidget* getWidget(QWidget* parent, const std::int32_t& widgetFlags, const WidgetActionWidget::State& state = WidgetActionWidget::State::Standard) override {
-        return new Widget(parent, this, state);
+    QWidget* getWidget(QWidget* parent, const std::int32_t& widgetFlags) override {
+        return new Widget(parent, this, widgetFlags);
     };
 
 public:

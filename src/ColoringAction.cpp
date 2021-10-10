@@ -211,8 +211,8 @@ void ColoringAction::setDimensions(const std::vector<QString>& dimensionNames)
     setDimensions(static_cast<std::uint32_t>(dimensionNames.size()), dimensionNames);
 }
 
-ColoringAction::Widget::Widget(QWidget* parent, ColoringAction* coloringAction, const Widget::State& state) :
-    WidgetActionWidget(parent, coloringAction, state)
+ColoringAction::Widget::Widget(QWidget* parent, ColoringAction* coloringAction, const std::int32_t& widgetFlags) :
+    WidgetActionWidget(parent, coloringAction, widgetFlags)
 {
     auto layout = new QHBoxLayout();
 
@@ -244,34 +244,23 @@ ColoringAction::Widget::Widget(QWidget* parent, ColoringAction* coloringAction, 
     auto labelWidget    = coloringAction->_colorByAction.createLabelWidget(this);
     auto optionWidget   = coloringAction->_colorByAction.createWidget(this);
 
-    switch (state)
-    {
-        case Widget::State::Standard:
-        {
-            auto layout = new QHBoxLayout();
+    if (widgetFlags & PopupLayout) {
+        auto layout = new QGridLayout();
 
-            layout->setMargin(0);
-            layout->addWidget(labelWidget);
-            layout->addWidget(optionWidget);
-            layout->addWidget(stackedWidget);
+        layout->addWidget(labelWidget, 0, 0);
+        layout->addWidget(optionWidget, 0, 1);
+        layout->addWidget(stackedWidget, 0, 2);
 
-            setLayout(layout);
-            break;
-        }
+        setPopupLayout(layout);
+    }
+    else {
+        auto layout = new QHBoxLayout();
 
-        case Widget::State::Popup:
-        {
-            auto layout = new QGridLayout();
+        layout->setMargin(0);
+        layout->addWidget(labelWidget);
+        layout->addWidget(optionWidget);
+        layout->addWidget(stackedWidget);
 
-            layout->addWidget(labelWidget, 0, 0);
-            layout->addWidget(optionWidget, 0, 1);
-            layout->addWidget(stackedWidget, 0, 2);
-
-            setPopupLayout(layout);
-            break;
-        }
-
-        default:
-            break;
+        setLayout(layout);
     }
 }
