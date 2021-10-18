@@ -3,7 +3,8 @@
 #include "PluginAction.h"
 
 #include <QActionGroup>
-#include <QHBoxLayout>
+
+using namespace hdps::gui;
 
 class QMenu;
 
@@ -11,13 +12,13 @@ class MiscellaneousAction : public PluginAction
 {
 protected: // Widget
 
-    class Widget : public PluginAction::Widget {
+    class Widget : public WidgetActionWidget {
     public:
-        Widget(QWidget* parent, MiscellaneousAction* miscellaneousAction, const Widget::State& state);
+        Widget(QWidget* parent, MiscellaneousAction* miscellaneousAction, const std::int32_t& widgetFlags);
     };
 
-    QWidget* getWidget(QWidget* parent, const Widget::State& state = Widget::State::Standard) override {
-        return new Widget(parent, this, state);
+    QWidget* getWidget(QWidget* parent, const std::int32_t& widgetFlags) override {
+        return new Widget(parent, this, widgetFlags);
     };
 
 public:
@@ -26,7 +27,7 @@ public:
     QMenu* getContextMenu();
 
 protected:
-    hdps::gui::ColorAction  _backgroundColorAction;
+    ColorAction  _backgroundColorAction;
 
     static const QColor DEFAULT_BACKGROUND_COLOR;
 

@@ -16,6 +16,8 @@ ConstantColorAction::ConstantColorAction(ScatterplotPlugin* scatterplotPlugin) :
     _constantColorAction(this, "Constant color", DEFAULT_COLOR, DEFAULT_COLOR),
     _resetAction(this, "Reset")
 {
+    _scatterplotPlugin->addAction(&_constantColorAction);
+
     _constantColorAction.setToolTip("Constant color");
     _resetAction.setToolTip("Reset color settings");
 
@@ -23,13 +25,11 @@ ConstantColorAction::ConstantColorAction(ScatterplotPlugin* scatterplotPlugin) :
         if (_scatterplotPlugin->getNumberOfPoints() == 0)
             return;
 
-        std::vector<Vector3f> colors(_scatterplotPlugin->getNumberOfPoints());
+        QPixmap colorPixmap(1, 1);
 
-        const auto color = _constantColorAction.getColor();
-
-        std::fill(colors.begin(), colors.end(), Vector3f(color.redF(), color.greenF(), color.blueF()));
-
-        getScatterplotWidget()->setColors(colors);
+        colorPixmap.fill(_constantColorAction.getColor());
+        
+        getScatterplotWidget()->setColorMap(colorPixmap.toImage());
     };
 
     const auto updateResetAction = [this]() -> void {
@@ -45,12 +45,17 @@ ConstantColorAction::ConstantColorAction(ScatterplotPlugin* scatterplotPlugin) :
         _constantColorAction.setColor(DEFAULT_COLOR);
     });
 
+    connect(getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, [this, updateConstantColor](const ScatterplotWidget::RenderMode& renderMode) {
+        if (renderMode == ScatterplotWidget::RenderMode::SCATTERPLOT)
+            updateConstantColor();
+    });
+
     connect(getScatterplotWidget(), &ScatterplotWidget::coloringModeChanged, this, [this, updateConstantColor](const ScatterplotWidget::ColoringMode& coloringMode) {
         if (coloringMode == ScatterplotWidget::ColoringMode::ConstantColor)
             updateConstantColor();
     });
 
-    connect(_scatterplotPlugin, &ScatterplotPlugin::currentDatasetChanged, this, [this, updateConstantColor](const QString& datasetName) {
+    connect(&_scatterplotPlugin->getPointsDataset(), &DatasetRef<Points>::datasetNameChanged, this, [this, updateConstantColor](const QString& oldDatasetName, const QString& newDatasetName) {
         if (getScatterplotWidget()->getColoringMode() == ScatterplotWidget::ColoringMode::ConstantColor)
             updateConstantColor();
     });
@@ -69,24 +74,13 @@ QMenu* ConstantColorAction::getContextMenu()
     return menu;
 }
 
-ConstantColorAction::Widget::Widget(QWidget* parent, ConstantColorAction* colorByConstantAction, const Widget::State& state) :
-    WidgetAction::Widget(parent, colorByConstantAction, state)
+ConstantColorAction::Widget::Widget(QWidget* parent, ConstantColorAction* colorByConstantAction) :
+    WidgetActionWidget(parent, colorByConstantAction)
 {
-    switch (state)
-    {
-        case Widget::State::Standard:
-        case Widget::State::Popup:
-        {
-            auto layout = new QHBoxLayout();
+    auto layout = new QHBoxLayout();
 
-            layout->setMargin(0);
-            layout->addWidget(colorByConstantAction->_constantColorAction.createWidget(this));
+    layout->setMargin(0);
+    layout->addWidget(colorByConstantAction->_constantColorAction.createWidget(this));
 
-            setLayout(layout);
-            break;
-        }
-
-        default:
-            break;
-    }
+    setLayout(layout);
 }

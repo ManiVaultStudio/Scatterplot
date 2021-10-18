@@ -5,19 +5,21 @@
 #include <QActionGroup>
 #include <QHBoxLayout>
 
+using namespace hdps::gui;
+
 class QMenu;
 
 class RenderModeAction : public PluginAction
 {
 protected: // Widget
 
-    class Widget : public PluginAction::Widget {
+    class Widget : public WidgetActionWidget {
     public:
-        Widget(QWidget* parent, RenderModeAction* renderModeAction, const Widget::State& state);
+        Widget(QWidget* parent, RenderModeAction* renderModeAction, const std::int32_t& widgetFlags);
     };
 
-    QWidget* getWidget(QWidget* parent, const Widget::State& state = Widget::State::Standard) override {
-        return new Widget(parent, this, state);
+    QWidget* getWidget(QWidget* parent, const std::int32_t& widgetFlags) override {
+        return new Widget(parent, this, widgetFlags);
     };
 
 public:
@@ -26,10 +28,10 @@ public:
     QMenu* getContextMenu();
 
 protected:
-    hdps::gui::ToggleAction     _scatterPlotAction;
-    hdps::gui::ToggleAction     _densityPlotAction;
-    hdps::gui::ToggleAction     _contourPlotAction;
-    QActionGroup                _actionGroup;
+    ToggleAction    _scatterPlotAction;
+    ToggleAction    _densityPlotAction;
+    ToggleAction    _contourPlotAction;
+    QActionGroup    _actionGroup;
 
     friend class Widget;
 };

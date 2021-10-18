@@ -2,6 +2,7 @@
 
 #include "renderers/PointRenderer.h"
 #include "renderers/DensityRenderer.h"
+#include "util/PixelSelectionTool.h"
 
 #include "graphics/Vector2f.h"
 #include "graphics/Vector3f.h"
@@ -9,20 +10,15 @@
 #include "graphics/Bounds.h"
 #include "graphics/Selection.h"
 
-#include "widgets/ColormapWidget.h"
-
-#include "PixelSelectionToolRenderer.h"
-
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions_3_3_Core>
 
 #include <QMouseEvent>
 #include <QMenu>
 
-class PixelSelectionTool;
-
 using namespace hdps;
 using namespace hdps::gui;
+using namespace hdps::util;
 
 class ScatterplotWidget : public QOpenGLWidget, QOpenGLFunctions_3_3_Core
 {
@@ -43,7 +39,7 @@ public:
     };
 
 public:
-    ScatterplotWidget(PixelSelectionTool& pixelSelectionTool);
+    ScatterplotWidget();
     ~ScatterplotWidget();
 
     /** Returns true when the widget was initialized and is ready to be used. */
@@ -60,6 +56,9 @@ public:
     /** Get/set coloring mode */
     ColoringMode getColoringMode() const;
     void setColoringMode(const ColoringMode& coloringMode);
+
+    /** Get reference to the pixel selection tool */
+    PixelSelectionTool& getPixelSelectionTool();
 
     /**
      * Feed 2-dimensional data to the scatterplot.
@@ -88,15 +87,29 @@ public:
         return _dataBounds;
     }
 
-    /** Resets the current color map to the default color map */
-    void resetColorMap();
+    Vector3f getColorMapRange() const;
+    void setColorMapRange(const float& min, const float& max);
 
 protected:
     void initializeGL()         Q_DECL_OVERRIDE;
     void resizeGL(int w, int h) Q_DECL_OVERRIDE;
     void paintGL()              Q_DECL_OVERRIDE;
-
     void cleanup();
+    
+public: // Const access to renderers
+
+    const PointRenderer& getPointRenderer() const { 
+        return _pointRenderer;
+    }
+
+    const DensityRenderer& getDensityRenderer() const {
+        return _densityRenderer;
+    }
+
+public:
+
+    /** Assign a color map image to the point and density renderers */
+    void setColorMap(const QImage& colorMapImage);
 
 signals:
     void initialized();
@@ -122,22 +135,18 @@ signals:
 public slots:
     void computeDensity();
 
-    void colormapChanged(QString colormapName);
-    void colormapdiscreteChanged(bool isDiscrete);
-
 private:
-    const Matrix3f              toClipCoordinates = Matrix3f(2, 0, 0, 2, -1, -1);
-    Matrix3f                    toNormalisedCoordinates;
-    Matrix3f                    toIsotropicCoordinates;
-    bool                        _isInitialized = false;
-    RenderMode                  _renderMode = SCATTERPLOT;
-    QColor                      _backgroundColor;
-    ColoringMode                _coloringMode = ColoringMode::ConstantColor;
-    PointRenderer               _pointRenderer;                     
-    DensityRenderer             _densityRenderer;                   
-    PixelSelectionToolRenderer  _pixelSelectionToolRenderer;        
-    ColormapWidget              _colormapWidget;                    
-    QSize                       _windowSize;                        /** Size of the scatterplot widget */
-    Bounds                      _dataBounds;                        /** Bounds of the loaded data */
-    PixelSelectionTool&         _pixelSelectionTool;                
+    const Matrix3f          toClipCoordinates = Matrix3f(2, 0, 0, 2, -1, -1);
+    Matrix3f                toNormalisedCoordinates;
+    Matrix3f                toIsotropicCoordinates;
+    bool                    _isInitialized = false;
+    RenderMode              _renderMode = SCATTERPLOT;
+    QColor                  _backgroundColor;
+    ColoringMode            _coloringMode = ColoringMode::ConstantColor;
+    PointRenderer           _pointRenderer;                     
+    DensityRenderer         _densityRenderer;                   
+    QSize                   _windowSize;                        /** Size of the scatterplot widget */
+    Bounds                  _dataBounds;                        /** Bounds of the loaded data */
+    QImage                  _colorMapImage;
+    PixelSelectionTool      _pixelSelectionTool;
 };

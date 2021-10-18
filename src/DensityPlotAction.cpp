@@ -12,25 +12,36 @@ DensityPlotAction::DensityPlotAction(ScatterplotPlugin* scatterplotPlugin) :
 {
     setToolTip("Density plot settings");
 
-    const auto updateSigma = [this]() -> void {
+    _scatterplotPlugin->addAction(&_sigmaAction);
+
+    const auto computeDensity = [this]() -> void {
         getScatterplotWidget()->setSigma(0.01 * _sigmaAction.getValue());
+
+        const auto maxDensity = getScatterplotWidget()->getDensityRenderer().getMaxDensity();
+
+        if (maxDensity > 0)
+            _scatterplotPlugin->getSettingsAction().getColoringAction().getColorMapAction().getSettingsAction().getHorizontalAxisAction().getRangeAction().setRange(0.0f, maxDensity);
     };
 
-    connect(&_sigmaAction, &DecimalAction::valueChanged, this, [this, updateSigma](const double& value) {
-        updateSigma();
+    connect(&_sigmaAction, &DecimalAction::valueChanged, this, [this, computeDensity](const double& value) {
+        computeDensity();
     });
 
     const auto updateSigmaAction = [this]() {
         _sigmaAction.setUpdateDuringDrag(_scatterplotPlugin->getNumberOfPoints() < 100000);
     };
 
-    connect(scatterplotPlugin, &ScatterplotPlugin::currentDatasetChanged, this, [this, updateSigmaAction](const QString& datasetName) {
+    connect(&_scatterplotPlugin->getPointsDataset(), &DatasetRef<Points>::datasetNameChanged, this, [this, updateSigmaAction, computeDensity](const QString& oldDatasetName, const QString& newDatasetName) {
         updateSigmaAction();
+        computeDensity();
+    });
+
+    connect(getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, [this, computeDensity](const ScatterplotWidget::RenderMode& renderMode) {
+        computeDensity();
     });
 
     updateSigmaAction();
-
-    updateSigma();
+    computeDensity();
 }
 
 QMenu* DensityPlotAction::getContextMenu()
@@ -52,25 +63,14 @@ QMenu* DensityPlotAction::getContextMenu()
     return menu;
 }
 
-DensityPlotAction::Widget::Widget(QWidget* parent, DensityPlotAction* densityPlotAction, const Widget::State& state) :
-    WidgetAction::Widget(parent, densityPlotAction, state)
+DensityPlotAction::Widget::Widget(QWidget* parent, DensityPlotAction* densityPlotAction) :
+    WidgetActionWidget(parent, densityPlotAction)
 {
-    switch (state)
-    {
-        case Widget::State::Standard:
-        case Widget::State::Popup:
-        {
-            auto layout = new QHBoxLayout();
+    auto layout = new QHBoxLayout();
 
-            layout->setMargin(0);
-            layout->addWidget(new QLabel("Sigma:"));
-            layout->addWidget(densityPlotAction->_sigmaAction.createWidget(this));
+    layout->setMargin(0);
+    layout->addWidget(densityPlotAction->_sigmaAction.createLabelWidget(this));
+    layout->addWidget(densityPlotAction->_sigmaAction.createWidget(this));
 
-            setLayout(layout);
-            break;
-        }
-
-        default:
-            break;
-    }
+    setLayout(layout);
 }

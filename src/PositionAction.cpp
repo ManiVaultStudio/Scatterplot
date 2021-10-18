@@ -15,6 +15,10 @@ PositionAction::PositionAction(ScatterplotPlugin* scatterplotPlugin) :
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("ruler-combined"));
 
+    _scatterplotPlugin->addAction(&_xDimensionAction);
+    _scatterplotPlugin->addAction(&_yDimensionAction);
+
+
     _xDimensionAction.setToolTip("X dimension");
     _yDimensionAction.setToolTip("Y dimension");
 
@@ -24,16 +28,6 @@ PositionAction::PositionAction(ScatterplotPlugin* scatterplotPlugin) :
 
     connect(&_yDimensionAction, &OptionAction::currentIndexChanged, [this, scatterplotPlugin](const std::uint32_t& currentIndex) {
         scatterplotPlugin->setYDimension(currentIndex);
-    });
-
-    connect(&_yDimensionAction, &OptionAction::optionsChanged, [this, scatterplotPlugin](const QStringList& options) {
-        _xDimensionAction.setCurrentIndex(0);
-        _xDimensionAction.setDefaultIndex(0);
-
-        const auto yIndex = options.count() >= 2 ? 1 : 0;
-
-        _yDimensionAction.setCurrentIndex(yIndex);
-        _yDimensionAction.setDefaultIndex(yIndex);
     });
 }
 
@@ -61,7 +55,15 @@ void PositionAction::setDimensions(const std::uint32_t& numberOfDimensions, cons
     _yDimensionAction.setOptions(dimensionNamesStringList);
 
     _xDimensionAction.setCurrentIndex(0);
-    _yDimensionAction.setCurrentIndex(numberOfDimensions >= 2 ? 1 : 0);
+    _xDimensionAction.setDefaultIndex(0);
+
+    const auto yIndex = dimensionNamesStringList.count() >= 2 ? 1 : 0;
+
+    _yDimensionAction.setCurrentIndex(yIndex);
+    _yDimensionAction.setDefaultIndex(yIndex);
+
+    //_xDimensionAction.setCurrentIndex(0);
+    //_yDimensionAction.setCurrentIndex(numberOfDimensions >= 2 ? 1 : 0);
 }
 
 void PositionAction::setDimensions(const std::vector<QString>& dimensionNames)
@@ -79,50 +81,36 @@ std::int32_t PositionAction::getYDimension() const
     return _yDimensionAction.getCurrentIndex();
 }
 
-PositionAction::Widget::Widget(QWidget* parent, PositionAction* positionAction, const Widget::State& state) :
-    WidgetAction::Widget(parent, positionAction, state)
+PositionAction::Widget::Widget(QWidget* parent, PositionAction* positionAction, const std::int32_t& widgetFlags) :
+    WidgetActionWidget(parent, positionAction, widgetFlags)
 {
-    auto xDimensionLabel    = new QLabel("X-dimension:");
-    auto yDimensionLabel    = new QLabel("Y-dimension:");
-    auto xDimensionWidget   = dynamic_cast<OptionAction::Widget*>(positionAction->_xDimensionAction.createWidget(this));
-    auto yDimensionWidget   = dynamic_cast<OptionAction::Widget*>(positionAction->_yDimensionAction.createWidget(this));
+    auto xDimensionLabel    = positionAction->_xDimensionAction.createLabelWidget(this);
+    auto yDimensionLabel    = positionAction->_yDimensionAction.createLabelWidget(this);
+    auto xDimensionWidget   = positionAction->_xDimensionAction.createWidget(this);
+    auto yDimensionWidget   = positionAction->_yDimensionAction.createWidget(this);
 
-    xDimensionLabel->setToolTip(positionAction->_xDimensionAction.toolTip());
-    yDimensionLabel->setToolTip(positionAction->_yDimensionAction.toolTip());
-    
-    xDimensionWidget->getComboBox()->setSizeAdjustPolicy(QComboBox::AdjustToContents);
-    yDimensionWidget->getComboBox()->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+    xDimensionWidget->findChild<QComboBox*>("ComboBox")->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+    yDimensionWidget->findChild<QComboBox*>("ComboBox")->setSizeAdjustPolicy(QComboBox::AdjustToContents);
 
-    switch (state)
-    {
-        case Widget::State::Standard:
-        {
-            auto layout = new QHBoxLayout();
+    if (widgetFlags & PopupLayout) {
+        auto layout = new QGridLayout();
 
-            layout->setMargin(0);
-            layout->addWidget(xDimensionLabel);
-            layout->addWidget(xDimensionWidget);
-            layout->addWidget(yDimensionLabel);
-            layout->addWidget(yDimensionWidget);
+        layout->addWidget(xDimensionLabel, 0, 0);
+        layout->addWidget(xDimensionWidget, 0, 1);
+        layout->addWidget(yDimensionLabel, 1, 0);
+        layout->addWidget(yDimensionWidget, 1, 1);
 
-            setLayout(layout);
-            break;
-        }
+        setPopupLayout(layout);
+    }
+    else {
+        auto layout = new QHBoxLayout();
 
-        case Widget::State::Popup:
-        {
-            auto layout = new QGridLayout();
+        layout->setMargin(0);
+        layout->addWidget(xDimensionLabel);
+        layout->addWidget(xDimensionWidget);
+        layout->addWidget(yDimensionLabel);
+        layout->addWidget(yDimensionWidget);
 
-            layout->addWidget(xDimensionLabel, 0, 0);
-            layout->addWidget(xDimensionWidget, 0, 1);
-            layout->addWidget(yDimensionLabel, 1, 0);
-            layout->addWidget(yDimensionWidget, 1, 1);
-
-            setPopupLayout(layout);
-            break;
-        }
-
-        default:
-            break;
+        setLayout(layout);
     }
 }

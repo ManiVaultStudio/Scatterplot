@@ -2,19 +2,19 @@
 
 #include "PluginAction.h"
 
-#include <QHBoxLayout>
+using namespace hdps::gui;
 
 class SubsetAction : public PluginAction
 {
 protected: // Widget
 
-    class Widget : public PluginAction::Widget {
+    class Widget : public WidgetActionWidget {
     public:
-        Widget(QWidget* parent, SubsetAction* subsetAction, const Widget::State& state);
+        Widget(QWidget* parent, SubsetAction* subsetAction, const std::int32_t& widgetFlags);
     };
 
-    QWidget* getWidget(QWidget* parent, const Widget::State& state = Widget::State::Standard) override {
-        return new Widget(parent, this, state);
+    QWidget* getWidget(QWidget* parent, const std::int32_t& widgetFlags) override {
+        return new Widget(parent, this, widgetFlags);
     };
 
 public:
@@ -23,9 +23,9 @@ public:
     QMenu* getContextMenu();
 
 protected:
-    hdps::gui::StringAction     _subsetNameAction;
-    hdps::gui::TriggerAction    _createSubsetAction;
-    hdps::gui::OptionAction     _sourceDataAction;
+    StringAction     _subsetNameAction;
+    TriggerAction    _createSubsetAction;
+    OptionAction     _sourceDataAction;
 
     friend class Widget;
 };

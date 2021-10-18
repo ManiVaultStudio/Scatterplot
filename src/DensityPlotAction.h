@@ -4,16 +4,18 @@
 
 #include <QLabel>
 
+using namespace hdps::gui;
+
 class DensityPlotAction : public PluginAction
 {
 protected:
-    class Widget : public PluginAction::Widget {
+    class Widget : public WidgetActionWidget {
     public:
-        Widget(QWidget* parent, DensityPlotAction* densityPlotAction, const Widget::State& state);
+        Widget(QWidget* parent, DensityPlotAction* densityPlotAction);
     };
 
-    QWidget* getWidget(QWidget* parent, const Widget::State& state = Widget::State::Standard) override {
-        return new Widget(parent, this, state);
+    QWidget* getWidget(QWidget* parent, const std::int32_t& widgetFlags) override {
+        return new Widget(parent, this);
     };
 
 public:
@@ -22,7 +24,7 @@ public:
     QMenu* getContextMenu();
 
 protected:
-    hdps::gui::DecimalAction    _sigmaAction;
+    DecimalAction       _sigmaAction;
 
     static constexpr double DEFAULT_SIGMA = 25.0;
 

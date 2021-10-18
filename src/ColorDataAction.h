@@ -2,21 +2,22 @@
 
 #include "PluginAction.h"
 
+using namespace hdps::gui;
+
 class ColorDataAction : public PluginAction
 {
-
 protected: // Widget
 
-    class Widget : public WidgetAction::Widget
+    class Widget : public WidgetActionWidget
     {
     protected:
-        Widget(QWidget* parent, ColorDataAction* colorDataAction, const Widget::State& state);
+        Widget(QWidget* parent, ColorDataAction* colorDataAction);
 
         friend class ColorDataAction;
     };
 
-    QWidget* getWidget(QWidget* parent, const Widget::State& state = Widget::State::Standard) override {
-        return new Widget(parent, this, state);
+    QWidget* getWidget(QWidget* parent, const std::int32_t& widgetFlags) override {
+        return new Widget(parent, this);
     };
 
 public:
@@ -24,10 +25,10 @@ public:
 
     QMenu* getContextMenu();
 
-    hdps::gui::StringAction& getDatasetNameAction() { return _datasetNameAction; }
+    StringAction& getDatasetNameAction() { return _datasetNameAction; }
 
 protected:
-    hdps::gui::StringAction     _datasetNameAction;
+    StringAction     _datasetNameAction;
 
     friend class Widget;
 };

@@ -9,9 +9,11 @@ const QColor MiscellaneousAction::DEFAULT_BACKGROUND_COLOR = qRgb(255, 255, 255)
 
 MiscellaneousAction::MiscellaneousAction(ScatterplotPlugin* scatterplotPlugin) :
     PluginAction(scatterplotPlugin, "Miscellaneous"),
-    _backgroundColorAction(scatterplotPlugin)
+    _backgroundColorAction(scatterplotPlugin, "Background color")
 {
-    setIcon(Application::getIconFont("FontAwesome").getIcon("ellipsis-h"));
+    setIcon(Application::getIconFont("FontAwesome").getIcon("cog"));
+
+    _scatterplotPlugin->addAction(&_backgroundColorAction);
 
     _backgroundColorAction.setColor(DEFAULT_BACKGROUND_COLOR);
     _backgroundColorAction.setDefaultColor(DEFAULT_BACKGROUND_COLOR);
@@ -38,35 +40,27 @@ QMenu* MiscellaneousAction::getContextMenu()
     return menu;
 }
 
-MiscellaneousAction::Widget::Widget(QWidget* parent, MiscellaneousAction* miscellaneousAction, const Widget::State& state) :
-    WidgetAction::Widget(parent, miscellaneousAction, state)
+MiscellaneousAction::Widget::Widget(QWidget* parent, MiscellaneousAction* miscellaneousAction, const std::int32_t& widgetFlags) :
+    WidgetActionWidget(parent, miscellaneousAction, widgetFlags)
 {
-    switch (state)
-    {
-        case Widget::State::Standard:
-        {
-            auto layout = new QHBoxLayout();
-            
-            layout->setMargin(0);
-            layout->addWidget(new QLabel("Background color:"));
-            layout->addWidget(miscellaneousAction->_backgroundColorAction.createWidget(this));
+    auto labelWidget    = miscellaneousAction->_backgroundColorAction.createLabelWidget(this);
+    auto colorWidget    = miscellaneousAction->_backgroundColorAction.createWidget(this);
 
-            setLayout(layout);
-            break;
-        }
+    if (widgetFlags & PopupLayout) {
+        auto layout = new QGridLayout();
 
-        case Widget::State::Popup:
-        {
-            auto layout = new QGridLayout();
+        layout->addWidget(labelWidget, 0, 0);
+        layout->addWidget(colorWidget, 0, 1);
 
-            layout->addWidget(new QLabel("Background color:"), 0, 0);
-            layout->addWidget(miscellaneousAction->_backgroundColorAction.createWidget(this, true), 0, 1);
-            
-            setPopupLayout(layout);
-            break;
-        }
+        setPopupLayout(layout);
+    }
+    else {
+        auto layout = new QHBoxLayout();
 
-        default:
-            break;
+        layout->setMargin(0);
+        layout->addWidget(labelWidget);
+        layout->addWidget(colorWidget);
+
+        setLayout(layout);
     }
 }

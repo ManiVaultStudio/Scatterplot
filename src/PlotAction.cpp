@@ -2,6 +2,9 @@
 #include "ScatterplotWidget.h"
 #include "Application.h"
 
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+
 using namespace hdps::gui;
 
 PlotAction::PlotAction(ScatterplotPlugin* scatterplotPlugin) :
@@ -43,45 +46,34 @@ QMenu* PlotAction::getContextMenu()
     return new QMenu("Plot");
 }
 
-PlotAction::Widget::Widget(QWidget* parent, PlotAction* plotAction, const Widget::State& state) :
-    WidgetAction::Widget(parent, plotAction, state)
+PlotAction::Widget::Widget(QWidget* parent, PlotAction* plotAction, const std::int32_t& widgetFlags) :
+    WidgetActionWidget(parent, plotAction, widgetFlags)
 {
     QWidget* pointPlotWidget    = nullptr;
     QWidget* densityPlotWidget  = nullptr;
 
-    switch (state)
-    {
-        case Widget::State::Standard:
-        {
-            pointPlotWidget     = plotAction->_pointPlotAction.getWidget(this, State::Standard);
-            densityPlotWidget   = plotAction->_densityPlotAction.getWidget(this, State::Standard);
-            
-            auto layout = new QHBoxLayout();
+    if (widgetFlags & PopupLayout) {
+        pointPlotWidget     = plotAction->_pointPlotAction.createWidget(this);
+        densityPlotWidget   = plotAction->_densityPlotAction.createWidget(this);
 
-            layout->setMargin(0);
-            layout->addWidget(pointPlotWidget);
-            layout->addWidget(densityPlotWidget);
+        auto layout = new QVBoxLayout();
 
-            setLayout(layout);
-            break;
-        }
+        layout->addWidget(pointPlotWidget);
+        layout->addWidget(densityPlotWidget);
 
-        case Widget::State::Popup:
-        {
-            pointPlotWidget     = plotAction->_pointPlotAction.getWidget(this, State::Popup);
-            densityPlotWidget   = plotAction->_densityPlotAction.getWidget(this, State::Popup);
-            
-            auto layout = new QVBoxLayout();
+        setPopupLayout(layout);
+    }
+    else {
+        pointPlotWidget = plotAction->_pointPlotAction.createWidget(this);
+        densityPlotWidget = plotAction->_densityPlotAction.createWidget(this);
 
-            layout->addWidget(pointPlotWidget);
-            layout->addWidget(densityPlotWidget);
+        auto layout = new QHBoxLayout();
 
-            setPopupLayout(layout);
-            break;
-        }
+        layout->setMargin(0);
+        layout->addWidget(pointPlotWidget);
+        layout->addWidget(densityPlotWidget);
 
-        default:
-            break;
+        setLayout(layout);
     }
 
     const auto updateRenderMode = [plotAction, pointPlotWidget, densityPlotWidget]() -> void {

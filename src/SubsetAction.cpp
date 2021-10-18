@@ -22,14 +22,17 @@ SubsetAction::SubsetAction(ScatterplotPlugin* scatterplotPlugin) :
         setEnabled(_scatterplotPlugin->getNumberOfSelectedPoints() >= 1);
     };
 
-    connect(_scatterplotPlugin, qOverload<>(&ScatterplotPlugin::selectionChanged), this, updateActions);
+    connect(_scatterplotPlugin, &ScatterplotPlugin::selectionChanged, this, updateActions);
 
     connect(&_createSubsetAction, &QAction::triggered, this, [this]() {
         _scatterplotPlugin->createSubset(_sourceDataAction.getCurrentIndex() == 1, _subsetNameAction.getString());
     });
 
     const auto onCurrentDatasetChanged = [this]() -> void {
-        const auto datasetName = _scatterplotPlugin->getCurrentDataset();
+        if (!_scatterplotPlugin->getPointsDataset().isValid())
+            return;
+
+        const auto datasetName = _scatterplotPlugin->getPointsDataset()->getName();
 
         QStringList sourceDataOptions;
 
@@ -46,7 +49,7 @@ SubsetAction::SubsetAction(ScatterplotPlugin* scatterplotPlugin) :
         _sourceDataAction.setEnabled(sourceDataOptions.count() >= 2);
     };
 
-    connect(scatterplotPlugin, &ScatterplotPlugin::currentDatasetChanged, this, [this, onCurrentDatasetChanged](const QString& datasetName) {
+    connect(&scatterplotPlugin->getPointsDataset(), &DatasetRef<Points>::datasetNameChanged, this, [this, onCurrentDatasetChanged](const QString& oldDatasetName, const QString& newDatasetName) {
         onCurrentDatasetChanged();
     });
 
@@ -64,26 +67,20 @@ QMenu* SubsetAction::getContextMenu()
     return menu;
 }
 
-SubsetAction::Widget::Widget(QWidget* parent, SubsetAction* subsetAction, const Widget::State& state) :
-    WidgetAction::Widget(parent, subsetAction, state)
+SubsetAction::Widget::Widget(QWidget* parent, SubsetAction* subsetAction, const std::int32_t& widgetFlags) :
+    WidgetActionWidget(parent, subsetAction)
 {
     auto layout = new QHBoxLayout();
 
     layout->addWidget(subsetAction->_createSubsetAction.createWidget(this));
     layout->addWidget(subsetAction->_sourceDataAction.createWidget(this));
 
-    switch (state)
+    if (widgetFlags & PopupLayout)
     {
-        case Widget::State::Standard:
-            layout->setMargin(0);
-            setLayout(layout);
-            break;
-
-        case Widget::State::Popup:
-            setPopupLayout(layout);
-            break;
-
-        default:
-            break;
+        setPopupLayout(layout);
+            
+    } else {
+        layout->setMargin(0);
+        setLayout(layout);
     }
 }

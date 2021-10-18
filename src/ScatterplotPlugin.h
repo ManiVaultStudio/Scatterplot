@@ -2,15 +2,18 @@
 
 #include <ViewPlugin.h>
 
+#include "util/DatasetRef.h"
+#include "util/PixelSelectionTool.h"
+
 #include "Common.h"
 
 #include "SettingsAction.h"
 
 using namespace hdps::plugin;
+using namespace hdps::util;
 
 class Points;
 
-class PixelSelectionTool;
 class ScatterplotWidget;
 
 namespace hdps
@@ -28,17 +31,11 @@ class ScatterplotPlugin : public ViewPlugin
     Q_OBJECT
     
 public:
-    ScatterplotPlugin();
+    ScatterplotPlugin(const PluginFactory* factory);
     ~ScatterplotPlugin() override;
-    
-    /** Returns the icon of this plugin */
-    QIcon getIcon() const override;
 
     void init() override;
 
-    void onDataEvent(hdps::DataEvent* dataEvent);
-
-    QString getCurrentDataset() const;
     std::uint32_t getNumberOfPoints() const;
     std::uint32_t getNumberOfSelectedPoints() const;
 
@@ -59,52 +56,55 @@ public: // Selection
     void clearSelection();
     void invertSelection();
 
-    PixelSelectionTool* getSelectionTool();
-
-private:
-
-    /** Updates the window title (includes the name of the loaded dataset) */
-    void updateWindowTitle();
-
-public: // Data loading
+protected: // Data loading
 
     /**
      * Load point data
      * @param dataSetName Name of the point dataset
      */
-    void loadPointData(const QString& dataSetName);
+    void loadPoints(const QString& dataSetName);
 
     /**
      * Load color data
      * @param dataSetName Name of the color/cluster dataset
      */
-    void loadColorData(const QString& dataSetName);
+    void loadColors(const QString& dataSetName);
+
+public: // Miscellaneous
+
+    /** Get current points dataset */
+    DatasetRef<Points>& getPointsDataset();
+
+    /** Get current color dataset */
+    DatasetRef<DataSet>& getColorsDataset();
+
+    /** Get cluster dataset names for the loaded points dataset */
+    QStringList getClusterDatasetNames();
 
     void selectPoints();
 
 signals:
-    void currentDatasetChanged(const QString& datasetName);
     void selectionChanged();
 
 public:
     ScatterplotWidget* getScatterplotWidget();
     hdps::CoreInterface* getCore();
 
+    SettingsAction& getSettingsAction() { return _settingsAction; }
 private:
     void updateData();
     void calculatePositions(const Points& points);
     void calculateScalars(std::vector<float>& scalars, const Points& points, int colorIndex);
     void updateSelection();
-    
+
 private:
-    QString                         _currentDataSet;
-    QString                         _currentColorDataSet;
-    std::vector<hdps::Vector2f>     _points;
-    unsigned int                    _numPoints;
+    DatasetRef<Points>              _points;        /** Currently loaded points dataset */
+    DatasetRef<DataSet>             _colors;        /** Currently loaded color dataset (if any) */
+    std::vector<hdps::Vector2f>     _positions;     /** Point positions */
+    unsigned int                    _numPoints;     /** Number of point positions */
     
     
 protected:
-    PixelSelectionTool*         _pixelSelectionTool;
     ScatterplotWidget*          _scatterPlotWidget;
     hdps::gui::DropWidget*      _dropWidget;
     SettingsAction              _settingsAction;
@@ -124,7 +124,10 @@ class ScatterplotPluginFactory : public ViewPluginFactory
 public:
     ScatterplotPluginFactory(void) {}
     ~ScatterplotPluginFactory(void) override {}
-    
+
+    /** Returns the plugin icon */
+    QIcon getIcon() const override;
+
     ViewPlugin* produce() override;
 
     hdps::DataTypes supportedDataTypes() const override;

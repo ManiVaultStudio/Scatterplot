@@ -15,14 +15,15 @@ SettingsAction::SettingsAction(ScatterplotPlugin* scatterplotPlugin) :
     _positionAction(scatterplotPlugin),
     _coloringAction(scatterplotPlugin),
     _subsetAction(scatterplotPlugin),
-    _selectionAction(scatterplotPlugin),
+    _manualClusteringAction(scatterplotPlugin),
+    _selectionAction(*scatterplotPlugin),
     _miscellaneousAction(scatterplotPlugin)
 {
     const auto updateEnabled = [this]() {
-        setEnabled(!_scatterplotPlugin->getCurrentDataset().isEmpty());
+        setEnabled(_scatterplotPlugin->getPointsDataset().isValid());
     };
 
-    connect(scatterplotPlugin, &ScatterplotPlugin::currentDatasetChanged, this, [this, updateEnabled](const QString& datasetName) {
+    connect(&scatterplotPlugin->getPointsDataset(), &DatasetRef<Points>::datasetNameChanged, this, [this, updateEnabled](const QString& oldDatasetName, const QString& newDatasetName) {
         updateEnabled();
     });
 
@@ -48,7 +49,7 @@ QMenu* SettingsAction::getContextMenu()
 }
 
 SettingsAction::Widget::Widget(QWidget* parent, SettingsAction* settingsAction) :
-    WidgetAction::Widget(parent, settingsAction, Widget::State::Standard),
+    WidgetActionWidget(parent, settingsAction, Widget::State::Standard),
     _layout(),
     _toolBarWidget(),
     _toolBarLayout(),
@@ -66,7 +67,9 @@ SettingsAction::Widget::Widget(QWidget* parent, SettingsAction* settingsAction) 
     addStateWidget(&settingsAction->_positionAction, 10);
     addStateWidget(&settingsAction->_coloringAction, 8);
     addStateWidget(&settingsAction->_subsetAction, 3);
+    addStateWidget(&settingsAction->_manualClusteringAction, 0);
     addStateWidget(&settingsAction->_selectionAction, 2);
+    addStateWidget(&settingsAction->getColoringAction().getColorMapAction(), 100);
     addStateWidget(&settingsAction->_miscellaneousAction, 1);
 
     _toolBarLayout.addStretch(1);
@@ -92,8 +95,8 @@ SettingsAction::Widget::Widget(QWidget* parent, SettingsAction* settingsAction) 
         _stateWidgets[2]->setPriority(positionPriority);
     };
 
-    connect(settingsAction->_scatterplotPlugin, &ScatterplotPlugin::currentDatasetChanged, this, [this, onCurrentDatasetChanged](const QString& datasetName) {
-        onCurrentDatasetChanged(datasetName);
+    connect(&settingsAction->_scatterplotPlugin->getPointsDataset(), &DatasetRef<Points>::datasetNameChanged, this, [this, onCurrentDatasetChanged](const QString& oldDatasetName, const QString& newDatasetName) {
+        onCurrentDatasetChanged(newDatasetName);
     });
 
     onCurrentDatasetChanged();
@@ -116,7 +119,7 @@ bool SettingsAction::Widget::eventFilter(QObject* object, QEvent* event)
 
 void SettingsAction::Widget::addStateWidget(WidgetAction* widgetAction, const std::int32_t& priority /*= 0*/)
 {
-    _stateWidgets << new WidgetAction::StateWidget(this, widgetAction, priority);
+    _stateWidgets << new WidgetActionStateWidget(this, widgetAction, priority);
 
     if (_stateWidgets.count() >= 2) {
         _spacerWidgets << new SpacerWidget();
@@ -128,7 +131,7 @@ void SettingsAction::Widget::addStateWidget(WidgetAction* widgetAction, const st
 
 void SettingsAction::Widget::updateLayout()
 {
-    QMap<StateWidget*, Widget::State> states;
+    QMap<WidgetActionStateWidget*, Widget::State> states;
 
     for (auto stateWidget : _stateWidgets)
         states[stateWidget] = Widget::State::Collapsed;
@@ -154,7 +157,7 @@ void SettingsAction::Widget::updateLayout()
 
     auto prioritySortedStateWidgets = _stateWidgets;
 
-    std::sort(prioritySortedStateWidgets.begin(), prioritySortedStateWidgets.end(), [](StateWidget* stateWidgetA, StateWidget* stateWidgetB) {
+    std::sort(prioritySortedStateWidgets.begin(), prioritySortedStateWidgets.end(), [](WidgetActionStateWidget* stateWidgetA, WidgetActionStateWidget* stateWidgetB) {
         return stateWidgetA->getPriority() > stateWidgetB->getPriority();
     });
 
@@ -194,17 +197,18 @@ SettingsAction::SpacerWidget::SpacerWidget(const Type& type /*= State::Divider*/
 
     _layout->setMargin(2);
     _layout->setSpacing(0);
+    _layout->setAlignment(Qt::AlignCenter);
     _layout->addWidget(_verticalLine);
-
+    
     setType(type);
 }
 
-SettingsAction::SpacerWidget::Type SettingsAction::SpacerWidget::getType(const WidgetAction::Widget::State& widgetTypeLeft, const WidgetAction::Widget::State& widgetTypeRight)
+SettingsAction::SpacerWidget::Type SettingsAction::SpacerWidget::getType(const WidgetActionWidget::State& widgetTypeLeft, const WidgetActionWidget::State& widgetTypeRight)
 {
-    return widgetTypeLeft == WidgetAction::Widget::State::Collapsed && widgetTypeRight == WidgetAction::Widget::State::Collapsed ? Type::Spacer : Type::Divider;
+    return widgetTypeLeft == WidgetActionWidget::State::Collapsed && widgetTypeRight == WidgetActionWidget::State::Collapsed ? Type::Spacer : Type::Divider;
 }
 
-SettingsAction::SpacerWidget::Type SettingsAction::SpacerWidget::getType(const WidgetAction::StateWidget* stateWidgetLeft, const WidgetAction::StateWidget* stateWidgetRight)
+SettingsAction::SpacerWidget::Type SettingsAction::SpacerWidget::getType(const WidgetActionStateWidget* stateWidgetLeft, const WidgetActionStateWidget* stateWidgetRight)
 {
     return getType(stateWidgetLeft->getState(), stateWidgetRight->getState());
 }

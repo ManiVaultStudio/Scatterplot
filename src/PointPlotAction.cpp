@@ -1,6 +1,7 @@
 #include "PointPlotAction.h"
 #include "Application.h"
 
+#include "ScatterplotPlugin.h"
 #include "ScatterplotWidget.h"
 
 using namespace hdps::gui;
@@ -10,6 +11,9 @@ PointPlotAction::PointPlotAction(ScatterplotPlugin* scatterplotPlugin) :
     _pointSizeAction(this, "Point size", 1.0, 50.0, DEFAULT_POINT_SIZE, DEFAULT_POINT_SIZE),
     _pointOpacityAction(this, "Point opacity", 0.0, 100.0, DEFAULT_POINT_OPACITY, DEFAULT_POINT_OPACITY)
 {
+    _scatterplotPlugin->addAction(&_pointSizeAction);
+    _scatterplotPlugin->addAction(&_pointOpacityAction);
+
     _pointSizeAction.setSuffix("px");
     _pointOpacityAction.setSuffix("%");
 
@@ -53,47 +57,36 @@ QMenu* PointPlotAction::getContextMenu()
     return menu;
 }
 
-PointPlotAction::Widget::Widget(QWidget* parent, PointPlotAction* pointPlotAction, const Widget::State& state) :
-    WidgetAction::Widget(parent, pointPlotAction, state)
+PointPlotAction::Widget::Widget(QWidget* parent, PointPlotAction* pointPlotAction, const std::int32_t& widgetFlags) :
+    WidgetActionWidget(parent, pointPlotAction, widgetFlags)
 {
     setToolTip("Point plot settings");
 
-    auto pointSizelabel     = new QLabel("Point size:");
-    auto pointOpacitylabel  = new QLabel("Point opacity:");
+    auto pointSizelabel     = pointPlotAction->_pointSizeAction.createLabelWidget(this);
+    auto pointOpacitylabel  = pointPlotAction->_pointOpacityAction.createLabelWidget(this);
     auto pointSizeWidget    = pointPlotAction->_pointSizeAction.createWidget(this);
     auto pointOpacityWidget = pointPlotAction->_pointOpacityAction.createWidget(this);
 
-    switch (state)
-    {
-        case Widget::State::Standard:
-        {
-            auto layout = new QHBoxLayout();
+    if (widgetFlags & PopupLayout) {
+        auto layout = new QGridLayout();
 
-            layout->setMargin(0);
-            layout->addWidget(pointSizelabel);
-            layout->addWidget(pointSizeWidget);
-            layout->addWidget(pointOpacitylabel);
-            layout->addWidget(pointOpacityWidget);
+        layout->setMargin(0);
+        layout->addWidget(pointSizelabel, 0, 0);
+        layout->addWidget(pointSizeWidget, 0, 2);
+        layout->addWidget(pointOpacitylabel, 1, 0);
+        layout->addWidget(pointOpacityWidget, 1, 2);
 
-            setLayout(layout);
-            break;
-        }
+        setLayout(layout);
+    }
+    else {
+        auto layout = new QHBoxLayout();
 
-        case Widget::State::Popup:
-        {
-            auto layout = new QGridLayout();
+        layout->setMargin(0);
+        layout->addWidget(pointSizelabel);
+        layout->addWidget(pointSizeWidget);
+        layout->addWidget(pointOpacitylabel);
+        layout->addWidget(pointOpacityWidget);
 
-            layout->setMargin(0);
-            layout->addWidget(pointSizelabel, 0, 0);
-            layout->addWidget(pointSizeWidget, 0, 2);
-            layout->addWidget(pointOpacitylabel, 1, 0);
-            layout->addWidget(pointOpacityWidget, 1, 2);
-
-            setLayout(layout);
-            break;
-        }
-
-        default:
-            break;
+        setLayout(layout);
     }
 }

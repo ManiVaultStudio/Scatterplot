@@ -10,6 +10,8 @@
 #include <QLabel>
 #include <QStackedWidget>
 
+using namespace hdps::gui;
+
 class ColoringAction : public PluginAction
 {
 protected: // Widget
@@ -19,13 +21,13 @@ protected: // Widget
         QSize minimumSizeHint() const override { return currentWidget()->minimumSizeHint(); }
     };
 
-    class Widget : public PluginAction::Widget {
+    class Widget : public WidgetActionWidget {
     public:
-        Widget(QWidget* parent, ColoringAction* coloringAction, const Widget::State& state);
+        Widget(QWidget* parent, ColoringAction* coloringAction, const std::int32_t& widgetFlags);
     };
 
-    QWidget* getWidget(QWidget* parent, const Widget::State& state = Widget::State::Standard) override {
-        return new Widget(parent, this, state);
+    QWidget* getWidget(QWidget* parent, const std::int32_t& widgetFlags) override {
+        return new Widget(parent, this, widgetFlags);
     };
 
 public:
@@ -33,22 +35,25 @@ public:
 
     QMenu* getContextMenu();
     
+    OptionAction& getColorByAction() { return _colorByAction; }
     ConstantColorAction& getConstantColorAction() { return _constantColorAction; }
     ColorDimensionAction& getColorDimensionAction() { return _colorDimensionAction; }
     ColorDataAction& getColorDataAction() { return _colorDataAction; }
+    ColorMapAction& getColorMapAction() { return _colorMapAction; }
 
     void setDimensions(const std::uint32_t& numberOfDimensions, const std::vector<QString>& dimensionNames = std::vector<QString>());
     void setDimensions(const std::vector<QString>& dimensionNames);
 
 protected:
-    hdps::gui::OptionAction     _colorByAction;
-    hdps::gui::TriggerAction    _colorByConstantColorAction;
-    hdps::gui::TriggerAction    _colorByDimensionAction;
-    hdps::gui::TriggerAction    _colorByColorDataAction;
-    QActionGroup                _colorByActionGroup;
-    ConstantColorAction         _constantColorAction;
-    ColorDimensionAction        _colorDimensionAction;
-    ColorDataAction             _colorDataAction;
+    OptionAction            _colorByAction;
+    TriggerAction           _colorByConstantColorAction;
+    TriggerAction           _colorByDimensionAction;
+    TriggerAction           _colorByColorDataAction;
+    QActionGroup            _colorByActionGroup;
+    ConstantColorAction     _constantColorAction;
+    ColorDimensionAction    _colorDimensionAction;
+    ColorDataAction         _colorDataAction;
+    ColorMapAction          _colorMapAction;
 
     friend class Widget;
 };

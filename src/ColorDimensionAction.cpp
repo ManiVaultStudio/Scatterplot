@@ -11,25 +11,29 @@ using namespace hdps::gui;
 
 ColorDimensionAction::ColorDimensionAction(ScatterplotPlugin* scatterplotPlugin) :
     PluginAction(scatterplotPlugin, "Coloring"),
-    _colorDimensionAction(this, "Color dimension")
+    _currentDimensionAction(this, "Color dimension")
 {
-    scatterplotPlugin->addAction(&_colorDimensionAction);
+    scatterplotPlugin->addAction(&_currentDimensionAction);
 
     const auto updateColorDimension = [this]() -> void {
-        if (!_colorDimensionAction.hasSelection())
+        if (!_currentDimensionAction.hasSelection())
             return;
 
         if (getScatterplotWidget()->getColoringMode() == ScatterplotWidget::ColoringMode::ColorDimension)
-            _scatterplotPlugin->setColorDimension(_colorDimensionAction.getCurrentIndex());
+            _scatterplotPlugin->setColorDimension(_currentDimensionAction.getCurrentIndex());
     };
 
-    connect(&_colorDimensionAction, &OptionAction::currentIndexChanged, this, [this, updateColorDimension](const std::uint32_t& currentIndex) {
+    connect(&_currentDimensionAction, &OptionAction::currentIndexChanged, this, [this, updateColorDimension](const std::uint32_t& currentIndex) {
         updateColorDimension();
     });
 
     connect(getScatterplotWidget(), &ScatterplotWidget::coloringModeChanged, this, [this, updateColorDimension](const ScatterplotWidget::ColoringMode& coloringMode) {
         if (coloringMode == ScatterplotWidget::ColoringMode::ColorDimension)
             updateColorDimension();
+    });
+
+    connect(getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, [this, updateColorDimension](const ScatterplotWidget::RenderMode& renderMode) {
+        updateColorDimension();
     });
 
     updateColorDimension();
@@ -39,14 +43,14 @@ QMenu* ColorDimensionAction::getContextMenu()
 {
     auto menu = new QMenu("Color dimension");
 
-    menu->addAction(&_colorDimensionAction);
+    menu->addAction(&_currentDimensionAction);
 
     return menu;
 }
 
 void ColorDimensionAction::setDimensions(const std::uint32_t& numberOfDimensions, const std::vector<QString>& dimensionNames /*= std::vector<QString>()*/)
 {
-    _colorDimensionAction.setOptions(common::getDimensionNamesStringList(numberOfDimensions, dimensionNames));
+    _currentDimensionAction.setOptions(common::getDimensionNamesStringList(numberOfDimensions, dimensionNames));
 }
 
 void ColorDimensionAction::setDimensions(const std::vector<QString>& dimensionNames)
@@ -54,14 +58,14 @@ void ColorDimensionAction::setDimensions(const std::vector<QString>& dimensionNa
     setDimensions(static_cast<std::uint32_t>(dimensionNames.size()), dimensionNames);
 }
 
-ColorDimensionAction::Widget::Widget(QWidget* parent, ColorDimensionAction* colorDimensionAction, const Widget::State& state) :
-    WidgetAction::Widget(parent, colorDimensionAction, state)
+ColorDimensionAction::Widget::Widget(QWidget* parent, ColorDimensionAction* colorDimensionAction) :
+    WidgetActionWidget(parent, colorDimensionAction)
 {
     auto layout = new QHBoxLayout();
 
-    auto colorDimensionWidget = dynamic_cast<OptionAction::Widget*>(colorDimensionAction->_colorDimensionAction.createWidget(this));
+    auto colorDimensionWidget = colorDimensionAction->_currentDimensionAction.createWidget(this);
     
-    colorDimensionWidget->getComboBox()->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+    colorDimensionWidget->findChild<QComboBox*>("ComboBox")->setSizeAdjustPolicy(QComboBox::AdjustToContents);
 
     layout->setMargin(0);
     layout->addWidget(colorDimensionWidget);

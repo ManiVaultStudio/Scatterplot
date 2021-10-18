@@ -87,27 +87,22 @@ QMenu* RenderModeAction::getContextMenu()
     return menu;
 }
 
-RenderModeAction::Widget::Widget(QWidget* parent, RenderModeAction* renderModeAction, const Widget::State& state) :
-    WidgetAction::Widget(parent, renderModeAction, state)
+RenderModeAction::Widget::Widget(QWidget* parent, RenderModeAction* renderModeAction, const std::int32_t& widgetFlags) :
+    WidgetActionWidget(parent, renderModeAction, widgetFlags)
 {
     auto layout = new QHBoxLayout();
 
-    layout->addWidget(renderModeAction->_scatterPlotAction.createPushButtonWidget(this));
-    layout->addWidget(renderModeAction->_densityPlotAction.createPushButtonWidget(this));
-    layout->addWidget(renderModeAction->_contourPlotAction.createPushButtonWidget(this));
+    layout->setSpacing(3);
 
-    switch (state)
-    {
-        case Widget::State::Standard:
-            layout->setMargin(0);
-            setLayout(layout);
-            break;
+    layout->addWidget(renderModeAction->_scatterPlotAction.createWidget(this, ToggleAction::PushButton));
+    layout->addWidget(renderModeAction->_densityPlotAction.createWidget(this, ToggleAction::PushButton));
+    layout->addWidget(renderModeAction->_contourPlotAction.createWidget(this, ToggleAction::PushButton));
 
-        case Widget::State::Popup:
-            setPopupLayout(layout);
-            break;
-
-        default:
-            break;
+    if (widgetFlags & PopupLayout) {
+        setPopupLayout(layout);
+    }
+    else {
+        layout->setMargin(0);
+        setLayout(layout);
     }
 }
