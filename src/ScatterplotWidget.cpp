@@ -1,16 +1,16 @@
 #include "ScatterplotWidget.h"
-#include "PixelSelectionTool.h"
 #include "Application.h"
 
+#include "util/PixelSelectionTool.h"
 #include "util/Math.h"
+#include "util/Exception.h"
 
 #include <vector>
 
 #include <QSize>
+#include <QPainter>
 #include <QDebug>
 #include <math.h>
-
-using namespace hdps::util;
 
 namespace
 {
@@ -30,28 +30,52 @@ namespace
     }
 }
 
-ScatterplotWidget::ScatterplotWidget(PixelSelectionTool& pixelSelectionTool) :
+ScatterplotWidget::ScatterplotWidget() :
     _densityRenderer(DensityRenderer::RenderMode::DENSITY),
     _backgroundColor(1, 1, 1),
     _pointRenderer(),
-    _pixelSelectionToolRenderer(pixelSelectionTool),
-    _pixelSelectionTool(pixelSelectionTool)
+    _pixelSelectionTool(this)
 {
     setContextMenuPolicy(Qt::CustomContextMenu);
     setAcceptDrops(true);
     setMouseTracking(true);
-
-    this->installEventFilter(&_pixelSelectionTool);
-
-    QObject::connect(&_pixelSelectionTool, &PixelSelectionTool::shapeChanged, [this]() {
-        if (!isInitialized())
-            return;
-
-        _pixelSelectionToolRenderer.update();
-        update();
-    });
+    setFocusPolicy(Qt::ClickFocus);
 
     _pointRenderer.setPointScaling(Absolute);
+
+    // Configure pixel selection tool
+    _pixelSelectionTool.setEnabled(true);
+    _pixelSelectionTool.setMainColor(QColor(Qt::black));
+
+    QObject::connect(&_pixelSelectionTool, &PixelSelectionTool::shapeChanged, [this]() {
+        if (isInitialized())
+            update();
+    });
+
+    QSurfaceFormat surfaceFormat;
+
+    surfaceFormat.setRenderableType(QSurfaceFormat::OpenGL);
+
+#ifdef __APPLE__
+    // Ask for an OpenGL 3.3 Core Context as the default
+    surfaceFormat.setVersion(3, 3);
+    surfaceFormat.setProfile(QSurfaceFormat::CoreProfile);
+    surfaceFormat.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
+    //QSurfaceFormat::setDefaultFormat(defaultFormat);
+#else
+    // Ask for an OpenGL 4.3 Core Context as the default
+    surfaceFormat.setVersion(4, 3);
+    surfaceFormat.setProfile(QSurfaceFormat::CoreProfile);
+    surfaceFormat.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
+#endif
+
+#ifdef _DEBUG
+    surfaceFormat.setOption(QSurfaceFormat::DebugContext);
+#endif
+
+    surfaceFormat.setSamples(16);
+
+    setFormat(surfaceFormat);
 }
 
 bool ScatterplotWidget::isInitialized()
@@ -106,6 +130,11 @@ void ScatterplotWidget::setColoringMode(const ColoringMode& coloringMode)
     _coloringMode = coloringMode;
 
     emit coloringModeChanged(_coloringMode);
+}
+
+PixelSelectionTool& ScatterplotWidget::getPixelSelectionTool()
+{
+    return _pixelSelectionTool;
 }
 
 void ScatterplotWidget::computeDensity()
@@ -277,7 +306,6 @@ void ScatterplotWidget::initializeGL()
 
     _pointRenderer.init();
     _densityRenderer.init();
-    _pixelSelectionToolRenderer.init();
 
     // Set a default color map for both renderers
     _pointRenderer.setScalarEffect(PointEffect::Color);
@@ -297,7 +325,6 @@ void ScatterplotWidget::resizeGL(int w, int h)
 
     _pointRenderer.resize(QSize(w, h));
     _densityRenderer.resize(QSize(w, h));
-    _pixelSelectionToolRenderer.resize(QSize(w, h));
 
     // Set matrix for normalizing from pixel coordinates to [0, 1]
     toNormalisedCoordinates = Matrix3f(1.0f / w, 0, 0, 1.0f / h, 0, 0);
@@ -315,31 +342,58 @@ void ScatterplotWidget::resizeGL(int w, int h)
 
 void ScatterplotWidget::paintGL()
 {
-    // Bind the framebuffer belonging to the widget
-    glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebufferObject());
+    try {
+        QPainter painter;
 
-    // Clear the widget to the background color
-    glClearColor(_backgroundColor.redF(), _backgroundColor.greenF(), _backgroundColor.blueF(), _backgroundColor.alphaF());
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
-    // Reset the blending function
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        // Begin mixed OpenGL/native painting
+        if (!painter.begin(this))
+            throw std::runtime_error("Unable to begin painting");
 
-    switch (_renderMode)
-    {
-        case SCATTERPLOT:
-            _pointRenderer.render();
-            break;
+        // Draw layers with OpenGL
+        painter.beginNativePainting();
+        {
+            // Bind the framebuffer belonging to the widget
+            //glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebufferObject());
 
-        case DENSITY:
-        case LANDSCAPE:
-            _densityRenderer.setRenderMode(_renderMode == DENSITY ? DensityRenderer::DENSITY : DensityRenderer::LANDSCAPE);
-            _densityRenderer.render();
-            break;
+            // Clear the widget to the background color
+            glClearColor(_backgroundColor.redF(), _backgroundColor.greenF(), _backgroundColor.blueF(), _backgroundColor.alphaF());
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            // Reset the blending function
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+               
+            switch (_renderMode)
+            {
+                case SCATTERPLOT:
+                    _pointRenderer.render();
+                    break;
+
+                case DENSITY:
+                case LANDSCAPE:
+                    _densityRenderer.setRenderMode(_renderMode == DENSITY ? DensityRenderer::DENSITY : DensityRenderer::LANDSCAPE);
+                    _densityRenderer.render();
+                    break;
+            }
+                
+        }
+        painter.endNativePainting();
+        
+        // Draw the pixel selection tool overlays if the pixel selection tool is enabled
+        if (_pixelSelectionTool.isEnabled()) {
+            painter.drawPixmap(rect(), _pixelSelectionTool.getAreaPixmap());
+            painter.drawPixmap(rect(), _pixelSelectionTool.getShapePixmap());
+        }
+        
+        painter.end();
     }
-
-    _pixelSelectionToolRenderer.render();
+    catch (std::exception& e)
+    {
+        exceptionMessageBox("Rendering failed", e);
+    }
+    catch (...) {
+        exceptionMessageBox("Rendering failed");
+    }
 }
 
 void ScatterplotWidget::cleanup()
@@ -350,7 +404,6 @@ void ScatterplotWidget::cleanup()
     makeCurrent();
     _pointRenderer.destroy();
     _densityRenderer.destroy();
-    _pixelSelectionToolRenderer.destroy();
 }
 
 void ScatterplotWidget::setColorMap(const QImage& colorMapImage)

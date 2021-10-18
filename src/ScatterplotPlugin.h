@@ -3,6 +3,7 @@
 #include <ViewPlugin.h>
 
 #include "util/DatasetRef.h"
+#include "util/PixelSelectionTool.h"
 
 #include "Common.h"
 
@@ -13,7 +14,6 @@ using namespace hdps::util;
 
 class Points;
 
-class PixelSelectionTool;
 class ScatterplotWidget;
 
 namespace hdps
@@ -55,8 +55,6 @@ public: // Selection
     void selectAll();
     void clearSelection();
     void invertSelection();
-
-    PixelSelectionTool* getSelectionTool();
 
 protected: // Data loading
 
@@ -107,7 +105,6 @@ private:
     
     
 protected:
-    PixelSelectionTool*         _pixelSelectionTool;
     ScatterplotWidget*          _scatterPlotWidget;
     hdps::gui::DropWidget*      _dropWidget;
     SettingsAction              _settingsAction;

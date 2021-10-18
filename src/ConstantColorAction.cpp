@@ -74,24 +74,13 @@ QMenu* ConstantColorAction::getContextMenu()
     return menu;
 }
 
-ConstantColorAction::Widget::Widget(QWidget* parent, ConstantColorAction* colorByConstantAction, const Widget::State& state) :
-    WidgetActionWidget(parent, colorByConstantAction, state)
+ConstantColorAction::Widget::Widget(QWidget* parent, ConstantColorAction* colorByConstantAction) :
+    WidgetActionWidget(parent, colorByConstantAction)
 {
-    switch (state)
-    {
-        case Widget::State::Standard:
-        case Widget::State::Popup:
-        {
-            auto layout = new QHBoxLayout();
+    auto layout = new QHBoxLayout();
 
-            layout->setMargin(0);
-            layout->addWidget(colorByConstantAction->_constantColorAction.createWidget(this));
+    layout->setMargin(0);
+    layout->addWidget(colorByConstantAction->_constantColorAction.createWidget(this));
 
-            setLayout(layout);
-            break;
-        }
-
-        default:
-            break;
-    }
+    setLayout(layout);
 }

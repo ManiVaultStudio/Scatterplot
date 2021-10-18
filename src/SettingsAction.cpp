@@ -16,7 +16,7 @@ SettingsAction::SettingsAction(ScatterplotPlugin* scatterplotPlugin) :
     _coloringAction(scatterplotPlugin),
     _subsetAction(scatterplotPlugin),
     _manualClusteringAction(scatterplotPlugin),
-    _selectionAction(scatterplotPlugin),
+    _selectionAction(*scatterplotPlugin),
     _miscellaneousAction(scatterplotPlugin)
 {
     const auto updateEnabled = [this]() {

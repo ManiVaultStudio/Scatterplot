@@ -46,12 +46,14 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
     _colorByActionGroup.addAction(&_colorByDimensionAction);
     _colorByActionGroup.addAction(&_colorByColorDataAction);
 
+    //_colorMapAction.setDefaultWidgetFlags(ColorMapAction::All);
+
     const auto updateScalarRangeActions = [this]() {
         const auto colorMapRange    = getScatterplotWidget()->getColorMapRange();
         const auto colorMapRangeMin = colorMapRange.x;
         const auto colorMapRangeMax = colorMapRange.y;
 
-        _colorMapAction.getSettingsAction().getRangeAction().initialize(colorMapRangeMin, colorMapRangeMax, colorMapRangeMin, colorMapRangeMax, colorMapRangeMin, colorMapRangeMax);
+        _colorMapAction.getSettingsAction().getHorizontalAxisAction().getRangeAction().initialize(colorMapRangeMin, colorMapRangeMax, colorMapRangeMin, colorMapRangeMax, colorMapRangeMin, colorMapRangeMax);
     };
 
     const auto updateColoringMode = [this]() {
@@ -119,11 +121,11 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
     });
 
     const auto updateColorMapRange = [this]() {
-        auto& rangeAction = _colorMapAction.getSettingsAction().getRangeAction();
+        auto& rangeAction = _colorMapAction.getSettingsAction().getHorizontalAxisAction().getRangeAction();
         getScatterplotWidget()->setColorMapRange(rangeAction.getMinimum(), rangeAction.getMaximum());
     };
 
-    connect(&_colorMapAction.getSettingsAction().getRangeAction(), &DecimalRangeAction::rangeChanged, this, [this, updateColorMapRange](const float& minimum, const float& maximum) {
+    connect(&_colorMapAction.getSettingsAction().getHorizontalAxisAction().getRangeAction(), &DecimalRangeAction::rangeChanged, this, [this, updateColorMapRange](const float& minimum, const float& maximum) {
         updateColorMapRange();
     });
 
@@ -209,8 +211,8 @@ void ColoringAction::setDimensions(const std::vector<QString>& dimensionNames)
     setDimensions(static_cast<std::uint32_t>(dimensionNames.size()), dimensionNames);
 }
 
-ColoringAction::Widget::Widget(QWidget* parent, ColoringAction* coloringAction, const Widget::State& state) :
-    WidgetActionWidget(parent, coloringAction, state)
+ColoringAction::Widget::Widget(QWidget* parent, ColoringAction* coloringAction, const std::int32_t& widgetFlags) :
+    WidgetActionWidget(parent, coloringAction, widgetFlags)
 {
     auto layout = new QHBoxLayout();
 
@@ -242,34 +244,23 @@ ColoringAction::Widget::Widget(QWidget* parent, ColoringAction* coloringAction, 
     auto labelWidget    = coloringAction->_colorByAction.createLabelWidget(this);
     auto optionWidget   = coloringAction->_colorByAction.createWidget(this);
 
-    switch (state)
-    {
-        case Widget::State::Standard:
-        {
-            auto layout = new QHBoxLayout();
+    if (widgetFlags & PopupLayout) {
+        auto layout = new QGridLayout();
 
-            layout->setMargin(0);
-            layout->addWidget(labelWidget);
-            layout->addWidget(optionWidget);
-            layout->addWidget(stackedWidget);
+        layout->addWidget(labelWidget, 0, 0);
+        layout->addWidget(optionWidget, 0, 1);
+        layout->addWidget(stackedWidget, 0, 2);
 
-            setLayout(layout);
-            break;
-        }
+        setPopupLayout(layout);
+    }
+    else {
+        auto layout = new QHBoxLayout();
 
-        case Widget::State::Popup:
-        {
-            auto layout = new QGridLayout();
+        layout->setMargin(0);
+        layout->addWidget(labelWidget);
+        layout->addWidget(optionWidget);
+        layout->addWidget(stackedWidget);
 
-            layout->addWidget(labelWidget, 0, 0);
-            layout->addWidget(optionWidget, 0, 1);
-            layout->addWidget(stackedWidget, 0, 2);
-
-            setPopupLayout(layout);
-            break;
-        }
-
-        default:
-            break;
+        setLayout(layout);
     }
 }

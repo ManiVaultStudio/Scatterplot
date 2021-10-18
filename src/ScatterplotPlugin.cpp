@@ -1,9 +1,9 @@
 #include "ScatterplotPlugin.h"
-
-#include "PixelSelectionTool.h"
 #include "ScatterplotWidget.h"
 #include "DataHierarchyItem.h"
 #include "Application.h"
+
+#include "util/PixelSelectionTool.h"
 
 #include "PointData.h"
 #include "ClusterData.h"
@@ -29,6 +29,7 @@
 Q_PLUGIN_METADATA(IID "nl.tudelft.ScatterplotPlugin")
 
 using namespace hdps;
+using namespace hdps::util;
 
 ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     ViewPlugin(factory),
@@ -36,8 +37,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     _colors(),
     _positions(),
     _numPoints(0),
-    _pixelSelectionTool(new PixelSelectionTool(this, false)),
-    _scatterPlotWidget(new ScatterplotWidget(*_pixelSelectionTool)),
+    _scatterPlotWidget(new ScatterplotWidget()),
     _dropWidget(nullptr),
     _settingsAction(this)
 {
@@ -213,15 +213,15 @@ void ScatterplotPlugin::init()
         }
     });
 
-    connect(_pixelSelectionTool, &PixelSelectionTool::areaChanged, [this]() {
-        if (!_pixelSelectionTool->isNotifyDuringSelection())
+    connect(&_scatterPlotWidget->getPixelSelectionTool(), &PixelSelectionTool::areaChanged, [this]() {
+        if (!_scatterPlotWidget->getPixelSelectionTool().isNotifyDuringSelection())
             return;
 
         selectPoints();
     });
 
-    connect(_pixelSelectionTool, &PixelSelectionTool::ended, [this]() {
-        if (_pixelSelectionTool->isNotifyDuringSelection())
+    connect(&_scatterPlotWidget->getPixelSelectionTool(), &PixelSelectionTool::ended, [this]() {
+        if (_scatterPlotWidget->getPixelSelectionTool().isNotifyDuringSelection())
             return;
 
         selectPoints();
@@ -261,15 +261,16 @@ void ScatterplotPlugin::createSubset(const bool& fromSourceData /*= false*/, con
 
     const auto subsetName = subsetPoints.createSubset(_points->getName());
 
+    _core->notifyDataAdded(subsetName);
     _core->getDataHierarchyItem(subsetName)->select();
 }
 
 void ScatterplotPlugin::selectPoints()
 {
-    if (!_points.isValid() || !_pixelSelectionTool->isActive())
+    if (!_points.isValid() || !_scatterPlotWidget->getPixelSelectionTool().isActive())
         return;
 
-    auto selectionAreaImage = _pixelSelectionTool->getAreaPixmap().toImage();
+    auto selectionAreaImage = _scatterPlotWidget->getPixelSelectionTool().getAreaPixmap().toImage();
 
 
     Points& selectionSet = static_cast<Points&>(_points->getSelection());
@@ -303,19 +304,19 @@ void ScatterplotPlugin::selectPoints()
     
     auto& selectionSetIndices = selectionSet.indices;
 
-    switch (_pixelSelectionTool->getModifier())
+    switch (_scatterPlotWidget->getPixelSelectionTool().getModifier())
     {
-        case PixelSelectionTool::Modifier::Replace:
+        case PixelSelectionModifierType::Replace:
             break;
 
-        case PixelSelectionTool::Modifier::Add:
-        case PixelSelectionTool::Modifier::Remove:
+        case PixelSelectionModifierType::Add:
+        case PixelSelectionModifierType::Remove:
         {
             QSet<std::uint32_t> set(selectionSetIndices.begin(), selectionSetIndices.end());
 
-            switch (_pixelSelectionTool->getModifier())
+            switch (_scatterPlotWidget->getPixelSelectionTool().getModifier())
             {
-                case PixelSelectionTool::Modifier::Add:
+                case PixelSelectionModifierType::Add:
                 {
                     for (const auto& targetIndex : targetIndices)
                         set.insert(targetIndex);
@@ -323,7 +324,7 @@ void ScatterplotPlugin::selectPoints()
                     break;
                 }
 
-                case PixelSelectionTool::Modifier::Remove:
+                case PixelSelectionModifierType::Remove:
                 {
                     for (const auto& targetIndex : targetIndices)
                         set.remove(targetIndex);
@@ -398,7 +399,7 @@ void ScatterplotPlugin::loadPoints(const QString& dataSetName)
         else
             _settingsAction.getColoringAction().setDimensions(DataSet::getSourceData(*_points).getNumDimensions());
 
-        _pixelSelectionTool->setEnabled(_points.isValid());
+        _scatterPlotWidget->getPixelSelectionTool().setEnabled(_points.isValid());
 
         _dropWidget->setShowDropIndicator(false);
 
@@ -562,11 +563,6 @@ void ScatterplotPlugin::updateSelection()
     _scatterPlotWidget->setHighlights(highlights);
 
     emit selectionChanged();
-}
-
-PixelSelectionTool* ScatterplotPlugin::getSelectionTool()
-{
-    return _pixelSelectionTool;
 }
 
 std::uint32_t ScatterplotPlugin::getNumberOfPoints() const

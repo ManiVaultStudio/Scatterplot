@@ -11,7 +11,7 @@ MiscellaneousAction::MiscellaneousAction(ScatterplotPlugin* scatterplotPlugin) :
     PluginAction(scatterplotPlugin, "Miscellaneous"),
     _backgroundColorAction(scatterplotPlugin, "Background color")
 {
-    setIcon(Application::getIconFont("FontAwesome").getIcon("bars"));
+    setIcon(Application::getIconFont("FontAwesome").getIcon("cog"));
 
     _scatterplotPlugin->addAction(&_backgroundColorAction);
 
@@ -40,38 +40,27 @@ QMenu* MiscellaneousAction::getContextMenu()
     return menu;
 }
 
-MiscellaneousAction::Widget::Widget(QWidget* parent, MiscellaneousAction* miscellaneousAction, const Widget::State& state) :
-    WidgetActionWidget(parent, miscellaneousAction, state)
+MiscellaneousAction::Widget::Widget(QWidget* parent, MiscellaneousAction* miscellaneousAction, const std::int32_t& widgetFlags) :
+    WidgetActionWidget(parent, miscellaneousAction, widgetFlags)
 {
     auto labelWidget    = miscellaneousAction->_backgroundColorAction.createLabelWidget(this);
     auto colorWidget    = miscellaneousAction->_backgroundColorAction.createWidget(this);
 
-    switch (state)
-    {
-        case Widget::State::Standard:
-        {
-            auto layout = new QHBoxLayout();
-            
-            layout->setMargin(0);
-            layout->addWidget(labelWidget);
-            layout->addWidget(colorWidget);
+    if (widgetFlags & PopupLayout) {
+        auto layout = new QGridLayout();
 
-            setLayout(layout);
-            break;
-        }
+        layout->addWidget(labelWidget, 0, 0);
+        layout->addWidget(colorWidget, 0, 1);
 
-        case Widget::State::Popup:
-        {
-            auto layout = new QGridLayout();
+        setPopupLayout(layout);
+    }
+    else {
+        auto layout = new QHBoxLayout();
 
-            layout->addWidget(labelWidget, 0, 0);
-            layout->addWidget(colorWidget, 0, 1);
-            
-            setPopupLayout(layout);
-            break;
-        }
+        layout->setMargin(0);
+        layout->addWidget(labelWidget);
+        layout->addWidget(colorWidget);
 
-        default:
-            break;
+        setLayout(layout);
     }
 }

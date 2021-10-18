@@ -81,8 +81,8 @@ std::int32_t PositionAction::getYDimension() const
     return _yDimensionAction.getCurrentIndex();
 }
 
-PositionAction::Widget::Widget(QWidget* parent, PositionAction* positionAction, const Widget::State& state) :
-    WidgetActionWidget(parent, positionAction, state)
+PositionAction::Widget::Widget(QWidget* parent, PositionAction* positionAction, const std::int32_t& widgetFlags) :
+    WidgetActionWidget(parent, positionAction, widgetFlags)
 {
     auto xDimensionLabel    = positionAction->_xDimensionAction.createLabelWidget(this);
     auto yDimensionLabel    = positionAction->_yDimensionAction.createLabelWidget(this);
@@ -92,36 +92,25 @@ PositionAction::Widget::Widget(QWidget* parent, PositionAction* positionAction, 
     xDimensionWidget->findChild<QComboBox*>("ComboBox")->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     yDimensionWidget->findChild<QComboBox*>("ComboBox")->setSizeAdjustPolicy(QComboBox::AdjustToContents);
 
-    switch (state)
-    {
-        case Widget::State::Standard:
-        {
-            auto layout = new QHBoxLayout();
+    if (widgetFlags & PopupLayout) {
+        auto layout = new QGridLayout();
 
-            layout->setMargin(0);
-            layout->addWidget(xDimensionLabel);
-            layout->addWidget(xDimensionWidget);
-            layout->addWidget(yDimensionLabel);
-            layout->addWidget(yDimensionWidget);
+        layout->addWidget(xDimensionLabel, 0, 0);
+        layout->addWidget(xDimensionWidget, 0, 1);
+        layout->addWidget(yDimensionLabel, 1, 0);
+        layout->addWidget(yDimensionWidget, 1, 1);
 
-            setLayout(layout);
-            break;
-        }
+        setPopupLayout(layout);
+    }
+    else {
+        auto layout = new QHBoxLayout();
 
-        case Widget::State::Popup:
-        {
-            auto layout = new QGridLayout();
+        layout->setMargin(0);
+        layout->addWidget(xDimensionLabel);
+        layout->addWidget(xDimensionWidget);
+        layout->addWidget(yDimensionLabel);
+        layout->addWidget(yDimensionWidget);
 
-            layout->addWidget(xDimensionLabel, 0, 0);
-            layout->addWidget(xDimensionWidget, 0, 1);
-            layout->addWidget(yDimensionLabel, 1, 0);
-            layout->addWidget(yDimensionWidget, 1, 1);
-
-            setPopupLayout(layout);
-            break;
-        }
-
-        default:
-            break;
+        setLayout(layout);
     }
 }
