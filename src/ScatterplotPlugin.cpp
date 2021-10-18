@@ -41,8 +41,6 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     _dropWidget(nullptr),
     _settingsAction(this)
 {
-    setMouseTracking(true);
-
     _dropWidget = new DropWidget(_scatterPlotWidget);
 
     setDockingLocation(DockableWidget::DockingLocation::Right);
