@@ -37,7 +37,8 @@ class ScatterplotOPluginConan(ConanFile):
         "type": "git",
         "subfolder": "hdps/Scatterplot",
         "url": "auto",
-        "revision": "auto"
+        "revision": "auto",
+        "shallow": True
     }
 
     def __get_git_path(self):
