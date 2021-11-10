@@ -12,7 +12,8 @@ using namespace hdps::gui;
 
 SelectionAction::SelectionAction(ScatterplotPlugin& scatterplotPlugin) :
     PixelSelectionAction(&scatterplotPlugin, scatterplotPlugin.getScatterplotWidget(), scatterplotPlugin.getScatterplotWidget()->getPixelSelectionTool()),
-    _scatterplotPlugin(scatterplotPlugin)
+    _scatterplotPlugin(scatterplotPlugin),
+    _focusSelectionAction(this, "Focus selection", true, true)
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("mouse-pointer"));
     
@@ -27,6 +28,14 @@ SelectionAction::SelectionAction(ScatterplotPlugin& scatterplotPlugin) :
     connect(&getInvertSelectionAction(), &QAction::triggered, [this]() {
         _scatterplotPlugin.invertSelection();
     });
+
+    const auto updateFocusSelection = [this]() {
+        _scatterplotPlugin.getScatterplotWidget()->setFocusSelection(_focusSelectionAction.isChecked());
+    };
+
+    connect(&_focusSelectionAction, &ToggleAction::toggled, updateFocusSelection);
+
+    updateFocusSelection();
 }
 
 SelectionAction::Widget::Widget(QWidget* parent, SelectionAction* selectionAction, const std::int32_t& widgetFlags) :
@@ -39,7 +48,8 @@ SelectionAction::Widget::Widget(QWidget* parent, SelectionAction* selectionActio
     auto clearSelectionWidget           = selectionAction->getClearSelectionAction().createWidget(this);
     auto selectAllWidget                = selectionAction->getSelectAllAction().createWidget(this);
     auto invertSelectionWidget          = selectionAction->getInvertSelectionAction().createWidget(this);
-    auto notifyDuringSelectionWidget    = selectionAction->_notifyDuringSelectionAction.createWidget(this);
+    auto notifyDuringSelectionWidget    = selectionAction->getNotifyDuringSelectionAction().createWidget(this);
+    auto focusSelectionWidget           = selectionAction->getFocusSelectionAction().createWidget(this);
 
     if (widgetFlags & PopupLayout) {
         const auto getTypeWidget = [&, this]() -> QWidget* {
@@ -82,6 +92,7 @@ SelectionAction::Widget::Widget(QWidget* parent, SelectionAction* selectionActio
         layout->addWidget(brushRadiusWidget, 1, 1);
         layout->addWidget(getSelectWidget(), 2, 1);
         layout->addWidget(notifyDuringSelectionWidget, 3, 1);
+        layout->addWidget(focusSelectionWidget, 4, 1);
         layout->itemAtPosition(1, 1)->widget()->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
         setPopupLayout(layout);
@@ -98,6 +109,7 @@ SelectionAction::Widget::Widget(QWidget* parent, SelectionAction* selectionActio
         layout->addWidget(selectAllWidget);
         layout->addWidget(invertSelectionWidget);
         layout->addWidget(notifyDuringSelectionWidget);
+        layout->addWidget(focusSelectionWidget);
 
         setLayout(layout);
     }

@@ -64,7 +64,7 @@ public:
      * Feed 2-dimensional data to the scatterplot.
      */
     void setData(const std::vector<Vector2f>* data);
-    void setHighlights(const std::vector<char>& highlights);
+    void setHighlights(const std::vector<char>& highlights, const std::int32_t& numSelectedPoints);
     void setScalars(const std::vector<float>& scalars);
 
     /**
@@ -82,6 +82,7 @@ public:
     void setAlpha(const float alpha);
     void setPointScaling(hdps::gui::PointScaling scalingMode);
     void setSigma(const float sigma);
+    void setFocusSelection(const bool& focusSelection);
 
     Bounds getBounds() const {
         return _dataBounds;

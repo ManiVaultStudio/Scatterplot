@@ -560,7 +560,7 @@ void ScatterplotPlugin::updateSelection()
     for (int i = 0; i < selected.size(); i++)
         highlights[i] = selected[i] ? 1 : 0;
 
-    _scatterPlotWidget->setHighlights(highlights);
+    _scatterPlotWidget->setHighlights(highlights, selection.indices.size());
 
     emit selectionChanged();
 }

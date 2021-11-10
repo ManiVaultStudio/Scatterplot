@@ -27,5 +27,10 @@ public:
     SelectionAction(ScatterplotPlugin& scatterplotPlugin);
 
 protected:
-    ScatterplotPlugin&  _scatterplotPlugin;     /** Reference to scatter plot plugin */
+
+    ToggleAction& getFocusSelectionAction() { return _focusSelectionAction; }
+
+protected:
+    ScatterplotPlugin&  _scatterplotPlugin;         /** Reference to scatter plot plugin */
+    ToggleAction        _focusSelectionAction;      /** Focus selection action */
 };

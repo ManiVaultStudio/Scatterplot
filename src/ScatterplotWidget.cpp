@@ -201,9 +201,9 @@ void ScatterplotWidget::setBackgroundColor(QColor color)
     update();
 }
 
-void ScatterplotWidget::setHighlights(const std::vector<char>& highlights)
+void ScatterplotWidget::setHighlights(const std::vector<char>& highlights, const std::int32_t& numSelectedPoints)
 {
-    _pointRenderer.setHighlights(highlights);
+    _pointRenderer.setHighlights(highlights, numSelectedPoints);
 
     update();
 }
@@ -251,6 +251,13 @@ void ScatterplotWidget::setSigma(const float sigma)
 {
     _densityRenderer.setSigma(sigma);
 
+    update();
+}
+
+void ScatterplotWidget::setFocusSelection(const bool& focusSelection)
+{
+    _pointRenderer.setFocusSelection(focusSelection);
+    
     update();
 }
 
