@@ -57,7 +57,7 @@ class ScatterplotOPluginConan(ConanFile):
 
     def set_version(self):
         # Assign a version from the branch name
-        branch_info = PluginBranchInfo(self.recipe_folder)
+        branch_info = PluginBranchInfo(self.__get_git_path())
         self.version = branch_info.version
 
     def requirements(self):
