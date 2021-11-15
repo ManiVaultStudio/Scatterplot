@@ -23,7 +23,7 @@ SettingsAction::SettingsAction(ScatterplotPlugin* scatterplotPlugin) :
         setEnabled(_scatterplotPlugin->getPointsDataset().isValid());
     };
 
-    connect(&scatterplotPlugin->getPointsDataset(), &DatasetRef<Points>::datasetNameChanged, this, [this, updateEnabled](const QString& oldDatasetName, const QString& newDatasetName) {
+    connect(&scatterplotPlugin->getPointsDataset(), &DatasetRef<Points>::changed, this, [this, updateEnabled](DataSet* dataset) {
         updateEnabled();
     });
 
@@ -85,21 +85,6 @@ SettingsAction::Widget::Widget(QWidget* parent, SettingsAction* settingsAction) 
 
     this->installEventFilter(this);
     _toolBarWidget.installEventFilter(this);
-
-    const auto onCurrentDatasetChanged = [this, settingsAction](const QString& datasetName = "") -> void {
-        auto positionPriority = 10;
-
-        if (!datasetName.isEmpty() && settingsAction->_scatterplotPlugin->getCore()->requestData<Points>(datasetName).getNumDimensions() == 2)
-            positionPriority = 1;
-
-        _stateWidgets[2]->setPriority(positionPriority);
-    };
-
-    connect(&settingsAction->_scatterplotPlugin->getPointsDataset(), &DatasetRef<Points>::datasetNameChanged, this, [this, onCurrentDatasetChanged](const QString& oldDatasetName, const QString& newDatasetName) {
-        onCurrentDatasetChanged(newDatasetName);
-    });
-
-    onCurrentDatasetChanged();
 }
 
 bool SettingsAction::Widget::eventFilter(QObject* object, QEvent* event)

@@ -32,24 +32,24 @@ SubsetAction::SubsetAction(ScatterplotPlugin* scatterplotPlugin) :
         if (!_scatterplotPlugin->getPointsDataset().isValid())
             return;
 
-        const auto datasetName = _scatterplotPlugin->getPointsDataset()->getName();
+        const auto datasetGuiName = _scatterplotPlugin->getPointsDataset()->getGuiName();
 
         QStringList sourceDataOptions;
 
-        if (!datasetName.isEmpty()) {
-            const auto sourceDatasetName = DataSet::getSourceData(_scatterplotPlugin->getCore()->requestData<Points>(datasetName)).getName();
+        if (!datasetGuiName.isEmpty()) {
+            const auto sourceDatasetGuiName = DataSet::getSourceData(*_scatterplotPlugin->getPointsDataset()).getGuiName();
 
-            sourceDataOptions << QString("From: %1").arg(datasetName);
+            sourceDataOptions << QString("From: %1").arg(datasetGuiName);
 
-            if (sourceDatasetName != datasetName)
-                sourceDataOptions << QString("From: %1 (source data)").arg(sourceDatasetName);
+            if (sourceDatasetGuiName != datasetGuiName)
+                sourceDataOptions << QString("From: %1 (source data)").arg(sourceDatasetGuiName);
         }
 
         _sourceDataAction.setOptions(sourceDataOptions);
         _sourceDataAction.setEnabled(sourceDataOptions.count() >= 2);
     };
 
-    connect(&scatterplotPlugin->getPointsDataset(), &DatasetRef<Points>::datasetNameChanged, this, [this, onCurrentDatasetChanged](const QString& oldDatasetName, const QString& newDatasetName) {
+    connect(&scatterplotPlugin->getPointsDataset(), &DatasetRef<Points>::changed, this, [this, onCurrentDatasetChanged](DataSet* dataset) {
         onCurrentDatasetChanged();
     });
 

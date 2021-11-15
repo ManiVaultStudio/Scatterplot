@@ -45,6 +45,11 @@ public:
     void setDimensions(const std::vector<QString>& dimensionNames);
 
 protected:
+
+    /** Updates the options in the color by action */
+    void updateColorByAction();
+
+protected:
     OptionAction            _colorByAction;
     TriggerAction           _colorByConstantColorAction;
     TriggerAction           _colorByDimensionAction;

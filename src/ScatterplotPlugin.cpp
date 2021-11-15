@@ -69,44 +69,41 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
         if (tokens.count() == 1)
             return dropRegions;
 
-        const auto datasetName          = tokens[0];
-        const auto dataType             = DataType(tokens[1]);
+        const auto datasetGuiName       = tokens[0];
+        const auto datasetId            = tokens[1];
+        const auto dataType             = DataType(tokens[2]);
         const auto dataTypes            = DataTypes({ PointType , ColorType, ClusterType });
-        const auto currentDatasetName   = _points.getDatasetName();
 
         if (!dataTypes.contains(dataType))
             dropRegions << new DropWidget::DropRegion(this, "Incompatible data", "This type of data is not supported", false);
 
         if (dataType == PointType) {
-            const auto candidateDataset     = getCore()->requestData<Points>(datasetName);
-            const auto candidateDatasetName = candidateDataset.getName();
-            const auto description          = QString("Visualize %1 as points or density/contour map").arg(candidateDatasetName);
+            auto& candidateDataset = getCore()->requestData<Points>(datasetId);
+            const auto description = QString("Visualize %1 as points or density/contour map").arg(datasetGuiName);
 
             if (!_points.isValid()) {
-                dropRegions << new DropWidget::DropRegion(this, "Position", description, true, [this, candidateDatasetName]() {
-                    _points.setDatasetName(candidateDatasetName);
+                dropRegions << new DropWidget::DropRegion(this, "Position", description, true, [this, &candidateDataset]() {
+                    _points.set(candidateDataset);
                 });
             }
             else {
-                if (candidateDatasetName == currentDatasetName) {
+                if (candidateDataset == *_points) {
                     dropRegions << new DropWidget::DropRegion(this, "Warning", "Data already loaded", false);
                 }
                 else {
-                    const auto points = getCore()->requestData<Points>(currentDatasetName);
-
-                    if (points.getNumPoints() != candidateDataset.getNumPoints()) {
-                        dropRegions << new DropWidget::DropRegion(this, "Position", description, true, [this, candidateDatasetName]() {
-                            _points.setDatasetName(candidateDatasetName);
+                    if (_points->getNumPoints() != candidateDataset.getNumPoints()) {
+                        dropRegions << new DropWidget::DropRegion(this, "Position", description, true, [this, &candidateDataset]() {
+                            _points.set(candidateDataset);
                         });
                     }
                     else {
-                        dropRegions << new DropWidget::DropRegion(this, "Position", description, true, [this, candidateDatasetName]() {
-                            _points.setDatasetName(candidateDatasetName);
+                        dropRegions << new DropWidget::DropRegion(this, "Position", description, true, [this, &candidateDataset]() {
+                            _points.set(candidateDataset);
                         });
 
-                        if (candidateDatasetName != _colors.getDatasetName()) {
-                            dropRegions << new DropWidget::DropRegion(this, "Color", QString("Color %1 by %2").arg(currentDatasetName, candidateDatasetName), true, [this, candidateDatasetName]() {
-                                _colors.setDatasetName(candidateDatasetName);
+                        if (_colors.isValid() && candidateDataset != *_colors) {
+                            dropRegions << new DropWidget::DropRegion(this, "Color", QString("Color %1 by %2").arg(_points->getGuiName(), candidateDataset.getGuiName()), true, [this, &candidateDataset]() {
+                                _colors.set(candidateDataset);
                             });
                         }
                     }
@@ -115,17 +112,16 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
         }
 
         if (dataType == ClusterType) {
-            const auto candidateDataset     = getCore()->requestData<Clusters>(datasetName);
-            const auto candidateDatasetName = candidateDataset.getName();
-            const auto description          = QString("Color points by %1").arg(candidateDatasetName);
+            auto& candidateDataset  = getCore()->requestData<Clusters>(datasetId);
+            const auto description  = QString("Color points by %1").arg(candidateDataset.getGuiName());
 
             if (_points.isValid()) {
-                if (candidateDatasetName == _colors.getDatasetName()) {
+                if (candidateDataset == *_colors) {
                     dropRegions << new DropWidget::DropRegion(this, "Color", "Cluster set is already in use", false, [this]() {});
                 }
                 else {
-                    dropRegions << new DropWidget::DropRegion(this, "Color", description, true, [this, candidateDatasetName]() {
-                        _colors.setDatasetName(candidateDatasetName);
+                    dropRegions << new DropWidget::DropRegion(this, "Color", description, true, [this, &candidateDataset]() {
+                        _colors.set(candidateDataset);
                     });
                 }
             }
@@ -164,7 +160,7 @@ void ScatterplotPlugin::init()
         {
             case EventType::DataChanged:
             {
-                if (dataEvent->dataSetName != _points.getDatasetName())
+                if (dataEvent->getDataset() != *_points)
                     return;
 
                 updateData();
@@ -172,13 +168,15 @@ void ScatterplotPlugin::init()
                 break;
             }
 
-            case EventType::SelectionChanged:
+            case EventType::DataSelectionChanged:
             {
                 if (!_points.isValid())
                     return;
 
-                if (dataEvent->dataSetName == _points.getDatasetName())
-                    updateSelection();
+                if (dataEvent->getDataset() != *_points)
+                    return;
+
+                updateSelection();
 
                 break;
             }
@@ -190,34 +188,16 @@ void ScatterplotPlugin::init()
 
     // Register for cluster dataset events
     registerDataEventByType(ClusterType, [this](hdps::DataEvent* dataEvent) {
-        if (!_colors.isValid())
-            return;
 
-        if (dataEvent->dataSetName != _colors.getDatasetName())
-            return;
-
-        switch (dataEvent->getType())
-        {
-            case EventType::DataChanged:
-            {
-                if (dataEvent->dataSetName != _colors.getDatasetName())
-                    return;
-
-                loadColors(_colors.getDatasetName());
-
-                break;
-            }
-
-            default:
-                break;
-        }
+        // Reload colors when the colors have changed
+        if (_colors.isValid() && dataEvent->getDataset() == *_colors && dataEvent->getType() == EventType::DataChanged)
+            loadColors(dataEvent->getDataset().getId());
     });
 
+    // Update the selection when the pixel selection tool selected area changed
     connect(&_scatterPlotWidget->getPixelSelectionTool(), &PixelSelectionTool::areaChanged, [this]() {
-        if (!_scatterPlotWidget->getPixelSelectionTool().isNotifyDuringSelection())
-            return;
-
-        selectPoints();
+        if (_scatterPlotWidget->getPixelSelectionTool().isNotifyDuringSelection())
+            selectPoints();
     });
 
     connect(&_scatterPlotWidget->getPixelSelectionTool(), &PixelSelectionTool::ended, [this]() {
@@ -227,31 +207,20 @@ void ScatterplotPlugin::init()
         selectPoints();
     });
 
-    connect(&_settingsAction.getColoringAction().getColorByAction(), &OptionAction::currentTextChanged, [this](const QString& currentText) {
-        if (currentText != "Color data")
-            return;
-
-        loadColors(_colors.getDatasetName());
-    });
-
-    const auto updateWindowTitle = [this]() -> void {
-        if (!_points.isValid())
-            setWindowTitle(getGuiName());
-        else
-            setWindowTitle(QString("%1: %2").arg(getGuiName(), _points.getDatasetName()));
-    };
-
     // Load points when the dataset name of the points dataset reference changes
-    connect(&_points, &DatasetRef<Points>::datasetNameChanged, this, [this, updateWindowTitle](const QString& oldDatasetName, const QString& newDatasetName) {
-        loadPoints(newDatasetName);
-        updateWindowTitle();
+    connect(&_points, &DatasetRef<Points>::changed, this, [this](DataSet* dataset) {
+        loadPoints(dataset->getId());
     });
 
     // Load color data when the dataset name of the colors dataset reference changes
-    connect(&_colors, &DatasetRef<Colors>::datasetNameChanged, this, [this](const QString& oldDatasetName, const QString& newDatasetName) {
-        loadColors(newDatasetName);
+    connect(&_colors, &DatasetRef<Colors>::changed, this, [this](DataSet* dataset) {
+        loadColors(dataset->getId());
     });
 
+    // Update the window title when the GUI name of the points dataset changes
+    connect(&_points, &DatasetRef<Points>::guiNameChanged, this, &ScatterplotPlugin::updateWindowTitle);
+
+    // Do an initial update of the window title
     updateWindowTitle();
 }
 
@@ -259,10 +228,14 @@ void ScatterplotPlugin::createSubset(const bool& fromSourceData /*= false*/, con
 {
     auto& subsetPoints  = _points->isDerivedData() && fromSourceData ? DataSet::getSourceData(*_points) : *_points;
 
-    const auto subsetName = subsetPoints.createSubset(_points->getName());
+    // Create the subset
+    auto& subset = subsetPoints.createSubset(_points->getGuiName(), _points.get());
 
-    _core->notifyDataAdded(subsetName);
-    _core->getDataHierarchyItem(subsetName)->select();
+    // Notify others that the subset was added
+    _core->notifyDataAdded(subset);
+    
+    // And select the subset
+    subset.getDataHierarchyItem().select();
 }
 
 void ScatterplotPlugin::selectPoints()
@@ -271,7 +244,6 @@ void ScatterplotPlugin::selectPoints()
         return;
 
     auto selectionAreaImage = _scatterPlotWidget->getPixelSelectionTool().getAreaPixmap().toImage();
-
 
     Points& selectionSet = static_cast<Points&>(_points->getSelection());
 
@@ -347,7 +319,16 @@ void ScatterplotPlugin::selectPoints()
 
     _points->setSelection(targetIndices);
 
-    _core->notifySelectionChanged(_points->getName());
+    // Notify others that the selection changed
+    _core->notifyDataSelectionChanged(*_points);
+}
+
+void ScatterplotPlugin::updateWindowTitle()
+{
+    if (!_points.isValid())
+        setWindowTitle(getGuiName());
+    else
+        setWindowTitle(QString("%1: %2").arg(getGuiName(), _points->getGuiName()));
 }
 
 DatasetRef<Points>& ScatterplotPlugin::getPointsDataset()
@@ -364,28 +345,24 @@ QStringList ScatterplotPlugin::getClusterDatasetNames()
 {
     QStringList clusterDatasetNames;
 
+    /* TODO
     if (!_points.isValid())
         return clusterDatasetNames;
 
-    auto pointsDataHierarchyItem = _core->getDataHierarchyItem(_points.getDatasetName());
-
-    if (pointsDataHierarchyItem == nullptr)
-        return clusterDatasetNames;
-
-    for (auto child : pointsDataHierarchyItem->getChildren()) {
+    for (auto child : _points->getDataHierarchyItem().getChildren())
         if (child->getDataType() == ClusterType)
             clusterDatasetNames << child->getDatasetName();
-    }
+    */
 
     return clusterDatasetNames;
 }
 
-void ScatterplotPlugin::loadPoints(const QString& dataSetName)
+void ScatterplotPlugin::loadPoints(const QString& dataSetId)
 {
+    // Reset the colors dataset reference
     _colors.reset();
 
     if (_points.isValid()) {
-        _settingsAction.getColoringAction().getColorMapAction().reset();
 
         // For source data determine whether to use dimension names or make them up
         if (_points->getDimensionNames().size() == _points->getNumDimensions())
@@ -399,9 +376,8 @@ void ScatterplotPlugin::loadPoints(const QString& dataSetName)
         else
             _settingsAction.getColoringAction().setDimensions(DataSet::getSourceData(*_points).getNumDimensions());
 
+        // Enable pixel selection
         _scatterPlotWidget->getPixelSelectionTool().setEnabled(_points.isValid());
-
-        _dropWidget->setShowDropIndicator(false);
 
         setFocus();
     }
@@ -412,15 +388,16 @@ void ScatterplotPlugin::loadPoints(const QString& dataSetName)
         _dropWidget->setShowDropIndicator(true);
     }
 
-    _scatterPlotWidget->setColoringMode(ScatterplotWidget::ColoringMode::ConstantColor);
+    // Hide the drop indicator widget
+    _dropWidget->setShowDropIndicator(false);
 
     updateData();
+
+    updateWindowTitle();
 }
 
-void ScatterplotPlugin::loadColors(const QString& dataSetName)
+void ScatterplotPlugin::loadColors(const QString& dataSetId)
 {
-    _settingsAction.getColoringAction().getColorDataAction().getDatasetNameAction().setString(_colors.getDatasetName());
-
     if (_colors.isValid()) {
         const auto dataType = _colors->getDataType();
 
@@ -468,9 +445,6 @@ void ScatterplotPlugin::loadColors(const QString& dataSetName)
 
             updateData();
         }
-
-        _scatterPlotWidget->setColoringMode(ScatterplotWidget::ColoringMode::ColorData);
-        _settingsAction.getColoringAction().getColorDataAction().getDatasetNameAction().setString(dataSetName);
 
         _dropWidget->setShowDropIndicator(false);
     }
@@ -639,7 +613,8 @@ void ScatterplotPlugin::selectAll()
         selectionIndices = _points->indices;
     }
 
-    _points.notifySelectionChanged();
+    // Notify others that the selection changed
+    _core->notifyDataSelectionChanged(*_points);
 }
 
 void ScatterplotPlugin::clearSelection()
@@ -652,7 +627,8 @@ void ScatterplotPlugin::clearSelection()
 
     selectionSetIndices.clear();
 
-    _points.notifySelectionChanged();
+    // Notify others that the selection changed
+    _core->notifyDataSelectionChanged(*_points);
 }
 
 void ScatterplotPlugin::invertSelection()
@@ -675,7 +651,8 @@ void ScatterplotPlugin::invertSelection()
 
     selectionSet.indices = std::vector<std::uint32_t>(selectionIndicesSet.begin(), selectionIndicesSet.end());
 
-    _points.notifySelectionChanged();
+    // Notify others that the selection changed
+    _core->notifyDataSelectionChanged(*_points);
 }
 
 QIcon ScatterplotPluginFactory::getIcon() const

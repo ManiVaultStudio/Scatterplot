@@ -4,6 +4,8 @@
 #include "ScatterplotPlugin.h"
 #include "ScatterplotWidget.h"
 
+#include "PointData.h"
+
 using namespace hdps::gui;
 
 ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
@@ -25,8 +27,6 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
     scatterplotPlugin->addAction(&_colorByColorDataAction);
     scatterplotPlugin->addAction(&_colorDimensionAction);
     scatterplotPlugin->addAction(&_colorDataAction);
-
-    _colorByAction.setOptions(QStringList() << "Constant color" << "Color dimension" << "Color data");
 
     _colorByAction.setToolTip("Color by");
     _colorByConstantColorAction.setToolTip("Color data points with a constant color");
@@ -144,13 +144,56 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
         updateColorMap();
     });
 
-    connect(&_scatterplotPlugin->getPointsDataset(), &DatasetRef<Points>::datasetNameChanged, this, [this, updateActions, updateColorMap](const QString& oldDatasetName, const QString& newDatasetName) {
+    connect(&_scatterplotPlugin->getPointsDataset(), &DatasetRef<Points>::changed, this, [this, updateActions, updateColorMap](DataSet* dataset) {
         _colorByAction.reset();
         _colorByConstantColorAction.reset();
         _colorByColorDataAction.reset();
 
         updateActions();
         updateColorMap();
+    });
+
+    // Update the color by action when the loaded colors/points datasets change
+    connect(&_scatterplotPlugin->getPointsDataset(), &DatasetRef<Points>::changed, this, &ColoringAction::updateColorByAction);
+    connect(&_scatterplotPlugin->getColorsDataset(), &DatasetRef<DataSet>::changed, this, &ColoringAction::updateColorByAction);
+
+    // Update the color by action when the loaded colors/points datasets GUI name changes
+    connect(&_scatterplotPlugin->getPointsDataset(), &DatasetRef<Points>::guiNameChanged, this, &ColoringAction::updateColorByAction);
+    connect(&_scatterplotPlugin->getColorsDataset(), &DatasetRef<DataSet>::guiNameChanged, this, &ColoringAction::updateColorByAction);
+
+    // Initial update of the color by action
+    updateColorByAction();
+
+    /*
+    if (_points.isValid()) {
+
+        // For source data determine whether to use dimension names or make them up
+        if (_points->getDimensionNames().size() == _points->getNumDimensions())
+            _settingsAction.getPositionAction().setDimensions(_points->getDimensionNames());
+        else
+            _settingsAction.getPositionAction().setDimensions(_points->getNumDimensions());
+
+        // For derived data determine whether to use dimension names or make them up
+        if (DataSet::getSourceData(*_points).getDimensionNames().size() == DataSet::getSourceData(*_points).getNumDimensions())
+            _settingsAction.getColoringAction().setDimensions(DataSet::getSourceData(*_points).getDimensionNames());
+        else
+            _settingsAction.getColoringAction().setDimensions(DataSet::getSourceData(*_points).getNumDimensions());
+
+        // Enable pixel selection
+        _scatterPlotWidget->getPixelSelectionTool().setEnabled(_points.isValid());
+
+        setFocus();
+    }
+    else {
+        _settingsAction.getPositionAction().setDimensions(std::vector<QString>());
+        _settingsAction.getColoringAction().setDimensions(std::vector<QString>());
+
+        _dropWidget->setShowDropIndicator(true);
+    }
+    */
+
+    // Load color data when the dataset name of the colors dataset reference changes
+    connect(&_scatterplotPlugin->getColorsDataset(), &DatasetRef<DataSet>::changed, this, [this](DataSet* dataset) {
     });
 
     updateColoringMode();
@@ -211,6 +254,32 @@ void ColoringAction::setDimensions(const std::vector<QString>& dimensionNames)
     setDimensions(static_cast<std::uint32_t>(dimensionNames.size()), dimensionNames);
 }
 
+void ColoringAction::updateColorByAction()
+{
+    // Get reference to points dataset
+    auto& points = _scatterplotPlugin->getPointsDataset();
+
+    // Do not update if no points are loaded
+    if (!points.isValid())
+        return;
+
+    QStringList colorByOptions{ "Constant color", points->getGuiName() };
+
+    // Add option to color the points with a dimension from the source data set if the points are derived
+    if (points->isDerivedData())
+        colorByOptions << DataSet::getSourceData(*points).getGuiName();
+
+    // Get reference to colors dataset
+    auto& colors = _scatterplotPlugin->getColorsDataset();
+
+    // Add option to color the points with a colors dataset if one is loaded
+    if (colors.isValid())
+        colorByOptions << colors->getGuiName();
+
+    // Assign options
+    _colorByAction.setOptions(colorByOptions);
+}
+
 ColoringAction::Widget::Widget(QWidget* parent, ColoringAction* coloringAction, const std::int32_t& widgetFlags) :
     WidgetActionWidget(parent, coloringAction, widgetFlags)
 {
@@ -243,6 +312,9 @@ ColoringAction::Widget::Widget(QWidget* parent, ColoringAction* coloringAction, 
 
     auto labelWidget    = coloringAction->_colorByAction.createLabelWidget(this);
     auto optionWidget   = coloringAction->_colorByAction.createWidget(this);
+
+    // Adjust size to the contents of the color by combobox widget
+    optionWidget->findChild<QComboBox*>("ComboBox")->setSizeAdjustPolicy(QComboBox::AdjustToContents);
 
     if (widgetFlags & PopupLayout) {
         auto layout = new QGridLayout();

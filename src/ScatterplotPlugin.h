@@ -60,15 +60,15 @@ protected: // Data loading
 
     /**
      * Load point data
-     * @param dataSetName Name of the point dataset
+     * @param dataSetId Globally unique identifier of the points dataset
      */
-    void loadPoints(const QString& dataSetName);
+    void loadPoints(const QString& dataSetId);
 
     /**
      * Load color data
-     * @param dataSetName Name of the color/cluster dataset
+     * @param dataSetId Globally unique identifier of the colors/clusters dataset
      */
-    void loadColors(const QString& dataSetName);
+    void loadColors(const QString& dataSetId);
 
 public: // Miscellaneous
 
@@ -81,7 +81,13 @@ public: // Miscellaneous
     /** Get cluster dataset names for the loaded points dataset */
     QStringList getClusterDatasetNames();
 
+    /** Use the pixel selection tool to select data points */
     void selectPoints();
+
+protected:
+
+    /** Updates the window title (displays the name of the view and the GUI name of the loaded points dataset) */
+    void updateWindowTitle();
 
 signals:
     void selectionChanged();

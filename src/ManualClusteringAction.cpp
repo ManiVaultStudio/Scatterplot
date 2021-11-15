@@ -31,7 +31,7 @@ ManualClusteringAction::ManualClusteringAction(ScatterplotPlugin* scatterplotPlu
         const auto hasSelection             = numberOfSelectedPoints >= 1;
         const auto canAddCluster            = hasSelection && !_nameAction.getString().isEmpty();
 
-        _targetAction.setEnabled(hasSelection && _targetAction.getContext().size() >= 2);
+        _targetAction.setEnabled(hasSelection && _targetAction.getOptions().count() >= 2);
         _nameAction.setEnabled(hasSelection);
         _colorAction.setEnabled(hasSelection);
         _addClusterAction.setEnabled(canAddCluster);
@@ -56,23 +56,23 @@ ManualClusteringAction::ManualClusteringAction(ScatterplotPlugin* scatterplotPlu
 
         _clustersDataset->addCluster(cluster);
 
-        _clustersDataset.notifyDataChanged();
+        Application::core()->notifyDataChanged(*_clustersDataset);
 
         _nameAction.reset();
     });
 
-    connect(&_scatterplotPlugin->getPointsDataset(), &DatasetRef<Points>::datasetNameChanged, this, [this, updateActions](const QString& oldDatasetName, const QString& newDatasetName) {
+    connect(&_scatterplotPlugin->getPointsDataset(), &DatasetRef<Points>::changed, this, [this, updateActions](DataSet* dataset) {
         _targetAction.reset();
         _nameAction.reset();
         _clustersDataset.reset();
     });
 
-    connect(&_scatterplotPlugin->getColorsDataset(), &DatasetRef<DataSet>::datasetNameChanged, this, [this, updateActions](const QString& oldDatasetName, const QString& newDatasetName) {
-        if (newDatasetName.isEmpty())
+    connect(&_scatterplotPlugin->getColorsDataset(), &DatasetRef<DataSet>::changed, this, [this, updateActions](DataSet* dataset) {
+        if (dataset == nullptr)
             return;
 
         if (_scatterplotPlugin->getColorsDataset()->getDataType() == ClusterType)
-            _clustersDataset.setDatasetName(newDatasetName);
+            _clustersDataset.set(dataset);
 
         updateActions();
 
@@ -86,10 +86,12 @@ ManualClusteringAction::ManualClusteringAction(ScatterplotPlugin* scatterplotPlu
 
 void ManualClusteringAction::updateTargets()
 {
+    /* TODO
     auto clusterDatasetNames = _scatterplotPlugin->getClusterDatasetNames();
 
     _targetAction.setOptions(clusterDatasetNames);
-    _targetAction.setCurrentText(_clustersDataset.getDatasetName());
+    _targetAction.setCurrentText(_clustersDataset->getGuiName());
+    */
 }
 
 void ManualClusteringAction::createDefaultCustersSet()
@@ -97,9 +99,11 @@ void ManualClusteringAction::createDefaultCustersSet()
     if (!_scatterplotPlugin->getPointsDataset().isValid() || _clustersDataset.isValid())
         return;
 
+    /*
     auto clustersDatasetName = _scatterplotPlugin->getCore()->addData("Cluster", "annotation", _scatterplotPlugin->getPointsDataset()->getName());
 
     _scatterplotPlugin->getColorsDataset().setDatasetName(clustersDatasetName);
+    */
 }
 
 ManualClusteringAction::Widget::Widget(QWidget* parent, ManualClusteringAction* manualClusteringAction, const std::int32_t& widgetFlags) :
