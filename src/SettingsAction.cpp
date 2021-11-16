@@ -20,10 +20,10 @@ SettingsAction::SettingsAction(ScatterplotPlugin* scatterplotPlugin) :
     _miscellaneousAction(scatterplotPlugin)
 {
     const auto updateEnabled = [this]() {
-        setEnabled(_scatterplotPlugin->getPointsDataset().isValid());
+        setEnabled(_scatterplotPlugin->getPositionDataset().isValid());
     };
 
-    connect(&scatterplotPlugin->getPointsDataset(), &DatasetRef<Points>::changed, this, [this, updateEnabled](DataSet* dataset) {
+    connect(&scatterplotPlugin->getPositionDataset(), &DatasetRef<Points>::changed, this, [this, updateEnabled](DataSet* dataset) {
         updateEnabled();
     });
 

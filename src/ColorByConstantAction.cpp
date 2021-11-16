@@ -1,4 +1,4 @@
-#include "ConstantColorAction.h"
+#include "ColorByConstantAction.h"
 #include "Application.h"
 
 #include "ScatterplotPlugin.h"
@@ -9,9 +9,9 @@
 
 using namespace hdps::gui;
 
-const QColor ConstantColorAction::DEFAULT_COLOR = qRgb(93, 93, 225);
+const QColor ColorByConstantAction::DEFAULT_COLOR = qRgb(93, 93, 225);
 
-ConstantColorAction::ConstantColorAction(ScatterplotPlugin* scatterplotPlugin) :
+ColorByConstantAction::ColorByConstantAction(ScatterplotPlugin* scatterplotPlugin) :
     PluginAction(scatterplotPlugin, "Coloring"),
     _constantColorAction(this, "Constant color", DEFAULT_COLOR, DEFAULT_COLOR),
     _resetAction(this, "Reset")
@@ -55,7 +55,7 @@ ConstantColorAction::ConstantColorAction(ScatterplotPlugin* scatterplotPlugin) :
             updateConstantColor();
     });
 
-    connect(&_scatterplotPlugin->getPointsDataset(), &DatasetRef<Points>::changed, this, [this, updateConstantColor](DataSet* dataset) {
+    connect(&_scatterplotPlugin->getPositionDataset(), &DatasetRef<Points>::changed, this, [this, updateConstantColor](DataSet* dataset) {
         if (getScatterplotWidget()->getColoringMode() == ScatterplotWidget::ColoringMode::ConstantColor)
             updateConstantColor();
     });
@@ -64,7 +64,7 @@ ConstantColorAction::ConstantColorAction(ScatterplotPlugin* scatterplotPlugin) :
     updateConstantColor();
 }
 
-QMenu* ConstantColorAction::getContextMenu()
+QMenu* ColorByConstantAction::getContextMenu()
 {
     auto menu = new QMenu("Constant color");
 
@@ -74,7 +74,7 @@ QMenu* ConstantColorAction::getContextMenu()
     return menu;
 }
 
-ConstantColorAction::Widget::Widget(QWidget* parent, ConstantColorAction* colorByConstantAction) :
+ColorByConstantAction::Widget::Widget(QWidget* parent, ColorByConstantAction* colorByConstantAction) :
     WidgetActionWidget(parent, colorByConstantAction)
 {
     auto layout = new QHBoxLayout();

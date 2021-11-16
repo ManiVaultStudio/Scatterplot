@@ -2,9 +2,9 @@
 
 #include "PluginAction.h"
 
-#include "ConstantColorAction.h"
-#include "ColorDimensionAction.h"
-#include "ColorDataAction.h"
+#include "ColorByConstantAction.h"
+#include "ColorByDimensionAction.h"
+#include "ColorByClustersAction.h"
 
 #include <QHBoxLayout>
 #include <QLabel>
@@ -36,29 +36,21 @@ public:
     QMenu* getContextMenu();
     
     OptionAction& getColorByAction() { return _colorByAction; }
-    ConstantColorAction& getConstantColorAction() { return _constantColorAction; }
-    ColorDimensionAction& getColorDimensionAction() { return _colorDimensionAction; }
-    ColorDataAction& getColorDataAction() { return _colorDataAction; }
+    ColorByConstantAction& getConstantColorAction() { return _colorByConstantAction; }
+    ColorByDimensionAction& getColorDimensionAction() { return _colorByDimensionAction; }
+    ColorByClustersAction& getColorDataAction() { return _colorByClustersAction; }
     ColorMapAction& getColorMapAction() { return _colorMapAction; }
 
-    void setDimensions(const std::uint32_t& numberOfDimensions, const std::vector<QString>& dimensionNames = std::vector<QString>());
-    void setDimensions(const std::vector<QString>& dimensionNames);
-
 protected:
-
-    /** Updates the options in the color by action */
-    void updateColorByAction();
-
-protected:
-    OptionAction            _colorByAction;
-    TriggerAction           _colorByConstantColorAction;
-    TriggerAction           _colorByDimensionAction;
-    TriggerAction           _colorByColorDataAction;
-    QActionGroup            _colorByActionGroup;
-    ConstantColorAction     _constantColorAction;
-    ColorDimensionAction    _colorDimensionAction;
-    ColorDataAction         _colorDataAction;
-    ColorMapAction          _colorMapAction;
+    OptionAction                _colorByAction;                         /** Action for picking the coloring type */
+    TriggerAction               _colorByConstantColorTriggerAction;     /** Color by constant color trigger action (for key shortcut) */
+    TriggerAction               _colorByDimensionTriggerAction;         /** Color by dimension trigger action (for key shortcut) */
+    TriggerAction               _colorByClustersTriggerAction;          /** Color by cluster data trigger action (for key shortcut) */
+    QActionGroup                _colorByActionGroup;                    /** Color by action group */
+    ColorByConstantAction       _colorByConstantAction;                 /** Color by constant action */
+    ColorByDimensionAction      _colorByDimensionAction;                /** Color by dimension action */
+    ColorByClustersAction       _colorByClustersAction;                 /** Color by clusters action */
+    ColorMapAction              _colorMapAction;                        /** Color map action */
 
     friend class Widget;
 };

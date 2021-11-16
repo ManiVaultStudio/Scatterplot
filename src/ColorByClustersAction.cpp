@@ -1,4 +1,4 @@
-#include "ColorDimensionAction.h"
+#include "ColorByClustersAction.h"
 #include "Application.h"
 
 #include "ScatterplotPlugin.h"
@@ -9,7 +9,7 @@ using namespace hdps::gui;
 #include <QHBoxLayout>
 #include <QComboBox>
 
-ColorDimensionAction::ColorDimensionAction(ScatterplotPlugin* scatterplotPlugin) :
+ColorByClustersAction::ColorByClustersAction(ScatterplotPlugin* scatterplotPlugin) :
     PluginAction(scatterplotPlugin, "Coloring"),
     _currentDimensionAction(this, "Color dimension")
 {
@@ -39,7 +39,7 @@ ColorDimensionAction::ColorDimensionAction(ScatterplotPlugin* scatterplotPlugin)
     updateColorDimension();
 }
 
-QMenu* ColorDimensionAction::getContextMenu()
+QMenu* ColorByClustersAction::getContextMenu()
 {
     auto menu = new QMenu("Color dimension");
 
@@ -48,17 +48,17 @@ QMenu* ColorDimensionAction::getContextMenu()
     return menu;
 }
 
-void ColorDimensionAction::setDimensions(const std::uint32_t& numberOfDimensions, const std::vector<QString>& dimensionNames /*= std::vector<QString>()*/)
+void ColorByClustersAction::setDimensions(const std::uint32_t& numberOfDimensions, const std::vector<QString>& dimensionNames /*= std::vector<QString>()*/)
 {
     _currentDimensionAction.setOptions(common::getDimensionNamesStringList(numberOfDimensions, dimensionNames));
 }
 
-void ColorDimensionAction::setDimensions(const std::vector<QString>& dimensionNames)
+void ColorByClustersAction::setDimensions(const std::vector<QString>& dimensionNames)
 {
     setDimensions(static_cast<std::uint32_t>(dimensionNames.size()), dimensionNames);
 }
 
-ColorDimensionAction::Widget::Widget(QWidget* parent, ColorDimensionAction* colorDimensionAction) :
+ColorByClustersAction::Widget::Widget(QWidget* parent, ColorByClustersAction* colorDimensionAction) :
     WidgetActionWidget(parent, colorDimensionAction)
 {
     auto layout = new QHBoxLayout();

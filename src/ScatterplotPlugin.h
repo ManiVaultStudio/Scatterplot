@@ -58,27 +58,27 @@ public: // Selection
 
 protected: // Data loading
 
-    /**
-     * Load point data
-     * @param dataSetId Globally unique identifier of the points dataset
-     */
-    void loadPoints(const QString& dataSetId);
+    /** Invoked when the position points dataset changes */
+    void positionDatasetChanged();
 
-    /**
-     * Load color data
-     * @param dataSetId Globally unique identifier of the colors/clusters dataset
-     */
-    void loadColors(const QString& dataSetId);
+    /** Update colors (invoked when the position dataset reference changes) */
+    //void loadColors();
 
 public: // Miscellaneous
 
-    /** Get current points dataset */
-    DatasetRef<Points>& getPointsDataset();
+    /** Get points dataset for point position */
+    const DatasetRef<Points>& getPositionDataset();
 
-    /** Get current color dataset */
-    DatasetRef<DataSet>& getColorsDataset();
+    /** Get source of the points dataset for point position (if any) */
+    const DatasetRef<Points>& getPositionSourceDataset();
 
-    /** Get cluster dataset names for the loaded points dataset */
+    /** Get points dataset for point color */
+    const DatasetRef<Points>& getColorsDataset();
+
+    /** _clustersDataset */
+    const DatasetRef<Clusters>& getClustersDataset();
+
+    /** Get clusters dataset for point color */
     QStringList getClusterDatasetNames();
 
     /** Use the pixel selection tool to select data points */
@@ -104,10 +104,12 @@ private:
     void updateSelection();
 
 private:
-    DatasetRef<Points>              _points;        /** Currently loaded points dataset */
-    DatasetRef<DataSet>             _colors;        /** Currently loaded color dataset (if any) */
-    std::vector<hdps::Vector2f>     _positions;     /** Point positions */
-    unsigned int                    _numPoints;     /** Number of point positions */
+    DatasetRef<Points>              _positionDataset;           /** Points dataset for point position */
+    DatasetRef<Points>              _positionSourceDataset;     /** Source of the points dataset for point position (if any) */
+    DatasetRef<Points>              _colorsDataset;             /** Points dataset for point color */
+    DatasetRef<Clusters>            _clustersDataset;           /** Clusters dataset for point color */
+    std::vector<hdps::Vector2f>     _positions;                 /** Point positions */
+    unsigned int                    _numPoints;                 /** Number of point positions */
     
     
 protected:

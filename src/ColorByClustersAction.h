@@ -4,13 +4,13 @@
 
 using namespace hdps::gui;
 
-class ColorDimensionAction : public PluginAction
+class ColorByClustersAction : public PluginAction
 {
 protected: // Widget
 
     class Widget : public ::WidgetActionWidget {
     public:
-        Widget(QWidget* parent, ColorDimensionAction* colorDimensionAction);
+        Widget(QWidget* parent, ColorByClustersAction* colorDimensionAction);
     };
 
     QWidget* getWidget(QWidget* parent, const std::int32_t& widgetFlags) override {
@@ -18,7 +18,7 @@ protected: // Widget
     };
 
 public:
-    ColorDimensionAction(ScatterplotPlugin* scatterplotPlugin);
+    ColorByClustersAction(ScatterplotPlugin* scatterplotPlugin);
 
     QMenu* getContextMenu();
 

@@ -4,12 +4,12 @@
 
 using namespace hdps::gui;
 
-class ConstantColorAction : public PluginAction
+class ColorByConstantAction : public PluginAction
 {
 protected:
     class Widget : public WidgetActionWidget {
     public:
-        Widget(QWidget* parent, ConstantColorAction* colorByConstantAction);
+        Widget(QWidget* parent, ColorByConstantAction* colorByConstantAction);
     };
 
     QWidget* getWidget(QWidget* parent, const std::int32_t& widgetFlags) override {
@@ -17,7 +17,7 @@ protected:
     };
 
 public:
-    ConstantColorAction(ScatterplotPlugin* scatterplotPlugin);
+    ColorByConstantAction(ScatterplotPlugin* scatterplotPlugin);
 
     QMenu* getContextMenu();
 

@@ -42,11 +42,11 @@ ManualClusteringAction::ManualClusteringAction(ScatterplotPlugin* scatterplotPlu
     });
 
     connect(&_addClusterAction, &TriggerAction::triggered, this, [this]() {
-        if (!_scatterplotPlugin->getPointsDataset().isValid() || !_clustersDataset.isValid())
+        if (!_scatterplotPlugin->getPositionDataset().isValid() || !_clustersDataset.isValid())
             return;
 
         // Get points selection dataset
-        auto& selection = dynamic_cast<Points&>(_scatterplotPlugin->getPointsDataset()->getSelection());
+        auto& selection = dynamic_cast<Points&>(_scatterplotPlugin->getPositionDataset()->getSelection());
 
         Cluster cluster;
 
@@ -61,7 +61,7 @@ ManualClusteringAction::ManualClusteringAction(ScatterplotPlugin* scatterplotPlu
         _nameAction.reset();
     });
 
-    connect(&_scatterplotPlugin->getPointsDataset(), &DatasetRef<Points>::changed, this, [this, updateActions](DataSet* dataset) {
+    connect(&_scatterplotPlugin->getPositionDataset(), &DatasetRef<Points>::changed, this, [this, updateActions](DataSet* dataset) {
         _targetAction.reset();
         _nameAction.reset();
         _clustersDataset.reset();
@@ -96,7 +96,7 @@ void ManualClusteringAction::updateTargets()
 
 void ManualClusteringAction::createDefaultCustersSet()
 {
-    if (!_scatterplotPlugin->getPointsDataset().isValid() || _clustersDataset.isValid())
+    if (!_scatterplotPlugin->getPositionDataset().isValid() || _clustersDataset.isValid())
         return;
 
     /*
