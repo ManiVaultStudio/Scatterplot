@@ -77,7 +77,6 @@ ColorByDimensionAction::Widget::Widget(QWidget* parent, ColorByDimensionAction* 
     auto layout = new QHBoxLayout();
 
     layout->setMargin(0);
-    layout->setSpacing(3);
 
     auto pickDatasetWidget              = colorDataAction->getDatasetPickerAction().createWidget(this);
     auto pointsDimensionPickerWidget    = colorDataAction->getPointsDimensionPickerAction().createWidget(this);
