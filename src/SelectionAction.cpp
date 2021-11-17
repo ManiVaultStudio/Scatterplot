@@ -13,7 +13,7 @@ using namespace hdps::gui;
 SelectionAction::SelectionAction(ScatterplotPlugin& scatterplotPlugin) :
     PixelSelectionAction(&scatterplotPlugin, scatterplotPlugin.getScatterplotWidget(), scatterplotPlugin.getScatterplotWidget()->getPixelSelectionTool()),
     _scatterplotPlugin(scatterplotPlugin),
-    _focusSelectionAction(this, "Focus selection", true, true)
+    _focusSelectionAction(this, "Focus selection", false, false)
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("mouse-pointer"));
     

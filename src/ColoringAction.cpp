@@ -10,71 +10,48 @@ using namespace hdps::gui;
 
 ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
     PluginAction(scatterplotPlugin, "Coloring"),
-    _colorByAction(this, "Color by", {"Constant", "Data", "Clusters"}, "Constant", "Constant"),
-    _colorByConstantColorTriggerAction(this, "Color by constant color"),
-    _colorByDimensionTriggerAction(this, "Color by dimension"),
-    _colorByClustersTriggerAction(this, "Color by clusters"),
+    _colorByAction(this, "Color by", { "Constant", "Data" }, "Constant", "Constant"),
+    _colorByConstantTriggerAction(this, "Color by constant color"),
+    _colorByDataTriggerAction(this, "Color by data"),
     _colorByActionGroup(this),
     _colorByConstantAction(scatterplotPlugin),
-    _colorByDimensionAction(scatterplotPlugin),
-    _colorByClustersAction(scatterplotPlugin),
+    _colorByDataAction(scatterplotPlugin),
     _colorMapAction(this, "Color map")
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("palette"));
 
     scatterplotPlugin->addAction(&_colorByAction);
-    scatterplotPlugin->addAction(&_colorByDimensionAction);
-    scatterplotPlugin->addAction(&_colorByConstantColorTriggerAction);
-    scatterplotPlugin->addAction(&_colorByDimensionTriggerAction);
-    scatterplotPlugin->addAction(&_colorByClustersTriggerAction);
+    scatterplotPlugin->addAction(&_colorByDataAction);
+    scatterplotPlugin->addAction(&_colorByConstantTriggerAction);
+    scatterplotPlugin->addAction(&_colorByDataTriggerAction);
+    scatterplotPlugin->addAction(&_colorByDataTriggerAction);
 
     _colorByAction.setToolTip("Color by");
-    _colorByConstantColorTriggerAction.setToolTip("Color data points with a constant color");
-    _colorByDimensionTriggerAction.setToolTip("Color data points by chosen dimension");
-    _colorByClustersTriggerAction.setToolTip("Color data points with a color data set");
+    _colorByConstantTriggerAction.setToolTip("Color data points with a constant color");
     _colorByConstantAction.setToolTip("Color by constant");
-    _colorByDimensionAction.setToolTip("Color by data dimension");
-    _colorByClustersAction.setToolTip("Color by clusters");
+    _colorByDataTriggerAction.setToolTip("Color by data");
+    _colorByDataAction.setToolTip("Color by data");
 
-    _colorByConstantColorTriggerAction.setCheckable(true);
-    _colorByDimensionTriggerAction.setCheckable(true);
-    _colorByClustersTriggerAction.setCheckable(true);
+    _colorByConstantTriggerAction.setCheckable(true);
+    _colorByDataTriggerAction.setCheckable(true);
 
-    //_colorDataAction.setEnabled(false);
-
-    _colorByActionGroup.addAction(&_colorByConstantColorTriggerAction);
-    _colorByActionGroup.addAction(&_colorByDimensionTriggerAction);
-    _colorByActionGroup.addAction(&_colorByClustersTriggerAction);
-
-    //_colorMapAction.setDefaultWidgetFlags(ColorMapAction::All);
-
-    const auto updateScalarRangeActions = [this]() {
-        const auto colorMapRange    = getScatterplotWidget()->getColorMapRange();
-        const auto colorMapRangeMin = colorMapRange.x;
-        const auto colorMapRangeMax = colorMapRange.y;
-
-        _colorMapAction.getSettingsAction().getHorizontalAxisAction().getRangeAction().initialize(colorMapRangeMin, colorMapRangeMax, colorMapRangeMin, colorMapRangeMax, colorMapRangeMin, colorMapRangeMax);
-    };
+    _colorByActionGroup.addAction(&_colorByConstantTriggerAction);
+    _colorByActionGroup.addAction(&_colorByDataTriggerAction);
 
     const auto updateColoringMode = [this]() {
         getScatterplotWidget()->setColoringMode(static_cast<ScatterplotWidget::ColoringMode>(_colorByAction.getCurrentIndex()));
     };
 
-    connect(&_colorByAction, &OptionAction::currentIndexChanged, this, [this, updateColoringMode, updateScalarRangeActions](const std::uint32_t& currentIndex) {
+    connect(&_colorByAction, &OptionAction::currentIndexChanged, this, [this, updateColoringMode](const std::uint32_t& currentIndex) {
         updateColoringMode();
-        updateScalarRangeActions();
     });
 
-    connect(&_colorByConstantColorTriggerAction, &QAction::triggered, this, [this]() {
+    connect(&_colorByConstantTriggerAction, &QAction::triggered, this, [this]() {
         getScatterplotWidget()->setColoringMode(ScatterplotWidget::ColoringMode::ConstantColor);
     });
 
-    connect(&_colorByDimensionTriggerAction, &QAction::triggered, this, [this]() {
-        getScatterplotWidget()->setColoringMode(ScatterplotWidget::ColoringMode::ColorDimension);
-    });
-
-    connect(&_colorByClustersTriggerAction, &QAction::triggered, this, [this]() {
-        getScatterplotWidget()->setColoringMode(ScatterplotWidget::ColoringMode::ColorData);
+    connect(&_colorByDataTriggerAction, &QAction::triggered, this, [this]() {
+        getScatterplotWidget()->setColoringMode(ScatterplotWidget::ColoringMode::Data);
     });
 
     const auto updateColorMap = [this]() -> void {
@@ -82,7 +59,7 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
         {
             case ScatterplotWidget::RenderMode::SCATTERPLOT:
             {
-                if (getScatterplotWidget()->getColoringMode() == ScatterplotWidget::ColoringMode::ColorDimension)
+                if (getScatterplotWidget()->getColoringMode() == ScatterplotWidget::ColoringMode::Data)
                     getScatterplotWidget()->setColorMap(_colorMapAction.getColorMapImage());
 
                 break;
@@ -110,17 +87,10 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
 
         _colorByAction.setCurrentIndex(static_cast<std::int32_t>(coloringMode));
 
-        _colorByConstantColorTriggerAction.setChecked(coloringMode == ScatterplotWidget::ColoringMode::ConstantColor);
-        _colorByDimensionTriggerAction.setChecked(coloringMode == ScatterplotWidget::ColoringMode::ColorDimension);
-        _colorByClustersTriggerAction.setChecked(coloringMode == ScatterplotWidget::ColoringMode::ColorData);
-        _colorMapAction.setEnabled(renderMode == ScatterplotWidget::LANDSCAPE || coloringMode == ScatterplotWidget::ColoringMode::ColorDimension);
+        _colorByConstantTriggerAction.setChecked(coloringMode == ScatterplotWidget::ColoringMode::ConstantColor);
+        _colorByDataTriggerAction.setChecked(coloringMode == ScatterplotWidget::ColoringMode::Data);
+        _colorMapAction.setEnabled(renderMode == ScatterplotWidget::LANDSCAPE || coloringMode == ScatterplotWidget::ColoringMode::Data);
     };
-
-    /*
-    connect(&_colorDimensionAction.getCurrentDimensionAction(), &OptionAction::currentIndexChanged, this, [this, updateScalarRangeActions](const std::int32_t& currentIndex) {
-        updateScalarRangeActions();
-    });
-    */
 
     const auto updateColorMapRange = [this]() {
         auto& rangeAction = _colorMapAction.getSettingsAction().getHorizontalAxisAction().getRangeAction();
@@ -140,62 +110,27 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
         updateColorMap();
     });
 
-    connect(getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, [this, updateActions, updateScalarRangeActions, updateColorMap](const ScatterplotWidget::RenderMode& renderMode) {
+    connect(getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, [this, updateActions, updateColorMap](const ScatterplotWidget::RenderMode& renderMode) {
         updateActions();
-        updateScalarRangeActions();
         updateColorMap();
     });
 
     connect(&_scatterplotPlugin->getPositionDataset(), &DatasetRef<Points>::changed, this, [this, updateActions, updateColorMap](DataSet* dataset) {
         _colorByAction.reset();
         _colorByConstantAction.reset();
-        _colorByDimensionAction.reset();
-        _colorByClustersAction.reset();
+        _colorByDataAction.reset();
 
         updateActions();
         updateColorMap();
     });
 
-    /*
-    if (_points.isValid()) {
-
-        // For source data determine whether to use dimension names or make them up
-        if (_points->getDimensionNames().size() == _points->getNumDimensions())
-            _settingsAction.getPositionAction().setDimensions(_points->getDimensionNames());
-        else
-            _settingsAction.getPositionAction().setDimensions(_points->getNumDimensions());
-
-        // For derived data determine whether to use dimension names or make them up
-        if (DataSet::getSourceData(*_points).getDimensionNames().size() == DataSet::getSourceData(*_points).getNumDimensions())
-            _settingsAction.getColoringAction().setDimensions(DataSet::getSourceData(*_points).getDimensionNames());
-        else
-            _settingsAction.getColoringAction().setDimensions(DataSet::getSourceData(*_points).getNumDimensions());
-
-        // Enable pixel selection
-        _scatterPlotWidget->getPixelSelectionTool().setEnabled(_points.isValid());
-
-        setFocus();
-    }
-    else {
-        _settingsAction.getPositionAction().setDimensions(std::vector<QString>());
-        _settingsAction.getColoringAction().setDimensions(std::vector<QString>());
-
-        _dropWidget->setShowDropIndicator(true);
-    }
-    */
-
-    // Load color data when the dataset name of the colors dataset reference changes
-    connect(&_scatterplotPlugin->getColorsDataset(), &DatasetRef<DataSet>::changed, this, [this](DataSet* dataset) {
-    });
-
     updateColoringMode();
     updateActions();
-    updateScalarRangeActions();
 }
 
-QMenu* ColoringAction::getContextMenu()
+QMenu* ColoringAction::getContextMenu(QWidget* parent /*= nullptr*/)
 {
-    auto menu = new QMenu("Color");
+    auto menu = new QMenu("Color", parent);
 
     const auto addActionToMenu = [menu](QAction* action) -> void {
         auto actionMenu = new QMenu(action->text());
@@ -210,8 +145,7 @@ QMenu* ColoringAction::getContextMenu()
     menu->setEnabled(renderMode == ScatterplotWidget::RenderMode::SCATTERPLOT);
 
     menu->addAction(&_colorByConstantAction);
-    menu->addAction(&_colorByDimensionAction);
-    menu->addAction(&_colorByClustersAction);
+    menu->addAction(&_colorByDataAction);
     
     menu->addSeparator();
 
@@ -221,12 +155,8 @@ QMenu* ColoringAction::getContextMenu()
             menu->addMenu(_colorByConstantAction.getContextMenu());
             break;
 
-        case ScatterplotWidget::ColoringMode::ColorDimension:
-            menu->addMenu(_colorByDimensionAction.getContextMenu());
-            break;
-
-        case ScatterplotWidget::ColoringMode::ColorData:
-            menu->addMenu(_colorByClustersAction.getContextMenu());
+        case ScatterplotWidget::ColoringMode::Data:
+            menu->addMenu(_colorByDataAction.getContextMenu());
             break;
 
         default:
@@ -244,8 +174,7 @@ ColoringAction::Widget::Widget(QWidget* parent, ColoringAction* coloringAction, 
     auto stackedWidget = new StackedWidget();
 
     stackedWidget->addWidget(coloringAction->_colorByConstantAction.createWidget(this));
-    stackedWidget->addWidget(coloringAction->_colorByDimensionAction.createWidget(this));
-    stackedWidget->addWidget(coloringAction->_colorByClustersAction.createWidget(this));
+    stackedWidget->addWidget(coloringAction->_colorByDataAction.createWidget(this));
 
     const auto coloringModeChanged = [stackedWidget, coloringAction]() -> void {
         stackedWidget->setCurrentIndex(coloringAction->_colorByAction.getCurrentIndex());

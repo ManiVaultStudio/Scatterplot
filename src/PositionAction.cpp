@@ -15,25 +15,47 @@ PositionAction::PositionAction(ScatterplotPlugin* scatterplotPlugin) :
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("ruler-combined"));
 
+    // Add actions to scatter plot plugin (for shortcuts)
     _scatterplotPlugin->addAction(&_xDimensionAction);
     _scatterplotPlugin->addAction(&_yDimensionAction);
 
-
+    // Set tooltips
     _xDimensionAction.setToolTip("X dimension");
     _yDimensionAction.setToolTip("Y dimension");
 
-    connect(&_xDimensionAction, &OptionAction::currentIndexChanged, [this, scatterplotPlugin](const std::uint32_t& currentIndex) {
-        scatterplotPlugin->setXDimension(currentIndex);
+    // Update scatter plot when the x-dimension changes
+    connect(&_xDimensionAction, &PointsDimensionPickerAction::currentDimensionIndexChanged, [this, scatterplotPlugin](const std::uint32_t& currentDimensionIndex) {
+        scatterplotPlugin->setXDimension(currentDimensionIndex);
     });
 
-    connect(&_yDimensionAction, &OptionAction::currentIndexChanged, [this, scatterplotPlugin](const std::uint32_t& currentIndex) {
-        scatterplotPlugin->setYDimension(currentIndex);
+    // Update scatter plot when the y-dimension changes
+    connect(&_yDimensionAction, &PointsDimensionPickerAction::currentDimensionIndexChanged, [this, scatterplotPlugin](const std::uint32_t& currentDimensionIndex) {
+        scatterplotPlugin->setYDimension(currentDimensionIndex);
+    });
+
+    // Set dimension defaults when the position dataset changes
+    connect(&scatterplotPlugin->getPositionDataset(), &DatasetRef<Points>::changed, this, [this]() {
+
+        // Assign position dataset to x- and y dimension action
+        _xDimensionAction.setPointsDataset(_scatterplotPlugin->getPositionDataset());
+        _yDimensionAction.setPointsDataset(_scatterplotPlugin->getPositionDataset());
+
+        // Assign current and default index to x-dimension action
+        _xDimensionAction.setCurrentDimensionIndex(0);
+        _xDimensionAction.setDefaultDimensionIndex(0);
+
+        // Establish y-dimension
+        const auto yIndex = _xDimensionAction.getNumberOfDimensions() >= 2 ? 1 : 0;
+
+        // Assign current and default index to y-dimension action
+        _yDimensionAction.setCurrentDimensionIndex(yIndex);
+        _yDimensionAction.setDefaultDimensionIndex(yIndex);
     });
 }
 
-QMenu* PositionAction::getContextMenu()
+QMenu* PositionAction::getContextMenu(QWidget* parent /*= nullptr*/)
 {
-    auto menu = new QMenu("Position");
+    auto menu = new QMenu("Position", parent);
 
     auto xDimensionMenu = new QMenu("X dimension");
     auto yDimensionMenu = new QMenu("Y dimension");
@@ -47,38 +69,14 @@ QMenu* PositionAction::getContextMenu()
     return menu;
 }
 
-void PositionAction::setDimensions(const std::uint32_t& numberOfDimensions, const std::vector<QString>& dimensionNames /*= std::vector<QString>()*/)
+std::int32_t PositionAction::getDimensionX() const
 {
-    auto dimensionNamesStringList = common::getDimensionNamesStringList(numberOfDimensions, dimensionNames);
-
-    _xDimensionAction.setOptions(dimensionNamesStringList);
-    _yDimensionAction.setOptions(dimensionNamesStringList);
-
-    _xDimensionAction.setCurrentIndex(0);
-    _xDimensionAction.setDefaultIndex(0);
-
-    const auto yIndex = dimensionNamesStringList.count() >= 2 ? 1 : 0;
-
-    _yDimensionAction.setCurrentIndex(yIndex);
-    _yDimensionAction.setDefaultIndex(yIndex);
-
-    //_xDimensionAction.setCurrentIndex(0);
-    //_yDimensionAction.setCurrentIndex(numberOfDimensions >= 2 ? 1 : 0);
+    return _xDimensionAction.getCurrentDimensionIndex();
 }
 
-void PositionAction::setDimensions(const std::vector<QString>& dimensionNames)
+std::int32_t PositionAction::getDimensionY() const
 {
-    setDimensions(static_cast<std::uint32_t>(dimensionNames.size()), dimensionNames);
-}
-
-std::int32_t PositionAction::getXDimension() const
-{
-    return _xDimensionAction.getCurrentIndex();
-}
-
-std::int32_t PositionAction::getYDimension() const
-{
-    return _yDimensionAction.getCurrentIndex();
+    return _yDimensionAction.getCurrentDimensionIndex();
 }
 
 PositionAction::Widget::Widget(QWidget* parent, PositionAction* positionAction, const std::int32_t& widgetFlags) :

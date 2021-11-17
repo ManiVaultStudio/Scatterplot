@@ -45,7 +45,6 @@ public:
 public: // Dimension picking
     void setXDimension(const std::int32_t& dimensionIndex);
     void setYDimension(const std::int32_t& dimensionIndex);
-    void setColorDimension(const std::int32_t& dimensionIndex);
 
 public: // Selection
     bool canSelect() const;
@@ -61,8 +60,13 @@ protected: // Data loading
     /** Invoked when the position points dataset changes */
     void positionDatasetChanged();
 
-    /** Update colors (invoked when the position dataset reference changes) */
-    //void loadColors();
+public: // Point colors
+
+    /** Load color from points dataset */
+    void loadColors(const DatasetRef<Points>& points, const std::uint32_t& dimensionIndex);
+
+    /** Load color from clusters dataset */
+    void loadColors(const DatasetRef<Clusters>& clusters);
 
 public: // Miscellaneous
 
@@ -94,13 +98,12 @@ signals:
 
 public:
     ScatterplotWidget* getScatterplotWidget();
-    hdps::CoreInterface* getCore();
 
     SettingsAction& getSettingsAction() { return _settingsAction; }
+
 private:
     void updateData();
     void calculatePositions(const Points& points);
-    void calculateScalars(std::vector<float>& scalars, const Points& points, int colorIndex);
     void updateSelection();
 
 private:
