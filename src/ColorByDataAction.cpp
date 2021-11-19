@@ -22,11 +22,25 @@ ColorByDataAction::ColorByDataAction(ScatterplotPlugin* scatterplotPlugin) :
     // Get reference to points dataset
     auto& points = _scatterplotPlugin->getPositionDataset();
 
-    // Update dataset picker when position (source) or colors dataset changes
-    connect(&_scatterplotPlugin->getPositionDataset(), &DatasetRef<Points>::changed, this, &ColorByDataAction::updateDatasetPickerAction);
-    connect(&_scatterplotPlugin->getPositionSourceDataset(), &DatasetRef<Points>::changed, this, &ColorByDataAction::updateDatasetPickerAction);
-    connect(&_scatterplotPlugin->getColorsDataset(), &DatasetRef<Points>::changed, this, &ColorByDataAction::updateDatasetPickerAction);
-    connect(&_scatterplotPlugin->getClustersDataset(), &DatasetRef<Clusters>::changed, this, &ColorByDataAction::updateDatasetPickerAction);
+    // Update dataset picker when the position dataset changes
+    connect(&_scatterplotPlugin->getPositionDataset(), &DatasetRef<Points>::changed, this, [this]() {
+        updateDatasetPickerAction(DatasetRef<DataSet>(_scatterplotPlugin->getPositionDataset().get<DataSet>()));
+    });
+
+    // Update dataset picker when the position source dataset changes
+    connect(&_scatterplotPlugin->getPositionSourceDataset(), &DatasetRef<Points>::changed, this, [this]() {
+        updateDatasetPickerAction(DatasetRef<DataSet>(_scatterplotPlugin->getPositionSourceDataset().get<DataSet>()));
+    });
+
+    // Update dataset picker when the colors dataset changes
+    connect(&_scatterplotPlugin->getColorsDataset(), &DatasetRef<Points>::changed, this, [this]() {
+        updateDatasetPickerAction(DatasetRef<DataSet>(_scatterplotPlugin->getColorsDataset().get<DataSet>()));
+    });
+
+    // Update dataset picker when the position dataset changes
+    connect(&_scatterplotPlugin->getClustersDataset(), &DatasetRef<Clusters>::changed, this, [this]() {
+        updateDatasetPickerAction(DatasetRef<DataSet>(_scatterplotPlugin->getClustersDataset().get<DataSet>()));
+    });
     
     // Update scalar range in color map
     const auto updateScalarRangeActions = [this]() {
@@ -92,7 +106,7 @@ QMenu* ColorByDataAction::getContextMenu(QWidget* parent /*= nullptr*/)
     return menu;
 }
 
-void ColorByDataAction::updateDatasetPickerAction()
+void ColorByDataAction::updateDatasetPickerAction(const DatasetRef<DataSet>& datasetToSelect)
 {
     QVector<DatasetRef<DataSet>> datasets;
 
@@ -128,6 +142,9 @@ void ColorByDataAction::updateDatasetPickerAction()
 
     // Assign options
     _datasetPickerAction.setDatasets(datasets);
+
+    if (!datasetToSelect.isValid())
+        _datasetPickerAction.setCurrentDataset(datasetToSelect);
 }
 
 ColorByDataAction::Widget::Widget(QWidget* parent, ColorByDataAction* colorByDataAction) :

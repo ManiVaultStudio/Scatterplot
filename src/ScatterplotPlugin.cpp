@@ -185,16 +185,6 @@ void ScatterplotPlugin::init()
         }
     });
 
-    /*
-    // Register for cluster dataset events
-    registerDataEventByType(ClusterType, [this](hdps::DataEvent* dataEvent) {
-
-        // Reload colors when the colors have changed
-        if (_colorsDataset.isValid() && dataEvent->getDataset() == *_colorsDataset && dataEvent->getType() == EventType::DataChanged)
-            loadColors(dataEvent->getDataset().getId());
-    });
-    */
-
     // Update the selection when the pixel selection tool selected area changed
     connect(&_scatterPlotWidget->getPixelSelectionTool(), &PixelSelectionTool::areaChanged, [this]() {
         if (_scatterPlotWidget->getPixelSelectionTool().isNotifyDuringSelection())
@@ -210,13 +200,6 @@ void ScatterplotPlugin::init()
 
     // Load points when the dataset name of the points dataset reference changes
     connect(&_positionDataset, &DatasetRef<Points>::changed, this, &ScatterplotPlugin::positionDatasetChanged);
-
-    /*
-    // Load color data when the dataset name of the colors dataset reference changes
-    connect(&_colorsDataset, &DatasetRef<Colors>::changed, this, [this](DataSet* dataset) {
-        loadColors(dataset->getId());
-    });
-    */
 
     // Update the window title when the GUI name of the points dataset changes
     connect(&_positionDataset, &DatasetRef<Points>::dataGuiNameChanged, this, &ScatterplotPlugin::updateWindowTitle);
@@ -575,18 +558,7 @@ void ScatterplotPlugin::selectAll()
     if (!_positionDataset.isValid())
         return;
 
-    auto& selectionSet      = dynamic_cast<Points&>(_positionDataset->getSelection());
-    auto& selectionIndices  = selectionSet.indices;
-
-    if (_positionDataset->isFull()) {
-        selectionIndices.resize(_positionDataset->getNumPoints());
-        std::iota(selectionIndices.begin(), selectionIndices.end(), 0);
-    } else {
-        selectionIndices = _positionDataset->indices;
-    }
-
-    // Notify others that the selection changed
-    _core->notifyDataSelectionChanged(*_positionDataset);
+    _positionDataset->selectAll();
 }
 
 void ScatterplotPlugin::clearSelection()
@@ -594,13 +566,7 @@ void ScatterplotPlugin::clearSelection()
     if (!_positionDataset.isValid())
         return;
 
-    auto& selectionSet          = dynamic_cast<Points&>(_positionDataset->getSelection());
-    auto& selectionSetIndices   = selectionSet.indices;
-
-    selectionSetIndices.clear();
-
-    // Notify others that the selection changed
-    _core->notifyDataSelectionChanged(*_positionDataset);
+    _positionDataset->selectNone();
 }
 
 void ScatterplotPlugin::invertSelection()
@@ -608,23 +574,7 @@ void ScatterplotPlugin::invertSelection()
     if (!_positionDataset.isValid())
         return;
 
-    auto& pointsIndices = _positionDataset->indices;
-    auto& selectionSet  = dynamic_cast<Points&>(_positionDataset->getSelection());
-
-    if (_positionDataset->isFull()) {
-        pointsIndices.resize(_positionDataset->getNumPoints());
-        std::iota(pointsIndices.begin(), pointsIndices.end(), 0);
-    }
-
-    auto selectionIndicesSet = QSet<std::uint32_t>(pointsIndices.begin(), pointsIndices.end());
-
-    for (auto selectionSetIndex : selectionSet.indices)
-        selectionIndicesSet.remove(selectionSetIndex);
-
-    selectionSet.indices = std::vector<std::uint32_t>(selectionIndicesSet.begin(), selectionIndicesSet.end());
-
-    // Notify others that the selection changed
-    _core->notifyDataSelectionChanged(*_positionDataset);
+    _positionDataset->selectInvert();
 }
 
 QIcon ScatterplotPluginFactory::getIcon() const

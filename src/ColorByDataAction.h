@@ -60,8 +60,11 @@ public:
      */
     QMenu* getContextMenu(QWidget* parent = nullptr) override;
 
-    /** Update datasets in the pick dataset action */
-    void updateDatasetPickerAction();
+    /**
+     * Update datasets in the pick dataset action
+     * @param datasetToSelect Dataset to select (optional)
+     */
+    void updateDatasetPickerAction(const DatasetRef<hdps::DataSet>& datasetToSelect);
 
 public: // Action getters
 
