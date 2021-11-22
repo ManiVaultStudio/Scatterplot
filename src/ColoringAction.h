@@ -66,12 +66,18 @@ public:
      */
     QMenu* getContextMenu(QWidget* parent = nullptr) override;
 
+protected:
+
+    /** Update the state of various actions */
+    void updateActions();
+
 public: // Action getters
 
     OptionAction& getColorByAction() { return _colorByAction; }
+    TriggerAction& getColorByConstantTriggerAction() { return _colorByConstantTriggerAction; }
+    TriggerAction& getColorByDataTriggerAction() { return _colorByDataTriggerAction; }
     ColorByConstantAction& getColorByConstantAction() { return _colorByConstantAction; }
     ColorByDataAction& getColorByDataAction() { return _colorByDataAction; }
-    ColorMapAction& getColorMapAction() { return _colorMapAction; }
 
 protected:
     OptionAction            _colorByAction;                     /** Action for picking the coloring type */
@@ -80,7 +86,6 @@ protected:
     QActionGroup            _colorByActionGroup;                /** Color by action group */
     ColorByConstantAction   _colorByConstantAction;             /** Color by constant action */
     ColorByDataAction       _colorByDataAction;                 /** Color by data action */
-    ColorMapAction          _colorMapAction;                    /** Color map action */
 
     friend class Widget;
 };

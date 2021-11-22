@@ -82,12 +82,6 @@ public: // Miscellaneous
     /** Get smart pointer to source of the points dataset for point position (if any) */
     Dataset<Points>& getPositionSourceDataset();
 
-    /** Get smart pointer to points dataset for point color */
-    Dataset<Points>& getColorsDataset();
-
-    /** Get smart pointer to clusters dataset */
-    Dataset<Clusters>& getClustersDataset();
-
     /** Get clusters dataset for point color */
     QStringList getClusterDatasetNames();
 
@@ -115,8 +109,6 @@ private:
 private:
     Dataset<Points>                 _positionDataset;           /** Smart pointer to points dataset for point position */
     Dataset<Points>                 _positionSourceDataset;     /** Smart pointer to source of the points dataset for point position (if any) */
-    Dataset<Points>                 _colorsDataset;             /** Smart pointer to points dataset for point color */
-    Dataset<Clusters>               _clustersDataset;           /** Smart pointer to clusters dataset for point color */
     std::vector<hdps::Vector2f>     _positions;                 /** Point positions */
     unsigned int                    _numPoints;                 /** Number of point positions */
     

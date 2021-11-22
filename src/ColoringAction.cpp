@@ -5,6 +5,7 @@
 #include "ScatterplotWidget.h"
 
 #include "PointData.h"
+#include "ClusterData.h"
 
 using namespace hdps::gui;
 
@@ -15,8 +16,7 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
     _colorByDataTriggerAction(this, "Color by data"),
     _colorByActionGroup(this),
     _colorByConstantAction(scatterplotPlugin),
-    _colorByDataAction(scatterplotPlugin),
-    _colorMapAction(this, "Color map")
+    _colorByDataAction(scatterplotPlugin, *this)
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("palette"));
 
@@ -48,86 +48,27 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
         _colorByAction.setCurrentText("Data");
     });
 
-    const auto updateScatterplotWidgetColorMap = [this]() -> void {
-        switch (getScatterplotWidget()->getRenderMode())
-        {
-            case ScatterplotWidget::RenderMode::SCATTERPLOT:
-            {
-                if (getScatterplotWidget()->getColoringMode() == ScatterplotWidget::ColoringMode::Data)
-                    getScatterplotWidget()->setColorMap(_colorMapAction.getColorMapImage());
-
-                break;
-            }
-
-            case ScatterplotWidget::RenderMode::LANDSCAPE:
-            {
-                getScatterplotWidget()->setColorMap(_colorMapAction.getColorMapImage());
-
-                break;
-            }
-
-            default:
-                break;
-        }
-    };
-
-    connect(&_colorMapAction, &ColorMapAction::imageChanged, this, updateScatterplotWidgetColorMap);
-
-    const auto updateActions = [this]() -> void {
-        const auto coloringMode = getScatterplotWidget()->getColoringMode();
-        const auto renderMode   = getScatterplotWidget()->getRenderMode();
-
-        _colorByAction.setCurrentIndex(static_cast<std::int32_t>(coloringMode));
-
-        _colorByConstantTriggerAction.setChecked(coloringMode == ScatterplotWidget::ColoringMode::ConstantColor);
-        _colorByDataTriggerAction.setChecked(coloringMode == ScatterplotWidget::ColoringMode::Data);
-        _colorMapAction.setEnabled(renderMode == ScatterplotWidget::LANDSCAPE || coloringMode == ScatterplotWidget::ColoringMode::Data);
-    };
-
-    const auto updateColorMapRange = [this]() {
-
-        // Get color map range action
-        const auto& rangeAction = _colorMapAction.getSettingsAction().getHorizontalAxisAction().getRangeAction();
-
-        // And assign scatter plot renderer color map range
-        getScatterplotWidget()->setColorMapRange(rangeAction.getMinimum(), rangeAction.getMaximum());
-    };
-
-    connect(&_colorMapAction.getSettingsAction().getHorizontalAxisAction().getRangeAction(), &DecimalRangeAction::rangeChanged, this, updateColorMapRange);
-
-    connect(&_colorByAction, &OptionAction::currentIndexChanged, this, [this, updateActions, updateScatterplotWidgetColorMap](const std::uint32_t& currentIndex) {
+    connect(&_colorByAction, &OptionAction::currentIndexChanged, this, [this](const std::uint32_t& currentIndex) {
 
         // Set the coloring mode in the scatter plot widget
         getScatterplotWidget()->setColoringMode(static_cast<ScatterplotWidget::ColoringMode>(currentIndex));
 
         updateActions();
-        updateScatterplotWidgetColorMap();
     });
 
-    connect(getScatterplotWidget(), &ScatterplotWidget::coloringModeChanged, this, updateScatterplotWidgetColorMap);
+    // Update the actions when the current color dataset selection changes
+    connect(&_colorByDataAction.getDatasetPickerAction(), &DatasetPickerAction::currentIndexChanged, this, &ColoringAction::updateActions);
 
-    connect(getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, [this, updateActions, updateScatterplotWidgetColorMap](const ScatterplotWidget::RenderMode& renderMode) {
-        updateActions();
-        updateScatterplotWidgetColorMap();
-    });
+    // Update the actions when the render mode changes
+    connect(getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, &ColoringAction::updateActions);
 
-    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, [this, updateActions, updateScatterplotWidgetColorMap](DatasetImpl* dataset) {
+    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, [this](DatasetImpl* dataset) {
         _colorByAction.reset();
         _colorByConstantAction.reset();
         _colorByDataAction.reset();
 
         updateActions();
-        updateScatterplotWidgetColorMap();
     });
-
-    // Switch to coloring by data by triggering the color by data action
-    const auto triggerColorByDataAction = [this]() -> void {
-        _colorByDataTriggerAction.trigger();
-    };
-
-    // Switch to coloring by data when either the colors dataset or the clusters dataset changed
-    connect(&_scatterplotPlugin->getColorsDataset(), &Dataset<Points>::changed, this, triggerColorByDataAction);
-    connect(&_scatterplotPlugin->getClustersDataset(), &Dataset<Clusters>::changed, this, triggerColorByDataAction);
 
     updateActions();
 }
@@ -155,7 +96,7 @@ QMenu* ColoringAction::getContextMenu(QWidget* parent /*= nullptr*/)
 
     switch (_scatterplotPlugin->getScatterplotWidget()->getColoringMode())
     {
-        case ScatterplotWidget::ColoringMode::ConstantColor:
+        case ScatterplotWidget::ColoringMode::Constant:
             menu->addMenu(_colorByConstantAction.getContextMenu());
             break;
 
@@ -168,6 +109,18 @@ QMenu* ColoringAction::getContextMenu(QWidget* parent /*= nullptr*/)
     }
 
     return menu;
+}
+
+void ColoringAction::updateActions()
+{
+    // Get the coloring and render mode from the scatter plot widget
+    const auto coloringMode = getScatterplotWidget()->getColoringMode();
+    const auto renderMode   = getScatterplotWidget()->getRenderMode();
+
+    // Update the actions
+    _colorByAction.setCurrentIndex(static_cast<std::int32_t>(coloringMode));
+    _colorByConstantTriggerAction.setChecked(coloringMode == ScatterplotWidget::ColoringMode::Constant);
+    _colorByDataTriggerAction.setChecked(coloringMode == ScatterplotWidget::ColoringMode::Data);
 }
 
 ColoringAction::Widget::Widget(QWidget* parent, ColoringAction* coloringAction, const std::int32_t& widgetFlags) :

@@ -67,6 +67,7 @@ ManualClusteringAction::ManualClusteringAction(ScatterplotPlugin* scatterplotPlu
         _clustersDataset.reset();
     });
 
+    /*
     connect(&_scatterplotPlugin->getColorsDataset(), &Dataset<Points>::changed, this, [this, updateActions](DatasetImpl* dataset) {
         if (dataset == nullptr)
             return;
@@ -78,6 +79,7 @@ ManualClusteringAction::ManualClusteringAction(ScatterplotPlugin* scatterplotPlu
 
         updateTargets();
     });
+    */
 
     connect(_scatterplotPlugin, &ScatterplotPlugin::selectionChanged, this, updateActions);
 

@@ -415,12 +415,12 @@ void ScatterplotWidget::cleanup()
 
 void ScatterplotWidget::setColorMap(const QImage& colorMapImage)
 {
+    if (!_isInitialized)
+        return;
+
     makeCurrent();
 
     _colorMapImage = colorMapImage;
-
-    //if (!_isInitialized)
-        //return;
 
     _pointRenderer.setColormap(_colorMapImage);
     _densityRenderer.setColormap(_colorMapImage);

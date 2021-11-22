@@ -35,7 +35,6 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     ViewPlugin(factory),
     _positionDataset(),
     _positionSourceDataset(),
-    _colorsDataset(),
     _positions(),
     _numPoints(0),
     _scatterPlotWidget(new ScatterplotWidget()),
@@ -118,7 +117,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
 
                         // The number of points is equal, so offer the option to use the points dataset as source for points colors
                         dropRegions << new DropWidget::DropRegion(this, "Color", QString("Color %1 by %2").arg(_positionDataset->getGuiName(), candidateDataset->getGuiName()), true, [this, candidateDataset]() {
-                            _colorsDataset = candidateDataset;
+                            _settingsAction.getColoringAction().getColorByDataAction().addColorDataset(candidateDataset);
                         });
                     }
                 }
@@ -137,7 +136,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
             // Only allow user to color by clusters when there is a positions dataset loaded
             if (_positionDataset.isValid()) {
 
-                if (_clustersDataset.isValid() && candidateDataset == _clustersDataset) {
+                if (_settingsAction.getColoringAction().getColorByDataAction().hasColorDataset(candidateDataset)) {
 
                     // The clusters dataset is already loaded
                     dropRegions << new DropWidget::DropRegion(this, "Color", "Cluster set is already in use", false, [this]() {});
@@ -146,7 +145,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
 
                     // Use the clusters set for points color
                     dropRegions << new DropWidget::DropRegion(this, "Color", description, true, [this, candidateDataset]() {
-                        _clustersDataset = candidateDataset;
+                        _settingsAction.getColoringAction().getColorByDataAction().addColorDataset(candidateDataset);
                     });
                 }
             }
@@ -197,9 +196,6 @@ void ScatterplotPlugin::init()
 
             case EventType::DataSelectionChanged:
             {
-                if (!_positionDataset.isValid())
-                    return;
-
                 if (dataEvent->getDataset() != _positionDataset)
                     return;
 
@@ -353,16 +349,6 @@ Dataset<Points>& ScatterplotPlugin::getPositionSourceDataset()
     return _positionSourceDataset;
 }
 
-Dataset<Points>& ScatterplotPlugin::getColorsDataset()
-{
-    return _colorsDataset;
-}
-
-Dataset<Clusters>& ScatterplotPlugin::getClustersDataset()
-{
-    return _clustersDataset;
-}
-
 QStringList ScatterplotPlugin::getClusterDatasetNames()
 {
     QStringList clusterDatasetNames;
@@ -387,8 +373,6 @@ void ScatterplotPlugin::positionDatasetChanged()
 
     // Reset dataset references
     _positionSourceDataset.reset();
-    _colorsDataset.reset();
-    _clustersDataset.reset();
 
     // Set position source dataset reference when the position dataset is derived
     if (_positionDataset->isDerivedData())

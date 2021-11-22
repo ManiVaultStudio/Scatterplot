@@ -33,7 +33,7 @@ public:
 
     /** The way that point colors are determined */
     enum class ColoringMode {
-        ConstantColor,      /** Point color is a constant color */
+        Constant,      /** Point color is a constant color */
         Data                /** Determined by external dataset */
     };
 
@@ -142,7 +142,7 @@ private:
     bool                    _isInitialized = false;
     RenderMode              _renderMode = SCATTERPLOT;
     QColor                  _backgroundColor;
-    ColoringMode            _coloringMode = ColoringMode::ConstantColor;
+    ColoringMode            _coloringMode = ColoringMode::Constant;
     PointRenderer           _pointRenderer;                     
     DensityRenderer         _densityRenderer;                   
     QSize                   _windowSize;                        /** Size of the scatterplot widget */
