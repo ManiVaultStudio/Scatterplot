@@ -31,7 +31,7 @@ DensityPlotAction::DensityPlotAction(ScatterplotPlugin* scatterplotPlugin) :
         _sigmaAction.setUpdateDuringDrag(_scatterplotPlugin->getNumberOfPoints() < 100000);
     };
 
-    connect(&_scatterplotPlugin->getPositionDataset(), &DatasetRef<Points>::changed, this, [this, updateSigmaAction, computeDensity](DataSet* dataset) {
+    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, [this, updateSigmaAction, computeDensity](DatasetImpl* dataset) {
         updateSigmaAction();
         computeDensity();
     });

@@ -64,7 +64,7 @@ public:
      * Update datasets in the pick dataset action
      * @param datasetToSelect Dataset to select (optional)
      */
-    void updateDatasetPickerAction(const DatasetRef<hdps::DataSet>& datasetToSelect);
+    void updateDatasetPickerAction(const Dataset<hdps::DatasetImpl>& datasetToSelect);
 
 public: // Action getters
 

@@ -38,23 +38,17 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
     _colorByActionGroup.addAction(&_colorByConstantTriggerAction);
     _colorByActionGroup.addAction(&_colorByDataTriggerAction);
 
-    const auto updateColoringMode = [this]() {
-        getScatterplotWidget()->setColoringMode(static_cast<ScatterplotWidget::ColoringMode>(_colorByAction.getCurrentIndex()));
-    };
-
-    connect(&_colorByAction, &OptionAction::currentIndexChanged, this, [this, updateColoringMode](const std::uint32_t& currentIndex) {
-        updateColoringMode();
-    });
-
+    // Set the color by action to constant when the color by constant action is triggered
     connect(&_colorByConstantTriggerAction, &QAction::triggered, this, [this]() {
-        getScatterplotWidget()->setColoringMode(ScatterplotWidget::ColoringMode::ConstantColor);
+        _colorByAction.setCurrentText("Constant");
     });
 
+    // Set the color by action to data when the color by data action is triggered
     connect(&_colorByDataTriggerAction, &QAction::triggered, this, [this]() {
-        getScatterplotWidget()->setColoringMode(ScatterplotWidget::ColoringMode::Data);
+        _colorByAction.setCurrentText("Data");
     });
 
-    const auto updateColorMap = [this]() -> void {
+    const auto updateScatterplotWidgetColorMap = [this]() -> void {
         switch (getScatterplotWidget()->getRenderMode())
         {
             case ScatterplotWidget::RenderMode::SCATTERPLOT:
@@ -77,9 +71,7 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
         }
     };
 
-    connect(&_colorMapAction, &ColorMapAction::imageChanged, this, [this, updateColorMap](const QImage& image) {
-        updateColorMap();
-    });
+    connect(&_colorMapAction, &ColorMapAction::imageChanged, this, updateScatterplotWidgetColorMap);
 
     const auto updateActions = [this]() -> void {
         const auto coloringMode = getScatterplotWidget()->getColoringMode();
@@ -93,38 +85,50 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
     };
 
     const auto updateColorMapRange = [this]() {
-        auto& rangeAction = _colorMapAction.getSettingsAction().getHorizontalAxisAction().getRangeAction();
+
+        // Get color map range action
+        const auto& rangeAction = _colorMapAction.getSettingsAction().getHorizontalAxisAction().getRangeAction();
+
+        // And assign scatter plot renderer color map range
         getScatterplotWidget()->setColorMapRange(rangeAction.getMinimum(), rangeAction.getMaximum());
     };
 
-    connect(&_colorMapAction.getSettingsAction().getHorizontalAxisAction().getRangeAction(), &DecimalRangeAction::rangeChanged, this, [this, updateColorMapRange](const float& minimum, const float& maximum) {
-        updateColorMapRange();
-    });
+    connect(&_colorMapAction.getSettingsAction().getHorizontalAxisAction().getRangeAction(), &DecimalRangeAction::rangeChanged, this, updateColorMapRange);
 
-    connect(&_colorByAction, &OptionAction::currentIndexChanged, this, [this, updateActions, updateColorMap](const std::uint32_t& currentIndex) {
+    connect(&_colorByAction, &OptionAction::currentIndexChanged, this, [this, updateActions, updateScatterplotWidgetColorMap](const std::uint32_t& currentIndex) {
+
+        // Set the coloring mode in the scatter plot widget
+        getScatterplotWidget()->setColoringMode(static_cast<ScatterplotWidget::ColoringMode>(currentIndex));
+
         updateActions();
-        updateColorMap();
+        updateScatterplotWidgetColorMap();
     });
 
-    connect(getScatterplotWidget(), &ScatterplotWidget::coloringModeChanged, this, [this, updateColorMap](const ScatterplotWidget::ColoringMode& coloringMode) {
-        updateColorMap();
-    });
+    connect(getScatterplotWidget(), &ScatterplotWidget::coloringModeChanged, this, updateScatterplotWidgetColorMap);
 
-    connect(getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, [this, updateActions, updateColorMap](const ScatterplotWidget::RenderMode& renderMode) {
+    connect(getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, [this, updateActions, updateScatterplotWidgetColorMap](const ScatterplotWidget::RenderMode& renderMode) {
         updateActions();
-        updateColorMap();
+        updateScatterplotWidgetColorMap();
     });
 
-    connect(&_scatterplotPlugin->getPositionDataset(), &DatasetRef<Points>::changed, this, [this, updateActions, updateColorMap](DataSet* dataset) {
+    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, [this, updateActions, updateScatterplotWidgetColorMap](DatasetImpl* dataset) {
         _colorByAction.reset();
         _colorByConstantAction.reset();
         _colorByDataAction.reset();
 
         updateActions();
-        updateColorMap();
+        updateScatterplotWidgetColorMap();
     });
 
-    updateColoringMode();
+    // Switch to coloring by data by triggering the color by data action
+    const auto triggerColorByDataAction = [this]() -> void {
+        _colorByDataTriggerAction.trigger();
+    };
+
+    // Switch to coloring by data when either the colors dataset or the clusters dataset changed
+    connect(&_scatterplotPlugin->getColorsDataset(), &Dataset<Points>::changed, this, triggerColorByDataAction);
+    connect(&_scatterplotPlugin->getClustersDataset(), &Dataset<Clusters>::changed, this, triggerColorByDataAction);
+
     updateActions();
 }
 

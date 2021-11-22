@@ -46,13 +46,13 @@ ManualClusteringAction::ManualClusteringAction(ScatterplotPlugin* scatterplotPlu
             return;
 
         // Get points selection dataset
-        auto& selection = dynamic_cast<Points&>(_scatterplotPlugin->getPositionDataset()->getSelection());
+        auto selection = _scatterplotPlugin->getPositionDataset()->getSelection<Points>();
 
         Cluster cluster;
 
         cluster.setName(_nameAction.getString());
         cluster.setColor(_colorAction.getColor());
-        cluster.setIndices(selection.indices);
+        cluster.setIndices(selection->indices);
 
         _clustersDataset->addCluster(cluster);
 
@@ -61,13 +61,13 @@ ManualClusteringAction::ManualClusteringAction(ScatterplotPlugin* scatterplotPlu
         _nameAction.reset();
     });
 
-    connect(&_scatterplotPlugin->getPositionDataset(), &DatasetRef<Points>::changed, this, [this, updateActions](DataSet* dataset) {
+    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, [this, updateActions](DatasetImpl* dataset) {
         _targetAction.reset();
         _nameAction.reset();
         _clustersDataset.reset();
     });
 
-    connect(&_scatterplotPlugin->getColorsDataset(), &DatasetRef<DataSet>::changed, this, [this, updateActions](DataSet* dataset) {
+    connect(&_scatterplotPlugin->getColorsDataset(), &Dataset<Points>::changed, this, [this, updateActions](DatasetImpl* dataset) {
         if (dataset == nullptr)
             return;
 

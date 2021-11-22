@@ -23,9 +23,7 @@ SettingsAction::SettingsAction(ScatterplotPlugin* scatterplotPlugin) :
         setEnabled(_scatterplotPlugin->getPositionDataset().isValid());
     };
 
-    connect(&scatterplotPlugin->getPositionDataset(), &DatasetRef<Points>::changed, this, [this, updateEnabled](DataSet* dataset) {
-        updateEnabled();
-    });
+    connect(&scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, updateEnabled);
 
     updateEnabled();
 }

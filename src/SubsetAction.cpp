@@ -37,7 +37,7 @@ SubsetAction::SubsetAction(ScatterplotPlugin* scatterplotPlugin) :
         QStringList sourceDataOptions;
 
         if (!datasetGuiName.isEmpty()) {
-            const auto sourceDatasetGuiName = DataSet::getSourceData(*_scatterplotPlugin->getPositionDataset()).getGuiName();
+            const auto sourceDatasetGuiName = _scatterplotPlugin->getPositionDataset()->getSourceDataset<Points>()->getGuiName();
 
             sourceDataOptions << QString("From: %1").arg(datasetGuiName);
 
@@ -49,9 +49,7 @@ SubsetAction::SubsetAction(ScatterplotPlugin* scatterplotPlugin) :
         _sourceDataAction.setEnabled(sourceDataOptions.count() >= 2);
     };
 
-    connect(&scatterplotPlugin->getPositionDataset(), &DatasetRef<Points>::changed, this, [this, onCurrentDatasetChanged](DataSet* dataset) {
-        onCurrentDatasetChanged();
-    });
+    connect(&scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, onCurrentDatasetChanged);
 
     onCurrentDatasetChanged();
     updateActions();

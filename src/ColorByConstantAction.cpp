@@ -55,7 +55,7 @@ ColorByConstantAction::ColorByConstantAction(ScatterplotPlugin* scatterplotPlugi
             updateConstantColor();
     });
 
-    connect(&_scatterplotPlugin->getPositionDataset(), &DatasetRef<Points>::changed, this, [this, updateConstantColor](DataSet* dataset) {
+    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, [this, updateConstantColor](DatasetImpl* dataset) {
         if (getScatterplotWidget()->getColoringMode() == ScatterplotWidget::ColoringMode::ConstantColor)
             updateConstantColor();
     });

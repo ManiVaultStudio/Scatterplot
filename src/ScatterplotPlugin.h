@@ -2,7 +2,6 @@
 
 #include <ViewPlugin.h>
 
-#include "util/DatasetRef.h"
 #include "util/PixelSelectionTool.h"
 
 #include "Common.h"
@@ -62,25 +61,32 @@ protected: // Data loading
 
 public: // Point colors
 
-    /** Load color from points dataset */
-    void loadColors(const DatasetRef<Points>& points, const std::uint32_t& dimensionIndex);
+    /**
+     * Load color from points dataset
+     * @param points Smart pointer to points dataset
+     * @param dimensionIndex Index of the dimension to load
+     */
+    void loadColors(const Dataset<Points>& points, const std::uint32_t& dimensionIndex);
 
-    /** Load color from clusters dataset */
-    void loadColors(const DatasetRef<Clusters>& clusters);
+    /**
+     * Load color from clusters dataset
+     * @param clusters Smart pointer to clusters dataset
+     */
+    void loadColors(const Dataset<Clusters>& clusters);
 
 public: // Miscellaneous
 
-    /** Get points dataset for point position */
-    const DatasetRef<Points>& getPositionDataset();
+    /** Get smart pointer to points dataset for point position */
+    Dataset<Points>& getPositionDataset();
 
-    /** Get source of the points dataset for point position (if any) */
-    const DatasetRef<Points>& getPositionSourceDataset();
+    /** Get smart pointer to source of the points dataset for point position (if any) */
+    Dataset<Points>& getPositionSourceDataset();
 
-    /** Get points dataset for point color */
-    const DatasetRef<Points>& getColorsDataset();
+    /** Get smart pointer to points dataset for point color */
+    Dataset<Points>& getColorsDataset();
 
-    /** _clustersDataset */
-    const DatasetRef<Clusters>& getClustersDataset();
+    /** Get smart pointer to clusters dataset */
+    Dataset<Clusters>& getClustersDataset();
 
     /** Get clusters dataset for point color */
     QStringList getClusterDatasetNames();
@@ -107,10 +113,10 @@ private:
     void updateSelection();
 
 private:
-    DatasetRef<Points>              _positionDataset;           /** Points dataset for point position */
-    DatasetRef<Points>              _positionSourceDataset;     /** Source of the points dataset for point position (if any) */
-    DatasetRef<Points>              _colorsDataset;             /** Points dataset for point color */
-    DatasetRef<Clusters>            _clustersDataset;           /** Clusters dataset for point color */
+    Dataset<Points>                 _positionDataset;           /** Smart pointer to points dataset for point position */
+    Dataset<Points>                 _positionSourceDataset;     /** Smart pointer to source of the points dataset for point position (if any) */
+    Dataset<Points>                 _colorsDataset;             /** Smart pointer to points dataset for point color */
+    Dataset<Clusters>               _clustersDataset;           /** Smart pointer to clusters dataset for point color */
     std::vector<hdps::Vector2f>     _positions;                 /** Point positions */
     unsigned int                    _numPoints;                 /** Number of point positions */
     

@@ -23,23 +23,23 @@ ColorByDataAction::ColorByDataAction(ScatterplotPlugin* scatterplotPlugin) :
     auto& points = _scatterplotPlugin->getPositionDataset();
 
     // Update dataset picker when the position dataset changes
-    connect(&_scatterplotPlugin->getPositionDataset(), &DatasetRef<Points>::changed, this, [this]() {
-        updateDatasetPickerAction(DatasetRef<DataSet>(_scatterplotPlugin->getPositionDataset().get<DataSet>()));
+    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, [this]() {
+        updateDatasetPickerAction(_scatterplotPlugin->getPositionDataset());
     });
 
     // Update dataset picker when the position source dataset changes
-    connect(&_scatterplotPlugin->getPositionSourceDataset(), &DatasetRef<Points>::changed, this, [this]() {
-        updateDatasetPickerAction(DatasetRef<DataSet>(_scatterplotPlugin->getPositionSourceDataset().get<DataSet>()));
+    connect(&_scatterplotPlugin->getPositionSourceDataset(), &Dataset<Points>::changed, this, [this]() {
+        updateDatasetPickerAction(_scatterplotPlugin->getPositionSourceDataset());
     });
 
     // Update dataset picker when the colors dataset changes
-    connect(&_scatterplotPlugin->getColorsDataset(), &DatasetRef<Points>::changed, this, [this]() {
-        updateDatasetPickerAction(DatasetRef<DataSet>(_scatterplotPlugin->getColorsDataset().get<DataSet>()));
+    connect(&_scatterplotPlugin->getColorsDataset(), &Dataset<Points>::changed, this, [this]() {
+        updateDatasetPickerAction(_scatterplotPlugin->getColorsDataset());
     });
 
     // Update dataset picker when the position dataset changes
-    connect(&_scatterplotPlugin->getClustersDataset(), &DatasetRef<Clusters>::changed, this, [this]() {
-        updateDatasetPickerAction(DatasetRef<DataSet>(_scatterplotPlugin->getClustersDataset().get<DataSet>()));
+    connect(&_scatterplotPlugin->getClustersDataset(), &Dataset<Clusters>::changed, this, [this]() {
+        updateDatasetPickerAction(_scatterplotPlugin->getClustersDataset());
     });
     
     // Update scalar range in color map
@@ -64,14 +64,14 @@ ColorByDataAction::ColorByDataAction(ScatterplotPlugin* scatterplotPlugin) :
             return;
 
         if (currentDataset->getDataType() == ClusterType)
-            _scatterplotPlugin->loadColors(DatasetRef<Clusters>(currentDataset.get<Clusters>()));
+            _scatterplotPlugin->loadColors(currentDataset.get<Clusters>());
         else
-            _scatterplotPlugin->loadColors(DatasetRef<Points>(currentDataset.get<Points>()), _pointsDimensionPickerAction.getCurrentDimensionIndex());
+            _scatterplotPlugin->loadColors(currentDataset.get<Points>(), _pointsDimensionPickerAction.getCurrentDimensionIndex());
     };
 
     // Update dimensions action when a dataset is picked
-    connect(&_datasetPickerAction, &DatasetPickerAction::datasetPicked, this, [this, updateColors](const DatasetRef<hdps::DataSet>& pickedDataset) {
-        _pointsDimensionPickerAction.setPointsDataset(DatasetRef<Points>(pickedDataset.get<Points>()));
+    connect(&_datasetPickerAction, &DatasetPickerAction::datasetPicked, this, [this, updateColors](const Dataset<DatasetImpl>& pickedDataset) {
+        _pointsDimensionPickerAction.setPointsDataset(pickedDataset);
         updateColors();
     });
 
@@ -80,7 +80,7 @@ ColorByDataAction::ColorByDataAction(ScatterplotPlugin* scatterplotPlugin) :
         updateColors();
     });
 
-    connect(&_scatterplotPlugin->getClustersDataset(), &DatasetRef<Clusters>::dataChanged, this, [this, updateColors]() {
+    connect(&_scatterplotPlugin->getClustersDataset(), &Dataset<Clusters>::dataChanged, this, [this, updateColors]() {
 
         // Get current dataset
         const auto currentDataset = _datasetPickerAction.getCurrentDataset();
@@ -89,7 +89,7 @@ ColorByDataAction::ColorByDataAction(ScatterplotPlugin* scatterplotPlugin) :
         if (!currentDataset.isValid())
             return;
 
-        if (currentDataset->getId() == _scatterplotPlugin->getClustersDataset()->getId())
+        if (currentDataset == _scatterplotPlugin->getClustersDataset())
             updateColors();
     });
 
@@ -106,44 +106,44 @@ QMenu* ColorByDataAction::getContextMenu(QWidget* parent /*= nullptr*/)
     return menu;
 }
 
-void ColorByDataAction::updateDatasetPickerAction(const DatasetRef<DataSet>& datasetToSelect)
+void ColorByDataAction::updateDatasetPickerAction(const Dataset<DatasetImpl>& datasetToSelect)
 {
-    QVector<DatasetRef<DataSet>> datasets;
+    QVector<Dataset<DatasetImpl>> datasets;
 
     // Get reference to position dataset
-    auto& positionDataset = _scatterplotPlugin->getPositionDataset();
+    const auto positionDataset = _scatterplotPlugin->getPositionDataset();
 
     // Do not update if no position dataset is loaded
     if (!positionDataset.isValid())
         return;
 
-    datasets << DatasetRef<DataSet>(positionDataset.get());
+    datasets << positionDataset;
 
-    // Get reference to position source dataset
-    auto& positionSourceDataset = _scatterplotPlugin->getPositionSourceDataset();
+    // Get smart pointer to position source dataset
+    const auto positionSourceDataset = _scatterplotPlugin->getPositionSourceDataset();
 
     // Add source position dataset (if position dataset is derived)
     if (positionSourceDataset.isValid())
-        datasets << DatasetRef<DataSet>(positionSourceDataset.get());
+        datasets << positionSourceDataset;
 
-    // Get reference to colors dataset
-    auto& colorsDataset = _scatterplotPlugin->getColorsDataset();
+    // Get smart pointer to colors dataset
+    const auto colorsDataset = _scatterplotPlugin->getColorsDataset();
 
     // Add option to color the points with a colors dataset if one is loaded
     if (colorsDataset.isValid())
-        datasets << DatasetRef<DataSet>(colorsDataset.get());
+        datasets << colorsDataset;
 
-    // Get reference to clusters dataset
-    auto& clustersDataset = _scatterplotPlugin->getClustersDataset();
+    // Get smart pointer to clusters dataset
+    const auto clustersDataset = _scatterplotPlugin->getClustersDataset();
 
     // Add option to color the points with a colors dataset if one is loaded
     if (clustersDataset.isValid())
-        datasets << DatasetRef<DataSet>(clustersDataset.get());
+        datasets << clustersDataset;
 
     // Assign options
     _datasetPickerAction.setDatasets(datasets);
 
-    if (!datasetToSelect.isValid())
+    if (datasetToSelect.isValid())
         _datasetPickerAction.setCurrentDataset(datasetToSelect);
 }
 

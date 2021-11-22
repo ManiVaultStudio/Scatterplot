@@ -34,7 +34,7 @@ PositionAction::PositionAction(ScatterplotPlugin* scatterplotPlugin) :
     });
 
     // Set dimension defaults when the position dataset changes
-    connect(&scatterplotPlugin->getPositionDataset(), &DatasetRef<Points>::changed, this, [this]() {
+    connect(&scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, [this]() {
 
         // Assign position dataset to x- and y dimension action
         _xDimensionAction.setPointsDataset(_scatterplotPlugin->getPositionDataset());

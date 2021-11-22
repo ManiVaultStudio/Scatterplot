@@ -2,8 +2,6 @@
 
 #include "PluginAction.h"
 
-#include "util/DatasetRef.h"
-
 using namespace hdps;
 using namespace hdps::gui;
 using namespace hdps::util;
@@ -65,7 +63,7 @@ public: // Action getters
     TriggerAction& getCreateCluster() { return _addClusterAction; }
 
 protected:
-    DatasetRef<Clusters>    _clustersDataset;       /** Reference to the output cluster data */
+    Dataset<Clusters>       _clustersDataset;       /** Smart pointer to the output cluster data */
     OptionAction            _targetAction;          /** Target cluster set action */
     StringAction            _nameAction;            /** Cluster name action */
     ColorAction             _colorAction;           /** Cluster color action */
