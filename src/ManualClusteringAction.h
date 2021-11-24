@@ -2,6 +2,8 @@
 
 #include "PluginAction.h"
 
+#include "actions/DatasetPickerAction.h"
+
 using namespace hdps;
 using namespace hdps::gui;
 using namespace hdps::util;
@@ -49,23 +51,28 @@ public:
      */
     ManualClusteringAction(ScatterplotPlugin* scatterplotPlugin);
 
-    /** Updates available cluster datasets */
-    void updateTargets();
+    /** Adds a clusters dataset to the position dataset as a child */
+    void createDefaultClusterDataset();
 
-    /** Create default clusters set if none already exist */
-    void createDefaultCustersSet();
+    /** Update the target cluster datasets action (creates default set if no cluster sets are available) */
+    void updateTargetClusterDatasets();
+
+protected:
+
+    /** Update the state of the actions */
+    void updateActions();
 
 public: // Action getters
 
-    OptionAction& getTargetAction() { return _targetAction; }
     StringAction& getNameAction() { return _nameAction; }
     ColorAction& getColorAction() { return _colorAction; }
     TriggerAction& getCreateCluster() { return _addClusterAction; }
+    TriggerAction& getAddClusterAction() { return _addClusterAction; }
+    DatasetPickerAction& getTargetClusterDataset() { return _targetClusterDataset; }
 
 protected:
-    Dataset<Clusters>       _clustersDataset;       /** Smart pointer to the output cluster data */
-    OptionAction            _targetAction;          /** Target cluster set action */
-    StringAction            _nameAction;            /** Cluster name action */
-    ColorAction             _colorAction;           /** Cluster color action */
-    TriggerAction           _addClusterAction;      /** Add manual cluster action */
+    StringAction            _nameAction;                /** Cluster name action */
+    ColorAction             _colorAction;               /** Cluster color action */
+    TriggerAction           _addClusterAction;          /** Add manual cluster action */
+    DatasetPickerAction     _targetClusterDataset;      /** Target cluster dataset action */
 };

@@ -3,7 +3,6 @@
 #include "PluginAction.h"
 
 #include "actions/DatasetPickerAction.h"
-#include "event/EventListener.h"
 
 #include "PointsDimensionPickerAction.h"
 
@@ -18,7 +17,7 @@ class ColoringAction;
  *
  * @author Thomas Kroes
  */
-class ColorByDataAction : public PluginAction, public hdps::EventListener
+class ColorByDataAction : public PluginAction
 {
 protected: // Widget
 

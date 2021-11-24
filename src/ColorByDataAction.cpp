@@ -19,7 +19,7 @@ using namespace hdps::util;
 ColorByDataAction::ColorByDataAction(ScatterplotPlugin* scatterplotPlugin, ColoringAction& coloringAction) :
     PluginAction(scatterplotPlugin, "Coloring"),
     _coloringAction(coloringAction),
-    _datasetPickerAction(this),
+    _datasetPickerAction(this, "Pick color dataset"),
     _pointsDimensionPickerAction(this, "Points"),
     _colorMapAction(this, "Color map"),
     _colorDatasets()
@@ -40,26 +40,11 @@ ColorByDataAction::ColorByDataAction(ScatterplotPlugin* scatterplotPlugin, Color
     });
 
     // Update the dataset picker when a child dataset is added (which is not derived)
-    registerDataEvent([this](DataEvent* dataEvent) {
+    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::dataChildAdded, this, [this](const Dataset<DatasetImpl>& childDataset) {
 
-        // Only proceed if we have loaded positions
-        if (!_scatterplotPlugin->getPositionDataset().isValid())
-            return;
-
-        // Get reference to the data hierarchy item
-        auto& dataHierarchyItem = dataEvent->getDataset()->getDataHierarchyItem();
-
-        // Only proceed if it has a parent
-        if (!dataHierarchyItem.hasParent())
-            return;
-
-        // Do no proceed if the parent is not the same as the loaded position dataset
-        if (dataHierarchyItem.getParent().getDataset() != _scatterplotPlugin->getPositionDataset())
-            return;
-
-        // Add a color dataset when it is added as a child of the position dataset
-        if (dataEvent->getType() == EventType::DataAdded)
-            addColorDataset(dataEvent->getDataset());
+        // Only proceed if we have loaded positions and the child dataset is valid
+        if (_scatterplotPlugin->getPositionDataset().isValid() && childDataset.isValid())
+            addColorDataset(childDataset);
     });
 
     // Update colors when the color by option changes or data changes
@@ -82,7 +67,7 @@ ColorByDataAction::ColorByDataAction(ScatterplotPlugin* scatterplotPlugin, Color
     connect(&_datasetPickerAction, &DatasetPickerAction::datasetPicked, this, [this, updateColors](const Dataset<DatasetImpl>& pickedDataset) {
         _pointsDimensionPickerAction.setPointsDataset(pickedDataset);
         updateColors();
-        updateColorMapActionScalarRange();
+        //updateColorMapActionScalarRange();
     });
 
     // Update dimensions action when a dataset dimension is picked
@@ -91,13 +76,9 @@ ColorByDataAction::ColorByDataAction(ScatterplotPlugin* scatterplotPlugin, Color
         updateColorMapActionScalarRange();
     });
 
-    // Update the scatter plot color map when the color map action image changes
     connect(&_colorMapAction, &ColorMapAction::imageChanged, this, &ColorByDataAction::updateScatterplotWidgetColorMap);
     connect(_scatterplotPlugin->getScatterplotWidget(), &ScatterplotWidget::coloringModeChanged, this, &ColorByDataAction::updateScatterplotWidgetColorMap);
-
-    // Update the scatter plot widget color map range when the color map action range changes
     connect(&_colorMapAction.getSettingsAction().getHorizontalAxisAction().getRangeAction(), &DecimalRangeAction::rangeChanged, this, &ColorByDataAction::updateScatterPlotWidgetColorMapRange);
-
     connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, &ColorByDataAction::updateColorMapActionReadOnly);
     connect(_scatterplotPlugin->getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, &ColorByDataAction::updateColorMapActionReadOnly);
     connect(&_pointsDimensionPickerAction, &PointsDimensionPickerAction::currentDimensionIndexChanged, this, &ColorByDataAction::updateColorMapActionReadOnly);
