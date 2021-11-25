@@ -39,13 +39,9 @@ ColorByDataAction::ColorByDataAction(ScatterplotPlugin* scatterplotPlugin, Color
         updateDatasetPickerAction(_scatterplotPlugin->getPositionSourceDataset());
     });
 
-    // Update the dataset picker when a child dataset is added (which is not derived)
-    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::dataChildAdded, this, [this](const Dataset<DatasetImpl>& childDataset) {
-
-        // Only proceed if we have loaded positions and the child dataset is valid
-        if (_scatterplotPlugin->getPositionDataset().isValid() && childDataset.isValid())
-            addColorDataset(childDataset);
-    });
+    // Update child color datasets when a child is added to or removed from the points position dataset
+    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::dataChildAdded, this, &ColorByDataAction::updateChildColorDatasets);
+    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::dataChildRemoved, this, &ColorByDataAction::updateChildColorDatasets);
 
     // Update colors when the color by option changes or data changes
     const auto updateColors = [this]() {
@@ -63,9 +59,14 @@ ColorByDataAction::ColorByDataAction(ScatterplotPlugin* scatterplotPlugin, Color
             _scatterplotPlugin->loadColors(currentDataset.get<Points>(), _pointsDimensionPickerAction.getCurrentDimensionIndex());
     };
 
-    // Update dimensions action when a dataset is picked
+    // Update dimensions action when a dataset is picked and load point colors
     connect(&_datasetPickerAction, &DatasetPickerAction::datasetPicked, this, [this, updateColors](const Dataset<DatasetImpl>& pickedDataset) {
-        _pointsDimensionPickerAction.setPointsDataset(pickedDataset);
+        
+        // Update dimension picker in case the picked dataset contains points
+        if (pickedDataset->getDataType() == PointType)
+            _pointsDimensionPickerAction.setPointsDataset(pickedDataset);
+
+        // Update colors in the scatter plot widget
         updateColors();
         //updateColorMapActionScalarRange();
     });
@@ -85,6 +86,9 @@ ColorByDataAction::ColorByDataAction(ScatterplotPlugin* scatterplotPlugin, Color
 
     // Do an initial update of the scalar ranges
     updateColorMapActionScalarRange();
+
+    // Add compatible child color datasets
+    updateChildColorDatasets();
 }
 
 QMenu* ColorByDataAction::getContextMenu(QWidget* parent /*= nullptr*/)
@@ -96,7 +100,7 @@ QMenu* ColorByDataAction::getContextMenu(QWidget* parent /*= nullptr*/)
     return menu;
 }
 
-void ColorByDataAction::updateDatasetPickerAction(const Dataset<DatasetImpl>& datasetToSelect)
+void ColorByDataAction::updateDatasetPickerAction(const Dataset<hdps::DatasetImpl>& datasetToSelect /*= Dataset<DatasetImpl>()*/)
 {
     QVector<Dataset<DatasetImpl>> datasets;
 
@@ -116,9 +120,8 @@ void ColorByDataAction::updateDatasetPickerAction(const Dataset<DatasetImpl>& da
     if (positionSourceDataset.isValid())
         datasets << positionSourceDataset;
 
-    // Add all color datasets
-    for (const auto& colorDataset : _colorDatasets)
-        datasets << colorDataset;
+    // Add all foreign color datasets
+    datasets << _colorDatasets;
 
     // Assign options
     _datasetPickerAction.setDatasets(datasets);
@@ -133,20 +136,20 @@ void ColorByDataAction::addColorDataset(const Dataset<DatasetImpl>& colorDataset
     // Do not add the same dataset twice
     if (_colorDatasets.contains(colorDataset))
         return;
-    
+
     // Set the color by to data
     _coloringAction.getColorByDataTriggerAction().trigger();
 
     // Add the color set
     _colorDatasets << colorDataset;
 
-    // Updates the dataset picker options and select the added color dataset
+    // Update the dataset picker action and select the added color dataset
     updateDatasetPickerAction(colorDataset);
 
     // Connect to the data changed signal so that we can update the scatter plot colors appropriately
     connect(&_colorDatasets.last(), &Dataset<DatasetImpl>::dataChanged, this, [this, colorDataset]() {
 
-        // Get current dataset
+        // Get smart pointer to current dataset
         const auto currentDataset = _datasetPickerAction.getCurrentDataset();
 
         // Only proceed if we have a valid dataset for coloring
@@ -157,6 +160,40 @@ void ColorByDataAction::addColorDataset(const Dataset<DatasetImpl>& colorDataset
         if (currentDataset == colorDataset)
             updateColors();
     });
+}
+
+void ColorByDataAction::updateChildColorDatasets()
+{
+    // Get smart pointer to the position dataset
+    auto positionDataset = _scatterplotPlugin->getPositionDataset();
+
+    // Only proceed if the position dataset is loaded
+    if (!positionDataset.isValid())
+        return;
+
+    // Get child data hierarchy items of the position dataset
+    const auto children = positionDataset->getDataHierarchyItem().getChildren();
+
+    // Loop over all children and possibly add them to the color datasets vector
+    for (auto child : children) {
+
+        // Get smart pointer to child dataset
+        const auto childDataset = child->getDataset();
+
+        // Get the data type
+        const auto dataType = childDataset->getDataType();
+
+        // Add if points/clusters and not derived
+        if (dataType == PointType || dataType == ClusterType) {
+
+            // Add the child dataset to the vector (avoid adding duplicates)
+            if (!_colorDatasets.contains(child->getDataset()))
+                addColorDataset(childDataset);
+        }
+    }
+
+    // Update the dataset picker action
+    updateDatasetPickerAction();
 }
 
 bool ColorByDataAction::hasColorDataset(const Dataset<DatasetImpl>& colorDataset) const

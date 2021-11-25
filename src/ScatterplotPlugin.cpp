@@ -139,7 +139,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                 if (_settingsAction.getColoringAction().getColorByDataAction().hasColorDataset(candidateDataset)) {
 
                     // The clusters dataset is already loaded
-                    dropRegions << new DropWidget::DropRegion(this, "Color", "Cluster set is already in use", false, [this]() {});
+                    dropRegions << new DropWidget::DropRegion(this, "Color", "Cluster set is already added", false, [this]() {});
                 }
                 else {
 

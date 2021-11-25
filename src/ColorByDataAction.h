@@ -64,16 +64,19 @@ public:
     QMenu* getContextMenu(QWidget* parent = nullptr) override;
 
     /**
-     * Update datasets in the pick dataset action
+     * Update datasets in the picker dataset action
      * @param datasetToSelect Dataset to select (optional)
      */
-    void updateDatasetPickerAction(const Dataset<hdps::DatasetImpl>& datasetToSelect);
+    void updateDatasetPickerAction(const Dataset<hdps::DatasetImpl>& datasetToSelect = Dataset<DatasetImpl>());
 
     /**
-     * Add color dataset
+     * Add a color dataset
      * @param colorDataset Smart pointer to color dataset
      */
     void addColorDataset(const Dataset<DatasetImpl>& colorDataset);
+
+    /** Adds all possible child color datasets of the loaded position dataset */
+    void updateChildColorDatasets();
 
     /** Determines whether a given color dataset is already loaded */
     bool hasColorDataset(const Dataset<DatasetImpl>& colorDataset) const;
