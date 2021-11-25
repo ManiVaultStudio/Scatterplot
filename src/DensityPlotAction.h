@@ -25,8 +25,10 @@ public:
 
 protected:
     DecimalAction       _sigmaAction;
+    ToggleAction        _continuousUpdatesAction;
 
     static constexpr double DEFAULT_SIGMA = 25.0;
+    static constexpr bool DEFAULT_CONTINUOUS_UPDATES = true;
 
     friend class Widget;
     friend class PlotAction;
