@@ -26,6 +26,9 @@ ColorByConstantAction::ColorByConstantAction(ScatterplotPlugin* scatterplotPlugi
         _resetAction.setEnabled(_constantColorAction.getColor() != DEFAULT_COLOR);
     };
 
+    // Initialize fresh view with constant color
+    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, &ColorByConstantAction::updateScatterplotWidgetColorMap);
+
     // Update the scatter plot widget color map and reset action when the color changes
     connect(&_constantColorAction, &ColorAction::colorChanged, this, [this, updateResetAction](const QColor& color) {
         updateScatterplotWidgetColorMap();
@@ -77,17 +80,23 @@ void ColorByConstantAction::updateScatterplotWidgetColorMap()
 
     // And update the scatter plot widget color map
     getScatterplotWidget()->setColorMap(colorPixmap.toImage());
+    getScatterplotWidget()->setScalarEffect(PointEffect::Color);
 }
 
 ColorByConstantAction::Widget::Widget(QWidget* parent, ColorByConstantAction* colorByConstantAction) :
     WidgetActionWidget(parent, colorByConstantAction)
 {
-    setFixedWidth(100);
+    //setFixedWidth(500);
 
     auto layout = new QHBoxLayout();
 
     layout->setMargin(0);
-    layout->addWidget(colorByConstantAction->_constantColorAction.createWidget(this));
+
+    auto constantColorWidget = colorByConstantAction->_constantColorAction.createWidget(this);
+
+    constantColorWidget->setFixedWidth(50);
+
+    layout->addWidget(constantColorWidget);
 
     setLayout(layout);
 }

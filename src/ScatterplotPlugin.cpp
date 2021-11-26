@@ -118,6 +118,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                         // The number of points is equal, so offer the option to use the points dataset as source for points colors
                         dropRegions << new DropWidget::DropRegion(this, "Color", QString("Color %1 by %2").arg(_positionDataset->getGuiName(), candidateDataset->getGuiName()), true, [this, candidateDataset]() {
                             _settingsAction.getColoringAction().getColorByDataAction().addColorDataset(candidateDataset);
+                            _settingsAction.getColoringAction().getColorByDataTriggerAction().trigger();
                         });
                     }
                 }
@@ -139,13 +140,18 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                 if (_settingsAction.getColoringAction().getColorByDataAction().hasColorDataset(candidateDataset)) {
 
                     // The clusters dataset is already loaded
-                    dropRegions << new DropWidget::DropRegion(this, "Color", "Cluster set is already added", false, [this]() {});
+                    dropRegions << new DropWidget::DropRegion(this, "Color", description, true, [this, candidateDataset]() {
+                        _settingsAction.getColoringAction().getColorByDataAction().getDatasetPickerAction().setCurrentDataset(candidateDataset);
+                        _settingsAction.getColoringAction().getColorByDataTriggerAction().trigger();
+                    });
                 }
                 else {
 
                     // Use the clusters set for points color
                     dropRegions << new DropWidget::DropRegion(this, "Color", description, true, [this, candidateDataset]() {
                         _settingsAction.getColoringAction().getColorByDataAction().addColorDataset(candidateDataset);
+                        _settingsAction.getColoringAction().getColorByDataAction().getDatasetPickerAction().setCurrentDataset(candidateDataset);
+                        _settingsAction.getColoringAction().getColorByDataTriggerAction().trigger();
                     });
                 }
             }
