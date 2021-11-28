@@ -86,15 +86,13 @@ void ColorByConstantAction::updateScatterplotWidgetColorMap()
 ColorByConstantAction::Widget::Widget(QWidget* parent, ColorByConstantAction* colorByConstantAction) :
     WidgetActionWidget(parent, colorByConstantAction)
 {
-    //setFixedWidth(500);
-
     auto layout = new QHBoxLayout();
 
     layout->setMargin(0);
 
     auto constantColorWidget = colorByConstantAction->_constantColorAction.createWidget(this);
 
-    constantColorWidget->setFixedWidth(50);
+    constantColorWidget->setFixedWidth(40);
 
     layout->addWidget(constantColorWidget);
 

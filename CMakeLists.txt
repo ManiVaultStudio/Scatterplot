@@ -28,17 +28,19 @@ set(PLUGIN
 
 file(GLOB UI src/*Widget*.*)
 file(GLOB Actions src/*Action.*)
+file(GLOB Models src/*Model.*)
 file(GLOB SHADERS src/*.glsl)
 file(GLOB JSON src/*.json)
 file(GLOB SHADERS res/shaders/*.vert res/shaders/*.frag)
 file(GLOB QRC res/*.qrc)
 
-set(SOURCES ${PLUGIN} ${PixelSelectionTool} ${UI} ${Actions})
+set(SOURCES ${PLUGIN} ${PixelSelectionTool} ${UI} ${Actions} ${Models})
 set(AUX ${JSON} ${QRC})
 
 source_group(Plugin FILES ${PLUGIN})
 source_group(UI FILES ${UI})
 source_group(Actions FILES ${Actions})
+source_group(Models FILES ${Models})
 source_group(Shaders FILES ${SHADERS})
 source_group(Aux FILES ${AUX})
 

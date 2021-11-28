@@ -94,7 +94,7 @@ void ManualClusteringAction::createDefaultClusterDataset()
     updateTargetClusterDatasets();
 
     // Choose default clusters for coloring
-    _scatterplotPlugin->getSettingsAction().getColoringAction().getColorByDataAction().getDatasetPickerAction().setCurrentDataset(defaultClusters);
+    _scatterplotPlugin->getSettingsAction().getColoringAction().setCurrentColorDataset(defaultClusters);
 }
 
 void ManualClusteringAction::updateTargetClusterDatasets()

@@ -1,9 +1,10 @@
 #pragma once
 
 #include "PluginAction.h"
-
 #include "ColorByConstantAction.h"
-#include "ColorByDataAction.h"
+#include "ColorByModel.h"
+
+#include "PointsDimensionPickerAction.h"
 
 #include <QHBoxLayout>
 #include <QLabel>
@@ -21,12 +22,6 @@ using namespace hdps::gui;
 class ColoringAction : public PluginAction
 {
 protected: // Widget
-
-    class StackedWidget : public QStackedWidget {
-    public:
-        QSize sizeHint() const override { return currentWidget()->sizeHint(); }
-        QSize minimumSizeHint() const override { return currentWidget()->minimumSizeHint(); }
-    };
 
     /** Widget class for coloring action */
     class Widget : public WidgetActionWidget {
@@ -66,26 +61,63 @@ public:
      */
     QMenu* getContextMenu(QWidget* parent = nullptr) override;
 
+    /**
+     * Add color dataset to the list
+     * @param colorDataset Smart pointer to color dataset
+     */
+    void addColorDataset(const Dataset<DatasetImpl>& colorDataset);
+
+    /** Determines whether a given color dataset is already loaded */
+    bool hasColorDataset(const Dataset<DatasetImpl>& colorDataset) const;
+
+    /** Get smart pointer to current color dataset (if any) */
+    Dataset<DatasetImpl> getCurrentColorDataset() const;
+
+    /**
+     * Set the current color dataset
+     * @param colorDataset Smart pointer to color dataset
+     */
+    void setCurrentColorDataset(const Dataset<DatasetImpl>& colorDataset);
+
 protected:
 
-    /** Update the state of various actions */
-    void updateActions();
+    /** Update the color by action options */
+    void updateColorByActionOptions();
+
+    /** Update the colors of the points in the scatter plot widget */
+    void updateScatterPlotWidgetColors();
+
+protected: // Color map
+
+    /** Updates the scalar range in the color map */
+    void updateColorMapActionScalarRange();
+
+    /** Update the scatter plot widget color map */
+    void updateScatterplotWidgetColorMap();
+
+    /** Update the color map range in the scatter plot widget */
+    void updateScatterPlotWidgetColorMapRange();
+
+    /** Determine whether the color map should be enabled */
+    bool shouldEnableColorMap() const;
+
+    /** Enables/disables the color map */
+    void updateColorMapActionReadOnly();
 
 public: // Action getters
 
     OptionAction& getColorByAction() { return _colorByAction; }
-    TriggerAction& getColorByConstantTriggerAction() { return _colorByConstantTriggerAction; }
-    TriggerAction& getColorByDataTriggerAction() { return _colorByDataTriggerAction; }
     ColorByConstantAction& getColorByConstantAction() { return _colorByConstantAction; }
-    ColorByDataAction& getColorByDataAction() { return _colorByDataAction; }
+    PointsDimensionPickerAction& getDimensionPickerAction() { return _dimensionPickerAction; }
+    ColorMapAction& getColorMapAction() { return _colorMapAction; }
 
 protected:
-    OptionAction            _colorByAction;                     /** Action for picking the coloring type */
-    TriggerAction           _colorByConstantTriggerAction;      /** Color by constant color trigger action (for key shortcut) */
-    TriggerAction           _colorByDataTriggerAction;          /** Color by data trigger action (for key shortcut) */
-    QActionGroup            _colorByActionGroup;                /** Color by action group */
-    ColorByConstantAction   _colorByConstantAction;             /** Color by constant action */
-    ColorByDataAction       _colorByDataAction;                 /** Color by data action */
+    ColorByModel                    _colorByModel;              /** Color by model (model input for the color by action) */
+    OptionAction                    _colorByAction;             /** Action for picking the coloring type */
+    ColorByConstantAction           _colorByConstantAction;     /** Action for picking the constant color */
+    PointsDimensionPickerAction     _dimensionPickerAction;     /** Dimension picker action */
+    ColorMapAction                  _colorMapAction;            /** Color map action */
+    QVector<Dataset<DatasetImpl>>   _colorDatasets;             /** Smart pointer to color datasets */
 
     friend class Widget;
 };

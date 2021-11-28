@@ -117,8 +117,8 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
 
                         // The number of points is equal, so offer the option to use the points dataset as source for points colors
                         dropRegions << new DropWidget::DropRegion(this, "Color", QString("Color %1 by %2").arg(_positionDataset->getGuiName(), candidateDataset->getGuiName()), true, [this, candidateDataset]() {
-                            _settingsAction.getColoringAction().getColorByDataAction().addColorDataset(candidateDataset);
-                            _settingsAction.getColoringAction().getColorByDataTriggerAction().trigger();
+                            _settingsAction.getColoringAction().addColorDataset(candidateDataset);
+                            _settingsAction.getColoringAction().setCurrentColorDataset(candidateDataset);
                         });
                     }
                 }
@@ -137,21 +137,20 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
             // Only allow user to color by clusters when there is a positions dataset loaded
             if (_positionDataset.isValid()) {
 
-                if (_settingsAction.getColoringAction().getColorByDataAction().hasColorDataset(candidateDataset)) {
+                if (_settingsAction.getColoringAction().hasColorDataset(candidateDataset)) {
 
                     // The clusters dataset is already loaded
                     dropRegions << new DropWidget::DropRegion(this, "Color", description, true, [this, candidateDataset]() {
-                        _settingsAction.getColoringAction().getColorByDataAction().getDatasetPickerAction().setCurrentDataset(candidateDataset);
-                        _settingsAction.getColoringAction().getColorByDataTriggerAction().trigger();
+                        _settingsAction.getColoringAction().setCurrentColorDataset(candidateDataset);
+                        _settingsAction.getColoringAction().setCurrentColorDataset(candidateDataset);
                     });
                 }
                 else {
 
                     // Use the clusters set for points color
                     dropRegions << new DropWidget::DropRegion(this, "Color", description, true, [this, candidateDataset]() {
-                        _settingsAction.getColoringAction().getColorByDataAction().addColorDataset(candidateDataset);
-                        _settingsAction.getColoringAction().getColorByDataAction().getDatasetPickerAction().setCurrentDataset(candidateDataset);
-                        _settingsAction.getColoringAction().getColorByDataTriggerAction().trigger();
+                        _settingsAction.getColoringAction().addColorDataset(candidateDataset);
+                        _settingsAction.getColoringAction().setCurrentColorDataset(candidateDataset);
                     });
                 }
             }

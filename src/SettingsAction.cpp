@@ -67,7 +67,7 @@ SettingsAction::Widget::Widget(QWidget* parent, SettingsAction* settingsAction) 
     addStateWidget(&settingsAction->_subsetAction, 3);
     addStateWidget(&settingsAction->_manualClusteringAction, 0);
     addStateWidget(&settingsAction->_selectionAction, 2);
-    addStateWidget(&settingsAction->getColoringAction().getColorByDataAction().getColorMapAction(), 100);
+    addStateWidget(&settingsAction->getColoringAction().getColorMapAction(), 100);
     addStateWidget(&settingsAction->_miscellaneousAction, 1);
 
     _toolBarLayout.addStretch(1);
