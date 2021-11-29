@@ -7,18 +7,18 @@
 using namespace hdps;
 
 /**
- * Color-by model class
+ * Point size by model class
  *
- * Model which defines the options to color scatter plot points (by constant or by dataset)
+ * Model which defines the options to size scatter plot points (by constant or by dataset)
  *
  * @author Thomas Kroes
  */
-class ColorByModel : public QAbstractListModel
+class PointSizeByModel : public QAbstractListModel
 {
 protected:
 
     /** (Default) constructor */
-    ColorByModel(QObject* parent = nullptr);
+    PointSizeByModel(QObject* parent = nullptr);
 
 public:
 
@@ -30,11 +30,11 @@ public:
     int rowCount(const QModelIndex& parent = QModelIndex()) const;
 
     /**
-     * Get the row index of a color dataset
+     * Get the row index of a dataset
      * @param parent Parent model index
-     * @return Row index of the color dataset
+     * @return Row index of the dataset
      */
-    int rowIndex(const Dataset<DatasetImpl>& colorDataset) const;
+    int rowIndex(const Dataset<DatasetImpl>& dataset) const;
 
     /**
      * Get the number of columns
@@ -58,23 +58,23 @@ public:
     const QVector<Dataset<DatasetImpl>>& getDatasets() const;
 
     /**
-     * Get color dataset at the specified row index
+     * Get dataset at the specified row index
      * @param rowIndex Index of the row
-     * @return Smart pointer to color dataset
+     * @return Smart pointer to dataset
      */
-    Dataset<DatasetImpl> getColorDataset(const std::int32_t& rowIndex) const;
+    Dataset<DatasetImpl> getDataset(const std::int32_t& rowIndex) const;
 
     /**
-     * Set color datasets (resets the model)
-     * @param colorDatasets Vector of smart pointers to color datasets
+     * Set datasets (resets the model)
+     * @param datasets Vector of smart pointers to datasets
      */
-    void setColorDatasets(const QVector<Dataset<DatasetImpl>>& colorDatasets);
+    void setDatasets(const QVector<Dataset<DatasetImpl>>& datasets);
 
     /**
-     * Remove specific color dataset
-     * @param colorDataset Smart pointer to color dataset
+     * Remove specific dataset
+     * @param datasets Smart pointer to dataset
      */
-    void removeColorDataset(const Dataset<DatasetImpl>& colorDataset);
+    void removeDataset(const Dataset<DatasetImpl>& dataset);
 
     /** Get whether to show the full path name in the GUI */
     bool getShowFullPathName() const;
@@ -85,12 +85,12 @@ public:
      */
     void setShowFullPathName(const bool& showFullPathName);
 
-    /** Updates the model from the color datasets */
+    /** Updates the model from the datasets */
     void updateData();
 
 protected:
-    QVector<Dataset<DatasetImpl>>   _colorDatasets;         /** Color datasets from which can be picked */
+    QVector<Dataset<DatasetImpl>>   _datasets;              /** Datasets which to size the scatter plot points with */
     bool                            _showFullPathName;      /** Whether to show the full path name in the GUI */
 
-    friend class ColoringAction;
+    friend class PointPlotAction;
 };

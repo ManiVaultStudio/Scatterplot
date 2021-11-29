@@ -46,9 +46,17 @@ QVariant ColorByModel::data(const QModelIndex& index, int role) const
         case Qt::DecorationRole:
             return row > 0 ? colorDataset->getIcon() : Application::getIconFont("FontAwesome").getIcon("palette");
 
-        // Return 'Constant' constant color and dataset (full path) GUI name otherwise
+        // Return 'Constant' for constant color and dataset (full path) GUI name otherwise
         case Qt::DisplayRole:
-            return row > 0 ? (_showFullPathName ? colorDataset->getDataHierarchyItem().getFullPathName() : colorDataset->getGuiName()) : "Constant";
+        {
+            if (row > 0)
+                if (row == 1)
+                    return colorDataset->getGuiName();
+                else
+                    return _showFullPathName ? colorDataset->getDataHierarchyItem().getFullPathName() : colorDataset->getGuiName();
+            else
+                return "Constant";
+        }
 
         default:
             break;
@@ -90,7 +98,10 @@ void ColorByModel::setColorDatasets(const QVector<Dataset<DatasetImpl>>& colorDa
         _colorDatasets = colorDatasets;
     }
 
+    // Update model when a dataset GUI name changes
     for (const auto& colorDataset : _colorDatasets) {
+
+        // Notify others that the model has updated when the dataset GUI name changes
         connect(&colorDataset, &Dataset<DatasetImpl>::dataGuiNameChanged, this, [this, &colorDataset]() {
 
             // Get row index of the color dataset
