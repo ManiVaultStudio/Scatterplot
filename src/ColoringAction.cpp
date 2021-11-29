@@ -103,8 +103,9 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
     connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::dataChildAdded, this, &ColoringAction::updateColorByActionOptions);
     connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::dataChildRemoved, this, &ColoringAction::updateColorByActionOptions);
 
-    // Update scatter plot widget colors when the current dimension changes
+    // Update scatter plot widget colors and color map scalar range when the current dimension changes
     connect(&_dimensionPickerAction, &PointsDimensionPickerAction::currentDimensionIndexChanged, this, &ColoringAction::updateScatterPlotWidgetColors);
+    connect(&_dimensionPickerAction, &PointsDimensionPickerAction::currentDimensionIndexChanged, this, &ColoringAction::updateColorMapActionScalarRange);
 
     // Update scatter plot widget color map when the color map action image changes or the scatter plot widget coloring mode changes
     connect(&_colorMapAction, &ColorMapAction::imageChanged, this, &ColoringAction::updateScatterplotWidgetColorMap);
@@ -145,6 +146,7 @@ void ColoringAction::addColorDataset(const Dataset<DatasetImpl>& colorDataset)
     // Add color dataset to the list of available color datasets
     _colorDatasets << colorDataset;
 
+    // Get reference to the last added color dataset
     auto& addedColorDataset = _colorDatasets.last();
 
     // Connect to the data changed signal so that we can update the scatter plot colors appropriately
@@ -306,6 +308,7 @@ ColoringAction::Widget::Widget(QWidget* parent, ColoringAction* coloringAction, 
 {
     auto layout = new QHBoxLayout();
 
+    // Enable/disable the widget depending on the render mode
     const auto renderModeChanged = [this, coloringAction]() {
         setEnabled(coloringAction->getScatterplotWidget()->getRenderMode() == ScatterplotWidget::SCATTERPLOT);
     };
