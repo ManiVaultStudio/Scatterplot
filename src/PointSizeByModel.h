@@ -52,10 +52,25 @@ public:
     QVariant data(const QModelIndex& index, int role) const;
 
     /**
+     * Add a dataset
+     * @param dataset Smart pointer to dataset
+     */
+    void addDataset(const Dataset<DatasetImpl>& dataset);
+
+    /**
+     * Remove a dataset
+     * @param dataset Smart pointer to dataset
+     */
+    void removeDataset(const Dataset<DatasetImpl>& dataset);
+
+    /** Remove all datasets from the model */
+    void removeAllDatasets();
+
+    /**
      * Get datasets
      * @return Vector of smart pointers to datasets
      */
-    const QVector<Dataset<DatasetImpl>>& getDatasets() const;
+    const Datasets& getDatasets() const;
 
     /**
      * Get dataset at the specified row index
@@ -68,13 +83,7 @@ public:
      * Set datasets (resets the model)
      * @param datasets Vector of smart pointers to datasets
      */
-    void setDatasets(const QVector<Dataset<DatasetImpl>>& datasets);
-
-    /**
-     * Remove specific dataset
-     * @param datasets Smart pointer to dataset
-     */
-    void removeDataset(const Dataset<DatasetImpl>& dataset);
+    void setDatasets(const Datasets& datasets);
 
     /** Get whether to show the full path name in the GUI */
     bool getShowFullPathName() const;
@@ -89,8 +98,8 @@ public:
     void updateData();
 
 protected:
-    QVector<Dataset<DatasetImpl>>   _datasets;              /** Datasets which to size the scatter plot points with */
-    bool                            _showFullPathName;      /** Whether to show the full path name in the GUI */
+    Datasets    _datasets;              /** Datasets which to size the scatter plot points with */
+    bool        _showFullPathName;      /** Whether to show the full path name in the GUI */
 
     friend class PointPlotAction;
 };

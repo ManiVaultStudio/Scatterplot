@@ -117,7 +117,6 @@ protected:
     ColorByConstantAction           _colorByConstantAction;     /** Action for picking the constant color */
     PointsDimensionPickerAction     _dimensionPickerAction;     /** Dimension picker action */
     ColorMapAction                  _colorMapAction;            /** Color map action */
-    QVector<Dataset<DatasetImpl>>   _colorDatasets;             /** Smart pointer to color datasets */
 
     friend class Widget;
 };

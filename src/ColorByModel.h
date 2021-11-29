@@ -7,7 +7,7 @@
 using namespace hdps;
 
 /**
- * Color-by model class
+ * Color by model class
  *
  * Model which defines the options to color scatter plot points (by constant or by dataset)
  *
@@ -30,11 +30,11 @@ public:
     int rowCount(const QModelIndex& parent = QModelIndex()) const;
 
     /**
-     * Get the row index of a color dataset
+     * Get the row index of a dataset
      * @param parent Parent model index
-     * @return Row index of the color dataset
+     * @return Row index of the dataset
      */
-    int rowIndex(const Dataset<DatasetImpl>& colorDataset) const;
+    int rowIndex(const Dataset<DatasetImpl>& dataset) const;
 
     /**
      * Get the number of columns
@@ -52,29 +52,32 @@ public:
     QVariant data(const QModelIndex& index, int role) const;
 
     /**
+     * Add dataset
+     * @param dataset Smart pointers to dataset
+     */
+    void addDataset(const Dataset<DatasetImpl>& dataset);
+
+    /**
+     * Remove a dataset
+     * @param dataset Smart pointer to dataset
+     */
+    void removeDataset(const Dataset<DatasetImpl>& dataset);
+
+    /** Remove all datasets from the model */
+    void removeAllDatasets();
+
+    /**
      * Get datasets
      * @return Vector of smart pointers to datasets
      */
-    const QVector<Dataset<DatasetImpl>>& getDatasets() const;
+    const Datasets& getDatasets() const;
 
     /**
-     * Get color dataset at the specified row index
+     * Get dataset at the specified row index
      * @param rowIndex Index of the row
-     * @return Smart pointer to color dataset
+     * @return Smart pointer to dataset
      */
-    Dataset<DatasetImpl> getColorDataset(const std::int32_t& rowIndex) const;
-
-    /**
-     * Set color datasets (resets the model)
-     * @param colorDatasets Vector of smart pointers to color datasets
-     */
-    void setColorDatasets(const QVector<Dataset<DatasetImpl>>& colorDatasets);
-
-    /**
-     * Remove specific color dataset
-     * @param colorDataset Smart pointer to color dataset
-     */
-    void removeColorDataset(const Dataset<DatasetImpl>& colorDataset);
+    Dataset<DatasetImpl> getDataset(const std::int32_t& rowIndex) const;
 
     /** Get whether to show the full path name in the GUI */
     bool getShowFullPathName() const;
@@ -85,12 +88,12 @@ public:
      */
     void setShowFullPathName(const bool& showFullPathName);
 
-    /** Updates the model from the color datasets */
+    /** Updates the model from the datasets */
     void updateData();
 
 protected:
-    QVector<Dataset<DatasetImpl>>   _colorDatasets;         /** Color datasets from which can be picked */
-    bool                            _showFullPathName;      /** Whether to show the full path name in the GUI */
+    Datasets    _datasets;              /** Datasets from which can be picked */
+    bool        _showFullPathName;      /** Whether to show the full path name in the GUI */
 
     friend class ColoringAction;
 };

@@ -7,25 +7,25 @@ using namespace hdps;
 
 ColorByModel::ColorByModel(QObject* parent /*= nullptr*/) :
     QAbstractListModel(parent),
-    _colorDatasets(),
+    _datasets(),
     _showFullPathName(true)
 {
 }
 
 int ColorByModel::rowCount(const QModelIndex& parent /*= QModelIndex()*/) const
 {
-    // Constant color option plus the number of available color datasets
-    return _colorDatasets.count() + 1;
+    // Constant color option plus the number of available datasets
+    return _datasets.count() + 1;
 }
 
-int ColorByModel::rowIndex(const Dataset<DatasetImpl>& colorDataset) const
+int ColorByModel::rowIndex(const Dataset<DatasetImpl>& dataset) const
 {
-    // Only proceed if we have a valid color dataset
-    if (!colorDataset.isValid())
+    // Only proceed if we have a valid dataset
+    if (!dataset.isValid())
         return -1;
 
-    // Return the index of the color dataset and add one for the constant color option
-    return _colorDatasets.indexOf(colorDataset) + 1;
+    // Return the index of the dataset and add one for the constant color option
+    return _datasets.indexOf(dataset) + 1;
 }
 
 int ColorByModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) const
@@ -35,25 +35,25 @@ int ColorByModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) con
 
 QVariant ColorByModel::data(const QModelIndex& index, int role) const
 {
-    // Get row/column and smart pointer to the color dataset
-    const auto row          = index.row();
-    const auto column       = index.column();
-    const auto colorDataset = getColorDataset(row);
+    // Get row/column and smart pointer to the dataset
+    const auto row      = index.row();
+    const auto column   = index.column();
+    const auto dataset  = getDataset(row);
 
     switch (role)
     {
         // Return palette icon for constant color and dataset icon otherwise
         case Qt::DecorationRole:
-            return row > 0 ? colorDataset->getIcon() : Application::getIconFont("FontAwesome").getIcon("palette");
+            return row > 0 ? dataset->getIcon() : Application::getIconFont("FontAwesome").getIcon("palette");
 
         // Return 'Constant' for constant color and dataset (full path) GUI name otherwise
         case Qt::DisplayRole:
         {
             if (row > 0)
                 if (row == 1)
-                    return colorDataset->getGuiName();
+                    return dataset->getGuiName();
                 else
-                    return _showFullPathName ? colorDataset->getDataHierarchyItem().getFullPathName() : colorDataset->getGuiName();
+                    return _showFullPathName ? dataset->getDataHierarchyItem().getFullPathName() : dataset->getGuiName();
             else
                 return "Constant";
         }
@@ -65,78 +65,91 @@ QVariant ColorByModel::data(const QModelIndex& index, int role) const
     return QVariant();
 }
 
-const QVector<Dataset<DatasetImpl>>& ColorByModel::getDatasets() const
+const Datasets& ColorByModel::getDatasets() const
 {
-    return _colorDatasets;
+    return _datasets;
 }
 
-Dataset<DatasetImpl> ColorByModel::getColorDataset(const std::int32_t& rowIndex) const
+Dataset<DatasetImpl> ColorByModel::getDataset(const std::int32_t& rowIndex) const
 {
     // Return empty smart pointer when out of range
-    if (rowIndex <= 0 || rowIndex > _colorDatasets.count())
+    if (rowIndex <= 0 || rowIndex > _datasets.count())
         return Dataset<DatasetImpl>();
 
     // Subtract the constant color row
-    return _colorDatasets[rowIndex - 1];
+    return _datasets[rowIndex - 1];
 }
 
-void ColorByModel::setColorDatasets(const QVector<Dataset<DatasetImpl>>& colorDatasets)
+void ColorByModel::addDataset(const Dataset<DatasetImpl>& dataset)
 {
-    if (colorDatasets.count() != _colorDatasets.count()) {
+    // Notify others that the model layout is about to be changed
+    emit layoutAboutToBeChanged();
 
-        // Notify others that the model layout is about to be changed
-        emit layoutAboutToBeChanged();
+    // Add the datasets
+    _datasets << dataset;
 
-        // Assign the datasets
-        _colorDatasets = colorDatasets;
+    // Notify others that the model layout is changed
+    emit layoutChanged();
 
-        // Notify others that the model layout is changed
-        emit layoutChanged();
-    }
-    else {
-        // Assign the datasets
-        _colorDatasets = colorDatasets;
-    }
+    // Get smart pointer to added dataset
+    auto& addedDataset = _datasets.last();
 
-    // Update model when a dataset GUI name changes
-    for (const auto& colorDataset : _colorDatasets) {
+    // Remove a dataset from the model when it is about to be deleted
+    connect(&addedDataset, &Dataset<DatasetImpl>::dataAboutToBeRemoved, this, [this, &addedDataset]() {
 
-        // Notify others that the model has updated when the dataset GUI name changes
-        connect(&colorDataset, &Dataset<DatasetImpl>::dataGuiNameChanged, this, [this, &colorDataset]() {
+        // Remove the dataset from the model before it is physically deleted
+        removeDataset(addedDataset);
+    });
 
-            // Get row index of the color dataset
-            const auto colorDatasetRowIndex = rowIndex(colorDataset);
+    // Notify others that the model has updated when the dataset GUI name changes
+    connect(&addedDataset, &Dataset<DatasetImpl>::dataGuiNameChanged, this, [this, &addedDataset]() {
 
-            // Only proceed if we found a valid row index
-            if (colorDatasetRowIndex < 0)
-                return;
+        // Get row index of the dataset
+        const auto datasetRowIndex = rowIndex(addedDataset);
 
-            // Establish model index
-            const auto modelIndex = index(colorDatasetRowIndex, 0);
+        // Only proceed if we found a valid row index
+        if (datasetRowIndex < 0)
+            return;
 
-            // Only proceed if we have a valid model index
-            if (!modelIndex.isValid())
-                return;
+        // Establish model index
+        const auto modelIndex = index(datasetRowIndex, 0);
 
-            // Notify others that the data changed
-            emit dataChanged(modelIndex, modelIndex);
-        });
-    }
+        // Only proceed if we have a valid model index
+        if (!modelIndex.isValid())
+            return;
 
-    // And update model data with datasets
-    updateData();
+        // Notify others that the data changed
+        emit dataChanged(modelIndex, modelIndex);
+    });
 }
 
-void ColorByModel::removeColorDataset(const hdps::Dataset<hdps::DatasetImpl>& colorDataset)
+void ColorByModel::removeDataset(const Dataset<DatasetImpl>& dataset)
 {
-    // Copy existing datasets
-    auto updatedDatasets = _colorDatasets;
+    // Notify others that the model layout is about to be changed
+    emit layoutAboutToBeChanged();
 
-    // Remove from the vector
-    updatedDatasets.removeOne(colorDataset);
+    // Remove the corresponding row from the model
+    beginRemoveRows(QModelIndex(), rowIndex(dataset), rowIndex(dataset));
+    {
+        // Remove from the vector
+        _datasets.removeOne(dataset);
+    }
+    endRemoveRows();
 
-    // Assign new datasets
-    setColorDatasets(updatedDatasets);
+    // Notify others that the model layout is changed
+    emit layoutChanged();
+}
+
+void ColorByModel::removeAllDatasets()
+{
+    // Notify others that the model layout is about to be changed
+    emit layoutAboutToBeChanged();
+
+    // Remove all datasets
+    _datasets.clear();
+
+    // Notify others that the model layout is changed
+    emit layoutChanged();
 
     // And update model data with altered datasets
     updateData();
@@ -157,14 +170,14 @@ void ColorByModel::setShowFullPathName(const bool& showFullPathName)
 void ColorByModel::updateData()
 {
     // Update the datasets string list model
-    for (auto dataset : _colorDatasets) {
+    for (auto dataset : _datasets) {
 
         // Continue if the dataset is not valid
         if (!dataset.isValid())
             continue;
 
         // Get dataset model index
-        const auto datasetModelIndex = index(_colorDatasets.indexOf(dataset), 0);
+        const auto datasetModelIndex = index(_datasets.indexOf(dataset), 0);
 
         // Notify others that the data changed
         emit dataChanged(datasetModelIndex, datasetModelIndex);

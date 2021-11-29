@@ -142,7 +142,6 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                     // The clusters dataset is already loaded
                     dropRegions << new DropWidget::DropRegion(this, "Color", description, true, [this, candidateDataset]() {
                         _settingsAction.getColoringAction().setCurrentColorDataset(candidateDataset);
-                        _settingsAction.getColoringAction().setCurrentColorDataset(candidateDataset);
                     });
                 }
                 else {

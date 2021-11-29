@@ -16,8 +16,7 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
     _colorByAction(this, "Color by"),
     _colorByConstantAction(scatterplotPlugin),
     _dimensionPickerAction(this, "Points"),
-    _colorMapAction(this, "Color map"),
-    _colorDatasets()
+    _colorMapAction(this, "Color map")
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("palette"));
 
@@ -41,7 +40,7 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
             return;
 
         // Reset the color datasets
-        _colorDatasets.clear();
+        _colorByModel.removeAllDatasets();
 
         // Add the position dataset
         addColorDataset(positionDataset);
@@ -140,17 +139,17 @@ QMenu* ColoringAction::getContextMenu(QWidget* parent /*= nullptr*/)
 void ColoringAction::addColorDataset(const Dataset<DatasetImpl>& colorDataset)
 {
     // Do not add the same color dataset twice
-    if (_colorDatasets.contains(colorDataset))
+    if (hasColorDataset(colorDataset))
         return;
 
-    // Add color dataset to the list of available color datasets
-    _colorDatasets << colorDataset;
+    // Add the dataset to the model
+    _colorByModel.addDataset(colorDataset);
 
-    // Get reference to the last added color dataset
-    auto& addedColorDataset = _colorDatasets.last();
+    // Get smart pointer to added dataset
+    auto& addedDataset = _colorByModel.getDatasets().last();
 
     // Connect to the data changed signal so that we can update the scatter plot colors appropriately
-    connect(&addedColorDataset, &Dataset<DatasetImpl>::dataChanged, this, [this, addedColorDataset]() {
+    connect(&addedDataset, &Dataset<DatasetImpl>::dataChanged, this, [this, addedDataset]() {
 
         // Get smart pointer to current color dataset
         const auto currentColorDataset = getCurrentColorDataset();
@@ -160,14 +159,14 @@ void ColoringAction::addColorDataset(const Dataset<DatasetImpl>& colorDataset)
             return;
 
         // Update colors if the dataset matches
-        if (currentColorDataset == addedColorDataset)
+        if (currentColorDataset == addedDataset)
             updateScatterPlotWidgetColors();
     });
 }
 
 bool ColoringAction::hasColorDataset(const Dataset<DatasetImpl>& colorDataset) const
 {
-    return _colorDatasets.contains(colorDataset);
+    return _colorByModel.rowIndex(colorDataset);
 }
 
 Dataset<DatasetImpl> ColoringAction::getCurrentColorDataset() const
@@ -179,7 +178,7 @@ Dataset<DatasetImpl> ColoringAction::getCurrentColorDataset() const
     if (colorByIndex < 1)
         return Dataset<DatasetImpl>();
 
-    return _colorByModel.getColorDataset(colorByIndex);
+    return _colorByModel.getDataset(colorByIndex);
 }
 
 void ColoringAction::setCurrentColorDataset(const Dataset<DatasetImpl>& colorDataset)
@@ -217,9 +216,6 @@ void ColoringAction::updateColorByActionOptions()
         if (dataType == PointType || dataType == ClusterType)
             addColorDataset(childDataset);
     }
-
-    // Set the datasets in the color-by model
-    _colorByModel.setColorDatasets(_colorDatasets);
 }
 
 void ColoringAction::updateScatterPlotWidgetColors()
