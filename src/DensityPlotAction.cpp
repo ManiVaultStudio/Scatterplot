@@ -8,11 +8,13 @@ using namespace hdps::gui;
 
 DensityPlotAction::DensityPlotAction(ScatterplotPlugin* scatterplotPlugin) :
     PluginAction(scatterplotPlugin, "Density"),
-    _sigmaAction(this, "Sigma", 1.0, 50.0, DEFAULT_SIGMA, DEFAULT_SIGMA)
+    _sigmaAction(this, "Sigma", 1.0, 50.0, DEFAULT_SIGMA, DEFAULT_SIGMA),
+    _continuousUpdatesAction(this, "Live Updates", DEFAULT_CONTINUOUS_UPDATES, DEFAULT_CONTINUOUS_UPDATES)
 {
     setToolTip("Density plot settings");
 
     _scatterplotPlugin->addAction(&_sigmaAction);
+    _scatterplotPlugin->addAction(&_continuousUpdatesAction);
 
     const auto computeDensity = [this]() -> void {
         getScatterplotWidget()->setSigma(0.01 * _sigmaAction.getValue());
@@ -28,8 +30,10 @@ DensityPlotAction::DensityPlotAction(ScatterplotPlugin* scatterplotPlugin) :
     });
 
     const auto updateSigmaAction = [this]() {
-        _sigmaAction.setUpdateDuringDrag(_scatterplotPlugin->getNumberOfPoints() < 100000);
+        _sigmaAction.setUpdateDuringDrag(_continuousUpdatesAction.isChecked());
     };
+
+    connect(&_continuousUpdatesAction, &ToggleAction::toggled, updateSigmaAction);
 
     connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, [this, updateSigmaAction, computeDensity](DatasetImpl* dataset) {
         updateSigmaAction();
@@ -59,6 +63,7 @@ QMenu* DensityPlotAction::getContextMenu()
     };
 
     addActionToMenu(&_sigmaAction);
+    addActionToMenu(&_continuousUpdatesAction);
 
     return menu;
 }
@@ -71,6 +76,7 @@ DensityPlotAction::Widget::Widget(QWidget* parent, DensityPlotAction* densityPlo
     layout->setMargin(0);
     layout->addWidget(densityPlotAction->_sigmaAction.createLabelWidget(this));
     layout->addWidget(densityPlotAction->_sigmaAction.createWidget(this));
+    layout->addWidget(densityPlotAction->_continuousUpdatesAction.createWidget(this));
 
     setLayout(layout);
 }
