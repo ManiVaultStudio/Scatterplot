@@ -16,6 +16,11 @@ ScalarAction::ScalarAction(ScatterplotPlugin* scatterplotPlugin, const QString& 
     setText(title);
 
     _scatterplotPlugin->addAction(&_sourceAction);
+
+    // Pass-through scalar range updates
+    connect(&_sourceAction, &ScalarSourceAction::scalarRangeChanged, this, [this](const float& minimum, const float& maximum) {
+        emit scalarRangeChanged(minimum, maximum);
+    });
 }
 
 void ScalarAction::addDataset(const Dataset<DatasetImpl>& dataset)
@@ -43,6 +48,11 @@ void ScalarAction::addDataset(const Dataset<DatasetImpl>& dataset)
         // Update scatter plot widget point size if the dataset matches
         if (currentDataset == dataset)
             emit sourceDataChanged(dataset);
+    });
+
+    // Connect to the data changed signal so that we can update the scatter plot point size appropriately
+    connect(&_magnitudeAction, &DecimalAction::valueChanged, this, [this, dataset](const float& value) {
+        emit magnitudeChanged(value);
     });
 }
 

@@ -84,21 +84,18 @@ void ScalarSourceModel::addDataset(const Dataset<DatasetImpl>& dataset)
     // Add the datasets
     _datasets << dataset;
 
+    auto& addedDataset = _datasets.last();
+
     // Remove a dataset from the model when it is about to be deleted
-    connect(&dataset, &Dataset<DatasetImpl>::dataAboutToBeRemoved, this, [this, &dataset]() {
-
-        // Remove from the vector
-        _datasets.removeOne(dataset);
-
-        // And update model data with altered datasets
-        updateData();
+    connect(&addedDataset, &Dataset<DatasetImpl>::dataAboutToBeRemoved, this, [this, &addedDataset]() {
+        removeDataset(addedDataset);
     });
 
     // Notify others that the model has updated when the dataset GUI name changes
-    connect(&dataset, &Dataset<DatasetImpl>::dataGuiNameChanged, this, [this, &dataset]() {
+    connect(&addedDataset, &Dataset<DatasetImpl>::dataGuiNameChanged, this, [this, &addedDataset]() {
 
         // Get row index of the dataset
-        const auto colorDatasetRowIndex = rowIndex(dataset);
+        const auto colorDatasetRowIndex = rowIndex(addedDataset);
 
         // Only proceed if we found a valid row index
         if (colorDatasetRowIndex < 0)
@@ -118,7 +115,16 @@ void ScalarSourceModel::addDataset(const Dataset<DatasetImpl>& dataset)
 
 void ScalarSourceModel::removeDataset(const Dataset<DatasetImpl>& dataset)
 {
+    // Get row index of the dataset
+    const auto datasetRowIndex = rowIndex(dataset);
 
+    // Update model
+    beginRemoveRows(QModelIndex(), datasetRowIndex, datasetRowIndex);
+    {
+        // Remove dataset from internal vector
+        _datasets.removeOne(dataset);
+    }
+    endRemoveRows();
 }
 
 Dataset<DatasetImpl> ScalarSourceModel::getDataset(const std::int32_t& rowIndex) const

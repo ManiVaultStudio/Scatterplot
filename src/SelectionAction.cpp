@@ -10,8 +10,15 @@
 
 using namespace hdps::gui;
 
+const auto allowedPixelSelectionTypes = PixelSelectionTypes({
+    PixelSelectionType::Rectangle,
+    PixelSelectionType::Brush,
+    PixelSelectionType::Lasso,
+    PixelSelectionType::Polygon
+});
+
 SelectionAction::SelectionAction(ScatterplotPlugin& scatterplotPlugin) :
-    PixelSelectionAction(&scatterplotPlugin, scatterplotPlugin.getScatterplotWidget(), scatterplotPlugin.getScatterplotWidget()->getPixelSelectionTool()),
+    PixelSelectionAction(&scatterplotPlugin, scatterplotPlugin.getScatterplotWidget(), scatterplotPlugin.getScatterplotWidget()->getPixelSelectionTool(), allowedPixelSelectionTypes),
     _scatterplotPlugin(scatterplotPlugin),
     _focusSelectionAction(this, "Focus selection", false, false)
 {

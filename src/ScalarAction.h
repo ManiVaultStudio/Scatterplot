@@ -16,7 +16,7 @@ using namespace hdps::gui;
 class ScalarAction : public PluginAction
 {
 
-Q_OBJECT
+    Q_OBJECT
 
 protected: // Widget
 
@@ -73,12 +73,25 @@ public: // Action getters
     ScalarSourceAction& getSourceAction() { return _sourceAction; }
 
 signals:
-    
+
     /**
      * Signals that the source data changed (only emitted when a source dataset is selected)
      * @param dataset Source dataset that changed
      */
     void sourceDataChanged(const Dataset<DatasetImpl>& dataset);
+
+    /**
+     * Signals that the scalar range changed
+     * @param minimum Scalar range minimum
+     * @param maximum Scalar range maximum
+     */
+    void scalarRangeChanged(const float& minimum, const float& maximum);
+
+    /**
+     * Signals that the scalar magnitude changed
+     * @param magnitude Scalar magnitude
+     */
+    void magnitudeChanged(const float& magnitude);
 
 protected:
     DecimalAction           _magnitudeAction;   /** Scalar magnitude action */

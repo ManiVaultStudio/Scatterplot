@@ -11,7 +11,7 @@ using namespace gui;
 
 PointPlotAction::PointPlotAction(ScatterplotPlugin* scatterplotPlugin) :
     PluginAction(scatterplotPlugin, "Point"),
-    _sizeAction(scatterplotPlugin, "Point opacity", 0.0, 100.0, DEFAULT_POINT_OPACITY, DEFAULT_POINT_OPACITY),
+    _sizeAction(scatterplotPlugin, "Point size", 0.0, 100.0, DEFAULT_POINT_SIZE, DEFAULT_POINT_SIZE),
     _opacityAction(scatterplotPlugin, "Point opacity", 0.0, 100.0, DEFAULT_POINT_OPACITY, DEFAULT_POINT_OPACITY)
 {
     _scatterplotPlugin->addAction(&_sizeAction);
@@ -72,6 +72,17 @@ PointPlotAction::PointPlotAction(ScatterplotPlugin* scatterplotPlugin) :
     connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::dataChildAdded, this, &PointPlotAction::updateDefaultDatasets);
     connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::dataChildRemoved, this, &PointPlotAction::updateDefaultDatasets);
 
+    // Update scatter plot widget point sizing when the size magnitude or source data of the size action changed
+    connect(&_sizeAction, &ScalarAction::magnitudeChanged, this, &PointPlotAction::updateScatterPlotWidgetPointSize);
+    connect(&_sizeAction, &ScalarAction::sourceDataChanged, this, &PointPlotAction::updateScatterPlotWidgetPointSizeScalars);
+    connect(&_sizeAction, &ScalarAction::scalarRangeChanged, this, &PointPlotAction::updateScatterPlotWidgetPointSizeScalars);
+
+    // Update scatter plot widget point transparency when the size magnitude or source data of the opacity action changed
+    connect(&_opacityAction, &ScalarAction::magnitudeChanged, this, &PointPlotAction::updateScatterPlotWidgetPointOpacity);
+    connect(&_opacityAction, &ScalarAction::sourceDataChanged, this, &PointPlotAction::updateScatterPlotWidgetPointOpacityScalars);
+    connect(&_opacityAction, &ScalarAction::scalarRangeChanged, this, &PointPlotAction::updateScatterPlotWidgetPointOpacityScalars);
+
+    // Initial updates
     updatePointSize();
     updatePointOpacity();
 }
@@ -136,7 +147,22 @@ void PointPlotAction::updateDefaultDatasets()
 
 void PointPlotAction::updateScatterPlotWidgetPointSize()
 {
+    qDebug() << "updateScatterPlotWidgetPointSize";
+}
 
+void PointPlotAction::updateScatterPlotWidgetPointSizeScalars()
+{
+    qDebug() << "updateScatterPlotWidgetPointSizeScalars";
+}
+
+void PointPlotAction::updateScatterPlotWidgetPointOpacity()
+{
+    qDebug() << "updateScatterPlotWidgetPointOpacity";
+}
+
+void PointPlotAction::updateScatterPlotWidgetPointOpacityScalars()
+{
+    qDebug() << "updateScatterPlotWidgetPointOpacityScalars";
 }
 
 PointPlotAction::Widget::Widget(QWidget* parent, PointPlotAction* pointPlotAction, const std::int32_t& widgetFlags) :
@@ -146,22 +172,14 @@ PointPlotAction::Widget::Widget(QWidget* parent, PointPlotAction* pointPlotActio
 
     // Add widgets
     if (widgetFlags & PopupLayout) {
-        auto layout = new QGridLayout();
+        auto layout = new QVBoxLayout();
 
         layout->setMargin(0);
 
-        auto& sizeAction    = pointPlotAction->getSizeAction();
-        auto& opacityAction = pointPlotAction->getOpacityAction();
+        layout->addWidget(pointPlotAction->getSizeAction().createWidget(this));
+        layout->addWidget(pointPlotAction->getOpacityAction().createWidget(this));
 
-        layout->addWidget(sizeAction.createLabelWidget(this), 0, 0);
-        layout->addWidget(sizeAction.createWidget(this), 0, 1);
-        layout->addWidget(sizeAction.getSourceAction().createCollapsedWidget(this), 0, 2);
-
-        layout->addWidget(opacityAction.createLabelWidget(this), 1, 0);
-        layout->addWidget(opacityAction.createWidget(this), 1, 1);
-        layout->addWidget(opacityAction.getSourceAction().createCollapsedWidget(this), 1, 2);
-
-        setPopupLayout(layout);
+        setLayout(layout);
     }
     else {
         auto layout = new QHBoxLayout();

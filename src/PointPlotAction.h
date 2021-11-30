@@ -34,6 +34,15 @@ protected:
     /** Update the scatter plot widget point size */
     void updateScatterPlotWidgetPointSize();
 
+    /** Update the scatter plot widget point size scalars */
+    void updateScatterPlotWidgetPointSizeScalars();
+
+    /** Update the scatter plot widget point opacity */
+    void updateScatterPlotWidgetPointOpacity();
+
+    /** Update the scatter plot widget point opacity scalars */
+    void updateScatterPlotWidgetPointOpacityScalars();
+
 public: // Action getters
 
     ScalarAction& getSizeAction() { return _sizeAction; }

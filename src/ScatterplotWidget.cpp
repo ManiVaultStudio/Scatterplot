@@ -46,7 +46,7 @@ ScatterplotWidget::ScatterplotWidget() :
     // Configure pixel selection tool
     _pixelSelectionTool.setEnabled(true);
     _pixelSelectionTool.setMainColor(QColor(Qt::black));
-
+    
     QObject::connect(&_pixelSelectionTool, &PixelSelectionTool::shapeChanged, [this]() {
         if (isInitialized())
             update();

@@ -53,8 +53,8 @@ PlotAction::Widget::Widget(QWidget* parent, PlotAction* plotAction, const std::i
     QWidget* densityPlotWidget  = nullptr;
 
     if (widgetFlags & PopupLayout) {
-        pointPlotWidget     = plotAction->_pointPlotAction.createWidget(this);
-        densityPlotWidget   = plotAction->_densityPlotAction.createWidget(this);
+        pointPlotWidget     = plotAction->_pointPlotAction.createWidget(this, WidgetActionWidget::PopupLayout);
+        densityPlotWidget   = plotAction->_densityPlotAction.createWidget(this, WidgetActionWidget::PopupLayout);
 
         auto layout = new QVBoxLayout();
 

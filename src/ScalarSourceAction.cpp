@@ -23,8 +23,8 @@ ScalarSourceAction::ScalarSourceAction(ScatterplotPlugin* scatterplotPlugin) :
     _pickerAction.setCustomModel(&_model);
     _pickerAction.setToolTip("Pick scalar option");
 
-    // Hide the dimension picker in constant mode and update the icon
-    const auto currentIndexChanged = [this]() -> void {
+    // Invoked when the scalar source changed
+    const auto scalarSourceChanged = [this]() -> void {
 
         // Current source index
         const auto sourceIndex = _pickerAction.getCurrentIndex();
@@ -43,13 +43,23 @@ ScalarSourceAction::ScalarSourceAction(ScatterplotPlugin* scatterplotPlugin) :
     };
 
     // Handle when the source index changes
-    connect(&_pickerAction, &OptionAction::currentIndexChanged, this, currentIndexChanged);
+    connect(&_pickerAction, &OptionAction::currentIndexChanged, this, scalarSourceChanged);
 
     // Update scalar range when dimension is picked
     connect(&_dimensionPickerAction, &PointsDimensionPickerAction::currentDimensionIndexChanged, this, &ScalarSourceAction::updateScalarRange);
 
+    // Notify others that the range changed when the user changes the range minimum
+    connect(&_rangeAction.getRangeMinAction(), &DecimalAction::valueChanged, this, [this]() {
+        emit scalarRangeChanged(_rangeAction.getRangeMinAction().getValue(), _rangeAction.getRangeMaxAction().getValue());
+    });
+
+    // Notify others that the range changed when the user changes the range maximum
+    connect(&_rangeAction.getRangeMaxAction(), &DecimalAction::valueChanged, this, [this]() {
+        emit scalarRangeChanged(_rangeAction.getRangeMinAction().getValue(), _rangeAction.getRangeMaxAction().getValue());
+    });
+
     // Force initial update
-    currentIndexChanged();
+    scalarSourceChanged();
 }
 
 ScalarSourceModel& ScalarSourceAction::getModel()
@@ -99,6 +109,9 @@ void ScalarSourceAction::updateScalarRange()
     // Enable/disable range action
     _rangeAction.getRangeMinAction().setEnabled(hasScalarRange);
     _rangeAction.getRangeMaxAction().setEnabled(hasScalarRange);
+
+    // Notify others the range ranged
+    emit scalarRangeChanged(minimum, maximum);
 }
 
 ScalarSourceAction::Widget::Widget(QWidget* parent, ScalarSourceAction* scalarSourceAction) :

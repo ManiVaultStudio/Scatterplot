@@ -17,6 +17,9 @@ using namespace hdps::gui;
  */
 class ScalarSourceAction : public PluginAction
 {
+
+    Q_OBJECT
+
 protected: // Widget
 
     /** Widget class for scalar source action */
@@ -61,6 +64,15 @@ public: // Action getters
     OptionAction& getPickerAction() { return _pickerAction; }
     PointsDimensionPickerAction& getDimensionPickerAction() { return _dimensionPickerAction; }
     DecimalRangeAction& getRangeAction() { return _rangeAction; }
+
+signals:
+
+    /**
+     * Signals that the scalar range changed
+     * @param minimum Scalar range minimum
+     * @param maximum Scalar range maximum
+     */
+    void scalarRangeChanged(const float& minimum, const float& maximum);
 
 protected:
     ScalarSourceModel               _model;                     /** Scalar model */
