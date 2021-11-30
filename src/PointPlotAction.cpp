@@ -1,39 +1,35 @@
 #include "PointPlotAction.h"
+#include "ScalarSourceAction.h"
+
 #include "Application.h"
 
 #include "ScatterplotPlugin.h"
 #include "ScatterplotWidget.h"
 #include "DataHierarchyItem.h"
 
-using namespace hdps::gui;
+using namespace gui;
 
 PointPlotAction::PointPlotAction(ScatterplotPlugin* scatterplotPlugin) :
     PluginAction(scatterplotPlugin, "Point"),
-    _sizeByModel(this),
-    _sizeByAction(this, "Point size by"),
-    _pointSizeDimensionAction(this, "Point size dimension"),
-    _sizeAction(this, "Point size", 1.0, 50.0, DEFAULT_POINT_SIZE, DEFAULT_POINT_SIZE),
-    _opacityAction(this, "Point opacity", 0.0, 100.0, DEFAULT_POINT_OPACITY, DEFAULT_POINT_OPACITY),
-    _pointSizeDatasets()
+    _sizeAction(scatterplotPlugin, "Point opacity", 0.0, 100.0, DEFAULT_POINT_OPACITY, DEFAULT_POINT_OPACITY),
+    _opacityAction(scatterplotPlugin, "Point opacity", 0.0, 100.0, DEFAULT_POINT_OPACITY, DEFAULT_POINT_OPACITY)
 {
     _scatterplotPlugin->addAction(&_sizeAction);
     _scatterplotPlugin->addAction(&_opacityAction);
 
-    _sizeByAction.setCustomModel(&_sizeByModel);
-
-    _sizeAction.setSuffix("px");
-    _opacityAction.setSuffix("%");
+    _sizeAction.getMagnitudeAction().setSuffix("px");
+    _opacityAction.getMagnitudeAction().setSuffix("%");
 
     const auto updatePointSize = [this]() -> void {
-        getScatterplotWidget()->setPointSize(_sizeAction.getValue());
+        getScatterplotWidget()->setPointSize(_sizeAction.getMagnitudeAction().getValue());
     };
 
     const auto updatePointOpacity = [this]() -> void {
-        getScatterplotWidget()->setAlpha(0.01 * _opacityAction.getValue());
+        getScatterplotWidget()->setAlpha(0.01 * _opacityAction.getMagnitudeAction().getValue());
     };
 
-    connect(&_sizeAction, &DecimalAction::valueChanged, this, updatePointSize);
-    connect(&_opacityAction, &DecimalAction::valueChanged, this, updatePointOpacity);
+    connect(&_sizeAction.getMagnitudeAction(), &DecimalAction::valueChanged, this, updatePointSize);
+    connect(&_opacityAction.getMagnitudeAction(), &DecimalAction::valueChanged, this, updatePointOpacity);
 
     // Update size by action when the position dataset changes
     connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, [this]() {
@@ -45,25 +41,36 @@ PointPlotAction::PointPlotAction(ScatterplotPlugin* scatterplotPlugin) :
         if (!positionDataset.isValid())
             return;
 
-        // Reset the datasets
-        _pointSizeDatasets.clear();
+        // Remove all datasets from the models
+        _sizeAction.removeAllDatasets();
+        _opacityAction.removeAllDatasets();
 
         // Add the position dataset
-        addPointSizeDataset(positionDataset);
+        _sizeAction.addDataset(positionDataset);
+        _opacityAction.addDataset(positionDataset);
 
         // Get smart pointer to position source dataset
         const auto positionSourceDataset = _scatterplotPlugin->getPositionSourceDataset();
 
         // Add source position dataset (if position dataset is derived)
-        if (positionSourceDataset.isValid())
-            addPointSizeDataset(positionSourceDataset);
+        if (positionSourceDataset.isValid()) {
+
+            // Add the position dataset
+            _sizeAction.addDataset(positionSourceDataset);
+            _opacityAction.addDataset(positionSourceDataset);
+        }
 
         // Update the color by action
-        updateSizeByActionOptions();
+        updateDefaultDatasets();
 
-        // Reset the color by option
-        _sizeByAction.setCurrentIndex(0);
+        // Reset
+        _sizeAction.getSourceAction().getPickerAction().reset();
+        _opacityAction.getSourceAction().getPickerAction().reset();
     });
+
+    // Update default datasets when a child is added to or removed from the position dataset
+    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::dataChildAdded, this, &PointPlotAction::updateDefaultDatasets);
+    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::dataChildRemoved, this, &PointPlotAction::updateDefaultDatasets);
 
     updatePointSize();
     updatePointOpacity();
@@ -89,50 +96,10 @@ QMenu* PointPlotAction::getContextMenu()
     return menu;
 }
 
-void PointPlotAction::addPointSizeDataset(const Dataset<DatasetImpl>& pointSizeDataset)
-{
-    // Avoid duplicates
-    if (_pointSizeDatasets.contains(pointSizeDataset))
-        return;
-
-    // Add point size dataset to the list of candidate point size datasets
-    _pointSizeDatasets << pointSizeDataset;
-
-    // Get reference to the last added dataset
-    auto& addedDataset = _pointSizeDatasets.last();
-
-    // Connect to the data changed signal so that we can update the scatter plot point size appropriately
-    connect(&addedDataset, &Dataset<DatasetImpl>::dataChanged, this, [this, addedDataset]() {
-
-        // Get smart pointer to current point size dataset
-        const auto currentPointSizeDataset = getCurrentPointSizeDataset();
-
-        // Only proceed if we have a valid point size dataset
-        if (!currentPointSizeDataset.isValid())
-            return;
-
-        // Update scatter plot widget point size if the dataset matches
-        if (currentPointSizeDataset == addedDataset)
-            updateScatterPlotWidgetPointSize();
-    });
-}
-
-hdps::Dataset<hdps::DatasetImpl> PointPlotAction::getCurrentPointSizeDataset() const
-{
-    // Get current point size by option index
-    const auto sizeByIndex = _sizeByAction.getCurrentIndex();
-
-    // Only proceed if we have a valid point size dataset row index
-    if (sizeByIndex < 1)
-        return Dataset<DatasetImpl>();
-
-    return _sizeByModel.getDataset(sizeByIndex);
-}
-
-void PointPlotAction::updateSizeByActionOptions()
+void PointPlotAction::updateDefaultDatasets()
 {
     // Get smart pointer to the position dataset
-    auto positionDataset = _scatterplotPlugin->getPositionDataset();
+    auto positionDataset = Dataset<Points>(_scatterplotPlugin->getPositionDataset());
 
     // Only proceed if the position dataset is loaded
     if (!positionDataset.isValid())
@@ -151,12 +118,20 @@ void PointPlotAction::updateSizeByActionOptions()
         const auto dataType = childDataset->getDataType();
 
         // Add if points/clusters and not derived
-        if (dataType == PointType)
-            addPointSizeDataset(childDataset);
-    }
+        if (dataType != PointType)
+            continue;
 
-    // Set the datasets in the color-by model
-    _sizeByModel.setDatasets(_pointSizeDatasets);
+        // Convert child dataset to points smart pointer
+        auto points = Dataset<Points>(childDataset);
+
+        // Number of points must match
+        if (points->getNumPoints() != positionDataset->getNumPoints())
+            continue;
+
+        // Add datasets
+        _sizeAction.addDataset(points);
+        _opacityAction.addDataset(points);
+    }
 }
 
 void PointPlotAction::updateScatterPlotWidgetPointSize()
@@ -169,41 +144,35 @@ PointPlotAction::Widget::Widget(QWidget* parent, PointPlotAction* pointPlotActio
 {
     setToolTip("Point plot settings");
 
-    // Create action widgets
-    auto pointSizeBylabel           = pointPlotAction->getSizeByAction().createLabelWidget(this);
-    auto pointSizeByWidget          = pointPlotAction->getSizeByAction().createWidget(this);
-    auto pointSizeDimensionWidget   = pointPlotAction->getPointSizeDimensionAction().createWidget(this);
-    auto pointSizeWidget            = pointPlotAction->getSizeAction().createWidget(this);
-    auto pointOpacitylabel          = pointPlotAction->getOpacityAction().createLabelWidget(this);
-    auto pointOpacityWidget         = pointPlotAction->getOpacityAction().createWidget(this);
-
-    // Adjust size of the combo boxes to the contents
-    pointSizeByWidget->findChild<QComboBox*>("ComboBox")->setSizeAdjustPolicy(QComboBox::AdjustToContents);
-
     // Add widgets
     if (widgetFlags & PopupLayout) {
         auto layout = new QGridLayout();
 
         layout->setMargin(0);
-        layout->addWidget(pointSizeBylabel, 0, 0);
-        layout->addWidget(pointSizeByWidget, 0, 0);
-        layout->addWidget(pointSizeDimensionWidget, 0, 0);
-        layout->addWidget(pointSizeWidget, 0, 2);
-        layout->addWidget(pointOpacitylabel, 1, 0);
-        layout->addWidget(pointOpacityWidget, 1, 2);
 
-        setLayout(layout);
+        auto& sizeAction    = pointPlotAction->getSizeAction();
+        auto& opacityAction = pointPlotAction->getOpacityAction();
+
+        layout->addWidget(sizeAction.createLabelWidget(this), 0, 0);
+        layout->addWidget(sizeAction.createWidget(this), 0, 1);
+        layout->addWidget(sizeAction.getSourceAction().createCollapsedWidget(this), 0, 2);
+
+        layout->addWidget(opacityAction.createLabelWidget(this), 1, 0);
+        layout->addWidget(opacityAction.createWidget(this), 1, 1);
+        layout->addWidget(opacityAction.getSourceAction().createCollapsedWidget(this), 1, 2);
+
+        setPopupLayout(layout);
     }
     else {
         auto layout = new QHBoxLayout();
 
+        // Create action widgets
+        //auto sizeByWidget = pointPlotAction->getSizeAction().createWidget(this);
+        //auto opacityWidget = pointPlotAction->getOpacityAction().createWidget(this);
+
         layout->setMargin(0);
-        layout->addWidget(pointSizeBylabel);
-        layout->addWidget(pointSizeByWidget);
-        layout->addWidget(pointSizeDimensionWidget);
-        layout->addWidget(pointSizeWidget);
-        layout->addWidget(pointOpacitylabel);
-        layout->addWidget(pointOpacityWidget);
+        layout->addWidget(pointPlotAction->getSizeAction().createWidget(this));
+        layout->addWidget(pointPlotAction->getOpacityAction().createWidget(this));
 
         setLayout(layout);
     }

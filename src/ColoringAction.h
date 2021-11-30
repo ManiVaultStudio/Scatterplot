@@ -2,7 +2,7 @@
 
 #include "PluginAction.h"
 #include "ColorByConstantAction.h"
-#include "ColorByModel.h"
+#include "ColorOptionsModel.h"
 
 #include "PointsDimensionPickerAction.h"
 
@@ -112,7 +112,7 @@ public: // Action getters
     ColorMapAction& getColorMapAction() { return _colorMapAction; }
 
 protected:
-    ColorByModel                    _colorByModel;              /** Color by model (model input for the color by action) */
+    ColorOptionsModel                    _colorByModel;              /** Color by model (model input for the color by action) */
     OptionAction                    _colorByAction;             /** Action for picking the coloring type */
     ColorByConstantAction           _colorByConstantAction;     /** Action for picking the constant color */
     PointsDimensionPickerAction     _dimensionPickerAction;     /** Dimension picker action */

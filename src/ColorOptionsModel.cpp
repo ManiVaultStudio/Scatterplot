@@ -1,24 +1,24 @@
-#include "ColorByModel.h"
+#include "ColorOptionsModel.h"
 
 #include "DataHierarchyItem.h"
 #include "Application.h"
 
 using namespace hdps;
 
-ColorByModel::ColorByModel(QObject* parent /*= nullptr*/) :
+ColorOptionsModel::ColorOptionsModel(QObject* parent /*= nullptr*/) :
     QAbstractListModel(parent),
     _datasets(),
     _showFullPathName(true)
 {
 }
 
-int ColorByModel::rowCount(const QModelIndex& parent /*= QModelIndex()*/) const
+int ColorOptionsModel::rowCount(const QModelIndex& parent /*= QModelIndex()*/) const
 {
     // Constant color option plus the number of available datasets
     return _datasets.count() + 1;
 }
 
-int ColorByModel::rowIndex(const Dataset<DatasetImpl>& dataset) const
+int ColorOptionsModel::rowIndex(const Dataset<DatasetImpl>& dataset) const
 {
     // Only proceed if we have a valid dataset
     if (!dataset.isValid())
@@ -28,12 +28,12 @@ int ColorByModel::rowIndex(const Dataset<DatasetImpl>& dataset) const
     return _datasets.indexOf(dataset) + 1;
 }
 
-int ColorByModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) const
+int ColorOptionsModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) const
 {
     return 1;
 }
 
-QVariant ColorByModel::data(const QModelIndex& index, int role) const
+QVariant ColorOptionsModel::data(const QModelIndex& index, int role) const
 {
     // Get row/column and smart pointer to the dataset
     const auto row      = index.row();
@@ -65,12 +65,12 @@ QVariant ColorByModel::data(const QModelIndex& index, int role) const
     return QVariant();
 }
 
-const Datasets& ColorByModel::getDatasets() const
+const Datasets& ColorOptionsModel::getDatasets() const
 {
     return _datasets;
 }
 
-Dataset<DatasetImpl> ColorByModel::getDataset(const std::int32_t& rowIndex) const
+Dataset<DatasetImpl> ColorOptionsModel::getDataset(const std::int32_t& rowIndex) const
 {
     // Return empty smart pointer when out of range
     if (rowIndex <= 0 || rowIndex > _datasets.count())
@@ -80,7 +80,7 @@ Dataset<DatasetImpl> ColorByModel::getDataset(const std::int32_t& rowIndex) cons
     return _datasets[rowIndex - 1];
 }
 
-void ColorByModel::addDataset(const Dataset<DatasetImpl>& dataset)
+void ColorOptionsModel::addDataset(const Dataset<DatasetImpl>& dataset)
 {
     // Notify others that the model layout is about to be changed
     emit layoutAboutToBeChanged();
@@ -123,7 +123,7 @@ void ColorByModel::addDataset(const Dataset<DatasetImpl>& dataset)
     });
 }
 
-void ColorByModel::removeDataset(const Dataset<DatasetImpl>& dataset)
+void ColorOptionsModel::removeDataset(const Dataset<DatasetImpl>& dataset)
 {
     // Notify others that the model layout is about to be changed
     emit layoutAboutToBeChanged();
@@ -140,7 +140,7 @@ void ColorByModel::removeDataset(const Dataset<DatasetImpl>& dataset)
     emit layoutChanged();
 }
 
-void ColorByModel::removeAllDatasets()
+void ColorOptionsModel::removeAllDatasets()
 {
     // Notify others that the model layout is about to be changed
     emit layoutAboutToBeChanged();
@@ -155,19 +155,19 @@ void ColorByModel::removeAllDatasets()
     updateData();
 }
 
-bool ColorByModel::getShowFullPathName() const
+bool ColorOptionsModel::getShowFullPathName() const
 {
     return _showFullPathName;
 }
 
-void ColorByModel::setShowFullPathName(const bool& showFullPathName)
+void ColorOptionsModel::setShowFullPathName(const bool& showFullPathName)
 {
     _showFullPathName = showFullPathName;
 
     updateData();
 }
 
-void ColorByModel::updateData()
+void ColorOptionsModel::updateData()
 {
     // Update the datasets string list model
     for (auto dataset : _datasets) {

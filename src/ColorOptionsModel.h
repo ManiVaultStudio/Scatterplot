@@ -7,18 +7,18 @@
 using namespace hdps;
 
 /**
- * Color by model class
+ * Color options model class
  *
  * Model which defines the options to color scatter plot points (by constant or by dataset)
  *
  * @author Thomas Kroes
  */
-class ColorByModel : public QAbstractListModel
+class ColorOptionsModel : public QAbstractListModel
 {
 protected:
 
     /** (Default) constructor */
-    ColorByModel(QObject* parent = nullptr);
+    ColorOptionsModel(QObject* parent = nullptr);
 
 public:
 

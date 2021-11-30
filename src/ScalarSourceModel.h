@@ -7,18 +7,18 @@
 using namespace hdps;
 
 /**
- * Point size by model class
+ * Scalar source model class
  *
- * Model which defines the options to size scatter plot points (by constant or by dataset)
+ * Model which defines the source(s) to size scalars (by constant or by dataset)
  *
  * @author Thomas Kroes
  */
-class PointSizeByModel : public QAbstractListModel
+class ScalarSourceModel : public QAbstractListModel
 {
 protected:
 
     /** (Default) constructor */
-    PointSizeByModel(QObject* parent = nullptr);
+    ScalarSourceModel(QObject* parent = nullptr);
 
 public:
 
@@ -98,8 +98,9 @@ public:
     void updateData();
 
 protected:
-    Datasets    _datasets;              /** Datasets which to size the scatter plot points with */
+    Datasets    _datasets;              /** Datasets used to size the scatter plot points with */
     bool        _showFullPathName;      /** Whether to show the full path name in the GUI */
 
-    friend class PointPlotAction;
+    friend class ScalarAction;
+    friend class ScalarSourceAction;
 };

@@ -2,9 +2,7 @@
 
 #include "PluginAction.h"
 
-#include "PointSizeByModel.h"
-
-#include "PointsDimensionPickerAction.h"
+#include "ScalarAction.h"
 
 #include <QLabel>
 
@@ -28,37 +26,22 @@ public:
 
     QMenu* getContextMenu();
 
-    /**
-     * Add point size dataset
-     * @param pointSizeDataset Smart pointer to point size dataset
-     */
-    void addPointSizeDataset(const Dataset<DatasetImpl>& pointSizeDataset);
-
-    /** Get smart pointer to current point size dataset (if any) */
-    Dataset<DatasetImpl> getCurrentPointSizeDataset() const;
-
 protected:
 
-    /** Update the size by action options */
-    void updateSizeByActionOptions();
+    /** Update default datasets (candidates are children of points type and with matching number of points) */
+    void updateDefaultDatasets();
 
     /** Update the scatter plot widget point size */
     void updateScatterPlotWidgetPointSize();
 
 public: // Action getters
 
-    OptionAction& getSizeByAction() { return _sizeByAction; }
-    DecimalAction& getSizeAction() { return _sizeAction; }
-    PointsDimensionPickerAction& getPointSizeDimensionAction() { return _pointSizeDimensionAction; }
-    DecimalAction& getOpacityAction() { return _opacityAction; }
+    ScalarAction& getSizeAction() { return _sizeAction; }
+    ScalarAction& getOpacityAction() { return _opacityAction; }
 
 protected:
-    PointSizeByModel                _sizeByModel;                   /** Point size by model */
-    OptionAction                    _sizeByAction;                  /** Point size by action */
-    PointsDimensionPickerAction     _pointSizeDimensionAction;      /** Point size dimension picker action */
-    DecimalAction                   _sizeAction;                    /** Point size action */
-    DecimalAction                   _opacityAction;                 /** Point opacity action */
-    Datasets                        _pointSizeDatasets;             /** Vector of datasets that can serve as input for point size */
+    ScalarAction    _sizeAction;        /** Point size action */
+    ScalarAction    _opacityAction;     /** Point opacity action */
 
     static constexpr double DEFAULT_POINT_SIZE      = 10.0;     /** Default point size */
     static constexpr double DEFAULT_POINT_OPACITY   = 50.0;     /** Default point opacity */
