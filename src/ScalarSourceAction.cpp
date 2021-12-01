@@ -38,6 +38,8 @@ ScalarSourceAction::ScalarSourceAction(ScatterplotPlugin* scatterplotPlugin) :
         // Assign the icon
         setIcon(_model.data(_model.index(sourceIndex, 0), Qt::DecorationRole).value<QIcon>());
 
+        QSignalBlocker dimensionPickerActionBlocker(&_dimensionPickerAction);
+
         // Update dimension picker
         _dimensionPickerAction.setPointsDataset(Dataset<Points>(_model.getDataset(_pickerAction.getCurrentIndex())));
 
