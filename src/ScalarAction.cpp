@@ -51,7 +51,7 @@ void ScalarAction::addDataset(const Dataset<DatasetImpl>& dataset)
     sourceModel.addDataset(dataset);
 
     // Connect to the data changed signal so that we can update the scatter plot point size appropriately
-    connect(&dataset, &Dataset<DatasetImpl>::dataChanged, this, [this, dataset]() {
+    connect(&sourceModel.getDatasets().last(), &Dataset<DatasetImpl>::dataChanged, this, [this, dataset]() {
 
         // Get smart pointer to current dataset
         const auto currentDataset = getCurrentDataset();
@@ -59,6 +59,9 @@ void ScalarAction::addDataset(const Dataset<DatasetImpl>& dataset)
         // Only proceed if we have a valid point size dataset
         if (!currentDataset.isValid())
             return;
+
+        // To do: schedule more efficient
+        _sourceAction.updateScalarRange();
 
         // Update scatter plot widget point size if the dataset matches
         if (currentDataset == dataset)

@@ -95,7 +95,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                 });
             }
             else {
-                if (_positionDataset->getNumPoints() != candidateDataset->getNumPoints()) {
+                if (_positionDataset != candidateDataset) {
 
                     // The number of points is equal, so offer the option to replace the existing points dataset
                     dropRegions << new DropWidget::DropRegion(this, "Point position", description, "braille", true, [this, candidateDataset]() {

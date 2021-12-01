@@ -59,6 +59,23 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
         _colorByAction.setCurrentIndex(0);
     });
 
+    // Update dataset picker when the position source dataset changes
+    connect(&_scatterplotPlugin->getPositionSourceDataset(), &Dataset<Points>::changed, this, [this]() {
+
+        // Get smart pointer to position source dataset
+        const auto positionSourceDataset = _scatterplotPlugin->getPositionSourceDataset();
+
+        // Add source position dataset (if position dataset is derived)
+        if (positionSourceDataset.isValid())
+            addColorDataset(positionSourceDataset);
+
+        // Update the color by action
+        updateColorByActionOptions();
+
+        // Reset the color by option
+        _colorByAction.setCurrentIndex(_colorByAction.getNumberOfOptions() - 1);
+    });
+
     // Update when the color by option is changed
     connect(&_colorByAction, &OptionAction::currentIndexChanged, this, [this](const std::int32_t& currentIndex) {
 
@@ -323,6 +340,7 @@ ColoringAction::Widget::Widget(QWidget* parent, ColoringAction* coloringAction, 
 
     // Adjust size of the combo boxes to the contents
     colorByWidget->findChild<QComboBox*>("ComboBox")->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+    colorByWidget->findChild<QComboBox*>("ComboBox")->setFixedWidth(200);
     dimensionPickerWidget->findChild<QComboBox*>("ComboBox")->setSizeAdjustPolicy(QComboBox::AdjustToContents);
 
     // Add widgets
