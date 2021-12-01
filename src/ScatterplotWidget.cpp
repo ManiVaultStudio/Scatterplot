@@ -223,16 +223,17 @@ void ScatterplotWidget::setColors(const std::vector<Vector3f>& colors)
     update();
 }
 
-void ScatterplotWidget::setPointSize(const float& pointSize)
+void ScatterplotWidget::setPointSizeScalars(const std::vector<float>& pointSizeScalars)
 {
-    _pointRenderer.setPointSize(pointSize);
+    _pointRenderer.setSizeChannelScalars(pointSizeScalars);
+    _pointRenderer.setPointSize(*std::max_element(pointSizeScalars.begin(), pointSizeScalars.end()));
 
     update();
 }
 
-void ScatterplotWidget::setAlpha(const float alpha)
+void ScatterplotWidget::setPointOpacityScalars(const std::vector<float>& pointOpacityScalars)
 {
-    _pointRenderer.setAlpha(alpha);
+    _pointRenderer.setOpacityChannelScalars(pointOpacityScalars);
 
     update();
 }

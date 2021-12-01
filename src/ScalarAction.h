@@ -67,12 +67,27 @@ public:
     /** Get smart pointer to current scalar dataset (if any) */
     Dataset<DatasetImpl> getCurrentDataset();
 
+    /**
+     * Set the current dataset
+     * @param dataset Smart pointer to dataset
+     */
+    void setCurrentDataset(const Dataset<DatasetImpl>& dataset);
+
+    /** Determines whether the scalar source is a constant */
+    bool isConstant() const;
+
 public: // Action getters
 
     DecimalAction& getMagnitudeAction() { return _magnitudeAction; }
     ScalarSourceAction& getSourceAction() { return _sourceAction; }
 
 signals:
+
+    /**
+     * Signals that the source selection changed
+     * @param sourceIndex Index of the selected source (zero is constant, above is a dataset)
+     */
+    void sourceSelectionChanged(const std::uint32_t& sourceSelectionIndex);
 
     /**
      * Signals that the source data changed (only emitted when a source dataset is selected)
@@ -92,6 +107,12 @@ signals:
      * @param magnitude Scalar magnitude
      */
     void magnitudeChanged(const float& magnitude);
+
+    /**
+     * Signals that the scalar offset changed
+     * @param magnitude Scalar magnitude
+     */
+    void offsetChanged(const float& offset);
 
 protected:
     DecimalAction           _magnitudeAction;   /** Scalar magnitude action */

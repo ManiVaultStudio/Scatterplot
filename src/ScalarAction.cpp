@@ -9,7 +9,7 @@
 using namespace hdps::gui;
 
 ScalarAction::ScalarAction(ScatterplotPlugin* scatterplotPlugin, const QString& title, const float& minimum, const float& maximum, const float& value, const float& defaultValue) :
-    PluginAction(scatterplotPlugin, "Coloring"),
+    PluginAction(scatterplotPlugin, "Scalar"),
     _magnitudeAction(this, title, minimum, maximum, value, defaultValue),
     _sourceAction(scatterplotPlugin)
 {
@@ -17,9 +17,24 @@ ScalarAction::ScalarAction(ScatterplotPlugin* scatterplotPlugin, const QString& 
 
     _scatterplotPlugin->addAction(&_sourceAction);
 
+    // Notify others when the source selection changes
+    connect(&_sourceAction.getPickerAction(), &OptionAction::currentIndexChanged, this, [this](const std::uint32_t& currentIndex) {
+        emit sourceSelectionChanged(currentIndex);
+    });
+
+    // Pass-through magnitude updates
+    connect(&_magnitudeAction, &DecimalAction::valueChanged, this, [this](const float& value) {
+        emit magnitudeChanged(value);
+    });
+
     // Pass-through scalar range updates
     connect(&_sourceAction, &ScalarSourceAction::scalarRangeChanged, this, [this](const float& minimum, const float& maximum) {
         emit scalarRangeChanged(minimum, maximum);
+    });
+
+    // Pass-through scalar offset updates
+    connect(&_sourceAction.getOffsetAction(), &DecimalAction::valueChanged, this, [this](const float& value) {
+        emit offsetChanged(value);
     });
 }
 
@@ -76,18 +91,35 @@ Dataset<DatasetImpl> ScalarAction::getCurrentDataset()
     return scalarSourceModel.getDataset(currentSourceIndex);
 }
 
+void ScalarAction::setCurrentDataset(const Dataset<DatasetImpl>& dataset)
+{
+    // Obtain row index of the dataset
+    const auto datasetRowIndex = _sourceAction.getModel().rowIndex(dataset);
+
+    // Set picker current index if the dataset was found
+    if (datasetRowIndex >= 0)
+        _sourceAction.getPickerAction().setCurrentIndex(datasetRowIndex);
+}
+
+bool ScalarAction::isConstant() const
+{
+    return _sourceAction.getPickerAction().getCurrentIndex() == 0;
+}
+
 ScalarAction::Widget::Widget(QWidget* parent, ScalarAction* scalarAction) :
     WidgetActionWidget(parent, scalarAction)
 {
+    setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
+
     auto layout = new QHBoxLayout();
 
     layout->setMargin(0);
 
-    auto magnitudeLabelWidget   = scalarAction->getMagnitudeAction().createLabelWidget(this);
+    // Create action widgets
     auto magnitudeWidget        = scalarAction->getMagnitudeAction().createWidget(this);
     auto sourceWidget           = scalarAction->getSourceAction().createCollapsedWidget(this);
 
-    layout->addWidget(magnitudeLabelWidget);
+    // And add them to the layout
     layout->addWidget(magnitudeWidget);
     layout->addWidget(sourceWidget);
 
@@ -95,4 +127,8 @@ ScalarAction::Widget::Widget(QWidget* parent, ScalarAction* scalarAction) :
     //pointSizeByWidget->findChild<QComboBox*>("ComboBox")->setSizeAdjustPolicy(QComboBox::AdjustToContents);
 
     setLayout(layout);
+
+    connect(&scalarAction->getSourceAction().getPickerAction(), &OptionAction::currentIndexChanged, this, [this, layout]() {
+        layout->update();
+    });
 }

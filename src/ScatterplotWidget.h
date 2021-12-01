@@ -73,12 +73,18 @@ public:
     void setColors(const std::vector<Vector3f>& colors);
 
     /**
-     * Set point size in pixels
-     * @param pointSize Point size in pixels
+     * Set point size scalars
+     * @param pointSizeScalars Point size scalars
      */
-    void setPointSize(const float& pointSize);
+    void setPointSizeScalars(const std::vector<float>& pointSizeScalars);
+
+    /**
+     * Set point opacity scalars
+     * @param pointOpacityScalars Point opacity scalars (assume the values are normalized)
+     */
+    void setPointOpacityScalars(const std::vector<float>& pointOpacityScalars);
+
     void setScalarEffect(PointEffect effect);
-    void setAlpha(const float alpha);
     void setPointScaling(hdps::gui::PointScaling scalingMode);
     void setSigma(const float sigma);
     void setFocusSelection(const bool& focusSelection);

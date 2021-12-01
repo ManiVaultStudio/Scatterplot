@@ -76,7 +76,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
 
         // Check if the data type can be dropped
         if (!dataTypes.contains(dataType))
-            dropRegions << new DropWidget::DropRegion(this, "Incompatible data", "This type of data is not supported", false);
+            dropRegions << new DropWidget::DropRegion(this, "Incompatible data", "This type of data is not supported", "exclamation-circle", false);
 
         // Points dataset is about to be dropped
         if (dataType == PointType) {
@@ -90,38 +90,36 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
             if (!_positionDataset.isValid()) {
 
                 // Load as point positions when no dataset is currently loaded
-                dropRegions << new DropWidget::DropRegion(this, "Position", description, true, [this, candidateDataset]() {
+                dropRegions << new DropWidget::DropRegion(this, "Position", description, "map-marker-alt", true, [this, candidateDataset]() {
                     _positionDataset = candidateDataset;
                 });
             }
             else {
-                if (candidateDataset == _positionDataset) {
+                if (_positionDataset->getNumPoints() != candidateDataset->getNumPoints()) {
 
-                    // Present the user with a warning that the dataset is already loaded
-                    dropRegions << new DropWidget::DropRegion(this, "Warning", "Data already loaded", false);
+                    // The number of points is equal, so offer the option to replace the existing points dataset
+                    dropRegions << new DropWidget::DropRegion(this, "Point position", description, "braille", true, [this, candidateDataset]() {
+                        _positionDataset = candidateDataset;
+                    });
                 }
-                else {
-                    if (_positionDataset->getNumPoints() != candidateDataset->getNumPoints()) {
 
-                        // The number of points is not equal, so replace the old points dataset with the dropped one
-                        dropRegions << new DropWidget::DropRegion(this, "Position", description, true, [this, candidateDataset]() {
-                            _positionDataset = candidateDataset;
-                        });
-                    }
-                    else {
+                // The number of points is equal, so offer the option to use the points dataset as source for points colors
+                dropRegions << new DropWidget::DropRegion(this, "Point color", QString("Colorize %1 points with %2").arg(_positionDataset->getGuiName(), candidateDataset->getGuiName()), "palette", true, [this, candidateDataset]() {
+                    _settingsAction.getColoringAction().addColorDataset(candidateDataset);
+                    _settingsAction.getColoringAction().setCurrentColorDataset(candidateDataset);
+                });
 
-                        // The number of points is equal, so offer the option to replace the existing points dataset
-                        dropRegions << new DropWidget::DropRegion(this, "Position", description, true, [this, candidateDataset]() {
-                            _positionDataset = candidateDataset;
-                        });
+                // The number of points is equal, so offer the option to use the points dataset as source for points size
+                dropRegions << new DropWidget::DropRegion(this, "Point size", QString("Size %1 points with %2").arg(_positionDataset->getGuiName(), candidateDataset->getGuiName()), "ruler-horizontal", true, [this, candidateDataset]() {
+                    _settingsAction.getPlotAction().getPointPlotAction().addPointSizeDataset(candidateDataset);
+                    _settingsAction.getPlotAction().getPointPlotAction().getSizeAction().setCurrentDataset(candidateDataset);
+                });
 
-                        // The number of points is equal, so offer the option to use the points dataset as source for points colors
-                        dropRegions << new DropWidget::DropRegion(this, "Color", QString("Color %1 by %2").arg(_positionDataset->getGuiName(), candidateDataset->getGuiName()), true, [this, candidateDataset]() {
-                            _settingsAction.getColoringAction().addColorDataset(candidateDataset);
-                            _settingsAction.getColoringAction().setCurrentColorDataset(candidateDataset);
-                        });
-                    }
-                }
+                // The number of points is equal, so offer the option to use the points dataset as source for points opacity
+                dropRegions << new DropWidget::DropRegion(this, "Point opacity", QString("Set %1 points opacity with %2").arg(_positionDataset->getGuiName(), candidateDataset->getGuiName()), "brush", true, [this, candidateDataset]() {
+                    _settingsAction.getPlotAction().getPointPlotAction().addPointOpacityDataset(candidateDataset);
+                    _settingsAction.getPlotAction().getPointPlotAction().getOpacityAction().setCurrentDataset(candidateDataset);
+                });
             }
         }
 
@@ -140,14 +138,14 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                 if (_settingsAction.getColoringAction().hasColorDataset(candidateDataset)) {
 
                     // The clusters dataset is already loaded
-                    dropRegions << new DropWidget::DropRegion(this, "Color", description, true, [this, candidateDataset]() {
+                    dropRegions << new DropWidget::DropRegion(this, "Color", description, "palette", true, [this, candidateDataset]() {
                         _settingsAction.getColoringAction().setCurrentColorDataset(candidateDataset);
                     });
                 }
                 else {
 
                     // Use the clusters set for points color
-                    dropRegions << new DropWidget::DropRegion(this, "Color", description, true, [this, candidateDataset]() {
+                    dropRegions << new DropWidget::DropRegion(this, "Color", description, "palette", true, [this, candidateDataset]() {
                         _settingsAction.getColoringAction().addColorDataset(candidateDataset);
                         _settingsAction.getColoringAction().setCurrentColorDataset(candidateDataset);
                     });
@@ -156,7 +154,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
             else {
 
                 // Only allow user to color by clusters when there is a positions dataset loaded
-                dropRegions << new DropWidget::DropRegion(this, "No points data loaded", "Clusters can only be visualized in concert with points data", false);
+                dropRegions << new DropWidget::DropRegion(this, "No points data loaded", "Clusters can only be visualized in concert with points data", "exclamation-circle", false);
             }
         }
 

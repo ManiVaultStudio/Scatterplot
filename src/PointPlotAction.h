@@ -26,19 +26,25 @@ public:
 
     QMenu* getContextMenu();
 
+    /**
+     * Add point size dataset
+     * @param pointSizeDataset Smart pointer to point size dataset
+     */
+    void addPointSizeDataset(const Dataset<DatasetImpl>& pointSizeDataset);
+
+    /**
+     * Add point opacity dataset
+     * @param pointOpacityDataset Smart pointer to point opacity dataset
+     */
+    void addPointOpacityDataset(const Dataset<DatasetImpl>& pointOpacityDataset);
+
 protected:
 
     /** Update default datasets (candidates are children of points type and with matching number of points) */
     void updateDefaultDatasets();
 
-    /** Update the scatter plot widget point size */
-    void updateScatterPlotWidgetPointSize();
-
     /** Update the scatter plot widget point size scalars */
     void updateScatterPlotWidgetPointSizeScalars();
-
-    /** Update the scatter plot widget point opacity */
-    void updateScatterPlotWidgetPointOpacity();
 
     /** Update the scatter plot widget point opacity scalars */
     void updateScatterPlotWidgetPointOpacityScalars();

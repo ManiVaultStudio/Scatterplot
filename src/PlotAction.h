@@ -24,6 +24,11 @@ public:
 
     QMenu* getContextMenu();
 
+public: // Action getters
+
+    PointPlotAction& getPointPlotAction() { return _pointPlotAction; }
+    DensityPlotAction& getDensityPlotAction() { return _densityPlotAction; }
+
 protected:
     PointPlotAction     _pointPlotAction;
     DensityPlotAction   _densityPlotAction;
