@@ -9,10 +9,10 @@
 
 using namespace hdps::gui;
 
-ScalarSourceAction::ScalarSourceAction(ScatterplotPlugin* scatterplotPlugin) :
-    PluginAction(scatterplotPlugin, "Scalar source"),
+ScalarSourceAction::ScalarSourceAction(ScatterplotPlugin* scatterplotPlugin, const QString& title) :
+    PluginAction(scatterplotPlugin, title),
     _model(this),
-    _pickerAction(this, "Scalar options"),
+    _pickerAction(this, "Source"),
     _dimensionPickerAction(this, "Data dimension"),
     _offsetAction(this, "Offset", 0.0f, 100.0f, 0.0f, 0.0f, 2),
     _rangeAction(this, "Scalar range")
@@ -33,7 +33,7 @@ ScalarSourceAction::ScalarSourceAction(ScatterplotPlugin* scatterplotPlugin) :
         const auto sourceIndex = _pickerAction.getCurrentIndex();
 
         // Set dimension picker visibility
-        _dimensionPickerAction.setVisible(sourceIndex >= 1);
+        _dimensionPickerAction.setEnabled(sourceIndex >= 1);
 
         // Assign the icon
         setIcon(_model.data(_model.index(sourceIndex, 0), Qt::DecorationRole).value<QIcon>());
@@ -130,38 +130,46 @@ ScalarSourceAction::Widget::Widget(QWidget* parent, ScalarSourceAction* scalarSo
     auto layout = new QGridLayout();
 
     // Create action widgets
-    auto pickerWidget           = scalarSourceAction->getPickerAction().createWidget(this);
-    auto dimensionPickerWidget  = scalarSourceAction->getDimensionPickerAction().createWidget(this);
-    auto offsetLabelWidget      = scalarSourceAction->getOffsetAction().createLabelWidget(this);
-    auto offsetSpinBoxWidget    = scalarSourceAction->getOffsetAction().createWidget(this, DecimalAction::SpinBox);
-    auto offsetSliderWidget     = scalarSourceAction->getOffsetAction().createWidget(this, DecimalAction::Slider);
-    auto rangeMinLabelWidget    = scalarSourceAction->getRangeAction().getRangeMinAction().createLabelWidget(this);
-    auto rangeMinSpinBoxWidget  = scalarSourceAction->getRangeAction().getRangeMinAction().createWidget(this, DecimalAction::SpinBox);
-    auto rangeMinSliderWidget   = scalarSourceAction->getRangeAction().getRangeMinAction().createWidget(this, DecimalAction::Slider);
-    auto rangeMaxLabelWidget    = scalarSourceAction->getRangeAction().getRangeMaxAction().createLabelWidget(this);
-    auto rangeMaxSpinBoxWidget  = scalarSourceAction->getRangeAction().getRangeMaxAction().createWidget(this, DecimalAction::SpinBox);
-    auto rangeMaxSliderWidget   = scalarSourceAction->getRangeAction().getRangeMaxAction().createWidget(this, DecimalAction::Slider);
+    auto pickerLabelWidget          = scalarSourceAction->getPickerAction().createLabelWidget(this);
+    auto pickerWidget               = scalarSourceAction->getPickerAction().createWidget(this);
+    auto dimensionPickerLabelWidget = scalarSourceAction->getDimensionPickerAction().createLabelWidget(this);
+    auto dimensionPickerWidget      = scalarSourceAction->getDimensionPickerAction().createWidget(this);
+    auto offsetLabelWidget          = scalarSourceAction->getOffsetAction().createLabelWidget(this);
+    auto offsetSpinBoxWidget        = scalarSourceAction->getOffsetAction().createWidget(this, DecimalAction::SpinBox);
+    auto offsetSliderWidget         = scalarSourceAction->getOffsetAction().createWidget(this, DecimalAction::Slider);
+    auto rangeMinLabelWidget        = scalarSourceAction->getRangeAction().getRangeMinAction().createLabelWidget(this);
+    auto rangeMinSpinBoxWidget      = scalarSourceAction->getRangeAction().getRangeMinAction().createWidget(this, DecimalAction::SpinBox);
+    auto rangeMinSliderWidget       = scalarSourceAction->getRangeAction().getRangeMinAction().createWidget(this, DecimalAction::Slider);
+    auto rangeMaxLabelWidget        = scalarSourceAction->getRangeAction().getRangeMaxAction().createLabelWidget(this);
+    auto rangeMaxSpinBoxWidget      = scalarSourceAction->getRangeAction().getRangeMaxAction().createWidget(this, DecimalAction::SpinBox);
+    auto rangeMaxSliderWidget       = scalarSourceAction->getRangeAction().getRangeMaxAction().createWidget(this, DecimalAction::Slider);
 
     // Adjust size of the combo boxes to the contents
     pickerWidget->findChild<QComboBox*>("ComboBox")->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     dimensionPickerWidget->findChild<QComboBox*>("ComboBox")->setSizeAdjustPolicy(QComboBox::AdjustToContents);
 
-    auto selectionLayout = new QHBoxLayout();
+    // Add source picker widget
+    layout->addWidget(pickerLabelWidget, 0, 0);
+    layout->addWidget(pickerWidget, 0, 1, 1, 2);
 
-    selectionLayout->addWidget(pickerWidget);
-    selectionLayout->addWidget(dimensionPickerWidget);
+    // Add dimension picker widget
+    layout->addWidget(dimensionPickerLabelWidget, 1, 0);
+    layout->addWidget(dimensionPickerWidget, 1, 1, 1, 2);
 
-    layout->addLayout(selectionLayout, 0, 0, 1, 3);
-    
-    layout->addWidget(offsetLabelWidget, 1, 0);
-    layout->addWidget(offsetSpinBoxWidget, 1, 1);
-    layout->addWidget(offsetSliderWidget, 1, 2);
-    layout->addWidget(rangeMinLabelWidget, 2, 0);
-    layout->addWidget(rangeMinSpinBoxWidget, 2, 1);
-    layout->addWidget(rangeMinSliderWidget, 2, 2);
-    layout->addWidget(rangeMaxLabelWidget, 3, 0);
-    layout->addWidget(rangeMaxSpinBoxWidget, 3, 1);
-    layout->addWidget(rangeMaxSliderWidget, 3, 2);
+    // Add scalar offset widget
+    layout->addWidget(offsetLabelWidget, 2, 0);
+    layout->addWidget(offsetSpinBoxWidget, 2, 1);
+    layout->addWidget(offsetSliderWidget, 2, 2);
+
+    // Add data clamp range minimum widget
+    layout->addWidget(rangeMinLabelWidget, 3, 0);
+    layout->addWidget(rangeMinSpinBoxWidget, 3, 1);
+    layout->addWidget(rangeMinSliderWidget, 3, 2);
+
+    // Add data clamp range maximum widget
+    layout->addWidget(rangeMaxLabelWidget, 4, 0);
+    layout->addWidget(rangeMaxSpinBoxWidget, 4, 1);
+    layout->addWidget(rangeMaxSliderWidget, 4, 2);
 
     setPopupLayout(layout);
 }

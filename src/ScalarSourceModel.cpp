@@ -65,25 +65,17 @@ QVariant ScalarSourceModel::data(const QModelIndex& index, int role) const
     return QVariant();
 }
 
-void ScalarSourceModel::removeAllDatasets()
-{
-    // Remove all datasets
-    _datasets.clear();
-
-    // And update model data with altered datasets
-    updateData();
-}
-
-const Datasets& ScalarSourceModel::getDatasets() const
-{
-    return _datasets;
-}
-
 void ScalarSourceModel::addDataset(const Dataset<DatasetImpl>& dataset)
 {
-    // Add the datasets
-    _datasets << dataset;
+    // Insert row into model
+    beginInsertRows(QModelIndex(), rowCount(), rowCount());
+    {
+        // Add the dataset
+        _datasets << dataset;
+    }
+    endInsertRows();
 
+    // Get smart pointer to last added dataset
     auto& addedDataset = _datasets.last();
 
     // Remove a dataset from the model when it is about to be deleted
@@ -125,6 +117,25 @@ void ScalarSourceModel::removeDataset(const Dataset<DatasetImpl>& dataset)
         _datasets.removeOne(dataset);
     }
     endRemoveRows();
+}
+
+void ScalarSourceModel::removeAllDatasets()
+{
+    // Remove row from model
+    beginRemoveRows(QModelIndex(), 0, rowCount() - 1);
+    {
+        // Remove all datasets
+        _datasets.clear();
+    }
+    endRemoveRows();
+
+    // And update model data with altered datasets
+    updateData();
+}
+
+const Datasets& ScalarSourceModel::getDatasets() const
+{
+    return _datasets;
 }
 
 Dataset<DatasetImpl> ScalarSourceModel::getDataset(const std::int32_t& rowIndex) const

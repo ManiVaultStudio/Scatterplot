@@ -56,9 +56,6 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
 
         // Reset the color by option
         _colorByAction.setCurrentIndex(0);
-
-        // Update the scatter plot widget color map
-        updateScatterplotWidgetColorMap();
     });
 
     // Update dataset picker when the position source dataset changes
@@ -107,6 +104,7 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
         }
 
         updateScatterPlotWidgetColors();
+        updateScatterplotWidgetColorMap();
         updateColorMapActionScalarRange();
         updateColorMapActionReadOnly();
     });
@@ -124,7 +122,6 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
     connect(&_dimensionPickerAction, &PointsDimensionPickerAction::currentDimensionIndexChanged, this, &ColoringAction::updateColorMapActionScalarRange);
 
     // Update scatter plot widget color map when actions change
-    connect(&_colorByAction, &OptionAction::currentIndexChanged, this, &ColoringAction::updateScatterplotWidgetColorMap);
     connect(&_constantColorAction, &ColorAction::colorChanged, this, &ColoringAction::updateScatterplotWidgetColorMap);
     connect(&_colorMapAction, &ColorMapAction::imageChanged, this, &ColoringAction::updateScatterplotWidgetColorMap);
     connect(_scatterplotPlugin->getScatterplotWidget(), &ScatterplotWidget::coloringModeChanged, this, &ColoringAction::updateScatterplotWidgetColorMap);
@@ -137,10 +134,10 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
     connect(_scatterplotPlugin->getScatterplotWidget(), &ScatterplotWidget::coloringModeChanged, this, &ColoringAction::updateColorMapActionReadOnly);
     connect(_scatterplotPlugin->getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, &ColoringAction::updateColorMapActionReadOnly);
 
+    updateScatterplotWidgetColorMap();
     updateColorMapActionScalarRange();
 
-    // Initial update
-    _colorByAction.setCurrentIndex(0);
+    _scatterplotPlugin->getScatterplotWidget()->setColoringMode(ScatterplotWidget::ColoringMode::Constant);
 }
 
 QMenu* ColoringAction::getContextMenu(QWidget* parent /*= nullptr*/)
@@ -243,14 +240,7 @@ void ColoringAction::updateColorByActionOptions()
 void ColoringAction::updateScatterPlotWidgetColors()
 {
     // Only upload colors to scatter plot widget in data coloring mode
-    if (_scatterplotPlugin->getScatterplotWidget()->getColoringMode() != ScatterplotWidget::ColoringMode::Data)
-        return;
-
-    // Get current dimension index
-    const auto currentDimensionIndex = _dimensionPickerAction.getCurrentDimensionIndex();
-
-    // Exit if dimension selection is not valid
-    if (currentDimensionIndex < 0)
+    if (_colorByAction.getCurrentIndex() == 0)
         return;
 
     // Get smart pointer to current color dataset
@@ -262,14 +252,21 @@ void ColoringAction::updateScatterPlotWidgetColors()
 
     if (currentColorDataset->getDataType() == ClusterType)
         _scatterplotPlugin->loadColors(currentColorDataset.get<Clusters>());
-    else
-        _scatterplotPlugin->loadColors(currentColorDataset.get<Points>(), _dimensionPickerAction.getCurrentDimensionIndex());
+    else {
+
+        // Get current dimension index
+        const auto currentDimensionIndex = _dimensionPickerAction.getCurrentDimensionIndex();
+
+        // Exit if dimension selection is not valid
+        if (currentDimensionIndex >= 0)
+            _scatterplotPlugin->loadColors(currentColorDataset.get<Points>(), _dimensionPickerAction.getCurrentDimensionIndex());
+    }
 }
 
 void ColoringAction::updateColorMapActionScalarRange()
 {
     // Get the color map range from the scatter plot widget
-    const auto colorMapRange = _scatterplotPlugin->getScatterplotWidget()->getColorMapRange();
+    const auto colorMapRange    = _scatterplotPlugin->getScatterplotWidget()->getColorMapRange();
     const auto colorMapRangeMin = colorMapRange.x;
     const auto colorMapRangeMax = colorMapRange.y;
 
@@ -303,9 +300,12 @@ void ColoringAction::updateScatterplotWidgetColorMap()
             // Fill it with the constant color
             colorPixmap.fill(_constantColorAction.getColor());
 
+            qDebug() << _constantColorAction.getColor();
+
             // And update the scatter plot widget color map
             getScatterplotWidget()->setColorMap(colorPixmap.toImage());
             getScatterplotWidget()->setScalarEffect(PointEffect::Color);
+            getScatterplotWidget()->setColoringMode(ScatterplotWidget::ColoringMode::Constant);
 
             break;
         }
@@ -384,7 +384,6 @@ ColoringAction::Widget::Widget(QWidget* parent, ColoringAction* coloringAction, 
 
     // Adjust size of the combo boxes to the contents
     colorByWidget->findChild<QComboBox*>("ComboBox")->setSizeAdjustPolicy(QComboBox::AdjustToContents);
-    colorByWidget->findChild<QComboBox*>("ComboBox")->setFixedWidth(200);
     dimensionPickerWidget->findChild<QComboBox*>("ComboBox")->setSizeAdjustPolicy(QComboBox::AdjustToContents);
 
     // Add widgets

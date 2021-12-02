@@ -1,7 +1,7 @@
 #pragma once
 
 #include "PluginAction.h"
-#include "ColorOptionsModel.h"
+#include "ColorSourceModel.h"
 
 #include "PointsDimensionPickerAction.h"
 
@@ -111,7 +111,7 @@ public: // Action getters
     ColorMapAction& getColorMapAction() { return _colorMapAction; }
 
 protected:
-    ColorOptionsModel               _colorByModel;              /** Color by model (model input for the color by action) */
+    ColorSourceModel               _colorByModel;              /** Color by model (model input for the color by action) */
     OptionAction                    _colorByAction;             /** Action for picking the coloring type */
     ColorAction                     _constantColorAction;       /** Action for picking the constant color */
     PointsDimensionPickerAction     _dimensionPickerAction;     /** Dimension picker action */

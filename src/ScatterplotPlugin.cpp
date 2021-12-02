@@ -90,7 +90,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
             if (!_positionDataset.isValid()) {
 
                 // Load as point positions when no dataset is currently loaded
-                dropRegions << new DropWidget::DropRegion(this, "Position", description, "map-marker-alt", true, [this, candidateDataset]() {
+                dropRegions << new DropWidget::DropRegion(this, "Point position", description, "map-marker-alt", true, [this, candidateDataset]() {
                     _positionDataset = candidateDataset;
                 });
             }
@@ -242,6 +242,7 @@ void ScatterplotPlugin::loadData(const Datasets& datasets)
 
     // Load the first dataset
     _positionDataset = datasets.first();
+    _settingsAction.getColoringAction().getColorByAction().setCurrentIndex(0);
 }
 
 void ScatterplotPlugin::createSubset(const bool& fromSourceData /*= false*/, const QString& name /*= ""*/)

@@ -1,24 +1,24 @@
-#include "ColorOptionsModel.h"
+#include "ColorSourceModel.h"
 
 #include "DataHierarchyItem.h"
 #include "Application.h"
 
 using namespace hdps;
 
-ColorOptionsModel::ColorOptionsModel(QObject* parent /*= nullptr*/) :
+ColorSourceModel::ColorSourceModel(QObject* parent /*= nullptr*/) :
     QAbstractListModel(parent),
     _datasets(),
     _showFullPathName(true)
 {
 }
 
-int ColorOptionsModel::rowCount(const QModelIndex& parent /*= QModelIndex()*/) const
+int ColorSourceModel::rowCount(const QModelIndex& parent /*= QModelIndex()*/) const
 {
     // Constant color option plus the number of available datasets
     return _datasets.count() + 1;
 }
 
-int ColorOptionsModel::rowIndex(const Dataset<DatasetImpl>& dataset) const
+int ColorSourceModel::rowIndex(const Dataset<DatasetImpl>& dataset) const
 {
     // Only proceed if we have a valid dataset
     if (!dataset.isValid())
@@ -28,12 +28,12 @@ int ColorOptionsModel::rowIndex(const Dataset<DatasetImpl>& dataset) const
     return _datasets.indexOf(dataset) + 1;
 }
 
-int ColorOptionsModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) const
+int ColorSourceModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) const
 {
     return 1;
 }
 
-QVariant ColorOptionsModel::data(const QModelIndex& index, int role) const
+QVariant ColorSourceModel::data(const QModelIndex& index, int role) const
 {
     // Get row/column and smart pointer to the dataset
     const auto row      = index.row();
@@ -65,39 +65,21 @@ QVariant ColorOptionsModel::data(const QModelIndex& index, int role) const
     return QVariant();
 }
 
-const Datasets& ColorOptionsModel::getDatasets() const
+void ColorSourceModel::addDataset(const Dataset<DatasetImpl>& dataset)
 {
-    return _datasets;
-}
+    // Insert row into model
+    beginInsertRows(QModelIndex(), rowCount(), rowCount());
+    {
+        // Add the dataset
+        _datasets << dataset;
+    }
+    endInsertRows();
 
-Dataset<DatasetImpl> ColorOptionsModel::getDataset(const std::int32_t& rowIndex) const
-{
-    // Return empty smart pointer when out of range
-    if (rowIndex <= 0 || rowIndex > _datasets.count())
-        return Dataset<DatasetImpl>();
-
-    // Subtract the constant color row
-    return _datasets[rowIndex - 1];
-}
-
-void ColorOptionsModel::addDataset(const Dataset<DatasetImpl>& dataset)
-{
-    // Notify others that the model layout is about to be changed
-    emit layoutAboutToBeChanged();
-
-    // Add the datasets
-    _datasets << dataset;
-
-    // Notify others that the model layout is changed
-    emit layoutChanged();
-
-    // Get smart pointer to added dataset
+    // Get smart pointer to last added dataset
     auto& addedDataset = _datasets.last();
 
     // Remove a dataset from the model when it is about to be deleted
     connect(&addedDataset, &Dataset<DatasetImpl>::dataAboutToBeRemoved, this, [this, &addedDataset]() {
-
-        // Remove the dataset from the model before it is physically deleted
         removeDataset(addedDataset);
     });
 
@@ -105,14 +87,14 @@ void ColorOptionsModel::addDataset(const Dataset<DatasetImpl>& dataset)
     connect(&addedDataset, &Dataset<DatasetImpl>::dataGuiNameChanged, this, [this, &addedDataset]() {
 
         // Get row index of the dataset
-        const auto datasetRowIndex = rowIndex(addedDataset);
+        const auto colorDatasetRowIndex = rowIndex(addedDataset);
 
         // Only proceed if we found a valid row index
-        if (datasetRowIndex < 0)
+        if (colorDatasetRowIndex < 0)
             return;
 
         // Establish model index
-        const auto modelIndex = index(datasetRowIndex, 0);
+        const auto modelIndex = index(colorDatasetRowIndex, 0);
 
         // Only proceed if we have a valid model index
         if (!modelIndex.isValid())
@@ -123,51 +105,62 @@ void ColorOptionsModel::addDataset(const Dataset<DatasetImpl>& dataset)
     });
 }
 
-void ColorOptionsModel::removeDataset(const Dataset<DatasetImpl>& dataset)
+void ColorSourceModel::removeDataset(const Dataset<DatasetImpl>& dataset)
 {
-    // Notify others that the model layout is about to be changed
-    emit layoutAboutToBeChanged();
+    // Get row index of the dataset
+    const auto datasetRowIndex = rowIndex(dataset);
 
-    // Remove the corresponding row from the model
-    beginRemoveRows(QModelIndex(), rowIndex(dataset), rowIndex(dataset));
+    // Remove row from model
+    beginRemoveRows(QModelIndex(), datasetRowIndex, datasetRowIndex);
     {
-        // Remove from the vector
+        // Remove dataset from internal vector
         _datasets.removeOne(dataset);
     }
     endRemoveRows();
-
-    // Notify others that the model layout is changed
-    emit layoutChanged();
 }
 
-void ColorOptionsModel::removeAllDatasets()
+void ColorSourceModel::removeAllDatasets()
 {
-    // Notify others that the model layout is about to be changed
-    emit layoutAboutToBeChanged();
-
-    // Remove all datasets
-    _datasets.clear();
-
-    // Notify others that the model layout is changed
-    emit layoutChanged();
+    // Remove row from model
+    beginRemoveRows(QModelIndex(), 0, rowCount() - 1);
+    {
+        // Remove all datasets
+        _datasets.clear();
+    }
+    endRemoveRows();
 
     // And update model data with altered datasets
     updateData();
 }
 
-bool ColorOptionsModel::getShowFullPathName() const
+const Datasets& ColorSourceModel::getDatasets() const
+{
+    return _datasets;
+}
+
+Dataset<DatasetImpl> ColorSourceModel::getDataset(const std::int32_t& rowIndex) const
+{
+    // Return empty smart pointer when out of range
+    if (rowIndex <= 0 || rowIndex > _datasets.count())
+        return Dataset<DatasetImpl>();
+
+    // Subtract the constant point size row
+    return _datasets[rowIndex - 1];
+}
+
+bool ColorSourceModel::getShowFullPathName() const
 {
     return _showFullPathName;
 }
 
-void ColorOptionsModel::setShowFullPathName(const bool& showFullPathName)
+void ColorSourceModel::setShowFullPathName(const bool& showFullPathName)
 {
     _showFullPathName = showFullPathName;
 
     updateData();
 }
 
-void ColorOptionsModel::updateData()
+void ColorSourceModel::updateData()
 {
     // Update the datasets string list model
     for (auto dataset : _datasets) {

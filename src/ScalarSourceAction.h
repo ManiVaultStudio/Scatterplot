@@ -50,8 +50,9 @@ public:
     /**
      * Constructor
      * @param scatterplotPlugin Pointer to scatter plot plugin
+     * @param title Title
      */
-    ScalarSourceAction(ScatterplotPlugin* scatterplotPlugin);
+    ScalarSourceAction(ScatterplotPlugin* scatterplotPlugin, const QString& title);
 
     /** Get the scalar source model */
     ScalarSourceModel& getModel();
