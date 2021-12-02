@@ -349,7 +349,7 @@ void ScatterplotPlugin::updateWindowTitle()
     if (!_positionDataset.isValid())
         setWindowTitle(getGuiName());
     else
-        setWindowTitle(QString("%1: %2").arg(getGuiName(), _positionDataset->getGuiName()));
+        setWindowTitle(QString("%1: %2").arg(getGuiName(), _positionDataset->getDataHierarchyItem().getFullPathName()));
 }
 
 Dataset<Points>& ScatterplotPlugin::getPositionDataset()
