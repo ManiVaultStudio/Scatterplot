@@ -234,6 +234,16 @@ void ScatterplotPlugin::init()
     updateWindowTitle();
 }
 
+void ScatterplotPlugin::loadData(const Datasets& datasets)
+{
+    // Exit if there is nothing to load
+    if (datasets.isEmpty())
+        return;
+
+    // Load the first dataset
+    _positionDataset = datasets.first();
+}
+
 void ScatterplotPlugin::createSubset(const bool& fromSourceData /*= false*/, const QString& name /*= ""*/)
 {
     auto subsetPoints  = _positionDataset->getSourceDataset<Points>();

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "PluginAction.h"
-#include "ColorByConstantAction.h"
 #include "ColorOptionsModel.h"
 
 #include "PointsDimensionPickerAction.h"
@@ -107,16 +106,19 @@ protected: // Color map
 public: // Action getters
 
     OptionAction& getColorByAction() { return _colorByAction; }
-    ColorByConstantAction& getColorByConstantAction() { return _colorByConstantAction; }
+    ColorAction& getConstantColorAction() { return _constantColorAction; }
     PointsDimensionPickerAction& getDimensionPickerAction() { return _dimensionPickerAction; }
     ColorMapAction& getColorMapAction() { return _colorMapAction; }
 
 protected:
-    ColorOptionsModel                    _colorByModel;              /** Color by model (model input for the color by action) */
+    ColorOptionsModel               _colorByModel;              /** Color by model (model input for the color by action) */
     OptionAction                    _colorByAction;             /** Action for picking the coloring type */
-    ColorByConstantAction           _colorByConstantAction;     /** Action for picking the constant color */
+    ColorAction                     _constantColorAction;       /** Action for picking the constant color */
     PointsDimensionPickerAction     _dimensionPickerAction;     /** Dimension picker action */
     ColorMapAction                  _colorMapAction;            /** Color map action */
+
+    /** Default constant color */
+    static const QColor DEFAULT_CONSTANT_COLOR;
 
     friend class Widget;
 };

@@ -246,6 +246,8 @@ void ScatterplotWidget::setPointScaling(hdps::gui::PointScaling scalingMode)
 void ScatterplotWidget::setScalarEffect(PointEffect effect)
 {
     _pointRenderer.setScalarEffect(effect);
+
+    update();
 }
 
 void ScatterplotWidget::setSigma(const float sigma)
