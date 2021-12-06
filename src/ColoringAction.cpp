@@ -279,40 +279,39 @@ void ColoringAction::updateColorMapActionScalarRange()
 
 void ColoringAction::updateScatterplotWidgetColorMap()
 {
-    // Get scatter plot widget coloring mode
-    const auto coloringMode = _scatterplotPlugin->getScatterplotWidget()->getColoringMode();
-
-    //// Only update color map in data coloring mode
-    //if (_scatterplotPlugin->getScatterplotWidget()->getRenderMode() == ScatterplotWidget::SCATTERPLOT && coloringMode == ScatterplotWidget::ColoringMode::Constant)
-    //    return;
-
-    // Only update color map when we have a valid position dataset
-    if (!_scatterplotPlugin->getPositionDataset().isValid())
-        return;
-
-    switch (coloringMode)
+    // The type of color map depends on the type of rendering and coloring
+    switch (_scatterplotPlugin->getScatterplotWidget()->getRenderMode())
     {
-        case ScatterplotWidget::ColoringMode::Constant:
+        case ScatterplotWidget::SCATTERPLOT:
         {
-            // Create 1x1 pixmap for the (constant) color map
-            QPixmap colorPixmap(1, 1);
+            if (_colorByAction.getCurrentIndex() == 0) {
+                
+                // Create 1x1 pixmap for the (constant) color map
+                QPixmap colorPixmap(1, 1);
 
-            // Fill it with the constant color
-            colorPixmap.fill(_constantColorAction.getColor());
+                // Fill it with the constant color
+                colorPixmap.fill(_constantColorAction.getColor());
 
-            qDebug() << _constantColorAction.getColor();
+                // Update the scatter plot widget with the color map
+                getScatterplotWidget()->setColorMap(colorPixmap.toImage());
+                getScatterplotWidget()->setScalarEffect(PointEffect::Color);
+                getScatterplotWidget()->setColoringMode(ScatterplotWidget::ColoringMode::Constant);
+            }
+            else {
 
-            // And update the scatter plot widget color map
-            getScatterplotWidget()->setColorMap(colorPixmap.toImage());
-            getScatterplotWidget()->setScalarEffect(PointEffect::Color);
-            getScatterplotWidget()->setColoringMode(ScatterplotWidget::ColoringMode::Constant);
+                // Update the scatter plot widget with the color map
+                getScatterplotWidget()->setColorMap(_colorMapAction.getColorMapImage());
+            }
 
             break;
         }
 
-        case ScatterplotWidget::ColoringMode::Data:
+        case ScatterplotWidget::DENSITY:
+            break;
+
+        case ScatterplotWidget::LANDSCAPE:
         {
-            // And update the scatter plot widget color map
+            // Update the scatter plot widget with the color map
             getScatterplotWidget()->setColorMap(_colorMapAction.getColorMapImage());
 
             break;

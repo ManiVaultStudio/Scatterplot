@@ -314,16 +314,18 @@ void ScatterplotWidget::initializeGL()
 
     connect(context(), &QOpenGLContext::aboutToBeDestroyed, this, &ScatterplotWidget::cleanup);
 
+    // Initialize renderers
     _pointRenderer.init();
     _densityRenderer.init();
 
     // Set a default color map for both renderers
     _pointRenderer.setScalarEffect(PointEffect::Color);
 
+    // OpenGL is initialized
+    _isInitialized = true;
+
     // Initialize the point and density renderer with a color map
     setColorMap(_colorMapImage);
-
-    _isInitialized = true;
 
     emit initialized();
 }
@@ -418,16 +420,20 @@ void ScatterplotWidget::cleanup()
 
 void ScatterplotWidget::setColorMap(const QImage& colorMapImage)
 {
+    _colorMapImage = colorMapImage;
+
+    // Do not update color maps of the renderers when OpenGL is not initialized
     if (!_isInitialized)
         return;
 
+    // Activate OpenGL context
     makeCurrent();
 
-    _colorMapImage = colorMapImage;
-
+    // Apply color maps to renderers
     _pointRenderer.setColormap(_colorMapImage);
     _densityRenderer.setColormap(_colorMapImage);
 
+    // Render
     update();
 }
 
