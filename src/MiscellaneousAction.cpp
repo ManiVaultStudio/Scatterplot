@@ -21,7 +21,7 @@ MiscellaneousAction::MiscellaneousAction(ScatterplotPlugin* scatterplotPlugin) :
     const auto updateBackgroundColor = [this]() -> void {
         const auto color = _backgroundColorAction.getColor();
 
-        getScatterplotWidget()->setBackgroundColor(color);
+        getScatterplotWidget().setBackgroundColor(color);
     };
 
     connect(&_backgroundColorAction, &ColorAction::colorChanged, this, [this, updateBackgroundColor](const QColor& color) {

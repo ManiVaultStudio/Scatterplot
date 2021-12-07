@@ -59,6 +59,9 @@ PointPlotAction::PointPlotAction(ScatterplotPlugin* scatterplotPlugin) :
         _opacityAction.getSourceAction().getPickerAction().setCurrentIndex(0);
     });
 
+    // Enable/disable opacity when focus selection is turned on/off
+    connect(&_scatterplotPlugin->getSettingsAction().getSelectionAction().getFocusSelectionAction(), &ToggleAction::toggled, this, &PointPlotAction::onFocusSelectionChanged);
+
     // Update default datasets when a child is added to or removed from the position dataset
     connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::dataChildAdded, this, &PointPlotAction::updateDefaultDatasets);
     connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::dataChildRemoved, this, &PointPlotAction::updateDefaultDatasets);
@@ -82,7 +85,7 @@ QMenu* PointPlotAction::getContextMenu()
 {
     auto menu = new QMenu("Plot settings");
 
-    const auto renderMode = getScatterplotWidget()->getRenderMode();
+    const auto renderMode = getScatterplotWidget().getRenderMode();
 
     const auto addActionToMenu = [menu](QAction* action) {
         auto actionMenu = new QMenu(action->text());
@@ -219,7 +222,7 @@ void PointPlotAction::updateScatterPlotWidgetPointSizeScalars()
     }
 
     // Set scatter plot point size scalars
-    _scatterplotPlugin->getScatterplotWidget()->setPointSizeScalars(pointSizeScalars);
+    _scatterplotPlugin->getScatterplotWidget().setPointSizeScalars(pointSizeScalars);
 }
 
 void PointPlotAction::updateScatterPlotWidgetPointOpacityScalars()
@@ -307,7 +310,13 @@ void PointPlotAction::updateScatterPlotWidgetPointOpacityScalars()
     }
 
     // Set scatter plot point size scalars
-    _scatterplotPlugin->getScatterplotWidget()->setPointOpacityScalars(pointOpacityScalars);
+    _scatterplotPlugin->getScatterplotWidget().setPointOpacityScalars(pointOpacityScalars);
+}
+
+void PointPlotAction::onFocusSelectionChanged(const bool& focusSelection)
+{
+    // Disable opacity action when focus selection is enabled
+    _opacityAction.setEnabled(!focusSelection);
 }
 
 PointPlotAction::Widget::Widget(QWidget* parent, PointPlotAction* pointPlotAction, const std::int32_t& widgetFlags) :

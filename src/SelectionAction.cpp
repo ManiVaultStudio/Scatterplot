@@ -18,7 +18,7 @@ const auto allowedPixelSelectionTypes = PixelSelectionTypes({
 });
 
 SelectionAction::SelectionAction(ScatterplotPlugin& scatterplotPlugin) :
-    PixelSelectionAction(&scatterplotPlugin, scatterplotPlugin.getScatterplotWidget(), scatterplotPlugin.getScatterplotWidget()->getPixelSelectionTool(), allowedPixelSelectionTypes),
+    PixelSelectionAction(&scatterplotPlugin, &scatterplotPlugin.getScatterplotWidget(), scatterplotPlugin.getScatterplotWidget().getPixelSelectionTool(), allowedPixelSelectionTypes),
     _scatterplotPlugin(scatterplotPlugin),
     _focusSelectionAction(this, "Focus selection", false, false)
 {
@@ -37,7 +37,7 @@ SelectionAction::SelectionAction(ScatterplotPlugin& scatterplotPlugin) :
     });
 
     const auto updateFocusSelection = [this]() {
-        _scatterplotPlugin.getScatterplotWidget()->setFocusSelection(_focusSelectionAction.isChecked());
+        _scatterplotPlugin.getScatterplotWidget().setFocusSelection(_focusSelectionAction.isChecked());
     };
 
     connect(&_focusSelectionAction, &ToggleAction::toggled, updateFocusSelection);

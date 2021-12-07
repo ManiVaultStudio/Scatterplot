@@ -15,7 +15,7 @@ PluginAction::PluginAction(ScatterplotPlugin* scatterplotPlugin, const QString& 
     setToolTip(title);
 }
 
-ScatterplotWidget* PluginAction::getScatterplotWidget()
+ScatterplotWidget& PluginAction::getScatterplotWidget()
 {
     Q_ASSERT(_scatterplotPlugin != nullptr);
 

@@ -22,7 +22,7 @@ SubsetAction::SubsetAction(ScatterplotPlugin* scatterplotPlugin) :
         setEnabled(_scatterplotPlugin->getNumberOfSelectedPoints() >= 1);
     };
 
-    connect(_scatterplotPlugin, &ScatterplotPlugin::selectionChanged, this, updateActions);
+    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::dataSelectionChanged, this, updateActions);
 
     connect(&_createSubsetAction, &QAction::triggered, this, [this]() {
         _scatterplotPlugin->createSubset(_sourceDataAction.getCurrentIndex() == 1, _subsetNameAction.getString());

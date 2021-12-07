@@ -48,28 +48,28 @@ RenderModeAction::RenderModeAction(ScatterplotPlugin* scatterplotPlugin) :
 
     connect(&_scatterPlotAction, &QAction::toggled, this, [this](bool toggled) {
         if (toggled)
-            getScatterplotWidget()->setRenderMode(ScatterplotWidget::RenderMode::SCATTERPLOT);
+            getScatterplotWidget().setRenderMode(ScatterplotWidget::RenderMode::SCATTERPLOT);
     });
 
     connect(&_densityPlotAction, &QAction::toggled, this, [this](bool toggled) {
         if (toggled)
-            getScatterplotWidget()->setRenderMode(ScatterplotWidget::RenderMode::DENSITY);
+            getScatterplotWidget().setRenderMode(ScatterplotWidget::RenderMode::DENSITY);
     });
 
     connect(&_contourPlotAction, &QAction::toggled, this, [this](bool toggled) {
         if (toggled)
-            getScatterplotWidget()->setRenderMode(ScatterplotWidget::RenderMode::LANDSCAPE);
+            getScatterplotWidget().setRenderMode(ScatterplotWidget::RenderMode::LANDSCAPE);
     });
 
     const auto updateButtons = [this]() -> void {
-        const auto renderMode = getScatterplotWidget()->getRenderMode();
+        const auto renderMode = getScatterplotWidget().getRenderMode();
 
         _scatterPlotAction.setChecked(renderMode == ScatterplotWidget::RenderMode::SCATTERPLOT);
         _densityPlotAction.setChecked(renderMode == ScatterplotWidget::RenderMode::DENSITY);
         _contourPlotAction.setChecked(renderMode == ScatterplotWidget::RenderMode::LANDSCAPE);
     };
 
-    connect(getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, [this, updateButtons](const ScatterplotWidget::RenderMode& renderMode) {
+    connect(&getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, [this, updateButtons](const ScatterplotWidget::RenderMode& renderMode) {
         updateButtons();
     });
 

@@ -76,20 +76,20 @@ public:
     QMenu* getContextMenu();
 
     RenderModeAction& getRenderModeAction() { return _renderModeAction; }
-    PlotAction& getPlotAction() { return _plotAction; }
     PositionAction& getPositionAction() { return _positionAction; }
     ColoringAction& getColoringAction() { return _coloringAction; }
     SubsetAction& getSubsetAction() { return _subsetAction; }
     SelectionAction& getSelectionAction() { return _selectionAction; }
+    PlotAction& getPlotAction() { return _plotAction; }
     MiscellaneousAction& getMiscellaneousAction() { return _miscellaneousAction; }
 
 protected:
     RenderModeAction            _renderModeAction;
-    PlotAction                  _plotAction;
     PositionAction              _positionAction;
     ColoringAction              _coloringAction;
     SubsetAction                _subsetAction;
     ManualClusteringAction      _manualClusteringAction;
     SelectionAction             _selectionAction;
+    PlotAction                  _plotAction;
     MiscellaneousAction         _miscellaneousAction;
 };

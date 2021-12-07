@@ -91,9 +91,6 @@ public: // Miscellaneous
     /** Get smart pointer to source of the points dataset for point position (if any) */
     Dataset<Points>& getPositionSourceDataset();
 
-    /** Get clusters dataset for point color */
-    QStringList getClusterDatasetNames();
-
     /** Use the pixel selection tool to select data points */
     void selectPoints();
 
@@ -102,11 +99,10 @@ protected:
     /** Updates the window title (displays the name of the view and the GUI name of the loaded points dataset) */
     void updateWindowTitle();
 
-signals:
-    void selectionChanged();
-
 public:
-    ScatterplotWidget* getScatterplotWidget();
+
+    /** Get reference to the scatter plot widget */
+    ScatterplotWidget& getScatterplotWidget();
 
     SettingsAction& getSettingsAction() { return _settingsAction; }
 

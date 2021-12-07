@@ -76,7 +76,7 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
     connect(&_colorByAction, &OptionAction::currentIndexChanged, this, [this](const std::int32_t& currentIndex) {
 
         // Update scatter plot widget coloring mode
-        _scatterplotPlugin->getScatterplotWidget()->setColoringMode(currentIndex == 0 ? ScatterplotWidget::ColoringMode::Constant : ScatterplotWidget::ColoringMode::Data);
+        _scatterplotPlugin->getScatterplotWidget().setColoringMode(currentIndex == 0 ? ScatterplotWidget::ColoringMode::Constant : ScatterplotWidget::ColoringMode::Data);
 
         // Set color by constant action visibility depending on the coloring type
         _constantColorAction.setVisible(_colorByAction.getCurrentIndex() == 0);
@@ -114,8 +114,8 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
     connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::dataChildRemoved, this, &ColoringAction::updateColorByActionOptions);
 
     // Update scatter plot widget colors when the scatter plot widget coloring/rendering mode changes
-    connect(_scatterplotPlugin->getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, &ColoringAction::updateScatterPlotWidgetColors);
-    connect(_scatterplotPlugin->getScatterplotWidget(), &ScatterplotWidget::coloringModeChanged, this, &ColoringAction::updateScatterPlotWidgetColors);
+    connect(&_scatterplotPlugin->getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, &ColoringAction::updateScatterPlotWidgetColors);
+    connect(&_scatterplotPlugin->getScatterplotWidget(), &ScatterplotWidget::coloringModeChanged, this, &ColoringAction::updateScatterPlotWidgetColors);
 
     // Update scatter plot widget colors and color map range when the current dimension changes
     connect(&_dimensionPickerAction, &PointsDimensionPickerAction::currentDimensionIndexChanged, this, &ColoringAction::updateScatterPlotWidgetColors);
@@ -124,20 +124,20 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
     // Update scatter plot widget color map when actions change
     connect(&_constantColorAction, &ColorAction::colorChanged, this, &ColoringAction::updateScatterplotWidgetColorMap);
     connect(&_colorMapAction, &ColorMapAction::imageChanged, this, &ColoringAction::updateScatterplotWidgetColorMap);
-    connect(_scatterplotPlugin->getScatterplotWidget(), &ScatterplotWidget::coloringModeChanged, this, &ColoringAction::updateScatterplotWidgetColorMap);
-    connect(_scatterplotPlugin->getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, &ColoringAction::updateScatterplotWidgetColorMap);
+    connect(&_scatterplotPlugin->getScatterplotWidget(), &ScatterplotWidget::coloringModeChanged, this, &ColoringAction::updateScatterplotWidgetColorMap);
+    connect(&_scatterplotPlugin->getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, &ColoringAction::updateScatterplotWidgetColorMap);
 
     // Update scatter plot widget color map range when the color map action range changes
     connect(&_colorMapAction.getSettingsAction().getHorizontalAxisAction().getRangeAction(), &DecimalRangeAction::rangeChanged, this, &ColoringAction::updateScatterPlotWidgetColorMapRange);
 
     // Enable/disable the color map action when the scatter plot widget rendering or coloring mode changes
-    connect(_scatterplotPlugin->getScatterplotWidget(), &ScatterplotWidget::coloringModeChanged, this, &ColoringAction::updateColorMapActionReadOnly);
-    connect(_scatterplotPlugin->getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, &ColoringAction::updateColorMapActionReadOnly);
+    connect(&_scatterplotPlugin->getScatterplotWidget(), &ScatterplotWidget::coloringModeChanged, this, &ColoringAction::updateColorMapActionReadOnly);
+    connect(&_scatterplotPlugin->getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, &ColoringAction::updateColorMapActionReadOnly);
 
     updateScatterplotWidgetColorMap();
     updateColorMapActionScalarRange();
 
-    _scatterplotPlugin->getScatterplotWidget()->setColoringMode(ScatterplotWidget::ColoringMode::Constant);
+    _scatterplotPlugin->getScatterplotWidget().setColoringMode(ScatterplotWidget::ColoringMode::Constant);
 }
 
 QMenu* ColoringAction::getContextMenu(QWidget* parent /*= nullptr*/)
@@ -266,7 +266,7 @@ void ColoringAction::updateScatterPlotWidgetColors()
 void ColoringAction::updateColorMapActionScalarRange()
 {
     // Get the color map range from the scatter plot widget
-    const auto colorMapRange    = _scatterplotPlugin->getScatterplotWidget()->getColorMapRange();
+    const auto colorMapRange    = _scatterplotPlugin->getScatterplotWidget().getColorMapRange();
     const auto colorMapRangeMin = colorMapRange.x;
     const auto colorMapRangeMax = colorMapRange.y;
 
@@ -280,7 +280,7 @@ void ColoringAction::updateColorMapActionScalarRange()
 void ColoringAction::updateScatterplotWidgetColorMap()
 {
     // The type of color map depends on the type of rendering and coloring
-    switch (_scatterplotPlugin->getScatterplotWidget()->getRenderMode())
+    switch (_scatterplotPlugin->getScatterplotWidget().getRenderMode())
     {
         case ScatterplotWidget::SCATTERPLOT:
         {
@@ -293,14 +293,14 @@ void ColoringAction::updateScatterplotWidgetColorMap()
                 colorPixmap.fill(_constantColorAction.getColor());
 
                 // Update the scatter plot widget with the color map
-                getScatterplotWidget()->setColorMap(colorPixmap.toImage());
-                getScatterplotWidget()->setScalarEffect(PointEffect::Color);
-                getScatterplotWidget()->setColoringMode(ScatterplotWidget::ColoringMode::Constant);
+                getScatterplotWidget().setColorMap(colorPixmap.toImage());
+                getScatterplotWidget().setScalarEffect(PointEffect::Color);
+                getScatterplotWidget().setColoringMode(ScatterplotWidget::ColoringMode::Constant);
             }
             else {
 
                 // Update the scatter plot widget with the color map
-                getScatterplotWidget()->setColorMap(_colorMapAction.getColorMapImage());
+                getScatterplotWidget().setColorMap(_colorMapAction.getColorMapImage());
             }
 
             break;
@@ -312,7 +312,7 @@ void ColoringAction::updateScatterplotWidgetColorMap()
         case ScatterplotWidget::LANDSCAPE:
         {
             // Update the scatter plot widget with the color map
-            getScatterplotWidget()->setColorMap(_colorMapAction.getColorMapImage());
+            getScatterplotWidget().setColorMap(_colorMapAction.getColorMapImage());
 
             break;
         }
@@ -328,17 +328,17 @@ void ColoringAction::updateScatterPlotWidgetColorMapRange()
     const auto& rangeAction = _colorMapAction.getSettingsAction().getHorizontalAxisAction().getRangeAction();
 
     // And assign scatter plot renderer color map range
-    getScatterplotWidget()->setColorMapRange(rangeAction.getMinimum(), rangeAction.getMaximum());
+    getScatterplotWidget().setColorMapRange(rangeAction.getMinimum(), rangeAction.getMaximum());
 }
 
 bool ColoringAction::shouldEnableColorMap() const
 {
     // Disable the color in density render mode
-    if (_scatterplotPlugin->getScatterplotWidget()->getRenderMode() == ScatterplotWidget::DENSITY)
+    if (_scatterplotPlugin->getScatterplotWidget().getRenderMode() == ScatterplotWidget::DENSITY)
         return false;
 
     // Disable the color map in color by data mode
-    if (_scatterplotPlugin->getScatterplotWidget()->getColoringMode() == ScatterplotWidget::ColoringMode::Constant)
+    if (_scatterplotPlugin->getScatterplotWidget().getColoringMode() == ScatterplotWidget::ColoringMode::Constant)
         return false;
 
     // Get smart pointer to the current color dataset
@@ -363,11 +363,11 @@ ColoringAction::Widget::Widget(QWidget* parent, ColoringAction* coloringAction, 
 
     // Enable/disable the widget depending on the render mode
     const auto renderModeChanged = [this, coloringAction]() {
-        setEnabled(coloringAction->getScatterplotWidget()->getRenderMode() == ScatterplotWidget::SCATTERPLOT);
+        setEnabled(coloringAction->getScatterplotWidget().getRenderMode() == ScatterplotWidget::SCATTERPLOT);
     };
 
     // Enable/disable depending on the render mode
-    connect(coloringAction->getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, renderModeChanged);
+    connect(&coloringAction->getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, renderModeChanged);
 
     // Initial update
     renderModeChanged();
@@ -391,8 +391,8 @@ ColoringAction::Widget::Widget(QWidget* parent, ColoringAction* coloringAction, 
 
         layout->addWidget(labelWidget, 0, 0);
         layout->addWidget(colorByWidget, 0, 1);
-        layout->addWidget(colorByConstantWidget, 0, 1);
-        layout->addWidget(dimensionPickerWidget, 0, 2);
+        layout->addWidget(colorByConstantWidget, 0, 2);
+        layout->addWidget(dimensionPickerWidget, 0, 3);
 
         setPopupLayout(layout);
     }

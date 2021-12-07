@@ -17,9 +17,9 @@ DensityPlotAction::DensityPlotAction(ScatterplotPlugin* scatterplotPlugin) :
     _scatterplotPlugin->addAction(&_continuousUpdatesAction);
 
     const auto computeDensity = [this]() -> void {
-        getScatterplotWidget()->setSigma(0.01 * _sigmaAction.getValue());
+        getScatterplotWidget().setSigma(0.01 * _sigmaAction.getValue());
 
-        const auto maxDensity = getScatterplotWidget()->getDensityRenderer().getMaxDensity();
+        const auto maxDensity = getScatterplotWidget().getDensityRenderer().getMaxDensity();
 
         if (maxDensity > 0)
             _scatterplotPlugin->getSettingsAction().getColoringAction().getColorMapAction().getSettingsAction().getHorizontalAxisAction().getRangeAction().setRange(0.0f, maxDensity);
@@ -40,7 +40,7 @@ DensityPlotAction::DensityPlotAction(ScatterplotPlugin* scatterplotPlugin) :
         computeDensity();
     });
 
-    connect(getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, [this, computeDensity](const ScatterplotWidget::RenderMode& renderMode) {
+    connect(&getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, [this, computeDensity](const ScatterplotWidget::RenderMode& renderMode) {
         computeDensity();
     });
 
@@ -52,7 +52,7 @@ QMenu* DensityPlotAction::getContextMenu()
 {
     auto menu = new QMenu("Plot settings");
 
-    const auto renderMode = getScatterplotWidget()->getRenderMode();
+    const auto renderMode = getScatterplotWidget().getRenderMode();
 
     const auto addActionToMenu = [menu](QAction* action) {
         auto actionMenu = new QMenu(action->text());

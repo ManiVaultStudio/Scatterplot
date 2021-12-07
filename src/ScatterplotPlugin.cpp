@@ -98,7 +98,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                 if (_positionDataset != candidateDataset) {
 
                     // The number of points is equal, so offer the option to replace the existing points dataset
-                    dropRegions << new DropWidget::DropRegion(this, "Point position", description, "braille", true, [this, candidateDataset]() {
+                    dropRegions << new DropWidget::DropRegion(this, "Point position", description, "map-marker-alt", true, [this, candidateDataset]() {
                         _positionDataset = candidateDataset;
                     });
                 }
@@ -177,39 +177,8 @@ void ScatterplotPlugin::init()
 
     setLayout(layout);
 
+    // Update the data when the scatter plot widget is initialized
     connect(_scatterPlotWidget, &ScatterplotWidget::initialized, this, &ScatterplotPlugin::updateData);
-
-    // Register for points dataset events
-    registerDataEventByType(PointType, [this](DataEvent* dataEvent) {
-        if (!_positionDataset.isValid())
-            return;
-
-        switch (dataEvent->getType())
-        {
-            case EventType::DataChanged:
-            {
-                if (dataEvent->getDataset() != _positionDataset)
-                    return;
-
-                updateData();
-
-                break;
-            }
-
-            case EventType::DataSelectionChanged:
-            {
-                if (dataEvent->getDataset() != _positionDataset)
-                    return;
-
-                updateSelection();
-
-                break;
-            }
-
-            default:
-                break;
-        }
-    });
 
     // Update the selection when the pixel selection tool selected area changed
     connect(&_scatterPlotWidget->getPixelSelectionTool(), &PixelSelectionTool::areaChanged, [this]() {
@@ -217,6 +186,7 @@ void ScatterplotPlugin::init()
             selectPoints();
     });
 
+    // Update the selection when the pixel selection process ended
     connect(&_scatterPlotWidget->getPixelSelectionTool(), &PixelSelectionTool::ended, [this]() {
         if (_scatterPlotWidget->getPixelSelectionTool().isNotifyDuringSelection())
             return;
@@ -226,6 +196,12 @@ void ScatterplotPlugin::init()
 
     // Load points when the pointer to the position dataset changes
     connect(&_positionDataset, &Dataset<Points>::changed, this, &ScatterplotPlugin::positionDatasetChanged);
+
+    // Update points when the position dataset data changes
+    connect(&_positionDataset, &Dataset<Points>::dataChanged, this, &ScatterplotPlugin::updateData);
+
+    // Update point selection when the position dataset data changes
+    connect(&_positionDataset, &Dataset<Points>::dataSelectionChanged, this, &ScatterplotPlugin::updateSelection);
 
     // Update the window title when the GUI name of the position dataset changes
     connect(&_positionDataset, &Dataset<Points>::dataGuiNameChanged, this, &ScatterplotPlugin::updateWindowTitle);
@@ -242,12 +218,14 @@ void ScatterplotPlugin::loadData(const Datasets& datasets)
 
     // Load the first dataset
     _positionDataset = datasets.first();
+
+    // And set the coloring mode to constant
     _settingsAction.getColoringAction().getColorByAction().setCurrentIndex(0);
 }
 
 void ScatterplotPlugin::createSubset(const bool& fromSourceData /*= false*/, const QString& name /*= ""*/)
 {
-    auto subsetPoints  = _positionDataset->getSourceDataset<Points>();
+    auto subsetPoints = _positionDataset->getSourceDataset<Points>();
 
     // Create the subset
     auto& subset = subsetPoints->createSubset(_positionDataset->getGuiName(), _positionDataset);
@@ -261,41 +239,43 @@ void ScatterplotPlugin::createSubset(const bool& fromSourceData /*= false*/, con
 
 void ScatterplotPlugin::selectPoints()
 {
+    // Only proceed with a valid points position datset and when the pixel selection tool is active
     if (!_positionDataset.isValid() || !_scatterPlotWidget->getPixelSelectionTool().isActive())
         return;
 
+    // Get binary selection area image from the pixel selection tool
     auto selectionAreaImage = _scatterPlotWidget->getPixelSelectionTool().getAreaPixmap().toImage();
 
+    // Get smart pointer to the position selection dataset
     auto selectionSet = _positionDataset->getSelection<Points>();
 
-    std::vector<std::uint32_t> targetIndices;
+    // Create vector for target selection indices
+    std::vector<std::uint32_t> targetSelectionIndices;
 
-    targetIndices.reserve(_positionDataset->getNumPoints());
-    std::vector<unsigned int> localGlobalIndices;
-    
+    // Reserve space for the indices
+    targetSelectionIndices.reserve(_positionDataset->getNumPoints());
+
+    // Mapping from local to global indices
+    std::vector<std::uint32_t> localGlobalIndices;
+
+    // Get global indices from the position dataset
     _positionDataset->getGlobalIndices(localGlobalIndices);
 
     const auto dataBounds   = _scatterPlotWidget->getBounds();
     const auto width        = selectionAreaImage.width();
     const auto height       = selectionAreaImage.height();
     const auto size         = width < height ? width : height;
-    const auto set          = _positionDataset->getSourceDataset<Points>();
-    const auto setIndices   = set->indices;
 
-    std::vector<unsigned int> localIndices;
-    for (unsigned int i = 0; i < _positions.size(); i++) {
+    // Loop over all points and establish whether they are selected or not
+    for (std::uint32_t i = 0; i < _positions.size(); i++) {
         const auto uvNormalized     = QPointF((_positions[i].x - dataBounds.getLeft()) / dataBounds.getWidth(), (dataBounds.getTop() - _positions[i].y) / dataBounds.getHeight());
         const auto uvOffset         = QPoint((selectionAreaImage.width() - size) / 2.0f, (selectionAreaImage.height() - size) / 2.0f);
         const auto uv               = uvOffset + QPoint(uvNormalized.x() * size, uvNormalized.y() * size);
 
-        if (selectionAreaImage.pixelColor(uv).alpha() > 0) {
-            int globalIndex = localGlobalIndices[i];
-            targetIndices.push_back(globalIndex);
-            localIndices.push_back(i); // FIXME Find more performant way to add this
-        }
+        // Add point if the corresponding pixel selection is on
+        if (selectionAreaImage.pixelColor(uv).alpha() > 0)
+            targetSelectionIndices.push_back(localGlobalIndices[i]);
     }
-    
-    auto& selectionSetIndices = selectionSet->indices;
 
     switch (_scatterPlotWidget->getPixelSelectionTool().getModifier())
     {
@@ -305,21 +285,29 @@ void ScatterplotPlugin::selectPoints()
         case PixelSelectionModifierType::Add:
         case PixelSelectionModifierType::Remove:
         {
+            // Get reference to the indices of the selection set
+            auto& selectionSetIndices = selectionSet->indices;
+
+            // Create a set from the selection set indices
             QSet<std::uint32_t> set(selectionSetIndices.begin(), selectionSetIndices.end());
 
             switch (_scatterPlotWidget->getPixelSelectionTool().getModifier())
             {
+                // Add points to the current selection
                 case PixelSelectionModifierType::Add:
                 {
-                    for (const auto& targetIndex : targetIndices)
+                    // Add indices to the set 
+                    for (const auto& targetIndex : targetSelectionIndices)
                         set.insert(targetIndex);
 
                     break;
                 }
 
+                // Remove points from the current selection
                 case PixelSelectionModifierType::Remove:
                 {
-                    for (const auto& targetIndex : targetIndices)
+                    // Remove indices from the set 
+                    for (const auto& targetIndex : targetSelectionIndices)
                         set.remove(targetIndex);
 
                     break;
@@ -329,7 +317,8 @@ void ScatterplotPlugin::selectPoints()
                     break;
             }
 
-            targetIndices = std::vector<std::uint32_t>(set.begin(), set.end());
+            // Convert set back to vector
+            targetSelectionIndices = std::vector<std::uint32_t>(set.begin(), set.end());
 
             break;
         }
@@ -338,7 +327,8 @@ void ScatterplotPlugin::selectPoints()
             break;
     }
 
-    _positionDataset->setSelection(targetIndices);
+    // Apply the selection
+    _positionDataset->setSelection(targetSelectionIndices);
 
     // Notify others that the selection changed
     _core->notifyDataSelectionChanged(_positionDataset);
@@ -360,22 +350,6 @@ Dataset<Points>& ScatterplotPlugin::getPositionDataset()
 Dataset<Points>& ScatterplotPlugin::getPositionSourceDataset()
 {
     return _positionSourceDataset;
-}
-
-QStringList ScatterplotPlugin::getClusterDatasetNames()
-{
-    QStringList clusterDatasetNames;
-
-    /* TODO
-    if (!_points.isValid())
-        return clusterDatasetNames;
-
-    for (auto child : _points->getDataHierarchyItem().getChildren())
-        if (child->getDataType() == ClusterType)
-            clusterDatasetNames << child->getDatasetName();
-    */
-
-    return clusterDatasetNames;
 }
 
 void ScatterplotPlugin::positionDatasetChanged()
@@ -467,9 +441,9 @@ void ScatterplotPlugin::loadColors(const Dataset<Clusters>& clusters)
     update();
 }
 
-ScatterplotWidget* ScatterplotPlugin::getScatterplotWidget()
+ScatterplotWidget& ScatterplotPlugin::getScatterplotWidget()
 {
-    return _scatterPlotWidget;
+    return *_scatterPlotWidget;
 }
 
 void ScatterplotPlugin::updateData()
@@ -529,8 +503,6 @@ void ScatterplotPlugin::updateSelection()
         highlights[i] = selected[i] ? 1 : 0;
 
     _scatterPlotWidget->setHighlights(highlights, static_cast<std::int32_t>(selection->indices.size()));
-
-    emit selectionChanged();
 }
 
 std::uint32_t ScatterplotPlugin::getNumberOfPoints() const

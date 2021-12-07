@@ -26,8 +26,7 @@ protected: // Widget
 public:
     SelectionAction(ScatterplotPlugin& scatterplotPlugin);
 
-protected:
-
+public:
     ToggleAction& getFocusSelectionAction() { return _focusSelectionAction; }
 
 protected:

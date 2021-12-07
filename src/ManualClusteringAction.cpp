@@ -67,9 +67,6 @@ ManualClusteringAction::ManualClusteringAction(ScatterplotPlugin* scatterplotPlu
     connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::dataChildRemoved, this, &ManualClusteringAction::updateTargetClusterDatasets);
     connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, &ManualClusteringAction::updateTargetClusterDatasets);
 
-    // Update actions when the position dataset selection changes
-    connect(_scatterplotPlugin, &ScatterplotPlugin::selectionChanged, this, &ManualClusteringAction::updateActions);
-
     // Do an initial update of the actions
     updateActions();
 }

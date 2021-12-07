@@ -11,12 +11,12 @@ using namespace hdps::gui;
 SettingsAction::SettingsAction(ScatterplotPlugin* scatterplotPlugin) :
     PluginAction(scatterplotPlugin, "Settings"),
     _renderModeAction(scatterplotPlugin),
-    _plotAction(scatterplotPlugin),
     _positionAction(scatterplotPlugin),
     _coloringAction(scatterplotPlugin),
     _subsetAction(scatterplotPlugin),
     _manualClusteringAction(scatterplotPlugin),
     _selectionAction(*scatterplotPlugin),
+    _plotAction(scatterplotPlugin),
     _miscellaneousAction(scatterplotPlugin)
 {
     const auto updateEnabled = [this]() {

@@ -49,6 +49,9 @@ protected:
     /** Update the scatter plot widget point opacity scalars */
     void updateScatterPlotWidgetPointOpacityScalars();
 
+    /** Invoked when the focus selection changed */
+    void onFocusSelectionChanged(const bool& focusSelection);
+
 public: // Action getters
 
     ScalarAction& getSizeAction() { return _sizeAction; }
