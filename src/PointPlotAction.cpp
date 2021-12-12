@@ -54,6 +54,10 @@ PointPlotAction::PointPlotAction(ScatterplotPlugin* scatterplotPlugin) :
         // Update the color by action
         updateDefaultDatasets();
 
+        // Reset the point size and opacity scalars
+        updateScatterPlotWidgetPointSizeScalars();
+        updateScatterPlotWidgetPointOpacityScalars();
+
         // Reset
         _sizeAction.getSourceAction().getPickerAction().setCurrentIndex(0);
         _opacityAction.getSourceAction().getPickerAction().setCurrentIndex(0);
