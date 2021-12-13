@@ -87,7 +87,6 @@ public:
     void setScalarEffect(PointEffect effect);
     void setPointScaling(hdps::gui::PointScaling scalingMode);
     void setSigma(const float sigma);
-    void setFocusSelection(const bool& focusSelection);
 
     Bounds getBounds() const {
         return _dataBounds;

@@ -49,19 +49,19 @@ protected:
     /** Update the scatter plot widget point opacity scalars */
     void updateScatterPlotWidgetPointOpacityScalars();
 
-    /** Invoked when the focus selection changed */
-    void onFocusSelectionChanged(const bool& focusSelection);
-
 public: // Action getters
 
     ScalarAction& getSizeAction() { return _sizeAction; }
     ScalarAction& getOpacityAction() { return _opacityAction; }
+    ToggleAction& getFocusSelection() { return _focusSelection; }
 
 protected:
-    ScalarAction            _sizeAction;            /** Point size action */
-    ScalarAction            _opacityAction;         /** Point opacity action */
-    std::vector<float>      _pointSizeScalars;      /** Cached point size scalars */
-    std::vector<float>      _pointOpacityScalars;   /** Cached point opacity scalars */
+    ScalarAction            _sizeAction;                /** Point size action */
+    ScalarAction            _opacityAction;             /** Point opacity action */
+    std::vector<float>      _pointSizeScalars;          /** Cached point size scalars */
+    std::vector<float>      _pointOpacityScalars;       /** Cached point opacity scalars */
+    ToggleAction            _focusSelection;            /** Focus selection action */
+    std::int32_t            _lastOpacitySourceIndex;    /** Last opacity source index that was selected */
 
     static constexpr double DEFAULT_POINT_SIZE      = 10.0;     /** Default point size */
     static constexpr double DEFAULT_POINT_OPACITY   = 50.0;     /** Default point opacity */

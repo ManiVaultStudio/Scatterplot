@@ -73,6 +73,12 @@ public:
      */
     void setCurrentDataset(const Dataset<DatasetImpl>& dataset);
 
+    /**
+     * Set the current source index
+     * @param sourceIndex Source index
+     */
+    void setCurrentSourceIndex(bool sourceIndex);
+
     /** Determines whether the scalar source is a constant */
     bool isSourceConstant() const;
 
@@ -91,7 +97,7 @@ signals:
 
     /**
      * Signals that the source selection changed
-     * @param sourceIndex Index of the selected source (zero is constant, above is a dataset)
+     * @param sourceIndex Index of the selected source (0 is constant, 1 si selection, above is a dataset)
      */
     void sourceSelectionChanged(const std::uint32_t& sourceSelectionIndex);
 

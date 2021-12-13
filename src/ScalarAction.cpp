@@ -100,6 +100,11 @@ void ScalarAction::setCurrentDataset(const Dataset<DatasetImpl>& dataset)
         _sourceAction.getPickerAction().setCurrentIndex(datasetRowIndex);
 }
 
+void ScalarAction::setCurrentSourceIndex(bool sourceIndex)
+{
+    _sourceAction.getPickerAction().setCurrentIndex(sourceIndex);
+}
+
 bool ScalarAction::isSourceConstant() const
 {
     return _sourceAction.getPickerAction().getCurrentIndex() == ScalarSourceModel::DefaultRow::Constant;

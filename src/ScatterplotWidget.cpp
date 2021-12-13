@@ -259,13 +259,6 @@ void ScatterplotWidget::setSigma(const float sigma)
     update();
 }
 
-void ScatterplotWidget::setFocusSelection(const bool& focusSelection)
-{
-    _pointRenderer.setFocusSelection(focusSelection);
-    
-    update();
-}
-
 hdps::Vector3f ScatterplotWidget::getColorMapRange() const
 {
     switch (_renderMode) {

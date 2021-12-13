@@ -176,7 +176,21 @@ void ScatterplotPlugin::init()
     layout->setMargin(0);
     layout->setSpacing(0);
     layout->addWidget(_settingsAction.createWidget(this));
-    layout->addWidget(_scatterPlotWidget, 1);
+    layout->addWidget(_scatterPlotWidget, 100);
+
+    auto bottomToolbarWidget = new QWidget();
+    auto bottomToolbarLayout = new QHBoxLayout();
+
+    bottomToolbarWidget->setAutoFillBackground(true);
+    bottomToolbarWidget->setLayout(bottomToolbarLayout);
+
+    bottomToolbarLayout->setMargin(4);
+    bottomToolbarLayout->addWidget(_settingsAction.getPlotAction().getPointPlotAction().getFocusSelection().createWidget(this));
+    bottomToolbarLayout->addStretch(1);
+    bottomToolbarLayout->addWidget(_settingsAction.getScreenshotAction().createCollapsedWidget(this));
+    bottomToolbarLayout->addWidget(_settingsAction.getMiscellaneousAction().createCollapsedWidget(this));
+
+    layout->addWidget(bottomToolbarWidget, 1);
 
     setLayout(layout);
 
