@@ -15,7 +15,7 @@ ScalarSourceModel::ScalarSourceModel(QObject* parent /*= nullptr*/) :
 int ScalarSourceModel::rowCount(const QModelIndex& parent /*= QModelIndex()*/) const
 {
     // Constant point size option plus the number of available datasets
-    return _datasets.count() + 1;
+    return _datasets.count() + DefaultRow::DatasetStart;
 }
 
 int ScalarSourceModel::rowIndex(const Dataset<DatasetImpl>& dataset) const
@@ -25,7 +25,7 @@ int ScalarSourceModel::rowIndex(const Dataset<DatasetImpl>& dataset) const
         return -1;
 
     // Return the index of the dataset and add one for the constant point size option
-    return _datasets.indexOf(dataset) + 1;
+    return _datasets.indexOf(dataset) + DefaultRow::DatasetStart;
 }
 
 int ScalarSourceModel::columnCount(const QModelIndex& parent /*= QModelIndex()*/) const
@@ -44,18 +44,35 @@ QVariant ScalarSourceModel::data(const QModelIndex& index, int role) const
     {
         // Return ruler icon for constant point size and dataset icon otherwise
         case Qt::DecorationRole:
-            return row > 0 ? scalarDataset->getIcon() : Application::getIconFont("FontAwesome").getIcon("ruler");
+        {
+            if (row == DefaultRow::Constant)
+                return Application::getIconFont("FontAwesome").getIcon("ruler");
+
+            if (row == DefaultRow::Selection)
+                return Application::getIconFont("FontAwesome").getIcon("mouse-pointer");
+
+            if (row >= DefaultRow::DatasetStart)
+                return scalarDataset->getIcon();
+
+            break;
+        }
 
          // Return 'Constant' for constant point size and dataset (full path) GUI name otherwise
         case Qt::DisplayRole:
         {
-            if (row > 0)
-                if (row == 1)
+            if (row >= DefaultRow::DatasetStart)
+            {
+                if (row == 2)
                     return scalarDataset->getGuiName();
                 else
                     return _showFullPathName ? scalarDataset->getDataHierarchyItem().getFullPathName() : scalarDataset->getGuiName();
-            else
-                return "Constant";
+            } else {
+                if (row == DefaultRow::Constant)
+                    return "Constant";
+
+                if (row == DefaultRow::Selection)
+                    return "Selection";
+            }
         }
 
         default:
@@ -67,6 +84,10 @@ QVariant ScalarSourceModel::data(const QModelIndex& index, int role) const
 
 void ScalarSourceModel::addDataset(const Dataset<DatasetImpl>& dataset)
 {
+    // Avoid duplicates
+    if (rowIndex(dataset) >= DefaultRow::DatasetStart)
+        return;
+
     // Insert row into model
     beginInsertRows(QModelIndex(), rowCount(), rowCount());
     {
@@ -122,7 +143,7 @@ void ScalarSourceModel::removeDataset(const Dataset<DatasetImpl>& dataset)
 void ScalarSourceModel::removeAllDatasets()
 {
     // Remove row from model
-    beginRemoveRows(QModelIndex(), 0, rowCount() - 1);
+    beginRemoveRows(QModelIndex(), 0, rowCount() - DefaultRow::DatasetStart);
     {
         // Remove all datasets
         _datasets.clear();
@@ -141,11 +162,11 @@ const Datasets& ScalarSourceModel::getDatasets() const
 Dataset<DatasetImpl> ScalarSourceModel::getDataset(const std::int32_t& rowIndex) const
 {
     // Return empty smart pointer when out of range
-    if (rowIndex <= 0 || rowIndex > _datasets.count())
+    if (rowIndex < DefaultRow::DatasetStart || rowIndex > (DefaultRow::DatasetStart + _datasets.count()))
         return Dataset<DatasetImpl>();
 
     // Subtract the constant point size row
-    return _datasets[rowIndex - 1];
+    return _datasets[rowIndex - DefaultRow::DatasetStart];
 }
 
 void ScalarSourceModel::setDatasets(const Datasets& datasets)
@@ -154,7 +175,7 @@ void ScalarSourceModel::setDatasets(const Datasets& datasets)
     emit layoutAboutToBeChanged();
 
     // Add datasets
-    for (const auto& dataset : _datasets)
+    for (const auto& dataset : datasets)
         addDataset(dataset);
 
     // Notify others that the model layout is changed

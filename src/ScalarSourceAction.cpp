@@ -32,8 +32,8 @@ ScalarSourceAction::ScalarSourceAction(ScatterplotPlugin* scatterplotPlugin, con
         // Current source index
         const auto sourceIndex = _pickerAction.getCurrentIndex();
 
-        // Set dimension picker visibility
-        _dimensionPickerAction.setEnabled(sourceIndex >= 1);
+        // Enable the dimension picker for datasets
+        _dimensionPickerAction.setEnabled(sourceIndex >= ScalarSourceModel::DefaultRow::DatasetStart);
 
         // Assign the icon
         setIcon(_model.data(_model.index(sourceIndex, 0), Qt::DecorationRole).value<QIcon>());
@@ -44,7 +44,7 @@ ScalarSourceAction::ScalarSourceAction(ScatterplotPlugin* scatterplotPlugin, con
         _dimensionPickerAction.setPointsDataset(Dataset<Points>(_model.getDataset(_pickerAction.getCurrentIndex())));
 
         // Disable offset action in constant mode
-        _offsetAction.setEnabled(sourceIndex >= 1);
+        _offsetAction.setEnabled(sourceIndex > ScalarSourceModel::DefaultRow::Constant);
 
         // Update the scalar range if possible
         updateScalarRange();

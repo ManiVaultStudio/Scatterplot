@@ -21,6 +21,14 @@ protected:
     ScalarSourceModel(QObject* parent = nullptr);
 
 public:
+    /** Default scalar options */
+    enum DefaultRow {
+        Constant,           /** Scale by constant */
+        Selection,          /** Scale by selected */
+        DatasetStart        /** Start row of the dataset(s) */
+    };
+
+public:
 
     /**
      * Get the number of row

@@ -58,8 +58,10 @@ public: // Action getters
     ScalarAction& getOpacityAction() { return _opacityAction; }
 
 protected:
-    ScalarAction    _sizeAction;        /** Point size action */
-    ScalarAction    _opacityAction;     /** Point opacity action */
+    ScalarAction            _sizeAction;            /** Point size action */
+    ScalarAction            _opacityAction;         /** Point opacity action */
+    std::vector<float>      _pointSizeScalars;      /** Cached point size scalars */
+    std::vector<float>      _pointOpacityScalars;   /** Cached point opacity scalars */
 
     static constexpr double DEFAULT_POINT_SIZE      = 10.0;     /** Default point size */
     static constexpr double DEFAULT_POINT_OPACITY   = 50.0;     /** Default point opacity */

@@ -74,7 +74,13 @@ public:
     void setCurrentDataset(const Dataset<DatasetImpl>& dataset);
 
     /** Determines whether the scalar source is a constant */
-    bool isConstant() const;
+    bool isSourceConstant() const;
+
+    /** Determines whether the scalar source is a selection */
+    bool isSourceSelection() const;
+
+    /** Determines whether the scalar source is a dataset */
+    bool isSourceDataset() const;
 
 public: // Action getters
 
