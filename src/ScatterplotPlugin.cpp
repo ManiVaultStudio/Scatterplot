@@ -428,30 +428,35 @@ void ScatterplotPlugin::loadColors(const Dataset<Clusters>& clusters)
     if (!clusters.isValid())
         return;
 
-    // Generate colors buffer
+    // Mapping from local to global indices
+    std::vector<std::uint32_t> globalIndices;
+
+    // Get global indices from the position dataset
+    _positionDataset->getGlobalIndices(globalIndices);
+
+    // Generate color buffer for points
     std::vector<Vector3f> colors(_positions.size());
 
-    // Loop over all clusters
-    for (const auto& cluster : clusters->getClusters())
-    {
-        // Get cluster color
-        const auto clusterColor = cluster.getColor();
+    std::int32_t colorIndex = 0;
 
-        // Loop over all indices in the cluster
-        for (const auto& index : cluster.getIndices())
+    // Loop over all global indices and find the corresponding cluster color
+    for (const auto& globalIndex : globalIndices) {
+
+        // Loop over all clusters
+        for (const auto& cluster : clusters->getClusters())
         {
-            if (index < 0 || index > colors.size())
-            {
-                qWarning("Cluster index is out of range of data, aborting attempt to color plot");
-                return;
-            }
+            // Find the global index
+            auto it = std::find(cluster.getIndices().begin(), cluster.getIndices().end(), globalIndex);
 
-            // Assign point color
-            colors[index] = Vector3f(clusterColor.redF(), clusterColor.greenF(), clusterColor.blueF());
+            // If it exists, set the color
+            if (it != cluster.getIndices().end())
+                colors[colorIndex] = Vector3f(cluster.getColor().redF(), cluster.getColor().greenF(), cluster.getColor().blueF());
         }
+
+        colorIndex++;
     }
 
-    // Assign scalars and scalar effect
+    // Apply colors to scatter plot widget without modification
     _scatterPlotWidget->setColors(colors);
 
     // Render

@@ -167,20 +167,23 @@ void ColoringAction::addColorDataset(const Dataset<DatasetImpl>& colorDataset)
     // Get smart pointer to added dataset
     auto& addedDataset = _colorByModel.getDatasets().last();
 
-    // Connect to the data changed signal so that we can update the scatter plot colors appropriately
-    connect(&addedDataset, &Dataset<DatasetImpl>::dataChanged, this, [this, addedDataset]() {
+    for (const auto& dataset : _colorByModel.getDatasets()) {
 
-        // Get smart pointer to current color dataset
-        const auto currentColorDataset = getCurrentColorDataset();
+        // Connect to the data changed signal so that we can update the scatter plot colors appropriately
+        connect(&dataset, &Dataset<DatasetImpl>::dataChanged, this, [this, dataset]() {
 
-        // Only proceed if we have a valid dataset for coloring
-        if (!currentColorDataset.isValid())
-            return;
+            // Get smart pointer to current color dataset
+            const auto currentColorDataset = getCurrentColorDataset();
 
-        // Update colors if the dataset matches
-        if (currentColorDataset == addedDataset)
-            updateScatterPlotWidgetColors();
-    });
+            // Only proceed if we have a valid dataset for coloring
+            if (!currentColorDataset.isValid())
+                return;
+
+            // Update colors if the dataset matches
+            if (currentColorDataset == dataset)
+                updateScatterPlotWidgetColors();
+        });
+    }
 }
 
 bool ColoringAction::hasColorDataset(const Dataset<DatasetImpl>& colorDataset) const
@@ -222,7 +225,7 @@ void ColoringAction::updateColorByActionOptions()
     // Get child data hierarchy items of the position dataset
     const auto children = positionDataset->getDataHierarchyItem().getChildren();
 
-    // Loop over all children and possibly add them to the color datasets vector
+    // Loop over all children and possibly add them to the color datasets
     for (auto child : children) {
 
         // Get smart pointer to child dataset
