@@ -25,6 +25,8 @@ ManualClusteringAction::ManualClusteringAction(ScatterplotPlugin* scatterplotPlu
     _addClusterAction.setToolTip("Add cluster");
     _targetClusterDataset.setToolTip("Target cluster set");
 
+    _targetClusterDataset.setPlaceHolderString("Pick a clusters dataset");
+
     const auto updateActions = [this]() -> void {
         const auto positionDataset = _scatterplotPlugin->getPositionDataset();
         //setEnabled(positionDataset.isValid() && positionDataset->getSelectionSize() >= 1);
@@ -107,8 +109,13 @@ void ManualClusteringAction::updateTargetClusterDatasets()
     if (!_scatterplotPlugin->getPositionDataset().isValid())
         return;
 
+    const auto clusterDatasets = _scatterplotPlugin->getPositionDataset()->getChildren(ClusterType);
+
     // Update pickers
-    _targetClusterDataset.setDatasets(_scatterplotPlugin->getPositionDataset()->getChildren(ClusterType));
+    _targetClusterDataset.setDatasets(clusterDatasets);
+
+    if (!clusterDatasets.isEmpty())
+        _targetClusterDataset.setCurrentDataset(clusterDatasets.first());
 }
 
 void ManualClusteringAction::updateActions()
