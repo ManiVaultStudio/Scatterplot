@@ -25,8 +25,6 @@ ManualClusteringAction::ManualClusteringAction(ScatterplotPlugin* scatterplotPlu
     _addClusterAction.setToolTip("Add cluster");
     _targetClusterDataset.setToolTip("Target cluster set");
 
-    _targetClusterDataset.setPlaceHolderString("Pick a clusters dataset");
-
     const auto updateActions = [this]() -> void {
         const auto positionDataset = _scatterplotPlugin->getPositionDataset();
         //setEnabled(positionDataset.isValid() && positionDataset->getSelectionSize() >= 1);
