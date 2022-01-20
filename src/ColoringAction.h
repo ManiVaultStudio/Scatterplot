@@ -3,7 +3,7 @@
 #include "PluginAction.h"
 #include "ColorSourceModel.h"
 
-#include "PointsDimensionPickerAction.h"
+#include <DimensionPickerAction.h>
 
 #include <QHBoxLayout>
 #include <QLabel>
@@ -107,15 +107,15 @@ public: // Action getters
 
     OptionAction& getColorByAction() { return _colorByAction; }
     ColorAction& getConstantColorAction() { return _constantColorAction; }
-    PointsDimensionPickerAction& getDimensionPickerAction() { return _dimensionPickerAction; }
+    DimensionPickerAction& getDimensionPickerAction() { return _dimensionPickerAction; }
     ColorMapAction& getColorMapAction() { return _colorMapAction; }
 
 protected:
-    ColorSourceModel               _colorByModel;              /** Color by model (model input for the color by action) */
-    OptionAction                    _colorByAction;             /** Action for picking the coloring type */
-    ColorAction                     _constantColorAction;       /** Action for picking the constant color */
-    PointsDimensionPickerAction     _dimensionPickerAction;     /** Dimension picker action */
-    ColorMapAction                  _colorMapAction;            /** Color map action */
+    ColorSourceModel        _colorByModel;              /** Color by model (model input for the color by action) */
+    OptionAction            _colorByAction;             /** Action for picking the coloring type */
+    ColorAction             _constantColorAction;       /** Action for picking the constant color */
+    DimensionPickerAction   _dimensionPickerAction;     /** Dimension picker action */
+    ColorMapAction          _colorMapAction;            /** Color map action */
 
     /** Default constant color */
     static const QColor DEFAULT_CONSTANT_COLOR;

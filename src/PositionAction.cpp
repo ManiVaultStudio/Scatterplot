@@ -10,26 +10,26 @@ using namespace hdps::gui;
 
 PositionAction::PositionAction(ScatterplotPlugin* scatterplotPlugin) :
     PluginAction(scatterplotPlugin, "Position"),
-    _xDimensionAction(this, "X"),
-    _yDimensionAction(this, "Y")
+    _xDimensionPickerAction(this, "X"),
+    _yDimensionPickerAction(this, "Y")
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("ruler-combined"));
 
     // Add actions to scatter plot plugin (for shortcuts)
-    _scatterplotPlugin->addAction(&_xDimensionAction);
-    _scatterplotPlugin->addAction(&_yDimensionAction);
+    _scatterplotPlugin->addAction(&_xDimensionPickerAction);
+    _scatterplotPlugin->addAction(&_yDimensionPickerAction);
 
     // Set tooltips
-    _xDimensionAction.setToolTip("X dimension");
-    _yDimensionAction.setToolTip("Y dimension");
+    _xDimensionPickerAction.setToolTip("X dimension");
+    _yDimensionPickerAction.setToolTip("Y dimension");
 
     // Update scatter plot when the x-dimension changes
-    connect(&_xDimensionAction, &PointsDimensionPickerAction::currentDimensionIndexChanged, [this, scatterplotPlugin](const std::uint32_t& currentDimensionIndex) {
+    connect(&_xDimensionPickerAction, &DimensionPickerAction::currentDimensionIndexChanged, [this, scatterplotPlugin](const std::uint32_t& currentDimensionIndex) {
         scatterplotPlugin->setXDimension(currentDimensionIndex);
     });
 
     // Update scatter plot when the y-dimension changes
-    connect(&_yDimensionAction, &PointsDimensionPickerAction::currentDimensionIndexChanged, [this, scatterplotPlugin](const std::uint32_t& currentDimensionIndex) {
+    connect(&_yDimensionPickerAction, &DimensionPickerAction::currentDimensionIndexChanged, [this, scatterplotPlugin](const std::uint32_t& currentDimensionIndex) {
         scatterplotPlugin->setYDimension(currentDimensionIndex);
     });
 
@@ -37,19 +37,19 @@ PositionAction::PositionAction(ScatterplotPlugin* scatterplotPlugin) :
     connect(&scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, [this]() {
 
         // Assign position dataset to x- and y dimension action
-        _xDimensionAction.setPointsDataset(_scatterplotPlugin->getPositionDataset());
-        _yDimensionAction.setPointsDataset(_scatterplotPlugin->getPositionDataset());
+        _xDimensionPickerAction.setPointsDataset(_scatterplotPlugin->getPositionDataset());
+        _yDimensionPickerAction.setPointsDataset(_scatterplotPlugin->getPositionDataset());
 
         // Assign current and default index to x-dimension action
-        _xDimensionAction.setCurrentDimensionIndex(0);
-        _xDimensionAction.setDefaultDimensionIndex(0);
+        _xDimensionPickerAction.setCurrentDimensionIndex(0);
+        _xDimensionPickerAction.setDefaultDimensionIndex(0);
 
         // Establish y-dimension
-        const auto yIndex = _xDimensionAction.getNumberOfDimensions() >= 2 ? 1 : 0;
+        const auto yIndex = _xDimensionPickerAction.getNumberOfDimensions() >= 2 ? 1 : 0;
 
         // Assign current and default index to y-dimension action
-        _yDimensionAction.setCurrentDimensionIndex(yIndex);
-        _yDimensionAction.setDefaultDimensionIndex(yIndex);
+        _yDimensionPickerAction.setCurrentDimensionIndex(yIndex);
+        _yDimensionPickerAction.setDefaultDimensionIndex(yIndex);
     });
 }
 
@@ -60,8 +60,8 @@ QMenu* PositionAction::getContextMenu(QWidget* parent /*= nullptr*/)
     auto xDimensionMenu = new QMenu("X dimension");
     auto yDimensionMenu = new QMenu("Y dimension");
 
-    xDimensionMenu->addAction(&_xDimensionAction);
-    yDimensionMenu->addAction(&_yDimensionAction);
+    xDimensionMenu->addAction(&_xDimensionPickerAction);
+    yDimensionMenu->addAction(&_yDimensionPickerAction);
 
     menu->addMenu(xDimensionMenu);
     menu->addMenu(yDimensionMenu);
@@ -71,21 +71,21 @@ QMenu* PositionAction::getContextMenu(QWidget* parent /*= nullptr*/)
 
 std::int32_t PositionAction::getDimensionX() const
 {
-    return _xDimensionAction.getCurrentDimensionIndex();
+    return _xDimensionPickerAction.getCurrentDimensionIndex();
 }
 
 std::int32_t PositionAction::getDimensionY() const
 {
-    return _yDimensionAction.getCurrentDimensionIndex();
+    return _yDimensionPickerAction.getCurrentDimensionIndex();
 }
 
 PositionAction::Widget::Widget(QWidget* parent, PositionAction* positionAction, const std::int32_t& widgetFlags) :
     WidgetActionWidget(parent, positionAction, widgetFlags)
 {
-    auto xDimensionLabel    = positionAction->_xDimensionAction.createLabelWidget(this);
-    auto yDimensionLabel    = positionAction->_yDimensionAction.createLabelWidget(this);
-    auto xDimensionWidget   = positionAction->_xDimensionAction.createWidget(this);
-    auto yDimensionWidget   = positionAction->_yDimensionAction.createWidget(this);
+    auto xDimensionLabel    = positionAction->_xDimensionPickerAction.createLabelWidget(this);
+    auto yDimensionLabel    = positionAction->_yDimensionPickerAction.createLabelWidget(this);
+    auto xDimensionWidget   = positionAction->_xDimensionPickerAction.createWidget(this);
+    auto yDimensionWidget   = positionAction->_yDimensionPickerAction.createWidget(this);
 
     xDimensionWidget->findChild<QComboBox*>("ComboBox")->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     yDimensionWidget->findChild<QComboBox*>("ComboBox")->setSizeAdjustPolicy(QComboBox::AdjustToContents);
