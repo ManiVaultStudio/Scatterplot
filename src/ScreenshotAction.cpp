@@ -31,6 +31,7 @@ ScreenshotAction::ScreenshotAction(QObject* parent, ScatterplotPlugin& scatterpl
     _scaleTwiceAction(this, "200%"),
     _scaleFourAction(this, "400%"),
     _backgroundColorAction(this, "Background color", QColor(Qt::white), QColor(Qt::white)),
+    _batchScreenshotAction(scatterplotPlugin),
     _createAction(this, "Create"),
     _createDefaultAction(this, "Create"),
     _openAfterCreationAction(this, "Open"),
@@ -139,7 +140,7 @@ ScreenshotAction::ScreenshotAction(QObject* parent, ScatterplotPlugin& scatterpl
         _scatterplotPlugin.setSetting(SETTING_KEY_OPEN_AFTER_CREATION, toggled);
     });
 
-    // Update aspect ration and target height action at dialog startup
+    // Perform initialization of actions
     updateAspectRatio();
     updateTargetHeightAction();
 }
@@ -215,12 +216,14 @@ ScreenshotAction::Widget::Widget(QWidget* parent, ScreenshotAction* screenshotAc
         layout->addWidget(screenshotAction->getBackgroundColorAction().createLabelWidget(this), 4, 0);
         layout->addWidget(screenshotAction->getBackgroundColorAction().createWidget(this), 4, 1);
 
+        layout->addWidget(screenshotAction->getBatchScreenshotAction().createWidget(this), 6, 1);
+
         auto createLayout = new QHBoxLayout();
 
         createLayout->addWidget(screenshotAction->getCreateAction().createWidget(this), 1);
         createLayout->addWidget(screenshotAction->getOpenAfterCreationAction().createWidget(this, ToggleAction::WidgetFlag::CheckBox));
 
-        layout->addLayout(createLayout, 5, 1);
+        layout->addLayout(createLayout, 7, 1);
 
         setPopupLayout(layout);
     }

@@ -1,6 +1,11 @@
 #pragma once
 
-#include "actions/Actions.h"
+#include <actions/IntegralAction.h>
+#include <actions/ToggleAction.h>
+#include <actions/TriggerAction.h>
+#include <actions/ColorAction.h>
+
+#include "BatchScreenshotAction.h"
 
 using namespace hdps::util;
 
@@ -47,6 +52,11 @@ public:
      */
     void createScreenshot(bool defaultSettings = false);
 
+protected:
+
+    /** Callback which is invoked when the current position dataset changes */
+    void positionDatasetChanged();
+
 public: // Action getters
 
     IntegralAction& getTargetWidthAction() { return _targetWidthAction; }
@@ -58,25 +68,27 @@ public: // Action getters
     TriggerAction& getScaleTwiceAction() { return _scaleTwiceAction; }
     TriggerAction& getScaleFourAction() { return _scaleFourAction; }
     ColorAction& getBackgroundColorAction() { return _backgroundColorAction; }
+    BatchScreenshotAction& getBatchScreenshotAction() { return _batchScreenshotAction; }
     TriggerAction& getCreateAction() { return _createAction; }
     TriggerAction& getCreateDefaultAction() { return _createDefaultAction; }
     ToggleAction& getOpenAfterCreationAction() { return _openAfterCreationAction; }
 
 protected:
-    ScatterplotPlugin&      _scatterplotPlugin;         /** Reference to the scatter plot plugin */
-    IntegralAction          _targetWidthAction;         /** Screenshot target width action */
-    IntegralAction          _targetHeightAction;        /** Screenshot target height action */
-    ToggleAction            _lockAspectRatioAction;     /** Lock aspect ration action */
-    TriggerAction           _scaleQuarterAction;        /** Scale 1/4 action */
-    TriggerAction           _scaleHalfAction;           /** Scale 1/2 action */
-    TriggerAction           _scaleOneAction;            /** Scale 100% of widget action */
-    TriggerAction           _scaleTwiceAction;          /** Scale two times action */
-    TriggerAction           _scaleFourAction;           /** Scale four times action */
-    ColorAction             _backgroundColorAction;     /** Background color action */
-    TriggerAction           _createAction;              /** Create action */
-    TriggerAction           _createDefaultAction;       /** Create with default settings action */
-    ToggleAction            _openAfterCreationAction;   /** Open screenshot after creation action */
-    float                   _aspectRatio;               /** Screenshot aspect ratio */
+    ScatterplotPlugin&          _scatterplotPlugin;         /** Reference to the scatter plot plugin */
+    IntegralAction              _targetWidthAction;         /** Screenshot target width action */
+    IntegralAction              _targetHeightAction;        /** Screenshot target height action */
+    ToggleAction                _lockAspectRatioAction;     /** Lock aspect ration action */
+    TriggerAction               _scaleQuarterAction;        /** Scale 1/4 action */
+    TriggerAction               _scaleHalfAction;           /** Scale 1/2 action */
+    TriggerAction               _scaleOneAction;            /** Scale 100% of widget action */
+    TriggerAction               _scaleTwiceAction;          /** Scale two times action */
+    TriggerAction               _scaleFourAction;           /** Scale four times action */
+    ColorAction                 _backgroundColorAction;     /** Background color action */
+    BatchScreenshotAction       _batchScreenshotAction;     /** Batch screenshot action */
+    TriggerAction               _createAction;              /** Create action */
+    TriggerAction               _createDefaultAction;       /** Create with default settings action */
+    ToggleAction                _openAfterCreationAction;   /** Open screenshot after creation action */
+    float                       _aspectRatio;               /** Screenshot aspect ratio */
 
     /** Setting prefixes */
     static QString SETTING_KEY_OUTPUT_DIR;              /** Default output directory */
