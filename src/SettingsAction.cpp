@@ -1,4 +1,5 @@
 #include "SettingsAction.h"
+#include "ExportDialog.h"
 
 #include "Application.h"
 #include "ScatterplotPlugin.h"
@@ -17,7 +18,7 @@ SettingsAction::SettingsAction(ScatterplotPlugin* scatterplotPlugin) :
     _manualClusteringAction(scatterplotPlugin),
     _selectionAction(*scatterplotPlugin),
     _plotAction(scatterplotPlugin),
-    _screenshotAction(this, *scatterplotPlugin),
+    _exportAction(this, "Export to image/video"),
     _miscellaneousAction(scatterplotPlugin)
 {
     const auto updateEnabled = [this]() {
@@ -27,6 +28,12 @@ SettingsAction::SettingsAction(ScatterplotPlugin* scatterplotPlugin) :
     connect(&scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, updateEnabled);
 
     updateEnabled();
+
+    connect(&_exportAction, &TriggerAction::triggered, this, [this]() {
+        ExportDialog exportDialog(nullptr, *_scatterplotPlugin);
+
+        exportDialog.exec();
+    });
 }
 
 QMenu* SettingsAction::getContextMenu()

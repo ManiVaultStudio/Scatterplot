@@ -32,6 +32,7 @@ ScreenshotAction::ScreenshotAction(QObject* parent, ScatterplotPlugin& scatterpl
     _scaleFourAction(this, "400%"),
     _backgroundColorAction(this, "Background color", QColor(Qt::white), QColor(Qt::white)),
     _batchScreenshotAction(scatterplotPlugin),
+    _directoryPickerAction(this, "Save to"),
     _createAction(this, "Create"),
     _createDefaultAction(this, "Create"),
     _openAfterCreationAction(this, "Open"),
@@ -59,37 +60,10 @@ ScreenshotAction::ScreenshotAction(QObject* parent, ScatterplotPlugin& scatterpl
     _createAction.setIcon(Application::getIconFont("FontAwesome").getIcon("camera"));
     _createDefaultAction.setIcon(Application::getIconFont("FontAwesome").getIcon("camera"));
 
-    // Update the state of the target height action
-    const auto updateTargetHeightAction = [this]() -> void {
+    
 
-        // Disable when the aspect ratio is locked
-        _targetHeightAction.setEnabled(!_lockAspectRatioAction.isChecked());
-    };
-
-    // Updates the aspect ratio
-    const auto updateAspectRatio = [this]() -> void {
-        _scatterplotPlugin.setSetting(SETTING_KEY_LOCK_ASPECT_RATIO, _lockAspectRatioAction.isChecked());
-        _aspectRatio = static_cast<float>(_targetHeightAction.getValue()) / static_cast<float>(_targetWidthAction.getValue());
-    };
-
-    // Disable target height action when the aspect ratio is locked
-    connect(&_lockAspectRatioAction, &ToggleAction::toggled, this, updateTargetHeightAction);
-    connect(&_lockAspectRatioAction, &ToggleAction::toggled, this, updateAspectRatio);
-
-    // Update target height action when the target width changed
-    connect(&_targetWidthAction, &IntegralAction::valueChanged, this, [this]() {
-
-        // Scale the target height when the aspect ratio is locked
-        if (_lockAspectRatioAction.isChecked())
-            _targetHeightAction.setValue(static_cast<std::int32_t>(_aspectRatio * static_cast<float>(_targetWidthAction.getValue())));
-    });
-
-    // Scale the screenshot
-    const auto scale = [this](float scaleFactor) {
-        _targetWidthAction.setValue(scaleFactor * static_cast<float>(_scatterplotPlugin.getScatterplotWidget().width()));
-        _targetHeightAction.setValue(scaleFactor * static_cast<float>(_scatterplotPlugin.getScatterplotWidget().height()));
-    };
-
+    
+    /*
     // Scale by a quarter
     connect(&_scaleQuarterAction, &TriggerAction::triggered, this, [this, scale]() {
         scale(0.25f);
@@ -114,77 +88,11 @@ ScreenshotAction::ScreenshotAction(QObject* parent, ScatterplotPlugin& scatterpl
     connect(&_scaleFourAction, &TriggerAction::triggered, this, [this, scale]() {
         scale(4.0f);
     });
+    */
 
-    // Create the screenshot when the create action is triggered
-    connect(&_createAction, &TriggerAction::triggered, this, [this]() {
-        createScreenshot();
-    });
+    
 
-    // Create the screenshot with default settings when the create default action is triggered
-    connect(&_createDefaultAction, &TriggerAction::triggered, this, [this]() {
-        createScreenshot(true);
-    });
-
-    // Load from settings
-    _lockAspectRatioAction.setChecked(_scatterplotPlugin.getSetting(SETTING_KEY_LOCK_ASPECT_RATIO, true).toBool());
-    _backgroundColorAction.setColor(_scatterplotPlugin.getSetting(SETTING_KEY_BACKGROUND_COLOR, QVariant::fromValue(QColor(Qt::white))).value<QColor>());
-    _openAfterCreationAction.setChecked(_scatterplotPlugin.getSetting(SETTING_KEY_OPEN_AFTER_CREATION, true).toBool());
-
-    // Save the background color setting when the action is changed
-    connect(&_backgroundColorAction, &ColorAction::colorChanged, this, [this](const QColor& color) {
-        _scatterplotPlugin.setSetting(SETTING_KEY_BACKGROUND_COLOR, color);
-    });
-
-    // Save the open after creation setting when the action is toggled
-    connect(&_openAfterCreationAction, &ToggleAction::toggled, this, [this](const bool& toggled) {
-        _scatterplotPlugin.setSetting(SETTING_KEY_OPEN_AFTER_CREATION, toggled);
-    });
-
-    // Perform initialization of actions
-    updateAspectRatio();
-    updateTargetHeightAction();
-}
-
-void ScreenshotAction::initializeTargetSize()
-{
-    _targetWidthAction.setValue(_scatterplotPlugin.getScatterplotWidget().width());
-    _targetWidthAction.setValue(_scatterplotPlugin.getScatterplotWidget().width());
-    _targetHeightAction.setValue(_scatterplotPlugin.getScatterplotWidget().height());
-    _targetHeightAction.setValue(_scatterplotPlugin.getScatterplotWidget().height());
-
-    _aspectRatio = static_cast<float>(_targetHeightAction.getValue()) / static_cast<float>(_targetWidthAction.getValue());
-}
-
-void ScreenshotAction::createScreenshot(bool defaultSettings /*= false*/)
-{
-    // Get output dir from settings
-    const auto outputDir = _scatterplotPlugin.getSetting(SETTING_KEY_OUTPUT_DIR, "/").toString();
-
-    // Get screenshot image file name (*.png *.jpg *.bmp)
-    const auto fileName = QFileDialog::getSaveFileName(nullptr, tr("Save screenshot image"), outputDir, tr("Image Files (*.jpg)"));
-
-    // Save if we have a valid filename
-    if (!fileName.isEmpty()) {
-
-        QApplication::setOverrideCursor(Qt::WaitCursor);
-        {
-            // Get screenshot dimensions and background color
-            const auto width            = defaultSettings ? _scatterplotPlugin.getScatterplotWidget().width() : _targetWidthAction.getValue();
-            const auto height           = defaultSettings ? _scatterplotPlugin.getScatterplotWidget().height() : _targetHeightAction.getValue();
-            const auto backgroundColor  = defaultSettings ? QColor(Qt::white) : _backgroundColorAction.getColor();
-
-            // Create and save the screenshot
-            _scatterplotPlugin.getScatterplotWidget().createScreenshot(width, height, fileName, backgroundColor);
-
-            // Save new output dir to settings
-            _scatterplotPlugin.setSetting(SETTING_KEY_OUTPUT_DIR, QFileInfo(fileName).absolutePath());
-
-            // Open the image file in an external program if the user requested this
-            if (_openAfterCreationAction.isChecked())
-                QDesktopServices::openUrl(fileName);
-        }
-        QApplication::restoreOverrideCursor();
-    }
+    
 }
 
 ScreenshotAction::Widget::Widget(QWidget* parent, ScreenshotAction* screenshotAction, const std::int32_t& widgetFlags) :
@@ -192,50 +100,53 @@ ScreenshotAction::Widget::Widget(QWidget* parent, ScreenshotAction* screenshotAc
 {
     setToolTip("Screenshot settings");
 
-    screenshotAction->initializeTargetSize();
+    //screenshotAction->initializeTargetSize();
 
-    if (widgetFlags & PopupLayout) {
-        auto layout = new QGridLayout();
+    //if (widgetFlags & PopupLayout) {
+    //    auto layout = new QGridLayout();
 
-        layout->addWidget(screenshotAction->getTargetWidthAction().createLabelWidget(this), 0, 0);
-        layout->addWidget(screenshotAction->getTargetWidthAction().createWidget(this), 0, 1);
-        layout->addWidget(screenshotAction->getTargetHeightAction().createLabelWidget(this), 1, 0);
-        layout->addWidget(screenshotAction->getTargetHeightAction().createWidget(this), 1, 1);
-        layout->addWidget(screenshotAction->getLockAspectRatioAction().createWidget(this), 2, 1);
+    //    layout->addWidget(screenshotAction->getTargetWidthAction().createLabelWidget(this), 0, 0);
+    //    layout->addWidget(screenshotAction->getTargetWidthAction().createWidget(this), 0, 1);
+    //    layout->addWidget(screenshotAction->getTargetHeightAction().createLabelWidget(this), 1, 0);
+    //    layout->addWidget(screenshotAction->getTargetHeightAction().createWidget(this), 1, 1);
+    //    layout->addWidget(screenshotAction->getLockAspectRatioAction().createWidget(this), 2, 1);
 
-        auto scaleLayout = new QHBoxLayout();
+    //    auto scaleLayout = new QHBoxLayout();
 
-        scaleLayout->addWidget(screenshotAction->getScaleQuarterAction().createWidget(this));
-        scaleLayout->addWidget(screenshotAction->getScaleHalfAction().createWidget(this));
-        scaleLayout->addWidget(screenshotAction->getScaleOneAction().createWidget(this));
-        scaleLayout->addWidget(screenshotAction->getScaleTwiceAction().createWidget(this));
-        scaleLayout->addWidget(screenshotAction->getScaleFourAction().createWidget(this));
+    //    scaleLayout->addWidget(screenshotAction->getScaleQuarterAction().createWidget(this));
+    //    scaleLayout->addWidget(screenshotAction->getScaleHalfAction().createWidget(this));
+    //    scaleLayout->addWidget(screenshotAction->getScaleOneAction().createWidget(this));
+    //    scaleLayout->addWidget(screenshotAction->getScaleTwiceAction().createWidget(this));
+    //    scaleLayout->addWidget(screenshotAction->getScaleFourAction().createWidget(this));
 
-        layout->addLayout(scaleLayout, 3, 1);
+    //    layout->addLayout(scaleLayout, 3, 1);
 
-        layout->addWidget(screenshotAction->getBackgroundColorAction().createLabelWidget(this), 4, 0);
-        layout->addWidget(screenshotAction->getBackgroundColorAction().createWidget(this), 4, 1);
+    //    layout->addWidget(screenshotAction->getBackgroundColorAction().createLabelWidget(this), 4, 0);
+    //    layout->addWidget(screenshotAction->getBackgroundColorAction().createWidget(this), 4, 1);
 
-        layout->addWidget(screenshotAction->getBatchScreenshotAction().createWidget(this), 6, 1);
+    //    layout->addWidget(screenshotAction->getBatchScreenshotAction().createWidget(this), 6, 1);
+    //    
+    //    layout->addWidget(screenshotAction->getDirectoryPickerAction().createLabelWidget(this), 7, 0);
+    //    layout->addWidget(screenshotAction->getDirectoryPickerAction().createWidget(this), 7, 1);
 
-        auto createLayout = new QHBoxLayout();
+    //    auto createLayout = new QHBoxLayout();
 
-        createLayout->addWidget(screenshotAction->getCreateAction().createWidget(this), 1);
-        createLayout->addWidget(screenshotAction->getOpenAfterCreationAction().createWidget(this, ToggleAction::WidgetFlag::CheckBox));
+    //    createLayout->addWidget(screenshotAction->getCreateAction().createWidget(this), 1);
+    //    createLayout->addWidget(screenshotAction->getOpenAfterCreationAction().createWidget(this, ToggleAction::WidgetFlag::CheckBox));
 
-        layout->addLayout(createLayout, 7, 1);
+    //    layout->addLayout(createLayout, 8, 1);
 
-        setPopupLayout(layout);
-    }
-    else {
-        auto layout = new QHBoxLayout();
+    //    setPopupLayout(layout);
+    //}
+    //else {
+    //    auto layout = new QHBoxLayout();
 
-        layout->setMargin(0);
+    //    layout->setMargin(0);
 
-        layout->addWidget(screenshotAction->getCreateDefaultAction().createWidget(this, TriggerAction::WidgetFlag::IconText));
+    //    layout->addWidget(screenshotAction->getCreateDefaultAction().createWidget(this, TriggerAction::WidgetFlag::IconText));
 
-        setLayout(layout);
-    }
+    //    setLayout(layout);
+    //}
 }
 
 }

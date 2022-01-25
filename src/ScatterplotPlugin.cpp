@@ -187,7 +187,7 @@ void ScatterplotPlugin::init()
     bottomToolbarLayout->setMargin(4);
     bottomToolbarLayout->addWidget(_settingsAction.getPlotAction().getPointPlotAction().getFocusSelection().createWidget(this));
     bottomToolbarLayout->addStretch(1);
-    bottomToolbarLayout->addWidget(_settingsAction.getScreenshotAction().createCollapsedWidget(this));
+    bottomToolbarLayout->addWidget(_settingsAction.getExportAction().createWidget(this));
     bottomToolbarLayout->addWidget(_settingsAction.getMiscellaneousAction().createCollapsedWidget(this));
 
     layout->addWidget(bottomToolbarWidget, 1);

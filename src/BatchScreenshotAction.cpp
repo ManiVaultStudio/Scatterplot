@@ -4,6 +4,7 @@
 
 #include <Application.h>
 
+using namespace hdps;
 using namespace hdps::gui;
 
 BatchScreenshotAction::BatchScreenshotAction(ScatterplotPlugin& scatterplotPlugin) :
@@ -12,7 +13,7 @@ BatchScreenshotAction::BatchScreenshotAction(ScatterplotPlugin& scatterplotPlugi
     _dimensionsPreviewAction(this, "Dimensions preview"),
     _dimensionsPickerAction(this)
 {
-    setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("image"));
+    setIcon(Application::getIconFont("FontAwesome").getIcon("image"));
 
     _dimensionsPreviewAction.setEnabled(false);
 

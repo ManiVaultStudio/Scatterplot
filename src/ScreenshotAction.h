@@ -4,6 +4,7 @@
 #include <actions/ToggleAction.h>
 #include <actions/TriggerAction.h>
 #include <actions/ColorAction.h>
+#include <actions/DirectoryPickerAction.h>
 
 #include "BatchScreenshotAction.h"
 
@@ -43,20 +44,6 @@ public:
      */
     ScreenshotAction(QObject* parent, ScatterplotPlugin& scatterplotPlugin);
 
-    /** Grab target size from scatter plot widget */
-    void initializeTargetSize();
-
-    /**
-     * Create screenshot
-     * @param defaultSettings Use default settings for creating the screenshot
-     */
-    void createScreenshot(bool defaultSettings = false);
-
-protected:
-
-    /** Callback which is invoked when the current position dataset changes */
-    void positionDatasetChanged();
-
 public: // Action getters
 
     IntegralAction& getTargetWidthAction() { return _targetWidthAction; }
@@ -69,6 +56,7 @@ public: // Action getters
     TriggerAction& getScaleFourAction() { return _scaleFourAction; }
     ColorAction& getBackgroundColorAction() { return _backgroundColorAction; }
     BatchScreenshotAction& getBatchScreenshotAction() { return _batchScreenshotAction; }
+    DirectoryPickerAction& getDirectoryPickerAction() { return _directoryPickerAction; }
     TriggerAction& getCreateAction() { return _createAction; }
     TriggerAction& getCreateDefaultAction() { return _createDefaultAction; }
     ToggleAction& getOpenAfterCreationAction() { return _openAfterCreationAction; }
@@ -85,6 +73,7 @@ protected:
     TriggerAction               _scaleFourAction;           /** Scale four times action */
     ColorAction                 _backgroundColorAction;     /** Background color action */
     BatchScreenshotAction       _batchScreenshotAction;     /** Batch screenshot action */
+    DirectoryPickerAction       _directoryPickerAction;     /** Directory picker action */
     TriggerAction               _createAction;              /** Create action */
     TriggerAction               _createDefaultAction;       /** Create with default settings action */
     ToggleAction                _openAfterCreationAction;   /** Open screenshot after creation action */
