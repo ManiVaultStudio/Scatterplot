@@ -107,14 +107,14 @@ public: // Action getters
 
     OptionAction& getColorByAction() { return _colorByAction; }
     ColorAction& getConstantColorAction() { return _constantColorAction; }
-    DimensionPickerAction& getDimensionPickerAction() { return _dimensionPickerAction; }
+    DimensionPickerAction& getDimensionAction() { return _dimensionAction; }
     ColorMapAction& getColorMapAction() { return _colorMapAction; }
 
 protected:
     ColorSourceModel        _colorByModel;              /** Color by model (model input for the color by action) */
     OptionAction            _colorByAction;             /** Action for picking the coloring type */
     ColorAction             _constantColorAction;       /** Action for picking the constant color */
-    DimensionPickerAction   _dimensionPickerAction;     /** Dimension picker action */
+    DimensionPickerAction   _dimensionAction;           /** Dimension picker action */
     ColorMapAction          _colorMapAction;            /** Color map action */
 
     /** Default constant color */

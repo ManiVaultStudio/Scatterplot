@@ -34,8 +34,6 @@ set(UI
 )
 
 set(Actions
-    src/BatchScreenshotAction.h
-    src/BatchScreenshotAction.cpp
     src/ColoringAction.h
     src/ColoringAction.cpp
     src/DensityPlotAction.h
@@ -58,8 +56,6 @@ set(Actions
     src/ScalarAction.cpp
     src/ScalarSourceAction.h
     src/ScalarSourceAction.cpp
-    src/ScreenshotAction.h
-    src/ScreenshotAction.cpp
     src/SelectionAction.h
     src/SelectionAction.cpp
     src/SettingsAction.h

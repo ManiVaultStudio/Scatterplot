@@ -9,7 +9,6 @@
 #include "SubsetAction.h"
 #include "SelectionAction.h"
 #include "ManualClusteringAction.h"
-#include "ScreenshotAction.h"
 #include "MiscellaneousAction.h"
 
 #include "actions/WidgetActionStateWidget.h"

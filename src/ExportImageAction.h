@@ -7,6 +7,7 @@
 #include <actions/TriggersAction.h>
 #include <actions/ColorAction.h>
 #include <actions/StringAction.h>
+#include <actions/StatusAction.h>
 
 #include <DimensionsPickerAction.h>
 
@@ -52,20 +53,32 @@ public:
     /** Grab target size from scatter plot widget */
     void initializeTargetSize();
 
-    /**
-     * Create screenshot
-     * @param defaultSettings Use default settings for creating the screenshot
-     */
-    void createScreenshot(bool defaultSettings = false);
+    /** Export images to disk */
+    void exportImages();
 
 protected:
 
     /** Update the input points dataset of the dimensions picker action */
     void updateDimensionsPickerAction();
 
+    /**
+     * Establish whether export can take place
+     * @return Whether export can take place
+     */
+    bool mayExport() const;
+
+    /**
+     * Get the number of selected dimensions
+     * @return Number of selected dimensions
+     */
+    std::int32_t getNumberOfSelectedDimensions() const;
+
+    /** Updates the export trigger text, tooltip and read-only */
+    void updateExportTrigger();
+
 public: // Action getters
 
-    DimensionsPickerAction& getDimensionsPickerAction() { return _dimensionsPickerAction; }
+    DimensionsPickerAction& getDimensionsPickerAction() { return _dimensionSelectionAction; }
     IntegralAction& getTargetWidthAction() { return _targetWidthAction; }
     IntegralAction& getTargetHeightAction() { return _targetHeightAction; }
     ToggleAction& getLockAspectRatioAction() { return _lockAspectRatioAction; }
@@ -73,23 +86,24 @@ public: // Action getters
     ColorAction& getBackgroundColorAction() { return _backgroundColorAction; }
     ToggleAction& getOverrideRangesAction() { return _overrideRangesAction; }
     DecimalRangeAction& getFixedRangeAction() { return _fixedRangeAction; }
-    DirectoryPickerAction& getDirectoryPickerAction() { return _directoryPickerAction; }
-    TriggersAction& getDialogAction() { return _dialogAction; }
+    DirectoryPickerAction& getDirectoryPickerAction() { return _outputDirectoryAction; }
+    TriggersAction& getExportCancelAction() { return _exportCancelAction; }
 
 protected:
-    ScatterplotPlugin&          _scatterplotPlugin;         /** Reference to scatterplot plugin */
-    DimensionsPickerAction      _dimensionsPickerAction;    /** Dimensions picker action */
-    IntegralAction              _targetWidthAction;         /** Screenshot target width action */
-    IntegralAction              _targetHeightAction;        /** Screenshot target height action */
-    ToggleAction                _lockAspectRatioAction;     /** Lock aspect ratio action */
-    TriggersAction              _scaleAction;               /** Scale action */
-    ColorAction                 _backgroundColorAction;     /** Background color action */
-    ToggleAction                _overrideRangesAction;      /** Override ranges action */
-    DecimalRangeAction          _fixedRangeAction;          /** Fixed range action */
-    DirectoryPickerAction       _directoryPickerAction;     /** Directory picker action */
-    StringAction                _fileNamePrefixAction;      /** File name prefix action */
-    TriggersAction              _dialogAction;              /** Create action */
-    float                       _aspectRatio;               /** Screenshot aspect ratio */
+    ScatterplotPlugin&          _scatterplotPlugin;             /** Reference to scatterplot plugin */
+    DimensionsPickerAction      _dimensionSelectionAction;      /** Dimension selection picker action */
+    IntegralAction              _targetWidthAction;             /** Screenshot target width action */
+    IntegralAction              _targetHeightAction;            /** Screenshot target height action */
+    ToggleAction                _lockAspectRatioAction;         /** Lock aspect ratio action */
+    TriggersAction              _scaleAction;                   /** Scale action */
+    ColorAction                 _backgroundColorAction;         /** Background color action */
+    ToggleAction                _overrideRangesAction;          /** Override ranges action */
+    DecimalRangeAction          _fixedRangeAction;              /** Fixed range action */
+    DirectoryPickerAction       _outputDirectoryAction;         /** Output directory picker action */
+    StringAction                _fileNamePrefixAction;          /** File name prefix action */
+    StatusAction                _statusAction;                  /** Status action */
+    TriggersAction              _exportCancelAction;            /** Create and cancel triggers action */
+    float                       _aspectRatio;                   /** Export image aspect ratio */
 
     /** Setting prefixes */
     static QString SETTING_KEY_OUTPUT_DIR;              /** Default output directory */
