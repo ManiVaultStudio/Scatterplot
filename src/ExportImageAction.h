@@ -76,6 +76,15 @@ protected:
     /** Updates the export trigger text, tooltip and read-only */
     void updateExportTrigger();
 
+    /** Set default dimensions for current dataset */
+    void setDefaultDimensions();
+
+    /**
+     * Get settings key for dataset enabled dimensions
+     * @return Settings key for dataset enabled dimensions
+     */
+    QString getEnabledDimensionsSettingsKey() const;
+
 public: // Action getters
 
     DimensionsPickerAction& getDimensionsPickerAction() { return _dimensionSelectionAction; }
@@ -111,4 +120,5 @@ protected:
     static QString SETTING_KEY_LOCK_ASPECT_RATIO;       /** Lock the image aspect ratio */
     static QString SETTING_KEY_BACKGROUND_COLOR;        /** Screenshot background color */
     static QString SETTING_KEY_OPEN_AFTER_CREATION;     /** Whether screenshot images should be opened after creation */
+    static QString SETTING_KEY_ENABLED_DIMENSION;       /** Enabled dimension per dataset */
 };

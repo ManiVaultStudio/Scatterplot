@@ -30,6 +30,7 @@ QString ExportImageAction::SETTING_KEY_OUTPUT_DIR           = "Export/Image/Outp
 QString ExportImageAction::SETTING_KEY_LOCK_ASPECT_RATIO    = "Export/Image/LockAspectRatio";
 QString ExportImageAction::SETTING_KEY_BACKGROUND_COLOR     = "Export/Image/BackgroundColor";
 QString ExportImageAction::SETTING_KEY_OPEN_AFTER_CREATION  = "Export/Image/OpenScreenshotAfterCreation";
+QString ExportImageAction::SETTING_KEY_ENABLED_DIMENSION    = "Export/Image/EnabledDimensions";
 
 ExportImageAction::ExportImageAction(QObject* parent, ScatterplotPlugin& scatterplotPlugin) :
     GroupAction(parent),
@@ -146,6 +147,9 @@ ExportImageAction::ExportImageAction(QObject* parent, ScatterplotPlugin& scatter
     // Updates the export trigger when the file name prefix, output directory or the dimension model changes
     connect(&_fileNamePrefixAction, &StringAction::stringChanged, this, &ExportImageAction::updateExportTrigger);
     connect(&_outputDirectoryAction, &DirectoryPickerAction::directoryChanged, this, &ExportImageAction::updateExportTrigger);
+
+    // Save selected dimensions when the action is triggered
+    connect(&_setDefaultDimensionsAction, &TriggerAction::triggered, this, &ExportImageAction::setDefaultDimensions);
 
     // Perform initialization of actions
     updateAspectRatio();
@@ -302,4 +306,16 @@ void ExportImageAction::updateExportTrigger()
     _exportCancelAction.setTriggerText(0, getNumberOfSelectedDimensions() == 0 ? "Nothing to export" : "Export (" + QString::number(getNumberOfSelectedDimensions()) + ")");
     _exportCancelAction.setTriggerTooltip(0, getNumberOfSelectedDimensions() == 0 ? "There are no images selected to export" : "Export " + QString::number(getNumberOfSelectedDimensions()) + " image" + (getNumberOfSelectedDimensions() >= 2 ? "s" : "") + " to disk");
     _exportCancelAction.setTriggerEnabled(0, mayExport());
+}
+
+void ExportImageAction::setDefaultDimensions()
+{
+    const auto enabledDimensions = _dimensionSelectionAction.getEnabledDimensions();
+
+    _scatterplotPlugin.setSetting(getEnabledDimensionsSettingsKey(), QVariantList(enabledDimensions.begin(), enabledDimensions.end()));
+}
+
+QString ExportImageAction::getEnabledDimensionsSettingsKey() const
+{
+    return SETTING_KEY_ENABLED_DIMENSION + "/" + _scatterplotPlugin.getPositionDataset()->getGuiName();
 }
