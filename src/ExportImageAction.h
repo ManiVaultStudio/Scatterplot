@@ -92,6 +92,7 @@ public: // Action getters
 protected:
     ScatterplotPlugin&          _scatterplotPlugin;             /** Reference to scatterplot plugin */
     DimensionsPickerAction      _dimensionSelectionAction;      /** Dimension selection picker action */
+    TriggerAction               _setDefaultDimensionsAction;    /** Set default dimensions action */
     IntegralAction              _targetWidthAction;             /** Screenshot target width action */
     IntegralAction              _targetHeightAction;            /** Screenshot target height action */
     ToggleAction                _lockAspectRatioAction;         /** Lock aspect ratio action */

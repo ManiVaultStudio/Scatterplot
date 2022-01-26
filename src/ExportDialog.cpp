@@ -27,4 +27,10 @@ ExportDialog::ExportDialog(QWidget* parent, ScatterplotPlugin& scatterplotPlugin
     layout->addStretch(1);
 
     setLayout(layout);
+
+    // Reject when the cancel action is triggered
+    connect(&_exportImageAction.getExportCancelAction(), &TriggersAction::triggered, this, [this](std::int32_t triggerIndex) {
+        if (triggerIndex == 1)
+            reject();
+    });
 }

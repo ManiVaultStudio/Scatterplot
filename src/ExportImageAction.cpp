@@ -35,6 +35,7 @@ ExportImageAction::ExportImageAction(QObject* parent, ScatterplotPlugin& scatter
     GroupAction(parent),
     _scatterplotPlugin(scatterplotPlugin),
     _dimensionSelectionAction(this),
+    _setDefaultDimensionsAction(this),
     _targetWidthAction(this, "Width ", 1, 10000),
     _targetHeightAction(this, "Height", 1, 10000),
     _lockAspectRatioAction(this, "Lock aspect ratio", true, true),
@@ -212,7 +213,7 @@ void ExportImageAction::exportImages()
             const auto fileName = _fileNamePrefixAction.getString() + dimensionNames[dimensionIndex] + ".png";
 
             // Update status
-            _statusAction.setMessage("Exporting " + fileName + " (" + QString::number(numberOfExportedImages + 1) + "/" + QString::number(getNumberOfSelectedDimensions()) + ")");
+            _statusAction.setMessage("Export " + fileName + " (" + QString::number(numberOfExportedImages + 1) + "/" + QString::number(getNumberOfSelectedDimensions()) + ")");
 
             // Ensure status is updated properly
             QCoreApplication::processEvents();
@@ -268,6 +269,9 @@ void ExportImageAction::updateDimensionsPickerAction()
 
     // Initial update of export trigger
     updateExportTrigger();
+
+    // Update the set default dimensions action to reflect the new name of the position dataset
+    _setDefaultDimensionsAction.setText("Set default dimensions for " + _scatterplotPlugin.getPositionDataset()->getGuiName());
 }
 
 bool ExportImageAction::mayExport() const
