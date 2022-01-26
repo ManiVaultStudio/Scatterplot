@@ -18,7 +18,7 @@ endif(MSVC)
 
 file(TO_CMAKE_PATH $ENV{HDPS_INSTALL_DIR} INSTALL_DIR)
 
-find_package(Qt5 COMPONENTS Widgets WebEngineWidgets REQUIRED)
+find_package(Qt6 6.2 COMPONENTS Widgets WebEngineWidgets REQUIRED)
 
 set(PLUGIN
     src/Common.h
