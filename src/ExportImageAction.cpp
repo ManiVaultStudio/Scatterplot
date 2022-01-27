@@ -310,9 +310,12 @@ void ExportImageAction::updateExportTrigger()
 
 void ExportImageAction::setDefaultDimensions()
 {
-    const auto enabledDimensions = _dimensionSelectionAction.getEnabledDimensions();
+    QVariantList enabledDimensions;
 
-    _scatterplotPlugin.setSetting(getEnabledDimensionsSettingsKey(), QVariantList(enabledDimensions.begin(), enabledDimensions.end()));
+    for (const auto& enabledDimension : _dimensionSelectionAction.getEnabledDimensions())
+        enabledDimensions.push_back(QVariant(enabledDimension));
+
+    _scatterplotPlugin.setSetting(getEnabledDimensionsSettingsKey(), enabledDimensions);
 }
 
 QString ExportImageAction::getEnabledDimensionsSettingsKey() const
