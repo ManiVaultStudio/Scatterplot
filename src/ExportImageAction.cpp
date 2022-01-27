@@ -45,7 +45,7 @@ ExportImageAction::ExportImageAction(QObject* parent, ScatterplotPlugin& scatter
     _overrideRangesAction(this, "Override ranges", false, false),
     _fixedRangeAction(this, "Fixed range"),
     _fileNamePrefixAction(this, "Filename prefix", scatterplotPlugin.getPositionDataset()->getGuiName() + "_", scatterplotPlugin.getPositionDataset()->getGuiName() + "_"),
-    _statusAction(this, "Info"),
+    _statusAction(this, "Status"),
     _outputDirectoryAction(this, "Save to"),
     _exportCancelAction(this, "", { TriggersAction::Trigger("Export", "Export dimensions"), TriggersAction::Trigger("Cancel", "Cancel export")  }),
     _aspectRatio()
