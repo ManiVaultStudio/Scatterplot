@@ -57,7 +57,7 @@ SettingsAction::Widget::Widget(QWidget* parent, SettingsAction* settingsAction) 
 {
     setAutoFillBackground(true);
 
-    _toolBarLayout.setMargin(0);
+    _toolBarLayout.setContentsMargins(0,0,0,0);
     _toolBarLayout.setSpacing(0);
     _toolBarLayout.setSizeConstraint(QLayout::SetFixedSize);
 
@@ -79,7 +79,7 @@ SettingsAction::Widget::Widget(QWidget* parent, SettingsAction* settingsAction) 
 
     setLayout(&_layout);
 
-    _layout.setMargin(4);
+    _layout.setContentsMargins(4,4,4,4);
 
     this->installEventFilter(this);
     _toolBarWidget.installEventFilter(this);
@@ -120,7 +120,10 @@ void SettingsAction::Widget::updateLayout()
         states[stateWidget] = Widget::State::Collapsed;
 
     const auto getWidth = [this, &states]() -> std::uint32_t {
-        std::uint32_t width = 2 * _layout.margin();
+        int lm, rm, tm, bm;
+        _layout.getContentsMargins(&lm, &rm, &tm, &bm);
+        std::uint32_t width = 2 * lm;
+        // std::uint32_t width = 2 * _layout.margin();
 
         for (auto stateWidget : _stateWidgets)
             width += stateWidget->getSizeHint(states[stateWidget]).width();
@@ -178,7 +181,7 @@ SettingsAction::SpacerWidget::SpacerWidget(const Type& type /*= State::Divider*/
     _verticalLine->setFrameShape(QFrame::VLine);
     _verticalLine->setFrameShadow(QFrame::Sunken);
 
-    _layout->setMargin(2);
+    _layout->setContentsMargins(2,2,2,2);
     _layout->setSpacing(0);
     _layout->setAlignment(Qt::AlignCenter);
     _layout->addWidget(_verticalLine);

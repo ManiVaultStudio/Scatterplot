@@ -227,7 +227,7 @@ ScreenshotAction::Widget::Widget(QWidget* parent, ScreenshotAction* screenshotAc
     else {
         auto layout = new QHBoxLayout();
 
-        layout->setMargin(0);
+        layout->setContentsMargins(0,0,0,0);
 
         layout->addWidget(screenshotAction->getCreateDefaultAction().createWidget(this, TriggerAction::WidgetFlag::IconText));
 

@@ -169,7 +169,7 @@ ManualClusteringAction::Widget::Widget(QWidget* parent, ManualClusteringAction* 
     else {
         auto layout = new QHBoxLayout();
 
-        layout->setMargin(0);
+        layout->setContentsMargins(0,0,0,0);
 
         // Create widgets
         auto targetClusterWidget    = manualClusteringAction->getTargetClusterDataset().createWidget(this);

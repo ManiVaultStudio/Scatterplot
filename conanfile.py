@@ -33,6 +33,7 @@ class ScatterplotOPluginConan(ConanFile):
     default_options = {"shared": True, "fPIC": True}
 
     # Qt requirement is inherited from hdps-core
+    requires = "hdps-core/qt6@lkeb/stable"
 
     scm = {
         "type": "git",
@@ -62,10 +63,10 @@ class ScatterplotOPluginConan(ConanFile):
         self.version = branch_info.version
         # print(f"Got version: {self.version}")
 
-    def requirements(self):
-        branch_info = PluginBranchInfo(self.__get_git_path())
-        print(f"Core requirement {branch_info.core_requirement}")
-        self.requires(branch_info.core_requirement)
+    # def requirements(self):
+    #     branch_info = PluginBranchInfo(self.__get_git_path())
+    #     print(f"Core requirement {branch_info.core_requirement}")
+    #     self.requires(branch_info.core_requirement)
 
     # Remove runtime and use always default (MD/MDd)
     def configure(self):
@@ -114,8 +115,8 @@ class ScatterplotOPluginConan(ConanFile):
         # cmake_debug = self._configure_cmake('Debug')
         # cmake_debug.build()
 
-        # cmake_release = self._configure_cmake('Release')
-        # cmake_release.build()
+        cmake_release = self._configure_cmake("Release")
+        cmake_release.build()
 
     def package(self):
         package_dir = os.path.join(self.build_folder, "package")

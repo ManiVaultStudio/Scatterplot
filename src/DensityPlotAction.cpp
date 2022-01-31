@@ -73,7 +73,7 @@ DensityPlotAction::Widget::Widget(QWidget* parent, DensityPlotAction* densityPlo
 {
     auto layout = new QHBoxLayout();
 
-    layout->setMargin(0);
+    layout->setContentsMargins(0,0,0,0);
     layout->addWidget(densityPlotAction->_sigmaAction.createLabelWidget(this));
     layout->addWidget(densityPlotAction->_sigmaAction.createWidget(this));
     layout->addWidget(densityPlotAction->_continuousUpdatesAction.createWidget(this));
