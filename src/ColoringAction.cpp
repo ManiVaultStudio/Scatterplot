@@ -17,13 +17,13 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
     _colorByModel(this),
     _colorByAction(this, "Color by"),
     _constantColorAction(this, "Constant color", DEFAULT_CONSTANT_COLOR, DEFAULT_CONSTANT_COLOR),
-    _dimensionPickerAction(this, "Points"),
+    _dimensionAction(this, "Points"),
     _colorMapAction(this, "Color map")
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("palette"));
 
     scatterplotPlugin->addAction(&_colorByAction);
-    scatterplotPlugin->addAction(&_dimensionPickerAction);
+    scatterplotPlugin->addAction(&_dimensionAction);
 
     _colorByAction.setCustomModel(&_colorByModel);
     _colorByAction.setToolTip("Color by");
@@ -91,16 +91,16 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
             const auto currentColorDatasetTypeIsPointType = currentColorDataset->getDataType() == PointType;
 
             // Update dimension picker points dataset source
-            _dimensionPickerAction.setPointsDataset(currentColorDatasetTypeIsPointType ? Dataset<Points>(currentColorDataset) : Dataset<Points>());
+            _dimensionAction.setPointsDataset(currentColorDatasetTypeIsPointType ? Dataset<Points>(currentColorDataset) : Dataset<Points>());
 
             // Hide dimension picker action when not point type
-            _dimensionPickerAction.setVisible(currentColorDatasetTypeIsPointType);
+            _dimensionAction.setVisible(currentColorDatasetTypeIsPointType);
         }
         else {
 
             // Disable the dimension picker (in constant mode)
-            _dimensionPickerAction.setPointsDataset(Dataset<Points>());
-            _dimensionPickerAction.setVisible(false);
+            _dimensionAction.setPointsDataset(Dataset<Points>());
+            _dimensionAction.setVisible(false);
         }
 
         updateScatterPlotWidgetColors();
@@ -118,8 +118,8 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
     connect(&_scatterplotPlugin->getScatterplotWidget(), &ScatterplotWidget::coloringModeChanged, this, &ColoringAction::updateScatterPlotWidgetColors);
 
     // Update scatter plot widget colors and color map range when the current dimension changes
-    connect(&_dimensionPickerAction, &PointsDimensionPickerAction::currentDimensionIndexChanged, this, &ColoringAction::updateScatterPlotWidgetColors);
-    connect(&_dimensionPickerAction, &PointsDimensionPickerAction::currentDimensionIndexChanged, this, &ColoringAction::updateColorMapActionScalarRange);
+    connect(&_dimensionAction, &DimensionPickerAction::currentDimensionIndexChanged, this, &ColoringAction::updateScatterPlotWidgetColors);
+    connect(&_dimensionAction, &DimensionPickerAction::currentDimensionIndexChanged, this, &ColoringAction::updateColorMapActionScalarRange);
 
     // Update scatter plot widget color map when actions change
     connect(&_constantColorAction, &ColorAction::colorChanged, this, &ColoringAction::updateScatterplotWidgetColorMap);
@@ -258,11 +258,11 @@ void ColoringAction::updateScatterPlotWidgetColors()
     else {
 
         // Get current dimension index
-        const auto currentDimensionIndex = _dimensionPickerAction.getCurrentDimensionIndex();
+        const auto currentDimensionIndex = _dimensionAction.getCurrentDimensionIndex();
 
         // Exit if dimension selection is not valid
         if (currentDimensionIndex >= 0)
-            _scatterplotPlugin->loadColors(currentColorDataset.get<Points>(), _dimensionPickerAction.getCurrentDimensionIndex());
+            _scatterplotPlugin->loadColors(currentColorDataset.get<Points>(), _dimensionAction.getCurrentDimensionIndex());
     }
 }
 
@@ -379,7 +379,7 @@ ColoringAction::Widget::Widget(QWidget* parent, ColoringAction* coloringAction, 
     auto labelWidget            = coloringAction->getColorByAction().createLabelWidget(this);
     auto colorByWidget          = coloringAction->getColorByAction().createWidget(this);
     auto colorByConstantWidget  = coloringAction->getConstantColorAction().createWidget(this);
-    auto dimensionPickerWidget  = coloringAction->getDimensionPickerAction().createWidget(this);
+    auto dimensionPickerWidget  = coloringAction->getDimensionAction().createWidget(this);
 
     // Adjust width of the constant color widget
     colorByConstantWidget->setFixedWidth(40);

@@ -2,7 +2,7 @@
 
 #include "PluginAction.h"
 
-#include "PointsDimensionPickerAction.h"
+#include <DimensionPickerAction.h>
 
 #include <QHBoxLayout>
 #include <QLabel>
@@ -65,8 +65,8 @@ public:
     std::int32_t getDimensionY() const;
 
 protected:
-    PointsDimensionPickerAction    _xDimensionAction;       /** X-dimension action */
-    PointsDimensionPickerAction    _yDimensionAction;       /** Y-dimension action */
+    DimensionPickerAction    _xDimensionPickerAction;   /** X-dimension picker action */
+    DimensionPickerAction    _yDimensionPickerAction;   /** Y-dimension picker action */
 
     friend class Widget;
 };

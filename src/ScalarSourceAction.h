@@ -4,7 +4,7 @@
 
 #include "ScalarSourceModel.h"
 
-#include "PointsDimensionPickerAction.h"
+#include <DimensionPickerAction.h>
 
 using namespace hdps::gui;
 
@@ -63,12 +63,12 @@ public:
 public: // Action getters
 
     OptionAction& getPickerAction() { return _pickerAction; }
-    PointsDimensionPickerAction& getDimensionPickerAction() { return _dimensionPickerAction; }
+    DimensionPickerAction& getDimensionPickerAction() { return _dimensionPickerAction; }
     DecimalAction& getOffsetAction() { return _offsetAction; }
     DecimalRangeAction& getRangeAction() { return _rangeAction; }
 
     const OptionAction& getPickerAction() const { return _pickerAction; }
-    const PointsDimensionPickerAction& getDimensionPickerAction() const { return _dimensionPickerAction; }
+    const DimensionPickerAction& getDimensionPickerAction() const { return _dimensionPickerAction; }
     const DecimalAction& getOffsetAction() const { return _offsetAction; }
     const DecimalRangeAction& getRangeAction() const { return _rangeAction; }
 
@@ -82,9 +82,9 @@ signals:
     void scalarRangeChanged(const float& minimum, const float& maximum);
 
 protected:
-    ScalarSourceModel               _model;                     /** Scalar model */
-    OptionAction                    _pickerAction;              /** Source picker action */
-    PointsDimensionPickerAction     _dimensionPickerAction;     /** Point size dimension picker action */
-    DecimalAction                   _offsetAction;              /** Scalar source offset action */
-    DecimalRangeAction              _rangeAction;               /** Range action */
+    ScalarSourceModel       _model;                     /** Scalar model */
+    OptionAction            _pickerAction;              /** Source picker action */
+    DimensionPickerAction   _dimensionPickerAction;     /** Dimension picker action */
+    DecimalAction           _offsetAction;              /** Scalar source offset action */
+    DecimalRangeAction      _rangeAction;               /** Range action */
 };

@@ -26,16 +26,64 @@ set(PLUGIN
     src/ScatterplotPlugin.cpp
 )
 
-file(GLOB UI src/*Widget*.*)
-file(GLOB Actions src/*Action.*)
-file(GLOB Models src/*Model.*)
-file(GLOB SHADERS src/*.glsl)
-file(GLOB JSON src/*.json)
-file(GLOB SHADERS res/shaders/*.vert res/shaders/*.frag)
-file(GLOB QRC res/*.qrc)
+set(UI
+    src/ScatterplotWidget.h
+    src/ScatterplotWidget.cpp
+    src/ExportDialog.h
+    src/ExportDialog.cpp
+)
 
-set(SOURCES ${PLUGIN} ${PixelSelectionTool} ${UI} ${Actions} ${Models})
-set(AUX ${JSON} ${QRC})
+set(Actions
+    src/ColoringAction.h
+    src/ColoringAction.cpp
+    src/DensityPlotAction.h
+    src/DensityPlotAction.cpp
+    src/ManualClusteringAction.h
+    src/ManualClusteringAction.cpp
+    src/MiscellaneousAction.h
+    src/MiscellaneousAction.cpp
+    src/PlotAction.h
+    src/PlotAction.cpp
+    src/PluginAction.h
+    src/PluginAction.cpp
+    src/PointPlotAction.h
+    src/PointPlotAction.cpp
+    src/PositionAction.h
+    src/PositionAction.cpp
+    src/RenderModeAction.h
+    src/RenderModeAction.cpp
+    src/ScalarAction.h
+    src/ScalarAction.cpp
+    src/ScalarSourceAction.h
+    src/ScalarSourceAction.cpp
+    src/SelectionAction.h
+    src/SelectionAction.cpp
+    src/SettingsAction.h
+    src/SettingsAction.cpp
+    src/SubsetAction.h
+    src/SubsetAction.cpp
+    src/ExportImageAction.h
+    src/ExportImageAction.cpp
+)
+
+set(Models
+    src/ColorSourceModel.h
+    src/ColorSourceModel.cpp
+    src/ScalarSourceModel.h
+    src/ScalarSourceModel.cpp
+)
+
+set(SHADERS
+    res/shaders/SelectionTool.frag
+    res/shaders/SelectionTool.vert
+)
+
+set(AUX
+    res/Resources.qrc
+    src/ScatterplotPlugin.json
+)
+
+set(SOURCES ${PLUGIN} ${UI} ${Actions} ${Models})
 
 source_group(Plugin FILES ${PLUGIN})
 source_group(UI FILES ${UI})

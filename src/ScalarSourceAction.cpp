@@ -54,7 +54,7 @@ ScalarSourceAction::ScalarSourceAction(ScatterplotPlugin* scatterplotPlugin, con
     connect(&_pickerAction, &OptionAction::currentIndexChanged, this, scalarSourceChanged);
 
     // Update scalar range when dimension is picked
-    connect(&_dimensionPickerAction, &PointsDimensionPickerAction::currentDimensionIndexChanged, this, &ScalarSourceAction::updateScalarRange);
+    connect(&_dimensionPickerAction, &DimensionPickerAction::currentDimensionIndexChanged, this, &ScalarSourceAction::updateScalarRange);
 
     // Notify others that the range changed when the user changes the range minimum
     connect(&_rangeAction.getRangeMinAction(), &DecimalAction::valueChanged, this, [this]() {

@@ -9,7 +9,6 @@
 #include "SubsetAction.h"
 #include "SelectionAction.h"
 #include "ManualClusteringAction.h"
-#include "ScreenshotAction.h"
 #include "MiscellaneousAction.h"
 
 #include "actions/WidgetActionStateWidget.h"
@@ -82,7 +81,7 @@ public:
     SubsetAction& getSubsetAction() { return _subsetAction; }
     SelectionAction& getSelectionAction() { return _selectionAction; }
     PlotAction& getPlotAction() { return _plotAction; }
-    ScreenshotAction& getScreenshotAction() { return _screenshotAction; }
+    TriggerAction& getExportAction() { return _exportAction; }
     MiscellaneousAction& getMiscellaneousAction() { return _miscellaneousAction; }
 
 protected:
@@ -93,6 +92,6 @@ protected:
     ManualClusteringAction      _manualClusteringAction;
     SelectionAction             _selectionAction;
     PlotAction                  _plotAction;
-    ScreenshotAction            _screenshotAction;
+    TriggerAction               _exportAction;
     MiscellaneousAction         _miscellaneousAction;
 };
