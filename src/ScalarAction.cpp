@@ -15,7 +15,7 @@ ScalarAction::ScalarAction(ScatterplotPlugin* scatterplotPlugin, const QString& 
 {
     setText(title);
 
-    _scatterplotPlugin->addAction(&_sourceAction);
+    _scatterplotPlugin->getWidget().addAction(&_sourceAction);
 
     // Notify others when the source selection changes
     connect(&_sourceAction.getPickerAction(), &OptionAction::currentIndexChanged, this, [this](const std::uint32_t& currentIndex) {

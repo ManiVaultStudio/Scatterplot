@@ -18,8 +18,8 @@ PointPlotAction::PointPlotAction(ScatterplotPlugin* scatterplotPlugin) :
     _focusSelection(this, "Focus selection"),
     _lastOpacitySourceIndex(-1)
 {
-    _scatterplotPlugin->addAction(&_sizeAction);
-    _scatterplotPlugin->addAction(&_opacityAction);
+    _scatterplotPlugin->getWidget().addAction(&_sizeAction);
+    _scatterplotPlugin->getWidget().addAction(&_opacityAction);
 
     _sizeAction.getMagnitudeAction().setSuffix("px");
     _opacityAction.getMagnitudeAction().setSuffix("%");

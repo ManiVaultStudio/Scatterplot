@@ -41,10 +41,11 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     _dropWidget(nullptr),
     _settingsAction(this)
 {
+    setObjectName("Scatterplot");
+
     _dropWidget = new DropWidget(_scatterPlotWidget);
 
-    setDockingLocation(DockableWidget::DockingLocation::Right);
-    setFocusPolicy(Qt::ClickFocus);
+    getWidget().setFocusPolicy(Qt::ClickFocus);
 
     connect(_scatterPlotWidget, &ScatterplotWidget::customContextMenuRequested, this, [this](const QPoint& point) {
         if (!_positionDataset.isValid())
@@ -56,10 +57,10 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
 
         _positionDataset->populateContextMenu(contextMenu);
 
-        contextMenu->exec(mapToGlobal(point));
+        contextMenu->exec(getWidget().mapToGlobal(point));
     });
 
-    _dropWidget->setDropIndicatorWidget(new DropWidget::DropIndicatorWidget(this, "No data loaded", "Drag an item from the data hierarchy and drop it here to visualize data..."));
+    _dropWidget->setDropIndicatorWidget(new DropWidget::DropIndicatorWidget(&getWidget(), "No data loaded", "Drag an item from the data hierarchy and drop it here to visualize data..."));
     _dropWidget->initialize([this](const QMimeData* mimeData) -> DropWidget::DropRegions {
         DropWidget::DropRegions dropRegions;
 
@@ -175,7 +176,7 @@ void ScatterplotPlugin::init()
 
     layout->setMargin(0);
     layout->setSpacing(0);
-    layout->addWidget(_settingsAction.createWidget(this));
+    layout->addWidget(_settingsAction.createWidget(&getWidget()));
     layout->addWidget(_scatterPlotWidget, 100);
 
     auto bottomToolbarWidget = new QWidget();
@@ -185,14 +186,14 @@ void ScatterplotPlugin::init()
     bottomToolbarWidget->setLayout(bottomToolbarLayout);
 
     bottomToolbarLayout->setMargin(4);
-    bottomToolbarLayout->addWidget(_settingsAction.getPlotAction().getPointPlotAction().getFocusSelection().createWidget(this));
+    bottomToolbarLayout->addWidget(_settingsAction.getPlotAction().getPointPlotAction().getFocusSelection().createWidget(&getWidget()));
     bottomToolbarLayout->addStretch(1);
-    bottomToolbarLayout->addWidget(_settingsAction.getExportAction().createWidget(this));
-    bottomToolbarLayout->addWidget(_settingsAction.getMiscellaneousAction().createCollapsedWidget(this));
+    bottomToolbarLayout->addWidget(_settingsAction.getExportAction().createWidget(&getWidget()));
+    bottomToolbarLayout->addWidget(_settingsAction.getMiscellaneousAction().createCollapsedWidget(&getWidget()));
 
     layout->addWidget(bottomToolbarWidget, 1);
 
-    setLayout(layout);
+    getWidget().setLayout(layout);
 
     // Update the data when the scatter plot widget is initialized
     connect(_scatterPlotWidget, &ScatterplotWidget::initialized, this, &ScatterplotPlugin::updateData);
@@ -354,9 +355,9 @@ void ScatterplotPlugin::selectPoints()
 void ScatterplotPlugin::updateWindowTitle()
 {
     if (!_positionDataset.isValid())
-        setWindowTitle(getGuiName());
+        getWidget().setWindowTitle(getGuiName());
     else
-        setWindowTitle(QString("%1: %2").arg(getGuiName(), _positionDataset->getDataHierarchyItem().getFullPathName()));
+        getWidget().setWindowTitle(QString("%1: %2").arg(getGuiName(), _positionDataset->getDataHierarchyItem().getFullPathName()));
 }
 
 Dataset<Points>& ScatterplotPlugin::getPositionDataset()
@@ -419,7 +420,7 @@ void ScatterplotPlugin::loadColors(const Dataset<Points>& points, const std::uin
     _scatterPlotWidget->setScalarEffect(PointEffect::Color);
 
     // Render
-    update();
+    getWidget().update();
 }
 
 void ScatterplotPlugin::loadColors(const Dataset<Clusters>& clusters)
@@ -453,7 +454,7 @@ void ScatterplotPlugin::loadColors(const Dataset<Clusters>& clusters)
     _scatterPlotWidget->setColors(localColors);
 
     // Render
-    update();
+    getWidget().update();
 }
 
 ScatterplotWidget& ScatterplotPlugin::getScatterplotWidget()

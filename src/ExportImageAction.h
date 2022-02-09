@@ -76,15 +76,6 @@ protected:
     /** Updates the export trigger text, tooltip and read-only */
     void updateExportTrigger();
 
-    /** Set default dimensions for current dataset */
-    void setDefaultDimensions();
-
-    /**
-     * Get settings key for dataset enabled dimensions
-     * @return Settings key for dataset enabled dimensions
-     */
-    QString getEnabledDimensionsSettingsKey() const;
-
 public: // Action getters
 
     DimensionsPickerAction& getDimensionsPickerAction() { return _dimensionSelectionAction; }
@@ -101,7 +92,6 @@ public: // Action getters
 protected:
     ScatterplotPlugin&          _scatterplotPlugin;             /** Reference to scatterplot plugin */
     DimensionsPickerAction      _dimensionSelectionAction;      /** Dimension selection picker action */
-    TriggerAction               _setDefaultDimensionsAction;    /** Set default dimensions action */
     IntegralAction              _targetWidthAction;             /** Screenshot target width action */
     IntegralAction              _targetHeightAction;            /** Screenshot target height action */
     ToggleAction                _lockAspectRatioAction;         /** Lock aspect ratio action */
@@ -114,11 +104,4 @@ protected:
     StatusAction                _statusAction;                  /** Status action */
     TriggersAction              _exportCancelAction;            /** Create and cancel triggers action */
     float                       _aspectRatio;                   /** Export image aspect ratio */
-
-    /** Setting prefixes */
-    static QString SETTING_KEY_OUTPUT_DIR;              /** Default output directory */
-    static QString SETTING_KEY_LOCK_ASPECT_RATIO;       /** Lock the image aspect ratio */
-    static QString SETTING_KEY_BACKGROUND_COLOR;        /** Screenshot background color */
-    static QString SETTING_KEY_OPEN_AFTER_CREATION;     /** Whether screenshot images should be opened after creation */
-    static QString SETTING_KEY_ENABLED_DIMENSION;       /** Enabled dimension per dataset */
 };

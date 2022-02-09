@@ -1,5 +1,5 @@
 #include "SettingsAction.h"
-#include "ExportDialog.h"
+#include "ExportImageDialog.h"
 
 #include "Application.h"
 #include "ScatterplotPlugin.h"
@@ -21,6 +21,8 @@ SettingsAction::SettingsAction(ScatterplotPlugin* scatterplotPlugin) :
     _exportAction(this, "Export to image/video"),
     _miscellaneousAction(scatterplotPlugin)
 {
+    setText("Settings");
+
     const auto updateEnabled = [this]() {
         setEnabled(_scatterplotPlugin->getPositionDataset().isValid());
     };
@@ -33,10 +35,13 @@ SettingsAction::SettingsAction(ScatterplotPlugin* scatterplotPlugin) :
     _exportAction.setDefaultWidgetFlags(TriggerAction::Icon);
 
     connect(&_exportAction, &TriggerAction::triggered, this, [this]() {
-        ExportDialog exportDialog(nullptr, *_scatterplotPlugin);
+        ExportImageDialog exportDialog(nullptr, *_scatterplotPlugin);
 
         exportDialog.exec();
     });
+
+    // Load default settings
+    loadDefault();
 }
 
 QMenu* SettingsAction::getContextMenu()

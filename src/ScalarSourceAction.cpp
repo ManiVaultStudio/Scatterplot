@@ -17,8 +17,8 @@ ScalarSourceAction::ScalarSourceAction(ScatterplotPlugin* scatterplotPlugin, con
     _offsetAction(this, "Offset", 0.0f, 100.0f, 0.0f, 0.0f, 2),
     _rangeAction(this, "Scalar range")
 {
-    _scatterplotPlugin->addAction(&_pickerAction);
-    _scatterplotPlugin->addAction(&_dimensionPickerAction);
+    _scatterplotPlugin->getWidget().addAction(&_pickerAction);
+    _scatterplotPlugin->getWidget().addAction(&_dimensionPickerAction);
 
     // Configure scalar option picker
     _pickerAction.setCustomModel(&_model);

@@ -310,13 +310,14 @@ void ScatterplotWidget::createScreenshot(std::int32_t width, std::int32_t height
     makeCurrent();
 
     try {
+
+        // Use custom FBO format
         QOpenGLFramebufferObjectFormat fboFormat;
-        fboFormat.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
+        
         fboFormat.setTextureTarget(GL_TEXTURE_2D);
         fboFormat.setInternalTextureFormat(GL_RGB);
 
-
-        QOpenGLFramebufferObject fbo(width, height, fboFormat);// , QOpenGLFramebufferObject::NoAttachment, QImage::Format_RGB32);
+        QOpenGLFramebufferObject fbo(width, height, fboFormat);
 
         // Bind the FBO and render into it when successfully bound
         if (fbo.bind()) {
@@ -351,13 +352,7 @@ void ScatterplotWidget::createScreenshot(std::int32_t width, std::int32_t height
             }
 
             // Save FBO image to disk
-            //fbo.toImage(false, QImage::Format_RGB32).convertToFormat(QImage::Format_RGB32).save(fileName);
-            //fbo.toImage(false, QImage::Format_ARGB32).save(fileName);
-
-            QImage fboImage(fbo.toImage());
-            QImage image(fboImage.constBits(), fboImage.width(), fboImage.height(), QImage::Format_ARGB32);
-
-            image.save(fileName);
+            fbo.toImage().save(fileName);
 
             // Resize OpenGL back to original OpenGL widget size
             resizeGL(this->width(), this->height());

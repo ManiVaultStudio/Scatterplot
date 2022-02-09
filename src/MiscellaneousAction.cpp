@@ -13,7 +13,7 @@ MiscellaneousAction::MiscellaneousAction(ScatterplotPlugin* scatterplotPlugin) :
 {
     setIcon(Application::getIconFont("FontAwesome").getIcon("cog"));
 
-    _scatterplotPlugin->addAction(&_backgroundColorAction);
+    _scatterplotPlugin->getWidget().addAction(&_backgroundColorAction);
 
     _backgroundColorAction.setColor(DEFAULT_BACKGROUND_COLOR);
     _backgroundColorAction.setDefaultColor(DEFAULT_BACKGROUND_COLOR);

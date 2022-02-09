@@ -3,18 +3,17 @@
 #include "ExportImageAction.h"
 
 #include <QDialog>
-#include <QTabWidget>
 
 class ScatterplotPlugin;
 
 /**
- * Export dialog class
+ * Export image dialog class
  *
  * Dialog for exporting to image/video
  *
  * @author Thomas Kroes
  */
-class ExportDialog : public QDialog
+class ExportImageDialog : public QDialog
 {
 public:
 
@@ -23,7 +22,7 @@ public:
      * @param parent Pointer to parent widget
      * @param scatterplotPlugin Reference to scatterplot plugin
      */
-    ExportDialog(QWidget* parent, ScatterplotPlugin& scatterplotPlugin);
+    ExportImageDialog(QWidget* parent, ScatterplotPlugin& scatterplotPlugin);
 
     /** Get preferred size */
     QSize sizeHint() const override {

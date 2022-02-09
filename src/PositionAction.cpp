@@ -16,8 +16,8 @@ PositionAction::PositionAction(ScatterplotPlugin* scatterplotPlugin) :
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("ruler-combined"));
 
     // Add actions to scatter plot plugin (for shortcuts)
-    _scatterplotPlugin->addAction(&_xDimensionPickerAction);
-    _scatterplotPlugin->addAction(&_yDimensionPickerAction);
+    _scatterplotPlugin->getWidget().addAction(&_xDimensionPickerAction);
+    _scatterplotPlugin->getWidget().addAction(&_yDimensionPickerAction);
 
     // Set tooltips
     _xDimensionPickerAction.setToolTip("X dimension");

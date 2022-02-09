@@ -26,17 +26,10 @@ const QMap<ExportImageAction::Scale, float> ExportImageAction::scaleFactors = QM
     { ExportImageAction::Eight, 8.0f }
 });
 
-QString ExportImageAction::SETTING_KEY_OUTPUT_DIR           = "Export/Image/OutputDir";
-QString ExportImageAction::SETTING_KEY_LOCK_ASPECT_RATIO    = "Export/Image/LockAspectRatio";
-QString ExportImageAction::SETTING_KEY_BACKGROUND_COLOR     = "Export/Image/BackgroundColor";
-QString ExportImageAction::SETTING_KEY_OPEN_AFTER_CREATION  = "Export/Image/OpenScreenshotAfterCreation";
-QString ExportImageAction::SETTING_KEY_ENABLED_DIMENSION    = "Export/Image/EnabledDimensions";
-
 ExportImageAction::ExportImageAction(QObject* parent, ScatterplotPlugin& scatterplotPlugin) :
     GroupAction(parent),
     _scatterplotPlugin(scatterplotPlugin),
     _dimensionSelectionAction(this),
-    _setDefaultDimensionsAction(this),
     _targetWidthAction(this, "Width ", 1, 10000),
     _targetHeightAction(this, "Height", 1, 10000),
     _lockAspectRatioAction(this, "Lock aspect ratio", true, true),
@@ -46,21 +39,19 @@ ExportImageAction::ExportImageAction(QObject* parent, ScatterplotPlugin& scatter
     _fixedRangeAction(this, "Fixed range"),
     _fileNamePrefixAction(this, "Filename prefix", scatterplotPlugin.getPositionDataset()->getGuiName() + "_", scatterplotPlugin.getPositionDataset()->getGuiName() + "_"),
     _statusAction(this, "Status"),
-    _outputDirectoryAction(this, "Save to"),
+    _outputDirectoryAction(this, "Ouput"),
     _exportCancelAction(this, "", { TriggersAction::Trigger("Export", "Export dimensions"), TriggersAction::Trigger("Cancel", "Cancel export")  }),
     _aspectRatio()
 {
-    _dimensionSelectionAction.setMayReset(false);
-    _targetWidthAction.setMayReset(false);
-    _targetHeightAction.setMayReset(false);
-    _lockAspectRatioAction.setMayReset(false);
-    _scaleAction.setMayReset(false);
-    _backgroundColorAction.setMayReset(false);
-    _overrideRangesAction.setMayReset(false);
-    _fixedRangeAction.setMayReset(false);
-    _fileNamePrefixAction.setMayReset(false);
-    _outputDirectoryAction.setMayReset(false);
-    _exportCancelAction.setMayReset(false);
+    setText("Export");
+
+    _targetWidthAction.setSerializable(false);
+    _targetHeightAction.setSerializable(false);
+    _scaleAction.setSerializable(false);
+    _statusAction.setSerializable(false);
+    _exportCancelAction.setSerializable(false);
+
+    _dimensionSelectionAction.setObjectName("Dimensions/" + scatterplotPlugin.getPositionDataset()->getGuiName());
 
     _targetWidthAction.setSuffix("px");
     _targetHeightAction.setSuffix("px");
@@ -75,7 +66,6 @@ ExportImageAction::ExportImageAction(QObject* parent, ScatterplotPlugin& scatter
 
     // Updates the aspect ratio
     const auto updateAspectRatio = [this]() -> void {
-        _scatterplotPlugin.setSetting(SETTING_KEY_LOCK_ASPECT_RATIO, _lockAspectRatioAction.isChecked());
         _aspectRatio = static_cast<float>(_targetHeightAction.getValue()) / static_cast<float>(_targetWidthAction.getValue());
     };
 
@@ -102,14 +92,6 @@ ExportImageAction::ExportImageAction(QObject* parent, ScatterplotPlugin& scatter
         scale(scaleFactors.values().at(triggerIndex));
     });
 
-    // Load directory from settings
-    _outputDirectoryAction.setDirectory(_scatterplotPlugin.getSetting(SETTING_KEY_OUTPUT_DIR).toString());
-
-    // Save directory to settings when the current directory changes
-    connect(&_outputDirectoryAction, &DirectoryPickerAction::directoryChanged, this, [this](const QString& directory) {
-        _scatterplotPlugin.setSetting(SETTING_KEY_OUTPUT_DIR, directory);
-    });
-
     // Create the screenshot when the create action is triggered
     connect(&_exportCancelAction, &TriggersAction::triggered, this, [this](std::int32_t triggerIndex) {
         switch (triggerIndex)
@@ -127,15 +109,6 @@ ExportImageAction::ExportImageAction(QObject* parent, ScatterplotPlugin& scatter
         
     });
 
-    // Load from settings
-    _lockAspectRatioAction.setChecked(_scatterplotPlugin.getSetting(SETTING_KEY_LOCK_ASPECT_RATIO, true).toBool());
-    _backgroundColorAction.setColor(_scatterplotPlugin.getSetting(SETTING_KEY_BACKGROUND_COLOR, QVariant::fromValue(QColor(Qt::white))).value<QColor>());
-
-    // Save the background color setting when the action is changed
-    connect(&_backgroundColorAction, &ColorAction::colorChanged, this, [this](const QColor& color) {
-        _scatterplotPlugin.setSetting(SETTING_KEY_BACKGROUND_COLOR, color);
-    });
-
     // Update fixed range read-only
     const auto updateFixedRangeReadOnly = [this]() {
         _fixedRangeAction.setEnabled(_overrideRangesAction.isChecked());
@@ -148,9 +121,6 @@ ExportImageAction::ExportImageAction(QObject* parent, ScatterplotPlugin& scatter
     connect(&_fileNamePrefixAction, &StringAction::stringChanged, this, &ExportImageAction::updateExportTrigger);
     connect(&_outputDirectoryAction, &DirectoryPickerAction::directoryChanged, this, &ExportImageAction::updateExportTrigger);
 
-    // Save selected dimensions when the action is triggered
-    connect(&_setDefaultDimensionsAction, &TriggerAction::triggered, this, &ExportImageAction::setDefaultDimensions);
-
     // Perform initialization of actions
     updateAspectRatio();
     updateTargetHeightAction();
@@ -158,6 +128,11 @@ ExportImageAction::ExportImageAction(QObject* parent, ScatterplotPlugin& scatter
 
     initializeTargetSize();
     updateDimensionsPickerAction();
+
+    // Load default settings
+    loadDefault();
+
+    updateExportTrigger();
 }
 
 void ExportImageAction::initializeTargetSize()
@@ -173,9 +148,6 @@ void ExportImageAction::initializeTargetSize()
 
 void ExportImageAction::exportImages()
 {
-    // Get output dir from settings
-    const auto outputDir = _scatterplotPlugin.getSetting(SETTING_KEY_OUTPUT_DIR, "/").toString();
-
     // Get reference to the coloring action
     auto& coloringAction = _scatterplotPlugin.getSettingsAction().getColoringAction();
 
@@ -261,6 +233,9 @@ void ExportImageAction::exportImages()
 
     // Update status message
     _statusAction.setMessage("Exported " + QString::number(numberOfExportedImages) + " image" + (numberOfExportedImages > 1 ? "s" : ""), true);
+
+    // Save default settings
+    saveDefault();
 }
 
 void ExportImageAction::updateDimensionsPickerAction()
@@ -273,9 +248,6 @@ void ExportImageAction::updateDimensionsPickerAction()
 
     // Initial update of export trigger
     updateExportTrigger();
-
-    // Update the set default dimensions action to reflect the new name of the position dataset
-    _setDefaultDimensionsAction.setText("Set default dimensions for " + _scatterplotPlugin.getPositionDataset()->getGuiName());
 }
 
 bool ExportImageAction::mayExport() const
@@ -283,7 +255,7 @@ bool ExportImageAction::mayExport() const
     if (_fileNamePrefixAction.getString().isEmpty())
         return false;
 
-    if (!QDir(_outputDirectoryAction.getDirectory()).exists())
+    if (!_outputDirectoryAction.isValid())
         return false;
 
     if (getNumberOfSelectedDimensions() == 0)
@@ -306,19 +278,4 @@ void ExportImageAction::updateExportTrigger()
     _exportCancelAction.setTriggerText(0, getNumberOfSelectedDimensions() == 0 ? "Nothing to export" : "Export (" + QString::number(getNumberOfSelectedDimensions()) + ")");
     _exportCancelAction.setTriggerTooltip(0, getNumberOfSelectedDimensions() == 0 ? "There are no images selected to export" : "Export " + QString::number(getNumberOfSelectedDimensions()) + " image" + (getNumberOfSelectedDimensions() >= 2 ? "s" : "") + " to disk");
     _exportCancelAction.setTriggerEnabled(0, mayExport());
-}
-
-void ExportImageAction::setDefaultDimensions()
-{
-    QVariantList enabledDimensions;
-
-    for (const auto& enabledDimension : _dimensionSelectionAction.getEnabledDimensions())
-        enabledDimensions.push_back(QVariant(enabledDimension));
-
-    _scatterplotPlugin.setSetting(getEnabledDimensionsSettingsKey(), enabledDimensions);
-}
-
-QString ExportImageAction::getEnabledDimensionsSettingsKey() const
-{
-    return SETTING_KEY_ENABLED_DIMENSION + "/" + _scatterplotPlugin.getPositionDataset()->getGuiName();
 }

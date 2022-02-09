@@ -13,8 +13,8 @@ DensityPlotAction::DensityPlotAction(ScatterplotPlugin* scatterplotPlugin) :
 {
     setToolTip("Density plot settings");
 
-    _scatterplotPlugin->addAction(&_sigmaAction);
-    _scatterplotPlugin->addAction(&_continuousUpdatesAction);
+    _scatterplotPlugin->getWidget().addAction(&_sigmaAction);
+    _scatterplotPlugin->getWidget().addAction(&_continuousUpdatesAction);
 
     const auto computeDensity = [this]() -> void {
         getScatterplotWidget().setSigma(0.01 * _sigmaAction.getValue());
