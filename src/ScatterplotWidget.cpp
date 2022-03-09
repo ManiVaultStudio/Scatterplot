@@ -373,11 +373,13 @@ void ScatterplotWidget::initializeGL()
 {
     initializeOpenGLFunctions();
 
+#ifdef SCATTER_PLOT_WIDGET_VERBOSE
     qDebug() << "Initializing scatterplot widget with context: " << context();
 
     std::string versionString = std::string((const char*) glGetString(GL_VERSION));
 
     qDebug() << versionString.c_str();
+#endif
 
     connect(context(), &QOpenGLContext::aboutToBeDestroyed, this, &ScatterplotWidget::cleanup);
 

@@ -45,12 +45,6 @@ ExportImageAction::ExportImageAction(QObject* parent, ScatterplotPlugin& scatter
 {
     setText("Export");
 
-    _targetWidthAction.setSerializable(false);
-    _targetHeightAction.setSerializable(false);
-    _scaleAction.setSerializable(false);
-    _statusAction.setSerializable(false);
-    _exportCancelAction.setSerializable(false);
-
     _dimensionSelectionAction.setObjectName("Dimensions/" + scatterplotPlugin.getPositionDataset()->getGuiName());
 
     _targetWidthAction.setSuffix("px");
@@ -128,9 +122,6 @@ ExportImageAction::ExportImageAction(QObject* parent, ScatterplotPlugin& scatter
 
     initializeTargetSize();
     updateDimensionsPickerAction();
-
-    // Load default settings
-    loadDefault();
 
     updateExportTrigger();
 }
@@ -233,9 +224,6 @@ void ExportImageAction::exportImages()
 
     // Update status message
     _statusAction.setMessage("Exported " + QString::number(numberOfExportedImages) + " image" + (numberOfExportedImages > 1 ? "s" : ""), true);
-
-    // Save default settings
-    saveDefault();
 }
 
 void ExportImageAction::updateDimensionsPickerAction()

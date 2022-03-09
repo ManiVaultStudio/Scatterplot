@@ -303,7 +303,7 @@ void ColoringAction::updateScatterplotWidgetColorMap()
             else {
 
                 // Update the scatter plot widget with the color map
-                getScatterplotWidget().setColorMap(_colorMapAction.getColorMapImage());
+                getScatterplotWidget().setColorMap(_colorMapAction.getColorMapImage().mirrored(false, true));
             }
 
             break;

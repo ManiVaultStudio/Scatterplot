@@ -39,9 +39,6 @@ SettingsAction::SettingsAction(ScatterplotPlugin* scatterplotPlugin) :
 
         exportDialog.exec();
     });
-
-    // Load default settings
-    loadDefault();
 }
 
 QMenu* SettingsAction::getContextMenu()

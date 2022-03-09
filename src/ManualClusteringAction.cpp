@@ -63,7 +63,7 @@ ManualClusteringAction::ManualClusteringAction(ScatterplotPlugin* scatterplotPlu
         targetClusterDataset->addCluster(cluster);
 
         // Notify others that the cluster data has changed
-        Application::core()->notifyDataChanged(targetClusterDataset);
+        Application::core()->notifyDatasetChanged(targetClusterDataset);
 
         // Reset the cluster name input
         _nameAction.reset();
@@ -92,7 +92,7 @@ void ManualClusteringAction::createDefaultClusterDataset()
     const auto defaultClusters = Application::core()->addDataset<Clusters>("Cluster", "Clusters (manual)", _scatterplotPlugin->getPositionDataset());
 
     // Notify others that the default set was added
-    Application::core()->notifyDataAdded(defaultClusters);
+    Application::core()->notifyDatasetAdded(defaultClusters);
 
     // Update picker
     updateTargetClusterDatasets();
