@@ -246,7 +246,7 @@ void ScatterplotPlugin::createSubset(const bool& fromSourceData /*= false*/, con
     auto subsetPoints = _positionDataset->getSourceDataset<Points>();
 
     // Create the subset
-    auto subset = subsetPoints->createSubset(_positionDataset->getGuiName(), _positionDataset);
+    auto subset = subsetPoints->createSubsetFromSelection(_positionDataset->getGuiName(), _positionDataset);
 
     // Notify others that the subset was added
     _core->notifyDatasetAdded(subset);
