@@ -8,7 +8,7 @@ using namespace hdps::gui;
 
 DensityPlotAction::DensityPlotAction(ScatterplotPlugin* scatterplotPlugin) :
     PluginAction(scatterplotPlugin, "Density"),
-    _sigmaAction(this, "Sigma", 0.1, 50.0, DEFAULT_SIGMA, DEFAULT_SIGMA, 2),
+    _sigmaAction(this, "Sigma", 0.01, 0.5, DEFAULT_SIGMA, DEFAULT_SIGMA, 3),
     _continuousUpdatesAction(this, "Live Updates", DEFAULT_CONTINUOUS_UPDATES, DEFAULT_CONTINUOUS_UPDATES)
 {
     setToolTip("Density plot settings");
@@ -17,7 +17,7 @@ DensityPlotAction::DensityPlotAction(ScatterplotPlugin* scatterplotPlugin) :
     _scatterplotPlugin->getWidget().addAction(&_continuousUpdatesAction);
 
     const auto computeDensity = [this]() -> void {
-        getScatterplotWidget().setSigma(0.01 * _sigmaAction.getValue());
+        getScatterplotWidget().setSigma(_sigmaAction.getValue());
 
         const auto maxDensity = getScatterplotWidget().getDensityRenderer().getMaxDensity();
 

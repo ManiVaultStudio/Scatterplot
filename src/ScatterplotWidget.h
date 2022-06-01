@@ -86,6 +86,11 @@ public:
 
     void setScalarEffect(PointEffect effect);
     void setPointScaling(hdps::gui::PointScaling scalingMode);
+
+    /**
+     * Set sigma value for kernel density esitmation.
+     * @param sigma kernel width as a fraction of the output square width. Typical values are [0.01 .. 0.5]
+     */
     void setSigma(const float sigma);
 
     Bounds getBounds() const {
