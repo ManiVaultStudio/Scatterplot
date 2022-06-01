@@ -17,7 +17,7 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
     _colorByModel(this),
     _colorByAction(this, "Color by"),
     _constantColorAction(this, "Constant color", DEFAULT_CONSTANT_COLOR, DEFAULT_CONSTANT_COLOR),
-    _dimensionAction(this, "Points"),
+    _dimensionAction(this, "Dim"),
     _colorMapAction(this, "Color map")
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("palette"));
@@ -379,6 +379,7 @@ ColoringAction::Widget::Widget(QWidget* parent, ColoringAction* coloringAction, 
     auto labelWidget            = coloringAction->getColorByAction().createLabelWidget(this);
     auto colorByWidget          = coloringAction->getColorByAction().createWidget(this);
     auto colorByConstantWidget  = coloringAction->getConstantColorAction().createWidget(this);
+    auto dimensionPickerLabelWidget = coloringAction->getDimensionAction().createLabelWidget(this);
     auto dimensionPickerWidget  = coloringAction->getDimensionAction().createWidget(this);
 
     // Adjust width of the constant color widget
@@ -395,7 +396,8 @@ ColoringAction::Widget::Widget(QWidget* parent, ColoringAction* coloringAction, 
         layout->addWidget(labelWidget, 0, 0);
         layout->addWidget(colorByWidget, 0, 1);
         layout->addWidget(colorByConstantWidget, 0, 2);
-        layout->addWidget(dimensionPickerWidget, 0, 3);
+        layout->addWidget(dimensionPickerLabelWidget, 0, 3);
+        layout->addWidget(dimensionPickerWidget, 0, 4);
 
         setPopupLayout(layout);
     }
@@ -406,6 +408,7 @@ ColoringAction::Widget::Widget(QWidget* parent, ColoringAction* coloringAction, 
         layout->addWidget(labelWidget);
         layout->addWidget(colorByWidget);
         layout->addWidget(colorByConstantWidget);
+        layout->addWidget(dimensionPickerLabelWidget);
         layout->addWidget(dimensionPickerWidget);
 
         setLayout(layout);
