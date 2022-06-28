@@ -174,7 +174,7 @@ void ScatterplotPlugin::init()
 {
     auto layout = new QVBoxLayout();
 
-    layout->setMargin(0);
+    layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
     layout->addWidget(_settingsAction.createWidget(&getWidget()));
     layout->addWidget(_scatterPlotWidget, 100);
@@ -185,7 +185,7 @@ void ScatterplotPlugin::init()
     bottomToolbarWidget->setAutoFillBackground(true);
     bottomToolbarWidget->setLayout(bottomToolbarLayout);
 
-    bottomToolbarLayout->setMargin(4);
+    bottomToolbarLayout->setContentsMargins(0, 0, 0, 0);
     bottomToolbarLayout->addWidget(_settingsAction.getColoringAction().getColorMapAction().createLabelWidget(&getWidget()));
     bottomToolbarLayout->addWidget(_settingsAction.getColoringAction().getColorMapAction().createWidget(&getWidget()));
     bottomToolbarLayout->addWidget(_settingsAction.getPlotAction().getPointPlotAction().getFocusSelection().createWidget(&getWidget()));
