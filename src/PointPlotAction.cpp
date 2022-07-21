@@ -332,8 +332,8 @@ void PointPlotAction::updateScatterPlotWidgetPointSizeScalars()
                 }
                 else {
 
-                    // Zero division, so reset all point size scalars to zero
-                    std::fill(_pointSizeScalars.begin(), _pointSizeScalars.end(), 0.0f);
+                    // Zero division since rangeMin == rangeMax, so reset all point size scalars to constant value
+                    std::fill(_pointSizeScalars.begin(), _pointSizeScalars.end(), _sizeAction.getSourceAction().getOffsetAction().getValue() + (rangeMin * _sizeAction.getMagnitudeAction().getValue()));
                 }
             });
         }
