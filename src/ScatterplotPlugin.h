@@ -28,7 +28,7 @@ namespace hdps
 class ScatterplotPlugin : public ViewPlugin
 {
     Q_OBJECT
-    
+
 public:
     ScatterplotPlugin(const PluginFactory* factory);
     ~ScatterplotPlugin() override;
@@ -104,11 +104,11 @@ private:
     Dataset<Points>                 _positionSourceDataset;     /** Smart pointer to source of the points dataset for point position (if any) */
     std::vector<hdps::Vector2f>     _positions;                 /** Point positions */
     unsigned int                    _numPoints;                 /** Number of point positions */
-    
-    
+
+
 protected:
-    ScatterplotWidget*          _scatterPlotWidget;
-    hdps::gui::DropWidget*      _dropWidget;
+    ScatterplotWidget* _scatterPlotWidget;
+    hdps::gui::DropWidget* _dropWidget;
     SettingsAction              _settingsAction;
 };
 
@@ -119,10 +119,10 @@ protected:
 class ScatterplotPluginFactory : public ViewPluginFactory
 {
     Q_INTERFACES(hdps::plugin::ViewPluginFactory hdps::plugin::PluginFactory)
-    Q_OBJECT
-    Q_PLUGIN_METADATA(IID   "nl.tudelft.ScatterplotPlugin"
-                      FILE  "ScatterplotPlugin.json")
-    
+        Q_OBJECT
+        Q_PLUGIN_METADATA(IID   "nl.tudelft.ScatterplotPlugin"
+            FILE  "ScatterplotPlugin.json")
+
 public:
     ScatterplotPluginFactory(void) {}
     ~ScatterplotPluginFactory(void) override {}
@@ -132,5 +132,10 @@ public:
 
     ViewPlugin* produce() override;
 
-    hdps::DataTypes supportedDataTypes() const override;
+    /**
+     * Get a list of producer actions given a sequence of input datasets
+     * @param datasets Sequence of input datasets (order in which they were selected in the data hierarchy)
+     * @return List of producer actions with which one (or more) plugins can be triggered
+     */
+    QList<QAction*> getProducers(const hdps::Datasets& datasets) const override;
 };
