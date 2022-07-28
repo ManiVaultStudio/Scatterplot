@@ -544,9 +544,9 @@ void ScatterplotPlugin::setYDimension(const std::int32_t& dimensionIndex)
     updateData();
 }
 
-QIcon ScatterplotPluginFactory::getIcon() const
+QIcon ScatterplotPluginFactory::getIcon(const QColor& color /*= Qt::black*/) const
 {
-    return Application::getIconFont("FontAwesome").getIcon("braille");
+    return Application::getIconFont("FontAwesome").getIcon("braille", color);
 }
 
 ViewPlugin* ScatterplotPluginFactory::produce()
