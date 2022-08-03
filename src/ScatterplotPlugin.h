@@ -2,7 +2,8 @@
 
 #include <ViewPlugin.h>
 
-#include "util/PixelSelectionTool.h"
+#include <util/PixelSelectionTool.h>
+#include <actions/TriggerAction.h>
 
 #include "Common.h"
 
@@ -10,6 +11,7 @@
 
 using namespace hdps::plugin;
 using namespace hdps::util;
+using namespace hdps::gui;
 
 class Points;
 
@@ -137,9 +139,9 @@ public:
     ViewPlugin* produce() override;
 
     /**
-     * Get a list of producer actions given a sequence of input datasets
+     * Get a list of producer trigger actions given a sequence of input datasets
      * @param datasets Sequence of input datasets (order in which they were selected in the data hierarchy)
-     * @return List of producer actions with which one (or more) plugins can be triggered
+     * @return List of producer trigger actions with which one (or more) plugins can be triggered
      */
-    QList<QAction*> getProducers(const hdps::Datasets& datasets) const override;
+    QList<TriggerAction*> getProducers(const hdps::Datasets& datasets) const override;
 };

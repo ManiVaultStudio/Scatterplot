@@ -554,9 +554,9 @@ ViewPlugin* ScatterplotPluginFactory::produce()
     return new ScatterplotPlugin(this);
 }
 
-QList<QAction*> ScatterplotPluginFactory::getProducers(const hdps::Datasets& datasets) const
+QList<TriggerAction*> ScatterplotPluginFactory::getProducers(const hdps::Datasets& datasets) const
 {
-    QList<QAction*> producerActions;
+    QList<TriggerAction*> producerActions;
 
     const auto getInstance = [this]() -> ScatterplotPlugin* {
         return dynamic_cast<ScatterplotPlugin*>(Application::core()->requestPlugin(getKind()));
