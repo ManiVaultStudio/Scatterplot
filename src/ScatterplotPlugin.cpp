@@ -566,7 +566,7 @@ PluginTriggerActions ScatterplotPluginFactory::getPluginTriggerActions(const hdp
 
     const auto numberOfDatasets = datasets.count();
 
-    if (PluginFactory::areAllDatasetsOfTheSameType(datasets, "Points")) {
+    if (PluginFactory::areAllDatasetsOfTheSameType(datasets, PointType)) {
         if (numberOfDatasets == 1) {
             auto pluginTriggerAction = createPluginTriggerAction("Scatterplot", "Load selected dataset in scatter plot viewer", datasets, "braille");
 
@@ -588,8 +588,8 @@ PluginTriggerActions ScatterplotPluginFactory::getPluginTriggerActions(const hdp
         }
     }
 
-    const auto numberOfPointsDatasets   = PluginFactory::getNumberOfDatasetsForType(datasets, "Points");
-    const auto numberOfClusterDatasets  = PluginFactory::getNumberOfDatasetsForType(datasets, "Cluster");
+    const auto numberOfPointsDatasets   = PluginFactory::getNumberOfDatasetsForType(datasets, PointType);
+    const auto numberOfClusterDatasets  = PluginFactory::getNumberOfDatasetsForType(datasets, ClusterType);
 
     if (numberOfPointsDatasets == numberOfClusterDatasets) {
         QRegularExpression re("(Points, Clusters)");
