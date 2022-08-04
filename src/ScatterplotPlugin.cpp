@@ -13,6 +13,8 @@
 #include "graphics/Vector3f.h"
 #include "widgets/DropWidget.h"
 
+#include <actions/PluginTriggerAction.h>
+
 #include <QtCore>
 #include <QApplication>
 #include <QDebug>
@@ -554,9 +556,9 @@ ViewPlugin* ScatterplotPluginFactory::produce()
     return new ScatterplotPlugin(this);
 }
 
-QList<TriggerAction*> ScatterplotPluginFactory::getProducers(const hdps::Datasets& datasets) const
+QList<PluginTriggerAction*> ScatterplotPluginFactory::getPluginTriggerActions(const hdps::Datasets& datasets) const
 {
-    QList<TriggerAction*> producerActions;
+    QList<PluginTriggerAction*> pluginTriggerActions;
 
     const auto getInstance = [this]() -> ScatterplotPlugin* {
         return dynamic_cast<ScatterplotPlugin*>(Application::core()->requestPlugin(getKind()));
@@ -566,50 +568,48 @@ QList<TriggerAction*> ScatterplotPluginFactory::getProducers(const hdps::Dataset
 
     if (PluginFactory::areAllDatasetsOfTheSameType(datasets, "Points")) {
         if (numberOfDatasets == 1) {
-            auto producerAction = createProducerAction("Scatterplot", "Load selected dataset in scatter plot viewer", "braille");
+            auto pluginTriggerAction = createPluginTriggerAction("Scatterplot", "Load selected dataset in scatter plot viewer", datasets, "braille");
 
-            connect(producerAction, &QAction::triggered, [this, getInstance, datasets]() -> void {
+            connect(pluginTriggerAction, &QAction::triggered, [this, getInstance, datasets]() -> void {
                 getInstance()->loadData(datasets);
-                });
+            });
 
-            producerActions << producerAction;
+            pluginTriggerActions << pluginTriggerAction;
         }
         else {
-            auto producerAction = createProducerAction("Side-by-side", "View selected datasets side-by-side in separate scatter plot viewers", "braille");
+            auto pluginTriggerAction = createPluginTriggerAction("Side-by-side", "View selected datasets side-by-side in separate scatter plot viewers", datasets, "braille");
 
-            connect(producerAction, &QAction::triggered, [this, getInstance, datasets]() -> void {
+            connect(pluginTriggerAction, &QAction::triggered, [this, getInstance, datasets]() -> void {
                 for (auto dataset : datasets)
                     getInstance()->loadData(Datasets({ dataset }));
                 });
 
-            producerActions << producerAction;
+            pluginTriggerActions << pluginTriggerAction;
         }
     }
 
-    const auto numberOfPointsDatasets = PluginFactory::getNumberOfDatasetsForType(datasets, "Points");
-    const auto numberOfClusterDatasets = PluginFactory::getNumberOfDatasetsForType(datasets, "Cluster");
+    const auto numberOfPointsDatasets   = PluginFactory::getNumberOfDatasetsForType(datasets, "Points");
+    const auto numberOfClusterDatasets  = PluginFactory::getNumberOfDatasetsForType(datasets, "Cluster");
 
-
-    // (Points Clusters)
     if (numberOfPointsDatasets == numberOfClusterDatasets) {
         QRegularExpression re("(Points, Clusters)");
 
         const auto reMatch = re.match(PluginFactory::getDatasetTypesAsStringList(datasets).join(","));
 
         if (reMatch.hasMatch() && reMatch.captured().count() == numberOfPointsDatasets) {
-            auto producerAction = createProducerAction("Scatterplot", "Load points dataset in separate viewer and apply cluster", "braille");
+            auto pluginTriggerAction = createPluginTriggerAction("Scatterplot", "Load points dataset in separate viewer and apply cluster", datasets, "braille");
 
-            connect(producerAction, &QAction::triggered, [this, getInstance, datasets, numberOfPointsDatasets]() -> void {
+            connect(pluginTriggerAction, &QAction::triggered, [this, getInstance, datasets, numberOfPointsDatasets]() -> void {
 
                 for (int i = 0; i < numberOfPointsDatasets; i++) {
                     getInstance()->loadData(Datasets({ datasets[i * 2] }));
                     getInstance()->loadColors(Dataset<Clusters>(datasets[i * 2 + 1]));
                 }
-                });
+            });
 
-            producerActions << producerAction;
+            pluginTriggerActions << pluginTriggerAction;
         }
     }
 
-    return producerActions;
+    return pluginTriggerActions;
 }
