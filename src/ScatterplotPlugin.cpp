@@ -291,8 +291,8 @@ void ScatterplotPlugin::selectPoints()
     // Loop over all points and establish whether they are selected or not
     for (std::uint32_t i = 0; i < _positions.size(); i++) {
         const auto uvNormalized = QPointF((_positions[i].x - dataBounds.getLeft()) / dataBounds.getWidth(), (dataBounds.getTop() - _positions[i].y) / dataBounds.getHeight());
-        const auto uvOffset = QPoint((selectionAreaImage.width() - size) / 2.0f, (selectionAreaImage.height() - size) / 2.0f);
-        const auto uv = uvOffset + QPoint(uvNormalized.x() * size, uvNormalized.y() * size);
+        const auto uvOffset     = QPoint((selectionAreaImage.width() - size) / 2.0f, (selectionAreaImage.height() - size) / 2.0f);
+        const auto uv           = uvOffset + QPoint(uvNormalized.x() * size, uvNormalized.y() * size);
 
         // Add point if the corresponding pixel selection is on
         if (selectionAreaImage.pixelColor(uv).alpha() > 0)
@@ -576,7 +576,8 @@ PluginTriggerActions ScatterplotPluginFactory::getPluginTriggerActions(const hdp
 
             pluginTriggerActions << pluginTriggerAction;
         }
-        else {
+        
+        if (numberOfDatasets >= 2) {
             auto pluginTriggerAction = createPluginTriggerAction("Side-by-side", "View selected datasets side-by-side in separate scatter plot viewers", datasets, "braille");
 
             connect(pluginTriggerAction, &QAction::triggered, [this, getInstance, datasets]() -> void {
@@ -588,6 +589,7 @@ PluginTriggerActions ScatterplotPluginFactory::getPluginTriggerActions(const hdp
         }
     }
 
+    /*
     const auto numberOfPointsDatasets   = PluginFactory::getNumberOfDatasetsForType(datasets, PointType);
     const auto numberOfClusterDatasets  = PluginFactory::getNumberOfDatasetsForType(datasets, ClusterType);
 
@@ -610,6 +612,7 @@ PluginTriggerActions ScatterplotPluginFactory::getPluginTriggerActions(const hdp
             pluginTriggerActions << pluginTriggerAction;
         }
     }
+    */
 
     return pluginTriggerActions;
 }
