@@ -510,6 +510,7 @@ void ScatterplotPlugin::calculatePositions(const Points& points)
 
 void ScatterplotPlugin::updateSelection()
 {
+    /*
     if (!_positionDataset.isValid())
         return;
 
@@ -526,6 +527,7 @@ void ScatterplotPlugin::updateSelection()
         highlights[i] = selected[i] ? 1 : 0;
 
     _scatterPlotWidget->setHighlights(highlights, static_cast<std::int32_t>(selection->indices.size()));
+    */
 }
 
 std::uint32_t ScatterplotPlugin::getNumberOfPoints() const
