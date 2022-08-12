@@ -41,7 +41,8 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     _numPoints(0),
     _scatterPlotWidget(new ScatterplotWidget()),
     _dropWidget(nullptr),
-    _settingsAction(this)
+    _settingsAction(this),
+    _selectPointsTimer()
 {
     setObjectName("Scatterplot");
 
@@ -60,7 +61,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
         _positionDataset->populateContextMenu(contextMenu);
 
         contextMenu->exec(getWidget().mapToGlobal(point));
-        });
+    });
 
     _dropWidget->setDropIndicatorWidget(new DropWidget::DropIndicatorWidget(&getWidget(), "No data loaded", "Drag an item from the data hierarchy and drop it here to visualize data..."));
     _dropWidget->initialize([this](const QMimeData* mimeData) -> DropWidget::DropRegions {
@@ -165,7 +166,18 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
         }
 
         return dropRegions;
-        });
+    });
+
+    _selectPointsTimer.setSingleShot(true);
+
+    connect(&_selectPointsTimer, &QTimer::timeout, this, [this]() -> void {
+        if (_selectPointsTimer.isActive())
+            _selectPointsTimer.start(LAZY_UPDATE_INTERVAL);
+        else {
+            _selectPointsTimer.stop();
+            selectPoints();
+        }
+    });
 }
 
 ScatterplotPlugin::~ScatterplotPlugin()
@@ -205,16 +217,16 @@ void ScatterplotPlugin::init()
     // Update the selection when the pixel selection tool selected area changed
     connect(&_scatterPlotWidget->getPixelSelectionTool(), &PixelSelectionTool::areaChanged, [this]() {
         if (_scatterPlotWidget->getPixelSelectionTool().isNotifyDuringSelection())
-            selectPoints();
-        });
+            _selectPointsTimer.start(LAZY_UPDATE_INTERVAL);
+    });
 
     // Update the selection when the pixel selection process ended
     connect(&_scatterPlotWidget->getPixelSelectionTool(), &PixelSelectionTool::ended, [this]() {
         if (_scatterPlotWidget->getPixelSelectionTool().isNotifyDuringSelection())
             return;
 
-        selectPoints();
-        });
+        _selectPointsTimer.start(LAZY_UPDATE_INTERVAL);
+    });
 
     // Load points when the pointer to the position dataset changes
     connect(&_positionDataset, &Dataset<Points>::changed, this, &ScatterplotPlugin::positionDatasetChanged);
@@ -524,7 +536,6 @@ void ScatterplotPlugin::updateSelection()
         highlights[i] = selected[i] ? 1 : 0;
 
     _scatterPlotWidget->setHighlights(highlights, static_cast<std::int32_t>(selection->indices.size()));
-    /**/
 }
 
 std::uint32_t ScatterplotPlugin::getNumberOfPoints() const

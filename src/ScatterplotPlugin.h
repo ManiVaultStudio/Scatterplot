@@ -9,6 +9,8 @@
 
 #include "SettingsAction.h"
 
+#include <QTimer>
+
 using namespace hdps::plugin;
 using namespace hdps::util;
 using namespace hdps::gui;
@@ -106,7 +108,9 @@ private:
     Dataset<Points>                 _positionSourceDataset;     /** Smart pointer to source of the points dataset for point position (if any) */
     std::vector<hdps::Vector2f>     _positions;                 /** Point positions */
     unsigned int                    _numPoints;                 /** Number of point positions */
+    QTimer                          _selectPointsTimer;         /** Timer to limit the refresh rate of selection updates */
 
+    static const std::int32_t LAZY_UPDATE_INTERVAL = 2;
 
 protected:
     ScatterplotWidget* _scatterPlotWidget;
