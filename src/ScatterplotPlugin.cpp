@@ -304,57 +304,57 @@ void ScatterplotPlugin::selectPoints()
 
     switch (selectionModifier)
     {
-    case PixelSelectionModifierType::Replace:
-        break;
-
-    case PixelSelectionModifierType::Add:
-    case PixelSelectionModifierType::Remove:
-    {
-        // Get reference to the indices of the selection set
-        auto& selectionSetIndices = selectionSet->indices;
-
-        // Create a set from the selection set indices
-        QSet<std::uint32_t> set(selectionSetIndices.begin(), selectionSetIndices.end());
-
-        switch (selectionModifier)
-        {
-            // Add points to the current selection
-        case PixelSelectionModifierType::Add:
-        {
-            // Add indices to the set 
-            for (const auto& targetIndex : targetSelectionIndices)
-                set.insert(targetIndex);
-
+        case PixelSelectionModifierType::Replace:
             break;
-        }
 
-        // Remove points from the current selection
+        case PixelSelectionModifierType::Add:
         case PixelSelectionModifierType::Remove:
         {
-            // Remove indices from the set 
-            for (const auto& targetIndex : targetSelectionIndices)
-                set.remove(targetIndex);
+            // Get reference to the indices of the selection set
+            auto& selectionSetIndices = selectionSet->indices;
+
+            // Create a set from the selection set indices
+            QSet<std::uint32_t> set(selectionSetIndices.begin(), selectionSetIndices.end());
+
+            switch (selectionModifier)
+            {
+                // Add points to the current selection
+            case PixelSelectionModifierType::Add:
+            {
+                // Add indices to the set 
+                for (const auto& targetIndex : targetSelectionIndices)
+                    set.insert(targetIndex);
+
+                break;
+            }
+
+            // Remove points from the current selection
+            case PixelSelectionModifierType::Remove:
+            {
+                // Remove indices from the set 
+                for (const auto& targetIndex : targetSelectionIndices)
+                    set.remove(targetIndex);
+
+                break;
+            }
+
+            default:
+                break;
+            }
+
+            // Convert set back to vector
+            targetSelectionIndices = std::vector<std::uint32_t>(set.begin(), set.end());
 
             break;
         }
 
         default:
             break;
-        }
-
-        // Convert set back to vector
-        targetSelectionIndices = std::vector<std::uint32_t>(set.begin(), set.end());
-
-        break;
-    }
-
-    default:
-        break;
     }
 
     _positionDataset->setSelectionIndices(targetSelectionIndices);
 
-    _core->notifyDatasetSelectionChanged(_positionDataset);
+    _core->notifyDatasetSelectionChanged(_positionDataset->getSourceDataset<Points>());
 }
 
 void ScatterplotPlugin::updateWindowTitle()
