@@ -77,8 +77,8 @@ SettingsAction::Widget::Widget(QWidget* parent, SettingsAction* settingsAction) 
     addStateWidget(&settingsAction->_plotAction, 7);
     addStateWidget(&settingsAction->_positionAction, 10);
     addStateWidget(&settingsAction->_coloringAction, 8);
-    //addStateWidget(&settingsAction->_subsetAction, 3);
-    //addStateWidget(&settingsAction->_manualClusteringAction, 0);
+    addStateWidget(&settingsAction->_subsetAction, 3);
+    addStateWidget(&settingsAction->_manualClusteringAction, 0);
     addStateWidget(&settingsAction->_selectionAction, 2);
 
     _toolBarLayout.addStretch(1);
