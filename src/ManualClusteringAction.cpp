@@ -25,13 +25,6 @@ ManualClusteringAction::ManualClusteringAction(ScatterplotPlugin* scatterplotPlu
     _addClusterAction.setToolTip("Add cluster");
     _targetClusterDataset.setToolTip("Target cluster set");
 
-    const auto updateActions = [this]() -> void {
-        const auto positionDataset = _scatterplotPlugin->getPositionDataset();
-        //setEnabled(positionDataset.isValid() && positionDataset->getSelectionSize() >= 1);
-    };
-
-    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::dataSelectionChanged, this, updateActions);
-
     // Update actions when the cluster name changed
     connect(&_nameAction, &StringAction::stringChanged, this, &ManualClusteringAction::updateActions);
 

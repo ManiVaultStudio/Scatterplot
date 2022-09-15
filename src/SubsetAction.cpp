@@ -18,13 +18,6 @@ SubsetAction::SubsetAction(ScatterplotPlugin* scatterplotPlugin) :
     _subsetNameAction.setToolTip("Name of the subset");
     _createSubsetAction.setToolTip("Create subset from selected data points");
 
-    const auto updateActions = [this]() -> void {
-        const auto positionDataset = _scatterplotPlugin->getPositionDataset();
-        setEnabled(positionDataset.isValid() && positionDataset->getSelectionSize() >= 1);
-    };
-
-    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::dataSelectionChanged, this, updateActions);
-
     connect(&_createSubsetAction, &QAction::triggered, this, [this]() {
         _scatterplotPlugin->createSubset(_sourceDataAction.getCurrentIndex() == 1, _subsetNameAction.getString());
     });
@@ -53,7 +46,6 @@ SubsetAction::SubsetAction(ScatterplotPlugin* scatterplotPlugin) :
     connect(&scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, onCurrentDatasetChanged);
 
     onCurrentDatasetChanged();
-    updateActions();
 }
 
 QMenu* SubsetAction::getContextMenu()
