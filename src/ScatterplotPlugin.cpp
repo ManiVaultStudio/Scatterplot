@@ -588,7 +588,7 @@ PluginTriggerActions ScatterplotPluginFactory::getPluginTriggerActions(const hdp
 
     if (PluginFactory::areAllDatasetsOfTheSameType(datasets, PointType)) {
         if (numberOfDatasets >= 1) {
-            auto pluginTriggerAction = createPluginTriggerAction("View/Scatterplot", "View selected datasets side-by-side in separate scatter plot viewers", datasets, "braille");
+            auto pluginTriggerAction = createPluginTriggerAction("Scatterplot", "View selected datasets side-by-side in separate scatter plot viewers", datasets, "braille");
 
             connect(pluginTriggerAction, &QAction::triggered, [this, getInstance, datasets]() -> void {
                 for (auto dataset : datasets)
