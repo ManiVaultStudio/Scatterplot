@@ -1,6 +1,7 @@
 #include "CurrentDatasetAction.h"
 #include "ScatterplotPlugin.h"
 #include "PointData.h"
+#include "ClusterData.h"
 
 #include <QMenu>
 
@@ -9,11 +10,12 @@ using namespace hdps::gui;
 
 CurrentDatasetAction::CurrentDatasetAction(ScatterplotPlugin* scatterplotPlugin) :
     PluginAction(scatterplotPlugin, "Datasets"),
-    _datasetPickerAction(this, "Position")
+    _positionDatasetPickerAction(this, "Position"),
+    _clusterDatasetPickerAction(this, "Cluster")
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("database"));
 
-    _datasetPickerAction.setDatasetsFilterFunction([](const hdps::Datasets& datasets) -> Datasets {
+    _positionDatasetPickerAction.setDatasetsFilterFunction([](const hdps::Datasets& datasets) -> Datasets {
         Datasets pointDatasets;
 
         for (auto dataset : datasets)
@@ -23,12 +25,12 @@ CurrentDatasetAction::CurrentDatasetAction(ScatterplotPlugin* scatterplotPlugin)
         return pointDatasets;
     });
 
-    connect(&_datasetPickerAction, &DatasetPickerAction::datasetPicked, [this](Dataset<DatasetImpl> pickedDataset) -> void {
+    connect(&_positionDatasetPickerAction, &DatasetPickerAction::datasetPicked, [this](Dataset<DatasetImpl> pickedDataset) -> void {
         _scatterplotPlugin->getPositionDataset() = pickedDataset;
     });
 
     connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, [this](DatasetImpl* dataset) -> void {
-        _datasetPickerAction.setCurrentDataset(dataset);
+        _positionDatasetPickerAction.setCurrentDataset(dataset);
     });
 }
 
@@ -39,8 +41,8 @@ CurrentDatasetAction::Widget::Widget(QWidget* parent, CurrentDatasetAction* curr
 
     auto layout = new QHBoxLayout();
 
-    layout->addWidget(currentDatasetAction->_datasetPickerAction.createLabelWidget(this));
-    layout->addWidget(currentDatasetAction->_datasetPickerAction.createWidget(this));
+    layout->addWidget(currentDatasetAction->_positionDatasetPickerAction.createLabelWidget(this));
+    layout->addWidget(currentDatasetAction->_positionDatasetPickerAction.createWidget(this));
 
     if (widgetFlags & PopupLayout)
     {

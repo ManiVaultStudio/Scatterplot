@@ -23,7 +23,8 @@ public:
     CurrentDatasetAction(ScatterplotPlugin* scatterplotPlugin);
 
 protected:
-    DatasetPickerAction	_datasetPickerAction;
+    DatasetPickerAction	_positionDatasetPickerAction;
+    DatasetPickerAction	_clusterDatasetPickerAction;
 
     friend class Widget;
 };

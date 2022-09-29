@@ -76,6 +76,7 @@ public:
 
     QMenu* getContextMenu();
 
+    CurrentDatasetAction& getCurrentDatasetAction() { return _currentDatasetAction; }
     RenderModeAction& getRenderModeAction() { return _renderModeAction; }
     PositionAction& getPositionAction() { return _positionAction; }
     ColoringAction& getColoringAction() { return _coloringAction; }

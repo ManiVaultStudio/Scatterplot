@@ -375,6 +375,36 @@ void ScatterplotWidget::createScreenshot(std::int32_t width, std::int32_t height
     }
 }
 
+float ScatterplotWidget::getSelectionOutlineScale() const
+{
+    return _pointRenderer.getSelectionOutlineScale();
+}
+
+void ScatterplotWidget::setSelectionOutlineScale(float selectionOutlineScale)
+{
+    _pointRenderer.setSelectionOutlineScale(selectionOutlineScale);
+
+    update();
+}
+
+QColor ScatterplotWidget::getSelectionOutlineColor() const
+{
+    QColor haloColor;
+
+    haloColor.setRedF(_pointRenderer.getOutlineColor().x);
+    haloColor.setGreenF(_pointRenderer.getOutlineColor().y);
+    haloColor.setBlueF(_pointRenderer.getOutlineColor().z);
+
+    return haloColor;
+}
+
+void ScatterplotWidget::setSelectionOutlineColor(const QColor& selectionOutlineColor)
+{
+    _pointRenderer.setOutlineColor(Vector3f(selectionOutlineColor.redF(), selectionOutlineColor.greenF(), selectionOutlineColor.blueF()));
+
+    update();
+}
+
 void ScatterplotWidget::initializeGL()
 {
     initializeOpenGLFunctions();
