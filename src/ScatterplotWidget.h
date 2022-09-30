@@ -123,6 +123,30 @@ public: // Selection
     void setSelectionOutlineEnabled(bool selectionOutlineEnabled);
 
     /**
+     * Get the selection outline color
+     * @return Color of the selection outline
+     */
+    QColor getSelectionOutlineColor() const;
+
+    /**
+     * Set the selection outline color
+     * @param selectionOutlineColor Selection outline color
+     */
+    void setSelectionOutlineColor(const QColor& selectionOutlineColor);
+
+    /**
+     * Get whether the selection outline color should be the point color or a custom color
+     * @return Boolean determining whether the selection outline color should be the point color or a custom color
+     */
+    bool getSelectionOutlineOverrideColor() const;
+
+    /**
+     * Set whether the selection outline color should be the point color or a custom color
+     * @param selectionOutlineOverrideColor Boolean determining whether the selection outline color should be the point color or a custom color
+     */
+    void setSelectionOutlineOverrideColor(bool selectionOutlineOverrideColor);
+
+    /**
      * Get the selection outline scale
      * @return Scale of the selection outline
      */
@@ -147,28 +171,16 @@ public: // Selection
     void setSelectionOutlineOpacity(float selectionOutlineOpacity);
 
     /**
-     * Get the selection outline color
-     * @return Color of the selection outline
+     * Get whether the selection outline halo is enabled or not
+     * @return Boolean determining whether the selection outline halo is enabled or not
      */
-    QColor getSelectionOutlineColor() const;
+    bool getSelectionOutlineHaloEnabled() const;
 
     /**
-     * Set the selection outline color
-     * @param selectionOutlineColor Selection outline color
+     * Set whether the selection outline halo is enabled or not
+     * @param selectionOutlineHaloEnabled Boolean determining whether the selection outline halo is enabled or not
      */
-    void setSelectionOutlineColor(const QColor& selectionOutlineColor);
-
-    /**
-     * Get whether the selection halo is enabled or not
-     * @return Boolean determining whether the selection halo is enabled or not
-     */
-    bool getSelectionHaloEnabled() const;
-
-    /**
-     * Set whether the selection halo is enabled or not
-     * @param selectionHaloEnabled Boolean determining whether the selection halo is enabled or not
-     */
-    void setSelectionHaloEnabled(bool selectionHaloEnabled);
+    void setSelectionOutlineHaloEnabled(bool selectionOutlineHaloEnabled);
 
 protected:
     void initializeGL()         Q_DECL_OVERRIDE;
