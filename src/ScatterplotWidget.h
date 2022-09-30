@@ -135,6 +135,18 @@ public: // Selection
     void setSelectionOutlineScale(float selectionOutlineScale);
 
     /**
+     * Get the selection outline opacity
+     * @return Opacity of the selection outline
+     */
+    float getSelectionOutlineOpacity() const;
+
+    /**
+     * Set the selection outline opacity
+     * @param selectionOutlineOpacity Opacity of the selection outline
+     */
+    void setSelectionOutlineOpacity(float selectionOutlineOpacity);
+
+    /**
      * Get the selection outline color
      * @return Color of the selection outline
      */
@@ -157,18 +169,6 @@ public: // Selection
      * @param selectionHaloEnabled Boolean determining whether the selection halo is enabled or not
      */
     void setSelectionHaloEnabled(bool selectionHaloEnabled);
-
-    /**
-     * Get the selection halo scale
-     * @return Scale of the selection halo
-     */
-    float getSelectionHaloScale() const;
-
-    /**
-     * Set the selection halo scale
-     * @param selectionHaloScale Scale of the selection halo
-     */
-    void setSelectionHaloScale(float selectionHaloScale);
 
 protected:
     void initializeGL()         Q_DECL_OVERRIDE;

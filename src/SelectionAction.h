@@ -31,13 +31,13 @@ public:
 public:
     ToggleAction& getOutlineEnabledAction() { return _outlineEnabledAction; }
     DecimalAction& getOutlineScaleAction() { return _outlineScaleAction; }
+    DecimalAction& getOutlineOpacityAction() { return _outlineOpacityAction; }
     ToggleAction& getHaloEnabledAction() { return _haloEnabledAction; }
-    DecimalAction& getHaloScaleAction() { return _haloScaleAction; }
 
 protected:
-    ScatterplotPlugin&  _scatterplotPlugin;     /** Reference to scatter plot plugin */
-    ToggleAction        _outlineEnabledAction;  /** Selection outline enabled action */
-    DecimalAction       _outlineScaleAction;    /** Selection outline scale action */
-    ToggleAction        _haloEnabledAction;     /** Selection halo enabled action */
-    DecimalAction       _haloScaleAction;       /** Selection halo scale action */
+    ScatterplotPlugin&  _scatterplotPlugin;         /** Reference to scatter plot plugin */
+    ToggleAction        _outlineEnabledAction;      /** Selection outline enabled action */
+    DecimalAction       _outlineScaleAction;        /** Selection outline scale action */
+    DecimalAction       _outlineOpacityAction;      /** Selection outline opacity action */
+    ToggleAction        _haloEnabledAction;         /** Selection halo enabled action */
 };

@@ -399,6 +399,18 @@ void ScatterplotWidget::setSelectionOutlineScale(float selectionOutlineScale)
     update();
 }
 
+float ScatterplotWidget::getSelectionOutlineOpacity() const
+{
+    return _pointRenderer.getSelectionOutlineOpacity();
+}
+
+void ScatterplotWidget::setSelectionOutlineOpacity(float selectionOutlineOpacity)
+{
+    _pointRenderer.setSelectionOutlineOpacity(selectionOutlineOpacity);
+
+    update();
+}
+
 QColor ScatterplotWidget::getSelectionOutlineColor() const
 {
     QColor haloColor;
@@ -425,18 +437,6 @@ bool ScatterplotWidget::getSelectionHaloEnabled() const
 void ScatterplotWidget::setSelectionHaloEnabled(bool selectionHaloEnabled)
 {
     _pointRenderer.setSelectionHaloEnabled(selectionHaloEnabled);
-
-    update();
-}
-
-float ScatterplotWidget::getSelectionHaloScale() const
-{
-    return _pointRenderer.getSelectionHaloScale();
-}
-
-void ScatterplotWidget::setSelectionHaloScale(float selectionHaloScale)
-{
-    _pointRenderer.setSelectionHaloScale(selectionHaloScale);
 
     update();
 }
