@@ -22,12 +22,21 @@ const auto allowedPixelSelectionTypes = PixelSelectionTypes({
 SelectionAction::SelectionAction(ScatterplotPlugin& scatterplotPlugin) :
     PixelSelectionAction(&scatterplotPlugin, &scatterplotPlugin.getScatterplotWidget(), scatterplotPlugin.getScatterplotWidget().getPixelSelectionTool(), allowedPixelSelectionTypes),
     _scatterplotPlugin(scatterplotPlugin),
-    _showOutlineAction(this, "Show outline", true, true),
-    _outlineScaleAction(this, "Outline scale", 0.0f, 100.0f, 50.0f, 50.0f, 2)
+    _outlineEnabledAction(this, "Show outline", true, true),
+    _outlineScaleAction(this, "Outline scale", 0.0f, 500.0f, 120.0f, 120.0f, 2),
+    _haloEnabledAction(this, "Show halo"),
+    _haloScaleAction(this, "Halo scale", 100.0f, 1000.0f, 200.0f, 200.0f, 2)
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("mouse-pointer"));
     
     _outlineScaleAction.setSuffix("%");
+    _haloScaleAction.setSuffix("%");
+
+    _outlineEnabledAction.setChecked(_scatterplotPlugin.getScatterplotWidget().getSelectionOutlineEnabled());
+    _outlineScaleAction.setValue(100.0f * _scatterplotPlugin.getScatterplotWidget().getSelectionOutlineScale());
+
+    _haloEnabledAction.setChecked(_scatterplotPlugin.getScatterplotWidget().getSelectionHaloEnabled());
+    _haloScaleAction.setValue(100.0f * _scatterplotPlugin.getScatterplotWidget().getSelectionHaloScale());
 
     connect(&getSelectAllAction(), &QAction::triggered, [this]() {
         if (_scatterplotPlugin.getPositionDataset().isValid())
@@ -44,8 +53,20 @@ SelectionAction::SelectionAction(ScatterplotPlugin& scatterplotPlugin) :
             _scatterplotPlugin.getPositionDataset()->selectInvert();
     });
 
+    connect(&_outlineEnabledAction, &ToggleAction::toggled, [this](bool toggled) {
+        _scatterplotPlugin.getScatterplotWidget().setSelectionOutlineEnabled(toggled);
+    });
+
     connect(&_outlineScaleAction, &DecimalAction::valueChanged, [this](float value) {
         _scatterplotPlugin.getScatterplotWidget().setSelectionOutlineScale(0.01f * value);
+    });
+
+    connect(&_haloEnabledAction, &ToggleAction::toggled, [this](bool toggled) {
+        _scatterplotPlugin.getScatterplotWidget().setSelectionHaloEnabled(toggled);
+    });
+
+    connect(&_haloScaleAction, &DecimalAction::valueChanged, [this](float value) {
+        _scatterplotPlugin.getScatterplotWidget().setSelectionHaloScale(0.01f * value);
     });
 
     getOverlayColorAction().setText("Outline color");
@@ -58,25 +79,14 @@ SelectionAction::SelectionAction(ScatterplotPlugin& scatterplotPlugin) :
 SelectionAction::Widget::Widget(QWidget* parent, SelectionAction* selectionAction, const std::int32_t& widgetFlags) :
     WidgetActionWidget(parent, selectionAction, widgetFlags)
 {
-    auto typeWidget                     = selectionAction->getTypeAction().createWidget(this);
-    auto brushRadiusWidget              = selectionAction->getBrushRadiusAction().createWidget(this);
-    auto modifierAddWidget              = selectionAction->getModifierAddAction().createWidget(this, ToggleAction::PushButtonIcon);
-    auto modifierSubtractWidget         = selectionAction->getModifierSubtractAction().createWidget(this, ToggleAction::PushButtonIcon);
-    auto clearSelectionWidget           = selectionAction->getClearSelectionAction().createWidget(this);
-    auto selectAllWidget                = selectionAction->getSelectAllAction().createWidget(this);
-    auto invertSelectionWidget          = selectionAction->getInvertSelectionAction().createWidget(this);
-    auto notifyDuringSelectionWidget    = selectionAction->getNotifyDuringSelectionAction().createWidget(this);
-    auto showOutlineWidget              = selectionAction->_showOutlineAction.createWidget(this);
-    auto outlineScaleWidget             = selectionAction->_outlineScaleAction.createWidget(this);
-
     if (widgetFlags & PopupLayout) {
         const auto getTypeWidget = [&, this]() -> QWidget* {
             auto layout = new QHBoxLayout();
 
             layout->setContentsMargins(0, 0, 0, 0);
-            layout->addWidget(typeWidget);
-            layout->addWidget(modifierAddWidget);
-            layout->addWidget(modifierSubtractWidget);
+            layout->addWidget(selectionAction->getTypeAction().createWidget(this));
+            layout->addWidget(selectionAction->getModifierAddAction().createWidget(this, ToggleAction::PushButtonIcon));
+            layout->addWidget(selectionAction->getModifierSubtractAction().createWidget(this, ToggleAction::PushButtonIcon));
             layout->itemAt(0)->widget()->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
             auto widget = new QWidget();
@@ -90,9 +100,9 @@ SelectionAction::Widget::Widget(QWidget* parent, SelectionAction* selectionActio
             auto layout = new QHBoxLayout();
 
             layout->setContentsMargins(0, 0, 0, 0);
-            layout->addWidget(clearSelectionWidget);
-            layout->addWidget(selectAllWidget);
-            layout->addWidget(invertSelectionWidget);
+            layout->addWidget(selectionAction->getClearSelectionAction().createWidget(this));
+            layout->addWidget(selectionAction->getSelectAllAction().createWidget(this));
+            layout->addWidget(selectionAction->getInvertSelectionAction().createWidget(this));
             layout->addStretch(1);
 
             auto widget = new QWidget();
@@ -107,14 +117,21 @@ SelectionAction::Widget::Widget(QWidget* parent, SelectionAction* selectionActio
         layout->addWidget(selectionAction->getTypeAction().createLabelWidget(this), 0, 0);
         layout->addWidget(getTypeWidget(), 0, 1);
         layout->addWidget(selectionAction->_brushRadiusAction.createLabelWidget(this), 1, 0);
-        layout->addWidget(brushRadiusWidget, 1, 1);
+        layout->addWidget(selectionAction->getBrushRadiusAction().createWidget(this), 1, 1);
         layout->addWidget(getSelectWidget(), 2, 1);
-        layout->addWidget(notifyDuringSelectionWidget, 3, 1);
-        //layout->addWidget(showOutlineWidget, 4, 1);
+        layout->addWidget(selectionAction->getNotifyDuringSelectionAction().createWidget(this), 3, 1);
+        
         layout->addWidget(selectionAction->getOverlayColorAction().createLabelWidget(this), 4, 0);
         layout->addWidget(selectionAction->getOverlayColorAction().createWidget(this), 4, 1);
-        layout->addWidget(selectionAction->_outlineScaleAction.createLabelWidget(this), 5, 0);
-        layout->addWidget(outlineScaleWidget, 6, 1);
+        
+        layout->addWidget(selectionAction->getOutlineEnabledAction().createWidget(this), 5, 1);
+        layout->addWidget(selectionAction->getOutlineScaleAction().createLabelWidget(this), 6, 0);
+        layout->addWidget(selectionAction->getOutlineScaleAction().createWidget(this), 6, 1);
+
+        layout->addWidget(selectionAction->getHaloEnabledAction().createWidget(this), 7, 1);
+        layout->addWidget(selectionAction->getHaloScaleAction().createLabelWidget(this), 8, 0);
+        layout->addWidget(selectionAction->getHaloScaleAction().createWidget(this), 8, 1);
+
         layout->itemAtPosition(1, 1)->widget()->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
         setPopupLayout(layout);
@@ -123,15 +140,16 @@ SelectionAction::Widget::Widget(QWidget* parent, SelectionAction* selectionActio
         auto layout = new QHBoxLayout();
 
         layout->setContentsMargins(0, 0, 0, 0);
-        layout->addWidget(typeWidget);
-        layout->addWidget(brushRadiusWidget);
-        layout->addWidget(modifierAddWidget);
-        layout->addWidget(modifierSubtractWidget);
-        layout->addWidget(clearSelectionWidget);
-        layout->addWidget(selectAllWidget);
-        layout->addWidget(invertSelectionWidget);
-        layout->addWidget(notifyDuringSelectionWidget);
-        layout->addWidget(outlineScaleWidget);
+
+        layout->addWidget(selectionAction->getTypeAction().createWidget(this));
+        layout->addWidget(selectionAction->getBrushRadiusAction().createWidget(this));
+        layout->addWidget(selectionAction->getModifierAddAction().createWidget(this, ToggleAction::PushButtonIcon));
+        layout->addWidget(selectionAction->getModifierSubtractAction().createWidget(this, ToggleAction::PushButtonIcon));
+        layout->addWidget(selectionAction->getClearSelectionAction().createWidget(this));
+        layout->addWidget(selectionAction->getSelectAllAction().createWidget(this));
+        layout->addWidget(selectionAction->getInvertSelectionAction().createWidget(this));
+        layout->addWidget(selectionAction->getNotifyDuringSelectionAction().createWidget(this));
+        layout->addWidget(selectionAction->_outlineScaleAction.createWidget(this));
 
         setLayout(layout);
     }

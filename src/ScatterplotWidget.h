@@ -108,7 +108,19 @@ public:
      */
     void createScreenshot(std::int32_t width, std::int32_t height, const QString& fileName, const QColor& backgroundColor);
 
-public: // Selection outline
+public: // Selection
+
+    /**
+     * Get whether the selection outline is enabled or not
+     * @return Boolean determining whether the selection outline is enabled or not
+     */
+    bool getSelectionOutlineEnabled() const;
+
+    /**
+     * Set whether the selection outline is enabled or not
+     * @param selectionHaloEnabled Boolean determining whether the selection outline is enabled or not
+     */
+    void setSelectionOutlineEnabled(bool selectionOutlineEnabled);
 
     /**
      * Get the selection outline scale
@@ -133,6 +145,30 @@ public: // Selection outline
      * @param selectionOutlineColor Selection outline color
      */
     void setSelectionOutlineColor(const QColor& selectionOutlineColor);
+
+    /**
+     * Get whether the selection halo is enabled or not
+     * @return Boolean determining whether the selection halo is enabled or not
+     */
+    bool getSelectionHaloEnabled() const;
+
+    /**
+     * Set whether the selection halo is enabled or not
+     * @param selectionHaloEnabled Boolean determining whether the selection halo is enabled or not
+     */
+    void setSelectionHaloEnabled(bool selectionHaloEnabled);
+
+    /**
+     * Get the selection halo scale
+     * @return Scale of the selection halo
+     */
+    float getSelectionHaloScale() const;
+
+    /**
+     * Set the selection halo scale
+     * @param selectionHaloScale Scale of the selection halo
+     */
+    void setSelectionHaloScale(float selectionHaloScale);
 
 protected:
     void initializeGL()         Q_DECL_OVERRIDE;

@@ -375,6 +375,18 @@ void ScatterplotWidget::createScreenshot(std::int32_t width, std::int32_t height
     }
 }
 
+bool ScatterplotWidget::getSelectionOutlineEnabled() const
+{
+    return _pointRenderer.getSelectionOutlineEnabled();
+}
+
+void ScatterplotWidget::setSelectionOutlineEnabled(bool selectionOutlineEnabled)
+{
+    _pointRenderer.setSelectionOutlineEnabled(selectionOutlineEnabled);
+
+    update();
+}
+
 float ScatterplotWidget::getSelectionOutlineScale() const
 {
     return _pointRenderer.getSelectionOutlineScale();
@@ -401,6 +413,30 @@ QColor ScatterplotWidget::getSelectionOutlineColor() const
 void ScatterplotWidget::setSelectionOutlineColor(const QColor& selectionOutlineColor)
 {
     _pointRenderer.setOutlineColor(Vector3f(selectionOutlineColor.redF(), selectionOutlineColor.greenF(), selectionOutlineColor.blueF()));
+
+    update();
+}
+
+bool ScatterplotWidget::getSelectionHaloEnabled() const
+{
+    return _pointRenderer.getSelectionHaloEnabled();
+}
+
+void ScatterplotWidget::setSelectionHaloEnabled(bool selectionHaloEnabled)
+{
+    _pointRenderer.setSelectionHaloEnabled(selectionHaloEnabled);
+
+    update();
+}
+
+float ScatterplotWidget::getSelectionHaloScale() const
+{
+    return _pointRenderer.getSelectionHaloScale();
+}
+
+void ScatterplotWidget::setSelectionHaloScale(float selectionHaloScale)
+{
+    _pointRenderer.setSelectionHaloScale(selectionHaloScale);
 
     update();
 }
