@@ -159,6 +159,7 @@ public: // Selection
     void setSelectionOutlineScale(float selectionOutlineScale);
 
     /**
+<<<<<<< HEAD
      * Get the selection outline opacity
      * @return Opacity of the selection outline
      */

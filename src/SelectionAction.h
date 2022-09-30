@@ -33,7 +33,7 @@ public:
     ToggleAction& getOutlineOverrideColorAction() { return _outlineOverrideColorAction; }
     DecimalAction& getOutlineScaleAction() { return _outlineScaleAction; }
     DecimalAction& getOutlineOpacityAction() { return _outlineOpacityAction; }
-    ToggleAction& getHaloEnabledAction() { return _haloEnabledAction; }
+    ToggleAction& getOutlineHaloEnabledAction() { return _outlineHaloEnabledAction; }
 
 protected:
     ScatterplotPlugin&  _scatterplotPlugin;             /** Reference to scatter plot plugin */
@@ -41,5 +41,5 @@ protected:
     ToggleAction        _outlineOverrideColorAction;    /** Selection outline override color action */
     DecimalAction       _outlineScaleAction;            /** Selection outline scale action */
     DecimalAction       _outlineOpacityAction;          /** Selection outline opacity action */
-    ToggleAction        _haloEnabledAction;             /** Selection halo enabled action */
+    ToggleAction        _outlineHaloEnabledAction;      /** Selection outline halo enabled action */
 };

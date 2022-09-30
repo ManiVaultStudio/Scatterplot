@@ -26,7 +26,7 @@ SelectionAction::SelectionAction(ScatterplotPlugin& scatterplotPlugin) :
     _outlineOverrideColorAction(this, "Custom color", true, true),
     _outlineScaleAction(this, "Scale", 100.0f, 500.0f, 200.0f, 200.0f, 1),
     _outlineOpacityAction(this, "Opacity", 0.0f, 100.0f, 100.0f, 100.0f, 1),
-    _haloEnabledAction(this, "Halo")
+    _outlineHaloEnabledAction(this, "Halo")
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("mouse-pointer"));
     
@@ -37,7 +37,7 @@ SelectionAction::SelectionAction(ScatterplotPlugin& scatterplotPlugin) :
     _outlineScaleAction.setValue(100.0f * _scatterplotPlugin.getScatterplotWidget().getSelectionOutlineScale());
     _outlineOpacityAction.setValue(100.0f * _scatterplotPlugin.getScatterplotWidget().getSelectionOutlineOpacity());
 
-    _haloEnabledAction.setChecked(_scatterplotPlugin.getScatterplotWidget().getSelectionOutlineHaloEnabled());
+    _outlineHaloEnabledAction.setChecked(_scatterplotPlugin.getScatterplotWidget().getSelectionOutlineHaloEnabled());
     _outlineOverrideColorAction.setChecked(_scatterplotPlugin.getScatterplotWidget().getSelectionOutlineOverrideColor());
 
     connect(&getSelectAllAction(), &QAction::triggered, [this]() {
@@ -63,7 +63,7 @@ SelectionAction::SelectionAction(ScatterplotPlugin& scatterplotPlugin) :
         _scatterplotPlugin.getScatterplotWidget().setSelectionOutlineOpacity(0.01f * value);
     });
 
-    connect(&_haloEnabledAction, &ToggleAction::toggled, [this](bool toggled) {
+    connect(&_outlineHaloEnabledAction, &ToggleAction::toggled, [this](bool toggled) {
         _scatterplotPlugin.getScatterplotWidget().setSelectionOutlineHaloEnabled(toggled);
     });
 
@@ -76,7 +76,7 @@ SelectionAction::SelectionAction(ScatterplotPlugin& scatterplotPlugin) :
         getOverlayColorAction().setEnabled(_outlineEnabledAction.isChecked() && _outlineOverrideColorAction.isChecked());
         _outlineScaleAction.setEnabled(_outlineEnabledAction.isChecked());
         _outlineOpacityAction.setEnabled(_outlineEnabledAction.isChecked());
-        _haloEnabledAction.setEnabled(_outlineEnabledAction.isChecked());
+        _outlineHaloEnabledAction.setEnabled(_outlineEnabledAction.isChecked());
     };
 
     connect(&_outlineEnabledAction, &ToggleAction::toggled, [this, updateActionsReadOnly](bool toggled) {
@@ -146,7 +146,7 @@ SelectionAction::Widget::Widget(QWidget* parent, SelectionAction* selectionActio
         layout->addWidget(selectionAction->getOutlineOpacityAction().createLabelWidget(this), 8, 0);
         layout->addWidget(selectionAction->getOutlineOpacityAction().createWidget(this), 8, 1);
 
-        layout->addWidget(selectionAction->getHaloEnabledAction().createWidget(this), 9, 1);
+        layout->addWidget(selectionAction->getOutlineHaloEnabledAction().createWidget(this), 9, 1);
 
         layout->itemAtPosition(1, 1)->widget()->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
