@@ -108,43 +108,7 @@ public:
      */
     void createScreenshot(std::int32_t width, std::int32_t height, const QString& fileName, const QColor& backgroundColor);
 
-public: // Selection
-
-    /**
-     * Get whether the selection outline is enabled or not
-     * @return Boolean determining whether the selection outline is enabled or not
-     */
-    bool getSelectionOutlineEnabled() const;
-
-    /**
-     * Set whether the selection outline is enabled or not
-     * @param selectionHaloEnabled Boolean determining whether the selection outline is enabled or not
-     */
-    void setSelectionOutlineEnabled(bool selectionOutlineEnabled);
-
-    /**
-     * Get the selection outline color
-     * @return Color of the selection outline
-     */
-    QColor getSelectionOutlineColor() const;
-
-    /**
-     * Set the selection outline color
-     * @param selectionOutlineColor Selection outline color
-     */
-    void setSelectionOutlineColor(const QColor& selectionOutlineColor);
-
-    /**
-     * Get whether the selection outline color should be the point color or a custom color
-     * @return Boolean determining whether the selection outline color should be the point color or a custom color
-     */
-    bool getSelectionOutlineOverrideColor() const;
-
-    /**
-     * Set whether the selection outline color should be the point color or a custom color
-     * @param selectionOutlineOverrideColor Boolean determining whether the selection outline color should be the point color or a custom color
-     */
-    void setSelectionOutlineOverrideColor(bool selectionOutlineOverrideColor);
+public: // Selection outline
 
     /**
      * Get the selection outline scale
@@ -159,29 +123,16 @@ public: // Selection
     void setSelectionOutlineScale(float selectionOutlineScale);
 
     /**
-<<<<<<< HEAD
-     * Get the selection outline opacity
-     * @return Opacity of the selection outline
+     * Get the selection outline color
+     * @return Color of the selection outline
      */
-    float getSelectionOutlineOpacity() const;
+    QColor getSelectionOutlineColor() const;
 
     /**
-     * Set the selection outline opacity
-     * @param selectionOutlineOpacity Opacity of the selection outline
+     * Set the selection outline color
+     * @param selectionOutlineColor Selection outline color
      */
-    void setSelectionOutlineOpacity(float selectionOutlineOpacity);
-
-    /**
-     * Get whether the selection outline halo is enabled or not
-     * @return Boolean determining whether the selection outline halo is enabled or not
-     */
-    bool getSelectionOutlineHaloEnabled() const;
-
-    /**
-     * Set whether the selection outline halo is enabled or not
-     * @param selectionOutlineHaloEnabled Boolean determining whether the selection outline halo is enabled or not
-     */
-    void setSelectionOutlineHaloEnabled(bool selectionOutlineHaloEnabled);
+    void setSelectionOutlineColor(const QColor& selectionOutlineColor);
 
 protected:
     void initializeGL()         Q_DECL_OVERRIDE;
