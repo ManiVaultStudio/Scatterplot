@@ -2,8 +2,6 @@
 
 #include "actions/PixelSelectionAction.h"
 #include "util/PixelSelectionTool.h"
-#include <actions/ToggleAction.h>
-#include <actions/DecimalAction.h>
 
 #include <QActionGroup>
 #include <QDebug>
@@ -29,7 +27,5 @@ public:
     SelectionAction(ScatterplotPlugin& scatterplotPlugin);
 
 protected:
-    ScatterplotPlugin&  _scatterplotPlugin;     /** Reference to scatter plot plugin */
-    ToggleAction        _showOutlineAction;     /** Show outline action */
-    DecimalAction       _outlineScaleAction;    /** Selection outline scale action */
+    ScatterplotPlugin&  _scatterplotPlugin;         /** Reference to scatter plot plugin */
 };

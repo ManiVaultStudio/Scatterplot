@@ -108,32 +108,6 @@ public:
      */
     void createScreenshot(std::int32_t width, std::int32_t height, const QString& fileName, const QColor& backgroundColor);
 
-public: // Selection outline
-
-    /**
-     * Get the selection outline scale
-     * @return Scale of the selection outline
-     */
-    float getSelectionOutlineScale() const;
-
-    /**
-     * Set the selection outline scale
-     * @param selectionOutlineScale Scale of the selection outline
-     */
-    void setSelectionOutlineScale(float selectionOutlineScale);
-
-    /**
-     * Get the selection outline color
-     * @return Color of the selection outline
-     */
-    QColor getSelectionOutlineColor() const;
-
-    /**
-     * Set the selection outline color
-     * @param selectionOutlineColor Selection outline color
-     */
-    void setSelectionOutlineColor(const QColor& selectionOutlineColor);
-
 protected:
     void initializeGL()         Q_DECL_OVERRIDE;
     void resizeGL(int w, int h) Q_DECL_OVERRIDE;
