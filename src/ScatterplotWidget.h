@@ -111,16 +111,16 @@ public:
 public: // Selection
 
     /**
-     * Get whether the selection outline is enabled or not
-     * @return Boolean determining whether the selection outline is enabled or not
+     * Get the selection display mode color
+     * @return Selection display mode
      */
-    bool getSelectionOutlineEnabled() const;
+    PointSelectionDisplayMode getSelectionDisplayMode() const;
 
     /**
-     * Set whether the selection outline is enabled or not
-     * @param selectionHaloEnabled Boolean determining whether the selection outline is enabled or not
+     * Set the selection display mode
+     * @param selectionDisplayMode Selection display mode
      */
-    void setSelectionOutlineEnabled(bool selectionOutlineEnabled);
+    void setSelectionDisplayMode(PointSelectionDisplayMode selectionDisplayMode);
 
     /**
      * Get the selection outline color

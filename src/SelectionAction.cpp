@@ -20,7 +20,7 @@ const auto allowedPixelSelectionTypes = PixelSelectionTypes({
 SelectionAction::SelectionAction(ScatterplotPlugin& scatterplotPlugin) :
     PixelSelectionAction(&scatterplotPlugin, &scatterplotPlugin.getScatterplotWidget(), scatterplotPlugin.getScatterplotWidget().getPixelSelectionTool(), allowedPixelSelectionTypes),
     _scatterplotPlugin(scatterplotPlugin),
-    _outlineEnabledAction(this, "Show selection", true, true),
+    _displayModeAction(this, "Display mode", { "Outline", "Override" }),
     _outlineOverrideColorAction(this, "Custom color", true, true),
     _outlineScaleAction(this, "Scale", 100.0f, 500.0f, 200.0f, 200.0f, 1),
     _outlineOpacityAction(this, "Opacity", 0.0f, 100.0f, 100.0f, 100.0f, 1),
@@ -28,10 +28,12 @@ SelectionAction::SelectionAction(ScatterplotPlugin& scatterplotPlugin) :
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("mouse-pointer"));
     
+    _displayModeAction.setToolTip("The way in which selection is visualized");
+
     _outlineScaleAction.setSuffix("%");
     _outlineOpacityAction.setSuffix("%");
 
-    _outlineEnabledAction.setChecked(_scatterplotPlugin.getScatterplotWidget().getSelectionOutlineEnabled());
+    _displayModeAction.setCurrentIndex(static_cast<std::int32_t>(_scatterplotPlugin.getScatterplotWidget().getSelectionDisplayMode()));
     _outlineScaleAction.setValue(100.0f * _scatterplotPlugin.getScatterplotWidget().getSelectionOutlineScale());
     _outlineOpacityAction.setValue(100.0f * _scatterplotPlugin.getScatterplotWidget().getSelectionOutlineOpacity());
 
@@ -72,15 +74,15 @@ SelectionAction::SelectionAction(ScatterplotPlugin& scatterplotPlugin) :
     getOverlayColorAction().setText("Color");
 
     const auto updateActionsReadOnly = [this]() -> void {
-        _outlineOverrideColorAction.setEnabled(_outlineEnabledAction.isChecked());
-        getOverlayColorAction().setEnabled(_outlineEnabledAction.isChecked() && _outlineOverrideColorAction.isChecked());
-        _outlineScaleAction.setEnabled(_outlineEnabledAction.isChecked());
-        _outlineOpacityAction.setEnabled(_outlineEnabledAction.isChecked());
-        _outlineHaloEnabledAction.setEnabled(_outlineEnabledAction.isChecked());
+        const auto isOutline = _scatterplotPlugin.getScatterplotWidget().getSelectionDisplayMode() == PointSelectionDisplayMode::Outline;
+
+        _outlineScaleAction.setEnabled(isOutline);
+        _outlineOpacityAction.setEnabled(isOutline);
+        _outlineHaloEnabledAction.setEnabled(isOutline);
     };
 
-    connect(&_outlineEnabledAction, &ToggleAction::toggled, [this, updateActionsReadOnly](bool toggled) {
-        _scatterplotPlugin.getScatterplotWidget().setSelectionOutlineEnabled(toggled);
+    connect(&_displayModeAction, &OptionAction::currentIndexChanged, [this, updateActionsReadOnly](const std::int32_t& currentIndex) {
+        _scatterplotPlugin.getScatterplotWidget().setSelectionDisplayMode(static_cast<PointSelectionDisplayMode>(currentIndex));
         updateActionsReadOnly();
     });
 
@@ -137,16 +139,19 @@ SelectionAction::Widget::Widget(QWidget* parent, SelectionAction* selectionActio
         layout->addWidget(getSelectWidget(), 2, 1);
         layout->addWidget(selectionAction->getNotifyDuringSelectionAction().createWidget(this), 3, 1);
         
-        layout->addWidget(selectionAction->getOutlineEnabledAction().createWidget(this), 4, 1);
         layout->addWidget(selectionAction->getOverlayColorAction().createLabelWidget(this), 5, 0);
         layout->addWidget(selectionAction->getOverlayColorAction().createWidget(this), 5, 1);
-        layout->addWidget(selectionAction->getOutlineOverrideColorAction().createWidget(this), 6, 1);
-        layout->addWidget(selectionAction->getOutlineScaleAction().createLabelWidget(this), 7, 0);
-        layout->addWidget(selectionAction->getOutlineScaleAction().createWidget(this), 7, 1);
-        layout->addWidget(selectionAction->getOutlineOpacityAction().createLabelWidget(this), 8, 0);
-        layout->addWidget(selectionAction->getOutlineOpacityAction().createWidget(this), 8, 1);
 
-        layout->addWidget(selectionAction->getOutlineHaloEnabledAction().createWidget(this), 9, 1);
+        layout->addWidget(selectionAction->getDisplayModeAction().createLabelWidget(this), 6, 0);
+        layout->addWidget(selectionAction->getDisplayModeAction().createWidget(this), 6, 1);
+
+        layout->addWidget(selectionAction->getOutlineOverrideColorAction().createWidget(this), 7, 1);
+        layout->addWidget(selectionAction->getOutlineScaleAction().createLabelWidget(this), 8, 0);
+        layout->addWidget(selectionAction->getOutlineScaleAction().createWidget(this), 8, 1);
+        layout->addWidget(selectionAction->getOutlineOpacityAction().createLabelWidget(this), 9, 0);
+        layout->addWidget(selectionAction->getOutlineOpacityAction().createWidget(this), 9, 1);
+
+        layout->addWidget(selectionAction->getOutlineHaloEnabledAction().createWidget(this), 10, 1);
 
         layout->itemAtPosition(1, 1)->widget()->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
@@ -165,7 +170,7 @@ SelectionAction::Widget::Widget(QWidget* parent, SelectionAction* selectionActio
         layout->addWidget(selectionAction->getSelectAllAction().createWidget(this));
         layout->addWidget(selectionAction->getInvertSelectionAction().createWidget(this));
         layout->addWidget(selectionAction->getNotifyDuringSelectionAction().createWidget(this));
-        layout->addWidget(selectionAction->getOutlineEnabledAction().createWidget(this));
+        layout->addWidget(selectionAction->getDisplayModeAction().createWidget(this));
         layout->addWidget(selectionAction->getOutlineScaleAction().createWidget(this));
         layout->addWidget(selectionAction->getOutlineOpacityAction().createWidget(this));
         layout->addWidget(selectionAction->getOverlayColorAction().createWidget(this));

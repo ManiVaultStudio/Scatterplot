@@ -27,7 +27,7 @@ public:
     SelectionAction(ScatterplotPlugin& scatterplotPlugin);
 
 public:
-    ToggleAction& getOutlineEnabledAction() { return _outlineEnabledAction; }
+    OptionAction& getDisplayModeAction() { return _displayModeAction; }
     ToggleAction& getOutlineOverrideColorAction() { return _outlineOverrideColorAction; }
     DecimalAction& getOutlineScaleAction() { return _outlineScaleAction; }
     DecimalAction& getOutlineOpacityAction() { return _outlineOpacityAction; }
@@ -35,7 +35,7 @@ public:
 
 protected:
     ScatterplotPlugin&  _scatterplotPlugin;             /** Reference to scatter plot plugin */
-    ToggleAction        _outlineEnabledAction;          /** Selection outline enabled action */
+    OptionAction        _displayModeAction;             /** Type of selection display (e.g. outline or override) */
     ToggleAction        _outlineOverrideColorAction;    /** Selection outline override color action */
     DecimalAction       _outlineScaleAction;            /** Selection outline scale action */
     DecimalAction       _outlineOpacityAction;          /** Selection outline opacity action */

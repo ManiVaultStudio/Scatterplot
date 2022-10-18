@@ -375,14 +375,14 @@ void ScatterplotWidget::createScreenshot(std::int32_t width, std::int32_t height
     }
 }
 
-bool ScatterplotWidget::getSelectionOutlineEnabled() const
+PointSelectionDisplayMode ScatterplotWidget::getSelectionDisplayMode() const
 {
-    return _pointRenderer.getSelectionOutlineEnabled();
+    return _pointRenderer.getSelectionDisplayMode();
 }
 
-void ScatterplotWidget::setSelectionOutlineEnabled(bool selectionOutlineEnabled)
+void ScatterplotWidget::setSelectionDisplayMode(PointSelectionDisplayMode selectionDisplayMode)
 {
-    _pointRenderer.setSelectionOutlineEnabled(selectionOutlineEnabled);
+    _pointRenderer.setSelectionDisplayMode(selectionDisplayMode);
 
     update();
 }
