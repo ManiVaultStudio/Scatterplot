@@ -11,6 +11,7 @@ using namespace hdps::gui;
 
 SettingsAction::SettingsAction(ScatterplotPlugin* scatterplotPlugin) :
     PluginAction(scatterplotPlugin, "Settings"),
+    _currentDatasetAction(scatterplotPlugin),
     _renderModeAction(scatterplotPlugin),
     _positionAction(scatterplotPlugin),
     _coloringAction(scatterplotPlugin),
@@ -24,7 +25,15 @@ SettingsAction::SettingsAction(ScatterplotPlugin* scatterplotPlugin) :
     setText("Settings");
 
     const auto updateEnabled = [this]() {
-        setEnabled(_scatterplotPlugin->getPositionDataset().isValid());
+        const auto enabled = _scatterplotPlugin->getPositionDataset().isValid();
+
+        _renderModeAction.setEnabled(enabled);
+        _plotAction.setEnabled(enabled);
+        _positionAction.setEnabled(enabled);
+        _coloringAction.setEnabled(enabled);
+        _subsetAction.setEnabled(enabled);
+        _manualClusteringAction.setEnabled(enabled);
+        _selectionAction.setEnabled(enabled);
     };
 
     connect(&scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, updateEnabled);
@@ -73,6 +82,7 @@ SettingsAction::Widget::Widget(QWidget* parent, SettingsAction* settingsAction) 
     _toolBarLayout.setSpacing(0);
     _toolBarLayout.setSizeConstraint(QLayout::SetFixedSize);
 
+    addStateWidget(&settingsAction->_currentDatasetAction, 0);
     addStateWidget(&settingsAction->_renderModeAction, 4);
     addStateWidget(&settingsAction->_plotAction, 7);
     addStateWidget(&settingsAction->_positionAction, 10);
@@ -84,7 +94,7 @@ SettingsAction::Widget::Widget(QWidget* parent, SettingsAction* settingsAction) 
     _toolBarLayout.addStretch(1);
 
     _toolBarWidget.setLayout(&_toolBarLayout);
-
+    
     _layout.addWidget(&_toolBarWidget);
     _layout.addStretch(1);
 

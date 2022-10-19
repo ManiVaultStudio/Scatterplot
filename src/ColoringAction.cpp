@@ -95,6 +95,8 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
 
             // Hide dimension picker action when not point type
             _dimensionAction.setVisible(currentColorDatasetTypeIsPointType);
+
+            emit currentColorDatasetChanged(currentColorDataset);
         }
         else {
 
@@ -205,12 +207,16 @@ Dataset<DatasetImpl> ColoringAction::getCurrentColorDataset() const
 
 void ColoringAction::setCurrentColorDataset(const Dataset<DatasetImpl>& colorDataset)
 {
+    addColorDataset(colorDataset);
+
     // Obtain row index of the color dataset
     const auto colorDatasetRowIndex = _colorByModel.rowIndex(colorDataset);
 
     // Set color by action current index if the color dataset was found
     if (colorDatasetRowIndex >= 0)
         _colorByAction.setCurrentIndex(colorDatasetRowIndex);
+
+    emit currentColorDatasetChanged(colorDataset);
 }
 
 void ColoringAction::updateColorByActionOptions()

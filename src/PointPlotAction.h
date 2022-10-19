@@ -67,4 +67,5 @@ protected:
     static constexpr double DEFAULT_POINT_OPACITY   = 50.0;     /** Default point opacity */
 
     friend class PlotAction;
+    friend class ScatterplotPlugin;
 };

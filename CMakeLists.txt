@@ -64,6 +64,8 @@ set(Actions
     src/SubsetAction.cpp
     src/ExportImageAction.h
     src/ExportImageAction.cpp
+    src/LoadedDatasetsAction.h
+    src/LoadedDatasetsAction.cpp
 )
 
 set(Models

@@ -458,17 +458,22 @@ void ScatterplotPlugin::loadColors(const Dataset<Clusters>& clusters)
     std::vector<std::uint32_t> globalIndices;
 
     // Get global indices from the position dataset
+    int totalNumPoints = 0;
+    if (_positionDataset->isDerivedData())
+        totalNumPoints = _positionSourceDataset->getFullDataset<Points>()->getNumPoints();
+    else
+        totalNumPoints = _positionDataset->getFullDataset<Points>()->getNumPoints();
+
     _positionDataset->getGlobalIndices(globalIndices);
 
     // Generate color buffer for global and local colors
-    std::vector<Vector3f> globalColors(globalIndices.back() + 1);
+    std::vector<Vector3f> globalColors(totalNumPoints);
     std::vector<Vector3f> localColors(_positions.size());
 
     // Loop over all clusters and populate global colors
     for (const auto& cluster : clusters->getClusters())
         for (const auto& index : cluster.getIndices())
-            globalColors[globalIndices[index]] = Vector3f(cluster.getColor().redF(), cluster.getColor().greenF(), cluster.getColor().blueF());
-
+            globalColors[index] = Vector3f(cluster.getColor().redF(), cluster.getColor().greenF(), cluster.getColor().blueF());
     std::int32_t localColorIndex = 0;
 
     // Loop over all global indices and find the corresponding local color
@@ -503,6 +508,13 @@ void ScatterplotPlugin::updateData()
         // If one of the dimensions was not set, do not draw anything
         if (xDim < 0 || yDim < 0)
             return;
+
+        // Ensure that if positionDataset has now more points, the additional points are plotted
+        if (_numPoints != _positionDataset->getNumPoints())
+        {
+            _settingsAction.getPlotAction().getPointPlotAction().updateScatterPlotWidgetPointSizeScalars();
+            _settingsAction.getPlotAction().getPointPlotAction().updateScatterPlotWidgetPointOpacityScalars();
+        }
 
         // Determine number of points depending on if its a full dataset or a subset
         _numPoints = _positionDataset->getNumPoints();

@@ -20,6 +20,8 @@ using namespace hdps::gui;
  */
 class ColoringAction : public PluginAction
 {
+    Q_OBJECT
+
 protected: // Widget
 
     /** Widget class for coloring action */
@@ -102,6 +104,9 @@ protected: // Color map
 
     /** Enables/disables the color map */
     void updateColorMapActionReadOnly();
+
+signals:
+    void currentColorDatasetChanged(Dataset<DatasetImpl> currentColorDataset);
 
 public: // Action getters
 

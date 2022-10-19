@@ -26,6 +26,18 @@ protected: // Widget
 public:
     SelectionAction(ScatterplotPlugin& scatterplotPlugin);
 
+public:
+    ToggleAction& getOutlineEnabledAction() { return _outlineEnabledAction; }
+    ToggleAction& getOutlineOverrideColorAction() { return _outlineOverrideColorAction; }
+    DecimalAction& getOutlineScaleAction() { return _outlineScaleAction; }
+    DecimalAction& getOutlineOpacityAction() { return _outlineOpacityAction; }
+    ToggleAction& getOutlineHaloEnabledAction() { return _outlineHaloEnabledAction; }
+
 protected:
-    ScatterplotPlugin&  _scatterplotPlugin;         /** Reference to scatter plot plugin */
+    ScatterplotPlugin&  _scatterplotPlugin;             /** Reference to scatter plot plugin */
+    ToggleAction        _outlineEnabledAction;          /** Selection outline enabled action */
+    ToggleAction        _outlineOverrideColorAction;    /** Selection outline override color action */
+    DecimalAction       _outlineScaleAction;            /** Selection outline scale action */
+    DecimalAction       _outlineOpacityAction;          /** Selection outline opacity action */
+    ToggleAction        _outlineHaloEnabledAction;      /** Selection outline halo enabled action */
 };

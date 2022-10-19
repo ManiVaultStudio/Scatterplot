@@ -2,6 +2,7 @@
 
 #include "PluginAction.h"
 
+#include "LoadedDatasetsAction.h"
 #include "RenderModeAction.h"
 #include "PlotAction.h"
 #include "PositionAction.h"
@@ -88,6 +89,7 @@ protected:
     RenderModeAction            _renderModeAction;
     PositionAction              _positionAction;
     ColoringAction              _coloringAction;
+    LoadedDatasetsAction        _currentDatasetAction;
     SubsetAction                _subsetAction;
     ManualClusteringAction      _manualClusteringAction;
     SelectionAction             _selectionAction;
