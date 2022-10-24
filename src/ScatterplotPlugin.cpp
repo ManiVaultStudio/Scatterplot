@@ -402,11 +402,11 @@ void ScatterplotPlugin::positionDatasetChanged()
         return;
 
     // Reset dataset references
-    _positionSourceDataset.reset();
+    //_positionSourceDataset.reset();
 
     // Set position source dataset reference when the position dataset is derived
-    if (_positionDataset->isDerivedData())
-        _positionSourceDataset = _positionDataset->getSourceDataset<Points>();
+    //if (_positionDataset->isDerivedData())
+    _positionSourceDataset = _positionDataset->getSourceDataset<Points>();
 
     // Enable pixel selection if the point positions dataset is valid
     _scatterPlotWidget->getPixelSelectionTool().setEnabled(_positionDataset.isValid());
@@ -464,7 +464,7 @@ void ScatterplotPlugin::loadColors(const Dataset<Clusters>& clusters)
     else
         totalNumPoints = _positionDataset->getFullDataset<Points>()->getNumPoints();
 
-    _positionDataset->getGlobalIndices(globalIndices);
+    _positionSourceDataset->getGlobalIndices(globalIndices);
 
     // Generate color buffer for global and local colors
     std::vector<Vector3f> globalColors(totalNumPoints);
