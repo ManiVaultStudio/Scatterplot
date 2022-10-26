@@ -145,7 +145,7 @@ SelectionAction::Widget::Widget(QWidget* parent, SelectionAction* selectionActio
         layout->addWidget(selectionAction->getDisplayModeAction().createLabelWidget(this), 6, 0);
         layout->addWidget(selectionAction->getDisplayModeAction().createWidget(this), 6, 1);
 
-        layout->addWidget(selectionAction->getOutlineOverrideColorAction().createWidget(this), 7, 1);
+        //layout->addWidget(selectionAction->getOutlineOverrideColorAction().createWidget(this), 7, 1);
         layout->addWidget(selectionAction->getOutlineScaleAction().createLabelWidget(this), 8, 0);
         layout->addWidget(selectionAction->getOutlineScaleAction().createWidget(this), 8, 1);
         layout->addWidget(selectionAction->getOutlineOpacityAction().createLabelWidget(this), 9, 0);
