@@ -4,6 +4,7 @@
 #include "Application.h"
 
 #include "util/PixelSelectionTool.h"
+#include "util/Timer.h"
 
 #include "PointData.h"
 #include "ClusterData.h"
@@ -282,6 +283,8 @@ void ScatterplotPlugin::selectPoints()
     if (!_positionDataset.isValid() || !_scatterPlotWidget->getPixelSelectionTool().isActive())
         return;
 
+    //qDebug() << _positionDataset->getGuiName() << "selectPoints";
+
     // Get binary selection area image from the pixel selection tool
     auto selectionAreaImage = _scatterPlotWidget->getPixelSelectionTool().getAreaPixmap().toImage();
 
@@ -399,11 +402,11 @@ void ScatterplotPlugin::positionDatasetChanged()
         return;
 
     // Reset dataset references
-    _positionSourceDataset.reset();
+    //_positionSourceDataset.reset();
 
     // Set position source dataset reference when the position dataset is derived
-    if (_positionDataset->isDerivedData())
-        _positionSourceDataset = _positionDataset->getSourceDataset<Points>();
+    //if (_positionDataset->isDerivedData())
+    _positionSourceDataset = _positionDataset->getSourceDataset<Points>();
 
     // Enable pixel selection if the point positions dataset is valid
     _scatterPlotWidget->getPixelSelectionTool().setEnabled(_positionDataset.isValid());
@@ -461,7 +464,7 @@ void ScatterplotPlugin::loadColors(const Dataset<Clusters>& clusters)
     else
         totalNumPoints = _positionDataset->getFullDataset<Points>()->getNumPoints();
 
-    _positionDataset->getGlobalIndices(globalIndices);
+    _positionSourceDataset->getGlobalIndices(globalIndices);
 
     // Generate color buffer for global and local colors
     std::vector<Vector3f> globalColors(totalNumPoints);
@@ -540,6 +543,8 @@ void ScatterplotPlugin::updateSelection()
     if (!_positionDataset.isValid())
         return;
 
+    //Timer timer(__FUNCTION__);
+
     auto selection = _positionDataset->getSelection<Points>();
 
     std::vector<bool> selected;
@@ -594,18 +599,8 @@ PluginTriggerActions ScatterplotPluginFactory::getPluginTriggerActions(const hdp
     const auto numberOfDatasets = datasets.count();
 
     if (PluginFactory::areAllDatasetsOfTheSameType(datasets, PointType)) {
-        if (numberOfDatasets == 1) {
-            auto pluginTriggerAction = createPluginTriggerAction("Scatterplot", "Load selected dataset in scatter plot viewer", datasets, "braille");
-
-            connect(pluginTriggerAction, &QAction::triggered, [this, getInstance, datasets]() -> void {
-                getInstance()->loadData(datasets);
-            });
-
-            pluginTriggerActions << pluginTriggerAction;
-        }
-        
-        if (numberOfDatasets >= 2) {
-            auto pluginTriggerAction = createPluginTriggerAction("Side-by-side", "View selected datasets side-by-side in separate scatter plot viewers", datasets, "braille");
+        if (numberOfDatasets >= 1) {
+            auto pluginTriggerAction = createPluginTriggerAction("Scatterplot", "View selected datasets side-by-side in separate scatter plot viewers", datasets, "braille");
 
             connect(pluginTriggerAction, &QAction::triggered, [this, getInstance, datasets]() -> void {
                 for (auto dataset : datasets)
