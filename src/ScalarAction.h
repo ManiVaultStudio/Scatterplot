@@ -47,13 +47,14 @@ public:
 
     /**
      * Constructor
+     * @param parent Pointer to parent object
      * @param scatterplotPlugin Pointer to scatter plot plugin
      * @param minimum Scalar minimum value
      * @param maximum Scalar maximum value
      * @param value Scalar value
      * @param defaultValue Scalar default value
      */
-    ScalarAction(ScatterplotPlugin* scatterplotPlugin, const QString& title, const float& minimum, const float& maximum, const float& value, const float& defaultValue);
+    ScalarAction(QObject* parent, ScatterplotPlugin* scatterplotPlugin, const QString& title, const float& minimum, const float& maximum, const float& value, const float& defaultValue);
 
     /**
      * Add dataset to the model
