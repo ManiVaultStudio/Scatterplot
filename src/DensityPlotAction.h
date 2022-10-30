@@ -6,6 +6,8 @@
 
 using namespace hdps::gui;
 
+class PlotAction;
+
 class DensityPlotAction : public PluginAction
 {
 protected:
@@ -19,7 +21,7 @@ protected:
     };
 
 public:
-    DensityPlotAction(ScatterplotPlugin* scatterplotPlugin);
+    DensityPlotAction(PlotAction* plotAction, ScatterplotPlugin* scatterplotPlugin);
 
     QMenu* getContextMenu();
 

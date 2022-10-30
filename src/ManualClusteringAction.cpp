@@ -11,7 +11,7 @@ using namespace hdps;
 using namespace hdps::gui;
 
 ManualClusteringAction::ManualClusteringAction(ScatterplotPlugin* scatterplotPlugin) :
-    PluginAction(scatterplotPlugin, "Cluster"),
+    PluginAction(scatterplotPlugin, scatterplotPlugin, "Cluster"),
     _nameAction(this, "Name"),
     _colorAction(this, "Color"),
     _addClusterAction(this, "Add cluster"),

@@ -6,7 +6,7 @@
 using namespace hdps::gui;
 
 RenderModeAction::RenderModeAction(ScatterplotPlugin* scatterplotPlugin) :
-    PluginAction(scatterplotPlugin, "Render mode"),
+    PluginAction(scatterplotPlugin, scatterplotPlugin, "Render mode"),
     _scatterPlotAction(this, "Scatter"),
     _densityPlotAction(this, "Density"),
     _contourPlotAction(this, "Contour"),

@@ -6,6 +6,8 @@
 
 #include <QLabel>
 
+class PlotAction;
+
 using namespace hdps::gui;
 
 class PointPlotAction : public PluginAction
@@ -22,7 +24,7 @@ protected: // Widget
     };
 
 public:
-    PointPlotAction(ScatterplotPlugin* scatterplotPlugin);
+    PointPlotAction(PlotAction* plotAction, ScatterplotPlugin* scatterplotPlugin);
 
     QMenu* getContextMenu();
 

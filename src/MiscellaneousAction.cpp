@@ -8,7 +8,7 @@ using namespace hdps::gui;
 const QColor MiscellaneousAction::DEFAULT_BACKGROUND_COLOR = qRgb(255, 255, 255);
 
 MiscellaneousAction::MiscellaneousAction(ScatterplotPlugin* scatterplotPlugin) :
-    PluginAction(scatterplotPlugin, "Miscellaneous"),
+    PluginAction(scatterplotPlugin, scatterplotPlugin, "Miscellaneous"),
     _backgroundColorAction(scatterplotPlugin, "Background color")
 {
     setIcon(Application::getIconFont("FontAwesome").getIcon("cog"));

@@ -8,7 +8,7 @@ class ScatterplotWidget;
 class PluginAction : public hdps::gui::WidgetAction
 {
 public:
-    PluginAction(ScatterplotPlugin* scatterplotPlugin, const QString& title);
+    PluginAction(QObject* parent, ScatterplotPlugin* scatterplotPlugin, const QString& title);
 
     ScatterplotWidget& getScatterplotWidget();
 

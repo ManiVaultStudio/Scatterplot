@@ -10,7 +10,7 @@
 using namespace hdps::gui;
 
 SettingsAction::SettingsAction(ScatterplotPlugin* scatterplotPlugin) :
-    PluginAction(scatterplotPlugin, "Settings"),
+    PluginAction(scatterplotPlugin, scatterplotPlugin, "Settings"),
     _currentDatasetAction(scatterplotPlugin),
     _renderModeAction(scatterplotPlugin),
     _positionAction(scatterplotPlugin),

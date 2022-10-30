@@ -11,7 +11,7 @@ using namespace hdps;
 using namespace hdps::gui;
 
 LoadedDatasetsAction::LoadedDatasetsAction(ScatterplotPlugin* scatterplotPlugin) :
-    PluginAction(scatterplotPlugin, "Loaded datasets"),
+    PluginAction(scatterplotPlugin, scatterplotPlugin, "Loaded datasets"),
     _positionDatasetPickerAction(this, "Position"),
     _colorDatasetPickerAction(this, "Color")
 {

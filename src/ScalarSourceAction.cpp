@@ -10,7 +10,7 @@
 using namespace hdps::gui;
 
 ScalarSourceAction::ScalarSourceAction(ScatterplotPlugin* scatterplotPlugin, const QString& title) :
-    PluginAction(scatterplotPlugin, title),
+    PluginAction(scatterplotPlugin, scatterplotPlugin, title),
     _model(this),
     _pickerAction(this, "Source"),
     _dimensionPickerAction(this, "Data dimension"),

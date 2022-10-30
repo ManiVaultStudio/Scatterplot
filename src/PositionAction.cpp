@@ -9,7 +9,7 @@
 using namespace hdps::gui;
 
 PositionAction::PositionAction(ScatterplotPlugin* scatterplotPlugin) :
-    PluginAction(scatterplotPlugin, "Position"),
+    PluginAction(scatterplotPlugin, scatterplotPlugin, "Position"),
     _xDimensionPickerAction(this, "X"),
     _yDimensionPickerAction(this, "Y")
 {

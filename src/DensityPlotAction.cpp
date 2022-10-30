@@ -6,8 +6,8 @@
 
 using namespace hdps::gui;
 
-DensityPlotAction::DensityPlotAction(ScatterplotPlugin* scatterplotPlugin) :
-    PluginAction(scatterplotPlugin, "Density"),
+DensityPlotAction::DensityPlotAction(PlotAction* plotAction, ScatterplotPlugin* scatterplotPlugin) :
+    PluginAction(plotAction, scatterplotPlugin, "Density"),
     _sigmaAction(this, "Sigma", 0.01, 0.5, DEFAULT_SIGMA, DEFAULT_SIGMA, 3),
     _continuousUpdatesAction(this, "Live Updates", DEFAULT_CONTINUOUS_UPDATES, DEFAULT_CONTINUOUS_UPDATES)
 {

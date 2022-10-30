@@ -5,8 +5,8 @@
 
 using namespace hdps::gui;
 
-PluginAction::PluginAction(ScatterplotPlugin* scatterplotPlugin, const QString& title) :
-    WidgetAction(reinterpret_cast<QObject*>(scatterplotPlugin)),
+PluginAction::PluginAction(QObject* parent, ScatterplotPlugin* scatterplotPlugin, const QString& title) :
+    WidgetAction(parent),
     _scatterplotPlugin(scatterplotPlugin)
 {
     _scatterplotPlugin->getWidget().addAction(this);

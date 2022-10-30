@@ -1,4 +1,5 @@
 #include "PlotAction.h"
+#include "ScatterplotPlugin.h"
 #include "ScatterplotWidget.h"
 #include "Application.h"
 
@@ -8,9 +9,9 @@
 using namespace hdps::gui;
 
 PlotAction::PlotAction(ScatterplotPlugin* scatterplotPlugin) :
-    PluginAction(scatterplotPlugin, "Plot"),
-    _pointPlotAction(scatterplotPlugin),
-    _densityPlotAction(scatterplotPlugin)
+    PluginAction(scatterplotPlugin, scatterplotPlugin, "Plot"),
+    _pointPlotAction(this, scatterplotPlugin),
+    _densityPlotAction(this, scatterplotPlugin)
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("paint-brush"));
 

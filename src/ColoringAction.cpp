@@ -13,7 +13,7 @@ using namespace hdps::gui;
 const QColor ColoringAction::DEFAULT_CONSTANT_COLOR = qRgb(93, 93, 225);
 
 ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
-    PluginAction(scatterplotPlugin, "Coloring"),
+    PluginAction(scatterplotPlugin, scatterplotPlugin, "Coloring"),
     _colorByModel(this),
     _colorByAction(this, "Color by"),
     _constantColorAction(this, "Constant color", DEFAULT_CONSTANT_COLOR, DEFAULT_CONSTANT_COLOR),
