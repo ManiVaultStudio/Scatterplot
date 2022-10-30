@@ -11,7 +11,7 @@ using namespace hdps::gui;
 ScalarAction::ScalarAction(QObject* parent, ScatterplotPlugin* scatterplotPlugin, const QString& title, const float& minimum, const float& maximum, const float& value, const float& defaultValue) :
     PluginAction(parent, scatterplotPlugin, "Scalar"),
     _magnitudeAction(this, title, minimum, maximum, value, defaultValue),
-    _sourceAction(scatterplotPlugin, title)
+    _sourceAction(this, scatterplotPlugin, QString("%1 source").arg(title))
 {
     setText(title);
 
