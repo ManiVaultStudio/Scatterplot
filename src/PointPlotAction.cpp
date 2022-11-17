@@ -21,6 +21,9 @@ PointPlotAction::PointPlotAction(PlotAction* plotAction, ScatterplotPlugin* scat
     _scatterplotPlugin->getWidget().addAction(&_sizeAction);
     _scatterplotPlugin->getWidget().addAction(&_opacityAction);
 
+    _sizeAction.setConnectionPermissionsToNone();
+    _opacityAction.setConnectionPermissionsToNone();
+
     _sizeAction.getMagnitudeAction().setSuffix("px");
     _opacityAction.getMagnitudeAction().setSuffix("%");
 
