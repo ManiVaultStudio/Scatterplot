@@ -598,19 +598,19 @@ PluginTriggerActions ScatterplotPluginFactory::getPluginTriggerActions(const hdp
     PluginTriggerActions pluginTriggerActions;
 
     const auto getInstance = [this]() -> ScatterplotPlugin* {
-        return dynamic_cast<ScatterplotPlugin*>(Application::core()->requestPlugin(getKind()));
+        return dynamic_cast<ScatterplotPlugin*>(Application::core()->getPluginManager().requestViewPlugin(getKind()));
     };
 
     const auto numberOfDatasets = datasets.count();
 
     if (PluginFactory::areAllDatasetsOfTheSameType(datasets, PointType)) {
-        if (numberOfDatasets >= 1) {
-            auto pluginTriggerAction = createPluginTriggerAction("Scatterplot", "View selected datasets side-by-side in separate scatter plot viewers", datasets, "braille");
+        auto& fontAwesome = Application::getIconFont("FontAwesome");
 
-            connect(pluginTriggerAction, &QAction::triggered, [this, getInstance, datasets]() -> void {
+        if (numberOfDatasets >= 1) {
+            auto pluginTriggerAction = new PluginTriggerAction(const_cast<ScatterplotPluginFactory*>(this), this, "Scatterplot", "View selected datasets side-by-side in separate scatter plot viewers", fontAwesome.getIcon("braille"), [this, getInstance, datasets](PluginTriggerAction& pluginTriggerAction) -> void {
                 for (auto dataset : datasets)
                     getInstance()->loadData(Datasets({ dataset }));
-                });
+            });
 
             pluginTriggerActions << pluginTriggerAction;
         }
