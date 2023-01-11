@@ -54,30 +54,30 @@ ScatterplotWidget::ScatterplotWidget() :
             update();
     });
 
-    QSurfaceFormat surfaceFormat;
-
-    surfaceFormat.setRenderableType(QSurfaceFormat::OpenGL);
-
-#ifdef __APPLE__
-    // Ask for an OpenGL 3.3 Core Context as the default
-    surfaceFormat.setVersion(3, 3);
-    surfaceFormat.setProfile(QSurfaceFormat::CoreProfile);
-    surfaceFormat.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
-    //QSurfaceFormat::setDefaultFormat(defaultFormat);
-#else
-    // Ask for an OpenGL 4.3 Core Context as the default
-    surfaceFormat.setVersion(4, 3);
-    surfaceFormat.setProfile(QSurfaceFormat::CoreProfile);
-    surfaceFormat.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
-#endif
-
-#ifdef _DEBUG
-    surfaceFormat.setOption(QSurfaceFormat::DebugContext);
-#endif
-
-    surfaceFormat.setSamples(16);
-
-    setFormat(surfaceFormat);
+//    QSurfaceFormat surfaceFormat;
+//
+//    surfaceFormat.setRenderableType(QSurfaceFormat::OpenGL);
+//
+//#ifdef __APPLE__
+//    // Ask for an OpenGL 3.3 Core Context as the default
+//    surfaceFormat.setVersion(3, 3);
+//    surfaceFormat.setProfile(QSurfaceFormat::CoreProfile);
+//    surfaceFormat.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
+//    //QSurfaceFormat::setDefaultFormat(defaultFormat);
+//#else
+//    // Ask for an OpenGL 4.3 Core Context as the default
+//    surfaceFormat.setVersion(4, 3);
+//    surfaceFormat.setProfile(QSurfaceFormat::CoreProfile);
+//    surfaceFormat.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
+//#endif
+//
+//#ifdef _DEBUG
+//    surfaceFormat.setOption(QSurfaceFormat::DebugContext);
+//#endif
+//
+//    surfaceFormat.setSamples(16);
+//
+//    setFormat(surfaceFormat);
 }
 
 bool ScatterplotWidget::isInitialized()

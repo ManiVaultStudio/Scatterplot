@@ -276,7 +276,7 @@ void ScatterplotPlugin::createSubset(const bool& fromSourceData /*= false*/, con
         subset = _positionDataset->createSubsetFromVisibleSelection(_positionDataset->getGuiName(), _positionDataset);
 
     // Notify others that the subset was added
-    _core->notifyDatasetAdded(subset);
+    events().notifyDatasetAdded(subset);
 
     // And select the subset
     subset->getDataHierarchyItem().select();
@@ -379,7 +379,7 @@ void ScatterplotPlugin::selectPoints()
 
     _positionDataset->setSelectionIndices(targetSelectionIndices);
 
-    _core->notifyDatasetSelectionChanged(_positionDataset->getSourceDataset<Points>());
+    events().notifyDatasetSelectionChanged(_positionDataset->getSourceDataset<Points>());
 }
 
 void ScatterplotPlugin::updateWindowTitle()
