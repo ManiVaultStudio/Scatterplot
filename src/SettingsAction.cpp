@@ -23,6 +23,7 @@ SettingsAction::SettingsAction(ScatterplotPlugin* scatterplotPlugin) :
     _miscellaneousAction(scatterplotPlugin)
 {
     setText("Settings");
+    setSerializationName("Settings");
 
     const auto updateEnabled = [this]() {
         const auto enabled = _scatterplotPlugin->getPositionDataset().isValid();
@@ -68,6 +69,30 @@ QMenu* SettingsAction::getContextMenu()
     return menu;
 }
 
+void SettingsAction::fromVariantMap(const QVariantMap& variantMap)
+{
+    WidgetAction::fromVariantMap(variantMap);
+
+    _currentDatasetAction.fromParentVariantMap(variantMap);
+    _plotAction.fromParentVariantMap(variantMap);
+    _positionAction.fromParentVariantMap(variantMap);
+    _coloringAction.fromParentVariantMap(variantMap);
+    _renderModeAction.fromParentVariantMap(variantMap);
+}
+
+QVariantMap SettingsAction::toVariantMap() const
+{
+    QVariantMap variantMap = WidgetAction::toVariantMap();
+
+    _currentDatasetAction.insertIntoVariantMap(variantMap);
+    _renderModeAction.insertIntoVariantMap(variantMap);
+    _plotAction.insertIntoVariantMap(variantMap);
+    _positionAction.insertIntoVariantMap(variantMap);
+    _coloringAction.insertIntoVariantMap(variantMap);
+
+    return variantMap;
+}
+
 SettingsAction::Widget::Widget(QWidget* parent, SettingsAction* settingsAction) :
     WidgetActionWidget(parent, settingsAction, Widget::State::Standard),
     _layout(),
@@ -88,7 +113,7 @@ SettingsAction::Widget::Widget(QWidget* parent, SettingsAction* settingsAction) 
     addStateWidget(&settingsAction->_positionAction, 10);
     addStateWidget(&settingsAction->_coloringAction, 8);
     addStateWidget(&settingsAction->_subsetAction, 3);
-    addStateWidget(&settingsAction->_manualClusteringAction, 0);
+    addStateWidget(&settingsAction->_manualClusteringAction, 1);
     addStateWidget(&settingsAction->_selectionAction, 2);
 
     _toolBarLayout.addStretch(1);

@@ -413,6 +413,8 @@ void ScatterplotPlugin::positionDatasetChanged()
     //if (_positionDataset->isDerivedData())
     _positionSourceDataset = _positionDataset->getSourceDataset<Points>();
 
+    _numPoints = _positionDataset->getNumPoints();
+
     // Enable pixel selection if the point positions dataset is valid
     _scatterPlotWidget->getPixelSelectionTool().setEnabled(_positionDataset.isValid());
 
@@ -563,6 +565,24 @@ void ScatterplotPlugin::updateSelection()
         highlights[i] = selected[i] ? 1 : 0;
 
     _scatterPlotWidget->setHighlights(highlights, static_cast<std::int32_t>(selection->indices.size()));
+}
+
+void ScatterplotPlugin::fromVariantMap(const QVariantMap& variantMap)
+{
+    ViewPlugin::fromVariantMap(variantMap);
+
+    variantMapMustContain(variantMap, "Settings");
+
+    _settingsAction.fromVariantMap(variantMap["Settings"].toMap());
+}
+
+QVariantMap ScatterplotPlugin::toVariantMap() const
+{
+    QVariantMap variantMap = ViewPlugin::toVariantMap();
+
+    _settingsAction.insertIntoVariantMap(variantMap);
+
+    return variantMap;
 }
 
 std::uint32_t ScatterplotPlugin::getNumberOfPoints() const

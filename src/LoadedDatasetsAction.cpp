@@ -17,6 +17,10 @@ LoadedDatasetsAction::LoadedDatasetsAction(ScatterplotPlugin* scatterplotPlugin)
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("database"));
     setToolTip("Manage loaded datasets for position and/or color");
+    setSerializationName("LoadedDatasets");
+
+    _positionDatasetPickerAction.setSerializationName("Position");
+    _colorDatasetPickerAction.setSerializationName("Color");
 
     _positionDatasetPickerAction.setDatasetsFilterFunction([](const hdps::Datasets& datasets) -> Datasets {
         Datasets pointDatasets;
@@ -54,6 +58,24 @@ LoadedDatasetsAction::LoadedDatasetsAction(ScatterplotPlugin* scatterplotPlugin)
     connect(&_scatterplotPlugin->getSettingsAction().getColoringAction(), &ColoringAction::currentColorDatasetChanged, this, [this](Dataset<DatasetImpl> currentColorDataset) -> void {
         _colorDatasetPickerAction.setCurrentDataset(currentColorDataset);
     });
+}
+
+void LoadedDatasetsAction::fromVariantMap(const QVariantMap& variantMap)
+{
+    WidgetAction::fromVariantMap(variantMap);
+
+    _positionDatasetPickerAction.fromParentVariantMap(variantMap);
+    _colorDatasetPickerAction.fromParentVariantMap(variantMap);
+}
+
+QVariantMap LoadedDatasetsAction::toVariantMap() const
+{
+    QVariantMap variantMap = WidgetAction::toVariantMap();
+
+    _positionDatasetPickerAction.insertIntoVariantMap(variantMap);
+    _colorDatasetPickerAction.insertIntoVariantMap(variantMap);
+
+    return variantMap;
 }
 
 LoadedDatasetsAction::Widget::Widget(QWidget* parent, LoadedDatasetsAction* currentDatasetAction, const std::int32_t& widgetFlags) :

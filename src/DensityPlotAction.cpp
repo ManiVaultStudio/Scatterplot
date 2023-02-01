@@ -12,6 +12,10 @@ DensityPlotAction::DensityPlotAction(PlotAction* plotAction, ScatterplotPlugin* 
     _continuousUpdatesAction(this, "Live Updates", DEFAULT_CONTINUOUS_UPDATES, DEFAULT_CONTINUOUS_UPDATES)
 {
     setToolTip("Density plot settings");
+    setSerializationName("DensityPlot");
+
+    _sigmaAction.setSerializationName("Sigma");
+    _continuousUpdatesAction.setSerializationName("ContinuousUpdates");
 
     _scatterplotPlugin->getWidget().addAction(&_sigmaAction);
     _scatterplotPlugin->getWidget().addAction(&_continuousUpdatesAction);
@@ -66,6 +70,24 @@ QMenu* DensityPlotAction::getContextMenu()
     addActionToMenu(&_continuousUpdatesAction);
 
     return menu;
+}
+
+void DensityPlotAction::fromVariantMap(const QVariantMap& variantMap)
+{
+    WidgetAction::fromVariantMap(variantMap);
+
+    _sigmaAction.fromParentVariantMap(variantMap);
+    _continuousUpdatesAction.fromParentVariantMap(variantMap);
+}
+
+QVariantMap DensityPlotAction::toVariantMap() const
+{
+    QVariantMap variantMap = WidgetAction::toVariantMap();
+
+    _sigmaAction.insertIntoVariantMap(variantMap);
+    _continuousUpdatesAction.insertIntoVariantMap(variantMap);
+
+    return variantMap;
 }
 
 DensityPlotAction::Widget::Widget(QWidget* parent, DensityPlotAction* densityPlotAction) :

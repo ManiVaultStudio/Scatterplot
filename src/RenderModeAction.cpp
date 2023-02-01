@@ -13,6 +13,11 @@ RenderModeAction::RenderModeAction(ScatterplotPlugin* scatterplotPlugin) :
     _actionGroup(this)
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("image"));
+    setSerializationName("RenderMode");
+
+    _scatterPlotAction.setSerializationName("ScatterPlotToggle");
+    _densityPlotAction.setSerializationName("DensityPlotToggle");
+    _contourPlotAction.setSerializationName("ContourPlotToggle");
 
     _scatterPlotAction.setShortcutContext(Qt::WidgetWithChildrenShortcut);
     _densityPlotAction.setShortcutContext(Qt::WidgetWithChildrenShortcut);
@@ -85,6 +90,26 @@ QMenu* RenderModeAction::getContextMenu()
     menu->addAction(&_contourPlotAction);
 
     return menu;
+}
+
+void RenderModeAction::fromVariantMap(const QVariantMap& variantMap)
+{
+    WidgetAction::fromVariantMap(variantMap);
+
+    _scatterPlotAction.fromParentVariantMap(variantMap);
+    _densityPlotAction.fromParentVariantMap(variantMap);
+    _contourPlotAction.fromParentVariantMap(variantMap);
+}
+
+QVariantMap RenderModeAction::toVariantMap() const
+{
+    QVariantMap variantMap = WidgetAction::toVariantMap();
+
+    _scatterPlotAction.insertIntoVariantMap(variantMap);
+    _densityPlotAction.insertIntoVariantMap(variantMap);
+    _contourPlotAction.insertIntoVariantMap(variantMap);
+
+    return variantMap;
 }
 
 RenderModeAction::Widget::Widget(QWidget* parent, RenderModeAction* renderModeAction, const std::int32_t& widgetFlags) :

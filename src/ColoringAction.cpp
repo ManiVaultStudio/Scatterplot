@@ -21,6 +21,12 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
     _colorMapAction(this, "Color map")
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("palette"));
+    setSerializationName("Coloring");
+
+    _colorByAction.setSerializationName("ColorBy");
+    _constantColorAction.setSerializationName("ConstantColor");
+    _dimensionAction.setSerializationName("ColorDimension");
+    _colorMapAction.setSerializationName("ColorMap");
 
     _scatterplotPlugin->getWidget().addAction(&_colorByAction);
     _scatterplotPlugin->getWidget().addAction(&_dimensionAction);
@@ -363,6 +369,28 @@ bool ColoringAction::shouldEnableColorMap() const
 void ColoringAction::updateColorMapActionReadOnly()
 {
     _colorMapAction.setEnabled(shouldEnableColorMap());
+}
+
+void ColoringAction::fromVariantMap(const QVariantMap& variantMap)
+{
+    WidgetAction::fromVariantMap(variantMap);
+
+    _constantColorAction.fromParentVariantMap(variantMap);
+    _dimensionAction.fromParentVariantMap(variantMap);
+    _colorMapAction.fromParentVariantMap(variantMap);
+    _colorByAction.fromParentVariantMap(variantMap);
+}
+
+QVariantMap ColoringAction::toVariantMap() const
+{
+    QVariantMap variantMap = WidgetAction::toVariantMap();
+
+    _colorByAction.insertIntoVariantMap(variantMap);
+    _constantColorAction.insertIntoVariantMap(variantMap);
+    _dimensionAction.insertIntoVariantMap(variantMap);
+    _colorMapAction.insertIntoVariantMap(variantMap);
+
+    return variantMap;
 }
 
 ColoringAction::Widget::Widget(QWidget* parent, ColoringAction* coloringAction, const std::int32_t& widgetFlags) :

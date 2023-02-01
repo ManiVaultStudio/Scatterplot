@@ -22,6 +22,20 @@ protected:
 public:
     LoadedDatasetsAction(ScatterplotPlugin* scatterplotPlugin);
 
+public: // Serialization
+
+    /**
+     * Load widget action from variant map
+     * @param Variant map representation of the widget action
+     */
+    void fromVariantMap(const QVariantMap& variantMap) override;
+
+    /**
+     * Save widget action to variant map
+     * @return Variant map representation of the widget action
+     */
+    QVariantMap toVariantMap() const override;
+
 protected:
     DatasetPickerAction	    _positionDatasetPickerAction;
     DatasetPickerAction     _colorDatasetPickerAction;
