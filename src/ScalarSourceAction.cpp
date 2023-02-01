@@ -17,6 +17,13 @@ ScalarSourceAction::ScalarSourceAction(QObject* parent, ScatterplotPlugin* scatt
     _offsetAction(this, "Offset", 0.0f, 100.0f, 0.0f, 0.0f, 2),
     _rangeAction(this, "Scalar range")
 {
+    setSerializationName("ScalarSource");
+
+    _pickerAction.setSerializationName("Source");
+    _dimensionPickerAction.setSerializationName("Dimension");
+    _offsetAction.setSerializationName("Offset");
+    _rangeAction.setSerializationName("Range");
+
     _scatterplotPlugin->getWidget().addAction(&_pickerAction);
     _scatterplotPlugin->getWidget().addAction(&_dimensionPickerAction);
 
@@ -120,6 +127,28 @@ void ScalarSourceAction::updateScalarRange()
 
     // Notify others the range ranged
     emit scalarRangeChanged(minimum, maximum);
+}
+
+void ScalarSourceAction::fromVariantMap(const QVariantMap& variantMap)
+{
+    WidgetAction::fromVariantMap(variantMap);
+
+    _pickerAction.fromParentVariantMap(variantMap);
+    _dimensionPickerAction.fromParentVariantMap(variantMap);
+    _offsetAction.fromParentVariantMap(variantMap);
+    _rangeAction.fromParentVariantMap(variantMap);
+}
+
+QVariantMap ScalarSourceAction::toVariantMap() const
+{
+    QVariantMap variantMap = WidgetAction::toVariantMap();
+
+    _pickerAction.insertIntoVariantMap(variantMap);
+    _dimensionPickerAction.insertIntoVariantMap(variantMap);
+    _offsetAction.insertIntoVariantMap(variantMap);
+    _rangeAction.insertIntoVariantMap(variantMap);
+
+    return variantMap;
 }
 
 ScalarSourceAction::Widget::Widget(QWidget* parent, ScalarSourceAction* scalarSourceAction) :

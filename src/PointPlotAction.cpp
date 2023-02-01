@@ -20,6 +20,9 @@ PointPlotAction::PointPlotAction(PlotAction* plotAction, ScatterplotPlugin* scat
 {
     setSerializationName("PointPlot");
 
+    _sizeAction.setSerializationName("SizeScalar");
+    _opacityAction.setSerializationName("OpacityScalar");
+
     _scatterplotPlugin->getWidget().addAction(&_sizeAction);
     _scatterplotPlugin->getWidget().addAction(&_opacityAction);
 
