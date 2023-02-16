@@ -22,6 +22,12 @@ LoadedDatasetsAction::LoadedDatasetsAction(ScatterplotPlugin* scatterplotPlugin)
     _positionDatasetPickerAction.setSerializationName("Position");
     _colorDatasetPickerAction.setSerializationName("Color");
 
+    QString guiName = scatterplotPlugin->getGuiName() + "::";
+    _positionDatasetPickerAction.setConnectionPermissionsFlag(ConnectionPermissionFlag::All);
+    _positionDatasetPickerAction.publish(guiName + "Embedding");
+    _colorDatasetPickerAction.setConnectionPermissionsFlag(ConnectionPermissionFlag::All);
+    _colorDatasetPickerAction.publish(guiName + "Color");
+
     _positionDatasetPickerAction.setDatasetsFilterFunction([](const hdps::Datasets& datasets) -> Datasets {
         Datasets pointDatasets;
 
