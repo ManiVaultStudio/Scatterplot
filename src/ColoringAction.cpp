@@ -23,6 +23,15 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("palette"));
     setSerializationName("Coloring");
 
+    const auto globalColorMapName = "GlobalColorMap";
+
+    _colorMapAction.setConnectionPermissionsFlag(WidgetAction::ConnectionPermissionFlag::All);
+
+    if (scatterplotPlugin->getFactory()->getNumberOfInstances() == 0)
+        _colorMapAction.publish(globalColorMapName);
+
+    _colorMapAction.connectToPublicActionByName(globalColorMapName);
+
     _colorByAction.setSerializationName("ColorBy");
     _constantColorAction.setSerializationName("ConstantColor");
     _dimensionAction.setSerializationName("ColorDimension");

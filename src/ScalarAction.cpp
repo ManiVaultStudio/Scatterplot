@@ -17,6 +17,7 @@ ScalarAction::ScalarAction(QObject* parent, ScatterplotPlugin* scatterplotPlugin
     setSerializationName("Scalar");
 
     _magnitudeAction.setSerializationName("Magnitude");
+    _magnitudeAction.setConnectionPermissionsFlag(WidgetAction::ConnectionPermissionFlag::All);
 
     _scatterplotPlugin->getWidget().addAction(&_sourceAction);
 

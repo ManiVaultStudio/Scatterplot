@@ -24,6 +24,8 @@ ScalarSourceAction::ScalarSourceAction(QObject* parent, ScatterplotPlugin* scatt
     _offsetAction.setSerializationName("Offset");
     _rangeAction.setSerializationName("Range");
 
+    _offsetAction.setConnectionPermissionsFlag(WidgetAction::ConnectionPermissionFlag::All);
+
     _scatterplotPlugin->getWidget().addAction(&_pickerAction);
     _scatterplotPlugin->getWidget().addAction(&_dimensionPickerAction);
 
