@@ -29,8 +29,8 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
 
     if (scatterplotPlugin->getFactory()->getNumberOfInstances() == 0)
         _colorMapAction.publish(globalColorMapName);
-
-    _colorMapAction.connectToPublicActionByName(globalColorMapName);
+    else
+        _colorMapAction.connectToPublicActionByName(globalColorMapName);
 
     _colorByAction.setSerializationName("ColorBy");
     _constantColorAction.setSerializationName("ConstantColor");
