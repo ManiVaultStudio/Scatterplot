@@ -20,6 +20,8 @@ PointPlotAction::PointPlotAction(PlotAction* plotAction, ScatterplotPlugin* scat
 {
     setSerializationName("PointPlot");
 
+    _sizeAction.getSourceAction().setVisible(false);
+    _opacityAction.getSourceAction().setVisible(false);
     auto& pointSizeMagnitudeAction       = _sizeAction.getMagnitudeAction();
     auto& pointOpacityMagnitudeAction    = _opacityAction.getMagnitudeAction();
 

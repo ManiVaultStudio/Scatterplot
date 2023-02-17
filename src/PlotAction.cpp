@@ -14,7 +14,8 @@ PlotAction::PlotAction(ScatterplotPlugin* scatterplotPlugin) :
     _densityPlotAction(this, scatterplotPlugin)
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("paint-brush"));
-
+    _pointPlotAction._sizeAction.getSourceAction().setVisible(false);
+    _pointPlotAction._opacityAction.getSourceAction().setVisible(false);
     const auto updateRenderMode = [this]() -> void {
         _pointPlotAction.setVisible(getScatterplotWidget().getRenderMode() == ScatterplotWidget::SCATTERPLOT);
         _densityPlotAction.setVisible(getScatterplotWidget().getRenderMode() != ScatterplotWidget::SCATTERPLOT);

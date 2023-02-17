@@ -55,16 +55,16 @@ QMenu* SettingsAction::getContextMenu()
 {
     auto menu = new QMenu();
 
-    menu->addMenu(_renderModeAction.getContextMenu());
+    //menu->addMenu(_renderModeAction.getContextMenu());
     menu->addMenu(_plotAction.getContextMenu());
     menu->addSeparator();
-    menu->addMenu(_positionAction.getContextMenu());
+    //menu->addMenu(_positionAction.getContextMenu());
     menu->addMenu(_coloringAction.getContextMenu());
-    menu->addSeparator();
-    menu->addMenu(_subsetAction.getContextMenu());
-    menu->addMenu(_selectionAction.getContextMenu());
-    menu->addSeparator();
-    menu->addMenu(_miscellaneousAction.getContextMenu());
+    //menu->addSeparator();
+    //menu->addMenu(_subsetAction.getContextMenu());
+    //menu->addMenu(_selectionAction.getContextMenu());
+    //menu->addSeparator();
+    //menu->addMenu(_miscellaneousAction.getContextMenu());
 
     return menu;
 }
@@ -107,14 +107,15 @@ SettingsAction::Widget::Widget(QWidget* parent, SettingsAction* settingsAction) 
     _toolBarLayout.setSpacing(0);
     _toolBarLayout.setSizeConstraint(QLayout::SetFixedSize);
 
-    addStateWidget(&settingsAction->_currentDatasetAction, 0);
-    addStateWidget(&settingsAction->_renderModeAction, 4);
-    addStateWidget(&settingsAction->_plotAction, 7);
-    addStateWidget(&settingsAction->_positionAction, 10);
-    addStateWidget(&settingsAction->_coloringAction, 8);
-    addStateWidget(&settingsAction->_subsetAction, 3);
-    addStateWidget(&settingsAction->_manualClusteringAction, 1);
-    addStateWidget(&settingsAction->_selectionAction, 2);
+    addStateWidget(&settingsAction->_coloringAction.getColorMapAction(), 0);
+    //addStateWidget(&settingsAction->_currentDatasetAction, 0);
+    //addStateWidget(&settingsAction->_renderModeAction, 4);
+    addStateWidget(&settingsAction->_plotAction, 2);
+    //addStateWidget(&settingsAction->_positionAction, 10);
+    //addStateWidget(&settingsAction->_coloringAction, 8);
+    //addStateWidget(&settingsAction->_subsetAction, 3);
+    //addStateWidget(&settingsAction->_manualClusteringAction, 1);
+    //addStateWidget(&settingsAction->_selectionAction, 2);
 
     _toolBarLayout.addStretch(1);
 

@@ -49,7 +49,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
 
     _dropWidget = new DropWidget(_scatterPlotWidget);
 
-    getWidget().setFocusPolicy(Qt::ClickFocus);
+    //getWidget().setFocusPolicy(Qt::ClickFocus);
 
     connect(_scatterPlotWidget, &ScatterplotWidget::customContextMenuRequested, this, [this](const QPoint& point) {
         if (!_positionDataset.isValid())
@@ -196,21 +196,21 @@ void ScatterplotPlugin::init()
     layout->addWidget(_settingsAction.createWidget(&getWidget()));
     layout->addWidget(_scatterPlotWidget, 100);
 
-    auto bottomToolbarWidget = new QWidget();
-    auto bottomToolbarLayout = new QHBoxLayout();
+    //auto bottomToolbarWidget = new QWidget();
+    //auto bottomToolbarLayout = new QHBoxLayout();
 
-    bottomToolbarWidget->setAutoFillBackground(true);
-    bottomToolbarWidget->setLayout(bottomToolbarLayout);
+    //bottomToolbarWidget->setAutoFillBackground(true);
+    //bottomToolbarWidget->setLayout(bottomToolbarLayout);
 
-    bottomToolbarLayout->setContentsMargins(0, 0, 0, 0);
-    bottomToolbarLayout->addWidget(_settingsAction.getColoringAction().getColorMapAction().createLabelWidget(&getWidget()));
-    bottomToolbarLayout->addWidget(_settingsAction.getColoringAction().getColorMapAction().createWidget(&getWidget()));
-    bottomToolbarLayout->addWidget(_settingsAction.getPlotAction().getPointPlotAction().getFocusSelection().createWidget(&getWidget()));
-    bottomToolbarLayout->addStretch(1);
-    bottomToolbarLayout->addWidget(_settingsAction.getExportAction().createWidget(&getWidget()));
-    bottomToolbarLayout->addWidget(_settingsAction.getMiscellaneousAction().createCollapsedWidget(&getWidget()));
+    //bottomToolbarLayout->setContentsMargins(0, 0, 0, 0);
+    //bottomToolbarLayout->addWidget(_settingsAction.getColoringAction().getColorMapAction().createLabelWidget(&getWidget()));
+    //bottomToolbarLayout->addWidget(_settingsAction.getColoringAction().getColorMapAction().createWidget(&getWidget()));
+    //bottomToolbarLayout->addWidget(_settingsAction.getPlotAction().getPointPlotAction().getFocusSelection().createWidget(&getWidget()));
+    //bottomToolbarLayout->addStretch(1);
+    //bottomToolbarLayout->addWidget(_settingsAction.getExportAction().createWidget(&getWidget()));
+    //bottomToolbarLayout->addWidget(_settingsAction.getMiscellaneousAction().createCollapsedWidget(&getWidget()));
 
-    layout->addWidget(bottomToolbarWidget, 1);
+    //layout->addWidget(bottomToolbarWidget, 1);
 
     getWidget().setLayout(layout);
 
@@ -416,7 +416,7 @@ void ScatterplotPlugin::positionDatasetChanged()
     _numPoints = _positionDataset->getNumPoints();
 
     // Enable pixel selection if the point positions dataset is valid
-    _scatterPlotWidget->getPixelSelectionTool().setEnabled(_positionDataset.isValid());
+    //_scatterPlotWidget->getPixelSelectionTool().setEnabled(_positionDataset.isValid());
 
     // Do not show the drop indicator if there is a valid point positions dataset
     _dropWidget->setShowDropIndicator(!_positionDataset.isValid());

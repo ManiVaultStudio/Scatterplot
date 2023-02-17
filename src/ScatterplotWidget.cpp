@@ -38,15 +38,20 @@ ScatterplotWidget::ScatterplotWidget() :
     _pointRenderer(),
     _pixelSelectionTool(this)
 {
-    setContextMenuPolicy(Qt::CustomContextMenu);
-    setAcceptDrops(true);
-    setMouseTracking(true);
-    setFocusPolicy(Qt::ClickFocus);
+    //setContextMenuPolicy(Qt::CustomContextMenu);
+    //setAcceptDrops(true);
+    //setMouseTracking(true);
+    //setFocusPolicy(Qt::ClickFocus);
+    setContextMenuPolicy(Qt::NoContextMenu);
+    setAcceptDrops(false);
+    setMouseTracking(false);
+    setFocusPolicy(Qt::NoFocus);
 
     _pointRenderer.setPointScaling(Absolute);
 
     // Configure pixel selection tool
-    _pixelSelectionTool.setEnabled(true);
+    //_pixelSelectionTool.setEnabled(true);
+    _pixelSelectionTool.setEnabled(false);
     _pixelSelectionTool.setMainColor(QColor(Qt::black));
     
     QObject::connect(&_pixelSelectionTool, &PixelSelectionTool::shapeChanged, [this]() {

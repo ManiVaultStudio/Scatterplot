@@ -20,6 +20,9 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
     _dimensionAction(this, "Dim"),
     _colorMapAction(this, "Color map")
 {
+    _colorMapAction.getSettingsAction().getDiscreteAction().setVisible(false);
+    _colorMapAction.getSettingsAction().getEditor1DAction().setVisible(false);
+    
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("palette"));
     setSerializationName("Coloring");
 
