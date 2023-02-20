@@ -20,25 +20,25 @@ PointPlotAction::PointPlotAction(PlotAction* plotAction, ScatterplotPlugin* scat
 {
     setSerializationName("PointPlot");
 
-    //_sizeAction.getSourceAction().setVisible(false);
-    //_opacityAction.getSourceAction().setVisible(false);
-    //auto& pointSizeMagnitudeAction       = _sizeAction.getMagnitudeAction();
-    //auto& pointOpacityMagnitudeAction    = _opacityAction.getMagnitudeAction();
+    _sizeAction.getSourceAction().setVisible(false);
+    _opacityAction.getSourceAction().setVisible(false);
+    auto& pointSizeMagnitudeAction       = _sizeAction.getMagnitudeAction();
+    auto& pointOpacityMagnitudeAction    = _opacityAction.getMagnitudeAction();
 
-    //pointSizeMagnitudeAction.setConnectionPermissionsFlag(WidgetAction::ConnectionPermissionFlag::All);
-    //pointOpacityMagnitudeAction.setConnectionPermissionsFlag(WidgetAction::ConnectionPermissionFlag::All);
+    pointSizeMagnitudeAction.setConnectionPermissionsFlag(WidgetAction::ConnectionPermissionFlag::All);
+    pointOpacityMagnitudeAction.setConnectionPermissionsFlag(WidgetAction::ConnectionPermissionFlag::All);
 
-    //const auto globalPointSizeName      = "GlobalPointSize";
-    //const auto globalPointOpacityName   = "GlobalPointOpacity";
+    const auto globalPointSizeName      = "GlobalPointSize";
+    const auto globalPointOpacityName   = "GlobalPointOpacity";
 
-    //if (scatterplotPlugin->getFactory()->getNumberOfInstances() == 0) {
-    //    pointSizeMagnitudeAction.publish(globalPointSizeName);
-    //    pointOpacityMagnitudeAction.publish(globalPointOpacityName);
-    //}
-    //else {
-    //    pointSizeMagnitudeAction.connectToPublicActionByName(globalPointSizeName);
-    //    pointOpacityMagnitudeAction.connectToPublicActionByName(globalPointOpacityName);
-    //}
+    if (scatterplotPlugin->getFactory()->getNumberOfInstances() == 0) {
+        pointSizeMagnitudeAction.publish(globalPointSizeName);
+        pointOpacityMagnitudeAction.publish(globalPointOpacityName);
+    }
+    else {
+        pointSizeMagnitudeAction.connectToPublicActionByName(globalPointSizeName);
+        pointOpacityMagnitudeAction.connectToPublicActionByName(globalPointOpacityName);
+    }
         
     _sizeAction.setSerializationName("SizeScalar");
     _opacityAction.setSerializationName("OpacityScalar");
@@ -283,6 +283,9 @@ void PointPlotAction::updateDefaultDatasets()
 
 void PointPlotAction::updateScatterPlotWidgetPointSizeScalars()
 {
+    if (!_scatterplotPlugin->getPositionDataset().isValid())
+        return;
+
     // Number of points
     const auto numberOfPoints = _scatterplotPlugin->getPositionDataset()->getNumPoints();
 
@@ -373,6 +376,9 @@ void PointPlotAction::updateScatterPlotWidgetPointSizeScalars()
 
 void PointPlotAction::updateScatterPlotWidgetPointOpacityScalars()
 {
+    if (!_scatterplotPlugin->getPositionDataset().isValid())
+        return;
+
     // Enable the opacity magnitude action in constant mode
     //_opacityAction.getMagnitudeAction().setEnabled(_opacityAction.isConstant());
 
