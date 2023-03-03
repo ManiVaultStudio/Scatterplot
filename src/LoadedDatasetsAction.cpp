@@ -58,7 +58,7 @@ LoadedDatasetsAction::LoadedDatasetsAction(ScatterplotPlugin* scatterplotPlugin)
         std::string input_str = dataset->getGuiName().toStdString();
         for (const std::string& substring : substrings) {
             if (input_str.find(substring) != std::string::npos) {
-                _scatterplotPlugin->getWidget().setWindowTitle(QString::fromStdString("Scatterplot View: "+ substring));
+                _scatterplotPlugin->getGuiNameAction().setString(QString::fromStdString("Scatterplot View: "+ substring));
                 break;
             }
         }
