@@ -202,13 +202,15 @@ void ScatterplotPlugin::init()
     //bottomToolbarWidget->setAutoFillBackground(true);
     //bottomToolbarWidget->setLayout(bottomToolbarLayout);
 
-    //bottomToolbarLayout->setContentsMargins(0, 0, 0, 0);
-    //bottomToolbarLayout->addWidget(_settingsAction.getColoringAction().getColorMapAction().createLabelWidget(&getWidget()));
-    //bottomToolbarLayout->addWidget(_settingsAction.getColoringAction().getColorMapAction().createWidget(&getWidget()));
-    //bottomToolbarLayout->addWidget(_settingsAction.getPlotAction().getPointPlotAction().getFocusSelection().createWidget(&getWidget()));
-    //bottomToolbarLayout->addStretch(1);
-    //bottomToolbarLayout->addWidget(_settingsAction.getExportAction().createWidget(&getWidget()));
-    //bottomToolbarLayout->addWidget(_settingsAction.getMiscellaneousAction().createCollapsedWidget(&getWidget()));
+    bottomToolbarLayout->setContentsMargins(0, 0, 0, 0);
+    bottomToolbarLayout->addWidget(_settingsAction.getColoringAction().getColorMapAction().createLabelWidget(&getWidget()));
+    bottomToolbarLayout->addWidget(_settingsAction.getColoringAction().getColorMapAction().createWidget(&getWidget()));
+    bottomToolbarLayout->addWidget(_settingsAction.getColoringAction().getColorMap2DAction().createLabelWidget(&getWidget()));
+    bottomToolbarLayout->addWidget(_settingsAction.getColoringAction().getColorMap2DAction().createWidget(&getWidget()));
+    bottomToolbarLayout->addWidget(_settingsAction.getPlotAction().getPointPlotAction().getFocusSelection().createWidget(&getWidget()));
+    bottomToolbarLayout->addStretch(1);
+    bottomToolbarLayout->addWidget(_settingsAction.getExportAction().createWidget(&getWidget()));
+    bottomToolbarLayout->addWidget(_settingsAction.getMiscellaneousAction().createCollapsedWidget(&getWidget()));
 
     //layout->addWidget(bottomToolbarWidget, 1);
 
@@ -450,6 +452,8 @@ void ScatterplotPlugin::loadColors(const Dataset<Points>& points, const std::uin
     // Assign scalars and scalar effect
     _scatterPlotWidget->setScalars(scalars);
     _scatterPlotWidget->setScalarEffect(PointEffect::Color);
+
+    _settingsAction.getColoringAction().updateColorMapActionScalarRange();
 
     // Render
     getWidget().update();
