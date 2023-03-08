@@ -128,6 +128,7 @@ public: // Action getters
     ColorAction& getConstantColorAction() { return _constantColorAction; }
     DimensionPickerAction& getDimensionAction() { return _dimensionAction; }
     ColorMapAction& getColorMapAction() { return _colorMapAction; }
+    ColorMapAction& getColorMap2DAction() { return _colorMap2DAction; }
 
 protected:
     ColorSourceModel        _colorByModel;              /** Color by model (model input for the color by action) */
@@ -135,9 +136,11 @@ protected:
     ColorAction             _constantColorAction;       /** Action for picking the constant color */
     DimensionPickerAction   _dimensionAction;           /** Dimension picker action */
     ColorMapAction          _colorMapAction;            /** Color map action */
+    ColorMapAction          _colorMap2DAction;          /** Color map 2D action */
 
     /** Default constant color */
     static const QColor DEFAULT_CONSTANT_COLOR;
 
     friend class Widget;
+    friend class ScatterplotPlugin;
 };

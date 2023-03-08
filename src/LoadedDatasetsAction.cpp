@@ -54,6 +54,14 @@ LoadedDatasetsAction::LoadedDatasetsAction(ScatterplotPlugin* scatterplotPlugin)
 
     connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, [this](DatasetImpl* dataset) -> void {
         _positionDatasetPickerAction.setCurrentDataset(dataset);
+        std::vector<std::string> substrings = { "human", "chimp", "gorilla", "rhesus", "marmoset" };
+        std::string input_str = dataset->getGuiName().toStdString();
+        for (const std::string& substring : substrings) {
+            if (input_str.find(substring) != std::string::npos) {
+                _scatterplotPlugin->getGuiNameAction().setString(QString::fromStdString("Scatterplot View: "+ substring));
+                break;
+            }
+        }
     });
 
     
