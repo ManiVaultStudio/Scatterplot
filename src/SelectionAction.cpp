@@ -27,7 +27,16 @@ SelectionAction::SelectionAction(ScatterplotPlugin& scatterplotPlugin) :
     _outlineHaloEnabledAction(this, "Halo")
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("mouse-pointer"));
-    
+
+    if (_scatterplotPlugin.getFactory()->getNumberOfInstances() == 0) {
+        //_overlayColorAction.setConnectionPermissionsFlag(ConnectionPermissionFlag::All);
+        getOverlayColorAction().publish("Global Selection Color");
+    }
+    else {
+        getOverlayColorAction().connectToPublicActionByName("Global Selection Color");
+    }
+
+
     _displayModeAction.setToolTip("The way in which selection is visualized");
 
     _outlineScaleAction.setSuffix("%");
