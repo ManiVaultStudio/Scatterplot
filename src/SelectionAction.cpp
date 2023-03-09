@@ -30,12 +30,11 @@ SelectionAction::SelectionAction(ScatterplotPlugin& scatterplotPlugin) :
 
     if (_scatterplotPlugin.getFactory()->getNumberOfInstances() == 0) {
         //_overlayColorAction.setConnectionPermissionsFlag(ConnectionPermissionFlag::All);
-        getOverlayColorAction().publish("Global Selection Color");
+        getOverlayColorAction().publish("GlobalSelectionColor");
     }
     else {
-        getOverlayColorAction().connectToPublicActionByName("Global Selection Color");
+        getOverlayColorAction().connectToPublicActionByName("GlobalSelectionColor");
     }
-
 
     _displayModeAction.setToolTip("The way in which selection is visualized");
 
