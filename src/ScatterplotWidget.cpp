@@ -190,8 +190,7 @@ void ScatterplotWidget::setData(const std::vector<Vector2f>* points)
         default:
             break;
     }
-
-    _pointRenderer.setSelectionOutlineColor(Vector3f(1, 0, 0));
+   // _pointRenderer.setSelectionOutlineColor(Vector3f(1, 0, 0));
 
     update();
 }
@@ -478,6 +477,8 @@ void ScatterplotWidget::initializeGL()
 
     // Set a default color map for both renderers
     _pointRenderer.setScalarEffect(PointEffect::Color);
+
+    _pointRenderer.setSelectionOutlineColor(Vector3f(1, 0, 0));
 
     // OpenGL is initialized
     _isInitialized = true;
