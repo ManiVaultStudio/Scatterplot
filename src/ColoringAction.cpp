@@ -27,6 +27,9 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
     _colorMapAction.getDiscretizeAlphaAction().setVisible(false);
     _colorMapAction.getNumberOfDiscreteStepsAction().setVisible(false);
     _colorMapAction.getCustomColorMapGroupAction().setVisible(false);
+    _colorMapAction.getSettings1DAction().setDisabled(true);
+    _colorMapAction.getSettings1DAction().setVisible(false);
+    _colorMapAction.getCustomColorMapAction().setChecked(true);
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("palette"));
     setSerializationName("Coloring");
 
