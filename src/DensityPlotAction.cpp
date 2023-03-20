@@ -26,7 +26,7 @@ DensityPlotAction::DensityPlotAction(PlotAction* plotAction, ScatterplotPlugin* 
         const auto maxDensity = getScatterplotWidget().getDensityRenderer().getMaxDensity();
 
         if (maxDensity > 0)
-            _scatterplotPlugin->getSettingsAction().getColoringAction().getColorMapAction().getSettingsAction().getHorizontalAxisAction().getRangeAction().setRange(0.0f, maxDensity);
+            _scatterplotPlugin->getSettingsAction().getColoringAction().getColorMapAction().getRangeAction(ColorMapAction::Axis::X).setRange({ 0.0f, maxDensity });
     };
 
     connect(&_sigmaAction, &DecimalAction::valueChanged, this, [this, computeDensity](const double& value) {
