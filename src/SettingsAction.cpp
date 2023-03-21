@@ -57,9 +57,9 @@ QMenu* SettingsAction::getContextMenu()
 
     //menu->addMenu(_renderModeAction.getContextMenu());
     menu->addMenu(_plotAction.getContextMenu());
-    menu->addSeparator();
+    //menu->addSeparator();
     //menu->addMenu(_positionAction.getContextMenu());
-    menu->addMenu(_coloringAction.getContextMenu());
+    //menu->addMenu(_coloringAction.getContextMenu());
     //menu->addSeparator();
     //menu->addMenu(_subsetAction.getContextMenu());
     //menu->addMenu(_selectionAction.getContextMenu());
@@ -107,7 +107,7 @@ SettingsAction::Widget::Widget(QWidget* parent, SettingsAction* settingsAction) 
     _toolBarLayout.setSpacing(0);
     _toolBarLayout.setSizeConstraint(QLayout::SetFixedSize);
 
-    addStateWidget(&settingsAction->_coloringAction.getColorMapAction(), 0);
+    //addStateWidget(&settingsAction->_coloringAction.getColorMapAction(), 0);
     //addStateWidget(&settingsAction->_currentDatasetAction, 0);
     //addStateWidget(&settingsAction->_renderModeAction, 4);
     addStateWidget(&settingsAction->_plotAction, 2);
