@@ -193,7 +193,22 @@ void ScatterplotPlugin::init()
 
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
-    layout->addWidget(_settingsAction.createWidget(&getWidget()));
+
+    auto optionsLayout = new QHBoxLayout();
+    optionsLayout->setContentsMargins(0, 0, 0, 0);
+    optionsLayout->setSpacing(1);
+    optionsLayout->setAlignment(Qt::AlignLeft);
+
+    auto coloringWidget = _settingsAction.getColoringAction().getColorMapAction().createWidget(&getWidget());
+    coloringWidget->setMaximumWidth(80);
+    QLabel* ColorLabel = new QLabel();
+    ColorLabel->setText("Color map: ");
+    optionsLayout->addWidget(ColorLabel);
+    optionsLayout->addWidget(coloringWidget);
+    optionsLayout->addWidget(_settingsAction.createWidget(&getWidget()));
+
+    //layout->addWidget(_settingsAction.createWidget(&getWidget()));
+    layout->addLayout(optionsLayout);
     layout->addWidget(_scatterPlotWidget, 100);
 
     //auto bottomToolbarWidget = new QWidget();
