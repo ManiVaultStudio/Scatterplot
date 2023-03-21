@@ -286,6 +286,8 @@ void PointPlotAction::updateScatterPlotWidgetPointSizeScalars()
     if (!_scatterplotPlugin->getPositionDataset().isValid())
         return;
 
+    _sizeAction.getMagnitudeAction().setMinimum(0);
+    _sizeAction.getMagnitudeAction().setMaximum(100);
     // Number of points
     const auto numberOfPoints = _scatterplotPlugin->getPositionDataset()->getNumPoints();
 
@@ -378,7 +380,8 @@ void PointPlotAction::updateScatterPlotWidgetPointOpacityScalars()
 {
     if (!_scatterplotPlugin->getPositionDataset().isValid())
         return;
-
+    _opacityAction.getMagnitudeAction().setMinimum(0);
+    _opacityAction.getMagnitudeAction().setMaximum(100);
     // Enable the opacity magnitude action in constant mode
     //_opacityAction.getMagnitudeAction().setEnabled(_opacityAction.isConstant());
 
