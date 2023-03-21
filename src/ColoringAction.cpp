@@ -21,14 +21,8 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
     _colorMapAction(this, "Color map"),
     _colorMap2DAction(this, "Color map 2D", ColorMap::Type::TwoDimensional, "example_c", "example_c")
 {
-    _colorMapAction.getDiscretizeAction().setVisible(false);
-    _colorMapAction.getEditor1DAction().setVisible(false);
-    _colorMapAction.getCustomColorMapAction().setVisible(false);
-    _colorMapAction.getDiscretizeAlphaAction().setVisible(false);
-    _colorMapAction.getNumberOfDiscreteStepsAction().setVisible(false);
-    _colorMapAction.getCustomColorMapGroupAction().setVisible(false);
-    _colorMapAction.getSettings1DAction().setDisabled(true);
-    _colorMapAction.getSettings1DAction().setVisible(false);
+    _colorMapAction.getSettingsAction().setDisabled(true);
+    _colorMapAction.getSettingsAction().setVisible(false);
     _colorMapAction.getCustomColorMapAction().setChecked(true);
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("palette"));
     setSerializationName("Coloring");
