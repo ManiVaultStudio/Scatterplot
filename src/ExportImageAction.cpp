@@ -27,7 +27,7 @@ const QMap<ExportImageAction::Scale, float> ExportImageAction::scaleFactors = QM
 });
 
 ExportImageAction::ExportImageAction(QObject* parent, ScatterplotPlugin& scatterplotPlugin) :
-    GroupAction(parent),
+    GroupAction(parent, "Export Image"),
     _scatterplotPlugin(scatterplotPlugin),
     _dimensionSelectionAction(this),
     _targetWidthAction(this, "Width ", 1, 10000),
@@ -222,9 +222,9 @@ void ExportImageAction::exportImages()
             coloringAction.getDimensionAction().setCurrentDimensionName(dimensionNames[dimensionIndex]);
 
             if (_overrideRangesAction.isChecked()) {
-                auto& rangeAction = coloringAction.getColorMapAction().getSettingsAction().getHorizontalAxisAction().getRangeAction();
+                auto& rangeAction = coloringAction.getColorMapAction().getRangeAction(ColorMapAction::Axis::X);
 
-                rangeAction.initialize(_fixedRangeAction.getMinimum(), _fixedRangeAction.getMaximum(), _fixedRangeAction.getMinimum(), _fixedRangeAction.getMaximum());
+                rangeAction.initialize({ _fixedRangeAction.getMinimum(), _fixedRangeAction.getMaximum() }, { _fixedRangeAction.getMinimum(), _fixedRangeAction.getMaximum() });
             }
 
             // Create and save the image

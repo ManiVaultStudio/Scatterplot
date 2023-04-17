@@ -146,7 +146,7 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
     connect(&_scatterplotPlugin->getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, &ColoringAction::updateScatterplotWidgetColorMap);
 
     // Update scatter plot widget color map range when the color map action range changes
-    connect(&_colorMapAction.getSettingsAction().getHorizontalAxisAction().getRangeAction(), &DecimalRangeAction::rangeChanged, this, &ColoringAction::updateScatterPlotWidgetColorMapRange);
+    connect(&_colorMapAction.getRangeAction(ColorMapAction::Axis::X), &DecimalRangeAction::rangeChanged, this, &ColoringAction::updateScatterPlotWidgetColorMapRange);
 
     // Enable/disable the color map action when the scatter plot widget rendering or coloring mode changes
     connect(&_scatterplotPlugin->getScatterplotWidget(), &ScatterplotWidget::coloringModeChanged, this, &ColoringAction::updateColorMapActionReadOnly);
@@ -296,10 +296,10 @@ void ColoringAction::updateColorMapActionScalarRange()
     const auto colorMapRangeMax = colorMapRange.y;
 
     // Get reference to color map range action
-    auto& colorMapRangeAction = _colorMapAction.getSettingsAction().getHorizontalAxisAction().getRangeAction();
+    auto& colorMapRangeAction = _colorMapAction.getRangeAction(ColorMapAction::Axis::X);
 
     // Initialize the color map range action with the color map range from the scatter plot 
-    colorMapRangeAction.initialize(colorMapRangeMin, colorMapRangeMax, colorMapRangeMin, colorMapRangeMax, colorMapRangeMin, colorMapRangeMax);
+    colorMapRangeAction.initialize({ colorMapRangeMin, colorMapRangeMax }, { colorMapRangeMin, colorMapRangeMax });
 }
 
 void ColoringAction::updateScatterplotWidgetColorMap()
@@ -356,10 +356,8 @@ void ColoringAction::updateScatterplotWidgetColorMap()
 
 void ColoringAction::updateScatterPlotWidgetColorMapRange()
 {
-    // Get color map range action
-    const auto& rangeAction = _colorMapAction.getSettingsAction().getHorizontalAxisAction().getRangeAction();
+    const auto& rangeAction = _colorMapAction.getRangeAction(ColorMapAction::Axis::X);
 
-    // And assign scatter plot renderer color map range
     getScatterplotWidget().setColorMapRange(rangeAction.getMinimum(), rangeAction.getMaximum());
 }
 

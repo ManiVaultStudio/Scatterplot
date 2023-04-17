@@ -6,7 +6,7 @@
 using namespace hdps::gui;
 
 PluginAction::PluginAction(QObject* parent, ScatterplotPlugin* scatterplotPlugin, const QString& title) :
-    WidgetAction(parent),
+    WidgetAction(parent, title),
     _scatterplotPlugin(scatterplotPlugin)
 {
     _scatterplotPlugin->getWidget().addAction(this);
