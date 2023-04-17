@@ -39,6 +39,8 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
     _colorMapAction.setVisible(false);
     _colorMap2DAction.setVisible(false);
 
+    _colorMapAction.setConnectionPermissionsFlag(ConnectionPermissionFlag::All);
+
     // Update dataset picker when the position dataset changes
     connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, [this]() {
 
@@ -290,7 +292,6 @@ void ColoringAction::updateScatterPlotWidgetColors()
 
 void ColoringAction::updateColorMapActionScalarRange()
 {
-    // Get the color map range from the scatter plot widget
     const auto colorMapRange    = _scatterplotPlugin->getScatterplotWidget().getColorMapRange();
     const auto colorMapRangeMin = colorMapRange.x;
     const auto colorMapRangeMax = colorMapRange.y;
@@ -299,6 +300,12 @@ void ColoringAction::updateColorMapActionScalarRange()
     auto& colorMapRangeAction = _colorMapAction.getRangeAction(ColorMapAction::Axis::X);
 
     // Initialize the color map range action with the color map range from the scatter plot 
+    colorMapRangeAction.initialize({ colorMapRangeMin, colorMapRangeMax }, { colorMapRangeMin, colorMapRangeMax });
+	
+	_colorMapAction.getDataRangeAction(ColorMapAction::Axis::X).setRange({ colorMapRangeMin, colorMapRangeMax });
+
+    auto& colorMapRangeAction = _colorMapAction.getRangeAction(ColorMapAction::Axis::X);
+
     colorMapRangeAction.initialize({ colorMapRangeMin, colorMapRangeMax }, { colorMapRangeMin, colorMapRangeMax });
 }
 

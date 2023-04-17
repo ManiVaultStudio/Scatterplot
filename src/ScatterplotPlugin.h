@@ -98,6 +98,8 @@ public:
 
     SettingsAction& getSettingsAction() { return _settingsAction; }
 
+    bool& getHighlightBool() { return _showHighlights; }
+
 private:
     void updateData();
     void calculatePositions(const Points& points);
@@ -123,6 +125,7 @@ private:
     std::vector<hdps::Vector2f>     _positions;                 /** Point positions */
     unsigned int                    _numPoints;                 /** Number of point positions */
     QTimer                          _selectPointsTimer;         /** Timer to limit the refresh rate of selection updates */
+    bool                            _showHighlights;
 
     static const std::int32_t LAZY_UPDATE_INTERVAL = 2;
 

@@ -3,6 +3,7 @@
 
 #include "Application.h"
 #include "ScatterplotPlugin.h"
+#include "ScatterplotWidget.h"
 #include "PointData.h"
 
 #include <QMenu>
@@ -20,7 +21,8 @@ SettingsAction::SettingsAction(ScatterplotPlugin* scatterplotPlugin) :
     _selectionAction(*scatterplotPlugin),
     _plotAction(scatterplotPlugin),
     _exportAction(this, "Export to image/video"),
-    _miscellaneousAction(scatterplotPlugin)
+    _miscellaneousAction(scatterplotPlugin),
+    _showHighlightsAction(scatterplotPlugin, "Highlights", scatterplotPlugin->getHighlightBool())
 {
     setText("Settings");
     setSerializationName("Settings");
@@ -38,6 +40,14 @@ SettingsAction::SettingsAction(ScatterplotPlugin* scatterplotPlugin) :
     };
 
     connect(&scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, updateEnabled);
+
+    const auto updateHighlights = [this](const bool& state) -> void {
+        _scatterplotPlugin->getScatterplotWidget().showHighlights(state);
+    };
+
+    connect(&_showHighlightsAction, &ToggleAction::toggled, this, [this, updateHighlights](const bool& state) {
+        updateHighlights(state);
+    });
 
     updateEnabled();
 
@@ -115,6 +125,7 @@ SettingsAction::Widget::Widget(QWidget* parent, SettingsAction* settingsAction) 
     addStateWidget(&settingsAction->_subsetAction, 3);
     addStateWidget(&settingsAction->_manualClusteringAction, 1);
     addStateWidget(&settingsAction->_selectionAction, 2);
+    addStateWidget(&settingsAction->_showHighlightsAction, 11);
 
     _toolBarLayout.addStretch(1);
 

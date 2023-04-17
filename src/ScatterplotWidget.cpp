@@ -296,6 +296,12 @@ void ScatterplotWidget::setColorMapRange(const float& min, const float& max)
     update();
 }
 
+void ScatterplotWidget::showHighlights(bool show)
+{
+    _pointRenderer.setSelectionOutlineScale(show ? 0.5f : 0);
+    update();
+}
+
 void ScatterplotWidget::createScreenshot(std::int32_t width, std::int32_t height, const QString& fileName, const QColor& backgroundColor)
 {
     // Exit if the viewer is not initialized
