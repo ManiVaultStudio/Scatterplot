@@ -303,10 +303,6 @@ void ColoringAction::updateColorMapActionScalarRange()
     colorMapRangeAction.initialize({ colorMapRangeMin, colorMapRangeMax }, { colorMapRangeMin, colorMapRangeMax });
 	
 	_colorMapAction.getDataRangeAction(ColorMapAction::Axis::X).setRange({ colorMapRangeMin, colorMapRangeMax });
-
-    auto& colorMapRangeAction = _colorMapAction.getRangeAction(ColorMapAction::Axis::X);
-
-    colorMapRangeAction.initialize({ colorMapRangeMin, colorMapRangeMax }, { colorMapRangeMin, colorMapRangeMax });
 }
 
 void ColoringAction::updateScatterplotWidgetColorMap()
