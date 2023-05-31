@@ -1,16 +1,17 @@
 #pragma once
 
-#include "PluginAction.h"
+#include <actions/WidgetAction.h>
 
 #include "ScalarAction.h"
 
 #include <QLabel>
 
 class PlotAction;
+class ScatterplotPlugin;
 
 using namespace hdps::gui;
 
-class PointPlotAction : public PluginAction
+class PointPlotAction : public WidgetAction
 {
 protected: // Widget
 
@@ -24,7 +25,14 @@ protected: // Widget
     };
 
 public:
-    PointPlotAction(PlotAction* plotAction, ScatterplotPlugin* scatterplotPlugin);
+    
+    /**
+     * Construct with \p parent
+     * @param parent Pointer to parent object
+     */
+    PointPlotAction(QObject* parent);
+
+    ScatterplotPlugin* getScatterplotPlugin();
 
     QMenu* getContextMenu();
 

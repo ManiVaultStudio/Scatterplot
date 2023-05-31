@@ -9,18 +9,15 @@
 
 using namespace gui;
 
-PointPlotAction::PointPlotAction(PlotAction* plotAction, ScatterplotPlugin* scatterplotPlugin) :
-    PluginAction(plotAction, scatterplotPlugin, "Point"),
-    _sizeAction(this, scatterplotPlugin, "Point size", 0.0, 100.0, DEFAULT_POINT_SIZE, DEFAULT_POINT_SIZE),
-    _opacityAction(this, scatterplotPlugin, "Point opacity", 0.0, 100.0, DEFAULT_POINT_OPACITY, DEFAULT_POINT_OPACITY),
+PointPlotAction::PointPlotAction(QObject* parent) :
+    WidgetAction(parent, "Point"),
+    _sizeAction(this, "Point size", 0.0, 100.0, DEFAULT_POINT_SIZE),
+    _opacityAction(this, "Point opacity", 0.0, 100.0, DEFAULT_POINT_OPACITY),
     _pointSizeScalars(),
     _pointOpacityScalars(),
     _focusSelection(this, "Focus selection"),
     _lastOpacitySourceIndex(-1)
 {
-    _scatterplotPlugin->getWidget().addAction(&_sizeAction);
-    _scatterplotPlugin->getWidget().addAction(&_opacityAction);
-
     _sizeAction.setConnectionPermissionsToNone();
     _opacityAction.setConnectionPermissionsToNone();
 
@@ -32,10 +29,10 @@ PointPlotAction::PointPlotAction(PlotAction* plotAction, ScatterplotPlugin* scat
     _focusSelection.setToolTip("Put focus on selected points by modulating the point opacity");
 
     // Update size by action when the position dataset changes
-    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, [this]() {
+    connect(&getScatterplotPlugin()->getPositionDataset(), &Dataset<Points>::changed, this, [this]() {
 
         // Get reference to position dataset
-        const auto positionDataset = _scatterplotPlugin->getPositionDataset();
+        const auto positionDataset = getScatterplotPlugin()->getPositionDataset();
 
         // Do not update if no position dataset is loaded
         if (!positionDataset.isValid())
@@ -50,7 +47,7 @@ PointPlotAction::PointPlotAction(PlotAction* plotAction, ScatterplotPlugin* scat
         _opacityAction.addDataset(positionDataset);
 
         // Get smart pointer to position source dataset
-        const auto positionSourceDataset = _scatterplotPlugin->getPositionSourceDataset();
+        const auto positionSourceDataset = getScatterplotPlugin()->getPositionSourceDataset();
 
         // Add source position dataset (if position dataset is derived)
         if (positionSourceDataset.isValid()) {
@@ -73,8 +70,8 @@ PointPlotAction::PointPlotAction(PlotAction* plotAction, ScatterplotPlugin* scat
     });
 
     // Update default datasets when a child is added to or removed from the position dataset
-    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::dataChildAdded, this, &PointPlotAction::updateDefaultDatasets);
-    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::dataChildRemoved, this, &PointPlotAction::updateDefaultDatasets);
+    connect(&getScatterplotPlugin()->getPositionDataset(), &Dataset<Points>::dataChildAdded, this, &PointPlotAction::updateDefaultDatasets);
+    connect(&getScatterplotPlugin()->getPositionDataset(), &Dataset<Points>::dataChildRemoved, this, &PointPlotAction::updateDefaultDatasets);
 
     // Update scatter plot widget point size scalars
     connect(&_sizeAction, &ScalarAction::magnitudeChanged, this, &PointPlotAction::updateScatterPlotWidgetPointSizeScalars);
@@ -91,8 +88,8 @@ PointPlotAction::PointPlotAction(PlotAction* plotAction, ScatterplotPlugin* scat
     connect(&_opacityAction, &ScalarAction::scalarRangeChanged, this, &PointPlotAction::updateScatterPlotWidgetPointOpacityScalars);
 
     // Update the point size and opacity scalars when the selection of the position dataset changes
-    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::dataSelectionChanged, this, &PointPlotAction::updateScatterPlotWidgetPointSizeScalars);
-    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::dataSelectionChanged, this, &PointPlotAction::updateScatterPlotWidgetPointOpacityScalars);
+    connect(&getScatterplotPlugin()->getPositionDataset(), &Dataset<Points>::dataSelectionChanged, this, &PointPlotAction::updateScatterPlotWidgetPointSizeScalars);
+    connect(&getScatterplotPlugin()->getPositionDataset(), &Dataset<Points>::dataSelectionChanged, this, &PointPlotAction::updateScatterPlotWidgetPointOpacityScalars);
 
     // For convenience, set the offset to double the magnitude in case of a selection source
     connect(&_sizeAction, &ScalarAction::sourceSelectionChanged, this, [this](const std::uint32_t& sourceSelectionIndex) {
@@ -182,11 +179,16 @@ PointPlotAction::PointPlotAction(PlotAction* plotAction, ScatterplotPlugin* scat
     });
 }
 
+ScatterplotPlugin* PointPlotAction::getScatterplotPlugin()
+{
+    return dynamic_cast<ScatterplotPlugin*>(parent()->parent());
+}
+
 QMenu* PointPlotAction::getContextMenu()
 {
     auto menu = new QMenu("Plot settings");
 
-    const auto renderMode = getScatterplotWidget().getRenderMode();
+    const auto renderMode = getScatterplotPlugin()->getScatterplotWidget().getRenderMode();
 
     const auto addActionToMenu = [menu](QAction* action) {
         auto actionMenu = new QMenu(action->text());
@@ -225,7 +227,7 @@ void PointPlotAction::addPointOpacityDataset(const Dataset<DatasetImpl>& pointOp
 void PointPlotAction::updateDefaultDatasets()
 {
     // Get smart pointer to the position dataset
-    auto positionDataset = Dataset<Points>(_scatterplotPlugin->getPositionDataset());
+    auto positionDataset = Dataset<Points>(getScatterplotPlugin()->getPositionDataset());
 
     // Only proceed if the position dataset is loaded
     if (!positionDataset.isValid())
@@ -259,7 +261,7 @@ void PointPlotAction::updateDefaultDatasets()
 void PointPlotAction::updateScatterPlotWidgetPointSizeScalars()
 {
     // Number of points
-    const auto numberOfPoints = _scatterplotPlugin->getPositionDataset()->getNumPoints();
+    const auto numberOfPoints = getScatterplotPlugin()->getPositionDataset()->getNumPoints();
 
     // Resize to number of points if needed
     if (numberOfPoints != _pointSizeScalars.size())
@@ -272,7 +274,7 @@ void PointPlotAction::updateScatterPlotWidgetPointSizeScalars()
     if (_sizeAction.isSourceSelection()) {
 
         // Get smart pointer to current position dataset
-        auto positionDataset = _scatterplotPlugin->getPositionDataset();
+        auto positionDataset = getScatterplotPlugin()->getPositionDataset();
 
         // Default point size for all
         std::fill(_pointSizeScalars.begin(), _pointSizeScalars.end(), _sizeAction.getMagnitudeAction().getValue());
@@ -301,7 +303,7 @@ void PointPlotAction::updateScatterPlotWidgetPointSizeScalars()
         auto pointSizeSourceDataset = Dataset<Points>(_sizeAction.getCurrentDataset());
 
         // Only populate scalars from dataset if the number of points in the source and target dataset match and we have a valid input dataset
-        if (pointSizeSourceDataset.isValid() && pointSizeSourceDataset->getNumPoints() == _scatterplotPlugin->getPositionDataset()->getNumPoints())
+        if (pointSizeSourceDataset.isValid() && pointSizeSourceDataset->getNumPoints() == getScatterplotPlugin()->getPositionDataset()->getNumPoints())
         {
             // Visit the points dataset to get access to the point values
             pointSizeSourceDataset->visitData([this, pointSizeSourceDataset, numberOfPoints](auto pointData) {
@@ -343,7 +345,7 @@ void PointPlotAction::updateScatterPlotWidgetPointSizeScalars()
     }
 
     // Set scatter plot point size scalars
-    _scatterplotPlugin->getScatterplotWidget().setPointSizeScalars(_pointSizeScalars);
+    getScatterplotPlugin()->getScatterplotWidget().setPointSizeScalars(_pointSizeScalars);
 }
 
 void PointPlotAction::updateScatterPlotWidgetPointOpacityScalars()
@@ -352,7 +354,7 @@ void PointPlotAction::updateScatterPlotWidgetPointOpacityScalars()
     //_opacityAction.getMagnitudeAction().setEnabled(_opacityAction.isConstant());
 
     // Number of points
-    const auto numberOfPoints = _scatterplotPlugin->getPositionDataset()->getNumPoints();
+    const auto numberOfPoints = getScatterplotPlugin()->getPositionDataset()->getNumPoints();
 
     // Resize to number of points
     if (numberOfPoints != _pointOpacityScalars.size())
@@ -368,7 +370,7 @@ void PointPlotAction::updateScatterPlotWidgetPointOpacityScalars()
     if (_opacityAction.isSourceSelection()) {
 
         // Get smart pointer to current position dataset
-        auto positionDataset = _scatterplotPlugin->getPositionDataset();
+        auto positionDataset = getScatterplotPlugin()->getPositionDataset();
 
         // Get smart pointer to the position selection dataset
         auto selectionSet = positionDataset->getSelection<Points>();
@@ -398,7 +400,7 @@ void PointPlotAction::updateScatterPlotWidgetPointOpacityScalars()
         auto pointOpacitySourceDataset = Dataset<Points>(_opacityAction.getCurrentDataset());
 
         // Only populate scalars from dataset if the number of points in the source and target dataset match and we have a valid input dataset
-        if (pointOpacitySourceDataset.isValid() && pointOpacitySourceDataset->getNumPoints() == _scatterplotPlugin->getPositionDataset()->getNumPoints())
+        if (pointOpacitySourceDataset.isValid() && pointOpacitySourceDataset->getNumPoints() == getScatterplotPlugin()->getPositionDataset()->getNumPoints())
         {
             // Visit the points dataset to get access to the point values
             pointOpacitySourceDataset->visitData([this, pointOpacitySourceDataset, numberOfPoints, opacityMagnitude](auto pointData) {
@@ -452,7 +454,7 @@ void PointPlotAction::updateScatterPlotWidgetPointOpacityScalars()
     }
 
     // Set scatter plot point size scalars
-    _scatterplotPlugin->getScatterplotWidget().setPointOpacityScalars(_pointOpacityScalars);
+    getScatterplotPlugin()->getScatterplotWidget().setPointOpacityScalars(_pointOpacityScalars);
 }
 
 void PointPlotAction::fromVariantMap(const QVariantMap& variantMap)

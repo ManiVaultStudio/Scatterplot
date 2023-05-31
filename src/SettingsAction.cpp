@@ -19,7 +19,7 @@ SettingsAction::SettingsAction(ScatterplotPlugin* scatterplotPlugin) :
     _subsetAction(scatterplotPlugin),
     _manualClusteringAction(scatterplotPlugin),
     _selectionAction(*scatterplotPlugin),
-    _plotAction(scatterplotPlugin),
+    _plotAction(scatterplotPlugin, "Plot"),
     _exportAction(this, "Export to image/video"),
     _miscellaneousAction(scatterplotPlugin),
     _showHighlightsAction(scatterplotPlugin, "Highlights", scatterplotPlugin->getHighlightBool())

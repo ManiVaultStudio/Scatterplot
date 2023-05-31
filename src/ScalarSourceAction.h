@@ -1,6 +1,7 @@
 #pragma once
 
-#include "PluginAction.h"
+#include <actions/WidgetAction.h>
+#include <actions/DecimalRangeAction.h>
 
 #include "ScalarSourceModel.h"
 
@@ -15,9 +16,8 @@ using namespace hdps::gui;
  *
  * @author Thomas Kroes
  */
-class ScalarSourceAction : public PluginAction
+class ScalarSourceAction : public WidgetAction
 {
-
     Q_OBJECT
 
 protected: // Widget
@@ -50,16 +50,30 @@ public:
     /**
      * Constructor
      * @param parent Pointer to parent object
-     * @param scatterplotPlugin Pointer to scatter plot plugin
      * @param title Title
      */
-    ScalarSourceAction(QObject* parent, ScatterplotPlugin* scatterplotPlugin, const QString& title);
+    Q_INVOKABLE ScalarSourceAction(QObject* parent, const QString& title);
 
     /** Get the scalar source model */
     ScalarSourceModel& getModel();
 
     /** Update scalar range */
     void updateScalarRange();
+
+public: // Linking
+
+    /**
+     * Connect this action to a public action
+     * @param publicAction Pointer to public action to connect to
+     * @param recursive Whether to also connect descendant child actions
+     */
+    void connectToPublicAction(WidgetAction* publicAction, bool recursive) override;
+
+    /**
+     * Disconnect this action from its public action
+     * @param recursive Whether to also disconnect descendant child actions
+     */
+    void disconnectFromPublicAction(bool recursive) override;
 
 public: // Serialization
 
@@ -103,3 +117,7 @@ protected:
     DecimalAction           _offsetAction;              /** Scalar source offset action */
     DecimalRangeAction      _rangeAction;               /** Range action */
 };
+
+Q_DECLARE_METATYPE(ScalarSourceAction)
+
+inline const auto scalarSourceActionMetaTypeId = qRegisterMetaType<ScalarSourceAction*>("ScalarSourceAction");

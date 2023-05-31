@@ -8,14 +8,12 @@
 
 using namespace hdps::gui;
 
-ScalarAction::ScalarAction(QObject* parent, ScatterplotPlugin* scatterplotPlugin, const QString& title, const float& minimum, const float& maximum, const float& value, const float& defaultValue) :
-    PluginAction(parent, scatterplotPlugin, "Scalar"),
-    _magnitudeAction(this, title, minimum, maximum, value, defaultValue),
-    _sourceAction(this, scatterplotPlugin, QString("%1 source").arg(title))
+ScalarAction::ScalarAction(QObject* parent, const QString& title, const float& minimum /*= 0.0f*/, const float& maximum /*= 100.0f*/, const float& value /*= 0.0f*/) :
+    WidgetAction(parent, title),
+    _magnitudeAction(this, title, minimum, maximum, value),
+    _sourceAction(this, QString("%1 source").arg(title))
 {
     setText(title);
-
-    _scatterplotPlugin->getWidget().addAction(&_sourceAction);
 
     // Notify others when the source selection changes
     connect(&_sourceAction.getPickerAction(), &OptionAction::currentIndexChanged, this, [this](const std::uint32_t& currentIndex) {
@@ -118,6 +116,36 @@ bool ScalarAction::isSourceSelection() const
 bool ScalarAction::isSourceDataset() const
 {
     return _sourceAction.getPickerAction().getCurrentIndex() >= ScalarSourceModel::DefaultRow::DatasetStart;
+}
+
+void ScalarAction::connectToPublicAction(WidgetAction* publicAction, bool recursive)
+{
+    auto publicScalarAction = dynamic_cast<ScalarAction*>(publicAction);
+
+    Q_ASSERT(publicScalarAction != nullptr);
+
+    if (publicScalarAction == nullptr)
+        return;
+
+    if (recursive) {
+        getMagnitudeAction().connectToPublicAction(&publicScalarAction->getMagnitudeAction(), recursive);
+        getSourceAction().connectToPublicAction(&publicScalarAction->getSourceAction(), recursive);
+    }
+
+    WidgetAction::connectToPublicAction(publicAction, recursive);
+}
+
+void ScalarAction::disconnectFromPublicAction(bool recursive)
+{
+    if (!isConnected())
+        return;
+
+    if (recursive) {
+        getMagnitudeAction().disconnectFromPublicAction(recursive);
+        getSourceAction().disconnectFromPublicAction(recursive);
+    }
+
+    WidgetAction::disconnectFromPublicAction(recursive);
 }
 
 void ScalarAction::fromVariantMap(const QVariantMap& variantMap)

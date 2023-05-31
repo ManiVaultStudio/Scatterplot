@@ -1,14 +1,17 @@
 #pragma once
 
-#include "PluginAction.h"
+#include <actions/WidgetAction.h>
+#include <actions/DecimalAction.h>
+#include <actions/ToggleAction.h>
 
 #include <QLabel>
 
 using namespace hdps::gui;
 
 class PlotAction;
+class ScatterplotPlugin;
 
-class DensityPlotAction : public PluginAction
+class DensityPlotAction : public WidgetAction
 {
 protected:
     class Widget : public WidgetActionWidget {
@@ -21,7 +24,14 @@ protected:
     };
 
 public:
-    DensityPlotAction(PlotAction* plotAction, ScatterplotPlugin* scatterplotPlugin);
+
+    /**
+     * Construct with \p parent
+     * @param parent Pointer to parent object
+     */
+    DensityPlotAction(QObject* parent);
+
+    ScatterplotPlugin* getScatterplotPlugin();
 
     QMenu* getContextMenu();
 

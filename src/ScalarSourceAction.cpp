@@ -9,18 +9,14 @@
 
 using namespace hdps::gui;
 
-ScalarSourceAction::ScalarSourceAction(QObject* parent, ScatterplotPlugin* scatterplotPlugin, const QString& title) :
-    PluginAction(parent, scatterplotPlugin, title),
+ScalarSourceAction::ScalarSourceAction(QObject* parent, const QString& title) :
+    WidgetAction(parent, title),
     _model(this),
     _pickerAction(this, "Source"),
     _dimensionPickerAction(this, "Data dimension"),
     _offsetAction(this, "Offset", 0.0f, 100.0f, 0.0f, 0.0f, 2),
     _rangeAction(this, "Scalar range")
 {
-    _scatterplotPlugin->getWidget().addAction(&_pickerAction);
-    _scatterplotPlugin->getWidget().addAction(&_dimensionPickerAction);
-
-    // Configure scalar option picker
     _pickerAction.setCustomModel(&_model);
     _pickerAction.setToolTip("Pick scalar option");
 
@@ -120,6 +116,40 @@ void ScalarSourceAction::updateScalarRange()
 
     // Notify others the range ranged
     emit scalarRangeChanged(minimum, maximum);
+}
+
+void ScalarSourceAction::connectToPublicAction(WidgetAction* publicAction, bool recursive)
+{
+    auto publicScalarSourceAction = dynamic_cast<ScalarSourceAction*>(publicAction);
+
+    Q_ASSERT(publicScalarSourceAction != nullptr);
+
+    if (publicScalarSourceAction == nullptr)
+        return;
+
+    if (recursive) {
+        getPickerAction().connectToPublicAction(&publicScalarSourceAction->getPickerAction(), recursive);
+        getDimensionPickerAction().connectToPublicAction(&publicScalarSourceAction->getDimensionPickerAction(), recursive);
+        getOffsetAction().connectToPublicAction(&publicScalarSourceAction->getOffsetAction(), recursive);
+        getRangeAction().connectToPublicAction(&publicScalarSourceAction->getRangeAction(), recursive);
+    }
+
+    WidgetAction::connectToPublicAction(publicAction, recursive);
+}
+
+void ScalarSourceAction::disconnectFromPublicAction(bool recursive)
+{
+    if (!isConnected())
+        return;
+
+    if (recursive) {
+        getPickerAction().disconnectFromPublicAction(recursive);
+        getDimensionPickerAction().disconnectFromPublicAction(recursive);
+        getOffsetAction().disconnectFromPublicAction(recursive);
+        getRangeAction().disconnectFromPublicAction(recursive);
+    }
+
+    WidgetAction::disconnectFromPublicAction(recursive);
 }
 
 void ScalarSourceAction::fromVariantMap(const QVariantMap& variantMap)

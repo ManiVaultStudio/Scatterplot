@@ -1,13 +1,18 @@
 #pragma once
 
-#include "PluginAction.h"
+#include <actions/WidgetAction.h>
+
 #include "PointPlotAction.h"
 #include "DensityPlotAction.h"
 
 using namespace hdps::gui;
 
-class PlotAction : public PluginAction
+class ScatterplotWidget;
+
+class PlotAction : public WidgetAction
 {
+    Q_OBJECT
+
 protected: // Widget
 
     class Widget : public WidgetActionWidget {
@@ -20,7 +25,15 @@ protected: // Widget
     };
 
 public:
-    PlotAction(ScatterplotPlugin* scatterplotPlugin);
+
+    /**
+     * Construct with \p parent and \p title
+     * @param parent Pointer to parent object
+     * @param title Title of the action
+     */
+    Q_INVOKABLE PlotAction(QObject* parent, const QString& title);
+
+    ScatterplotWidget* getScatterplotWidget();
 
     QMenu* getContextMenu();
 
@@ -49,3 +62,7 @@ protected:
 
     friend class Widget;
 };
+
+Q_DECLARE_METATYPE(PlotAction)
+
+inline const auto PointPlotActionMetaTypeId = qRegisterMetaType<PlotAction*>("PlotAction");
