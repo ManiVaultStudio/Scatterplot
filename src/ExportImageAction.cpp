@@ -29,7 +29,7 @@ const QMap<ExportImageAction::Scale, float> ExportImageAction::scaleFactors = QM
 ExportImageAction::ExportImageAction(QObject* parent, ScatterplotPlugin& scatterplotPlugin) :
     GroupAction(parent, "Export Image"),
     _scatterplotPlugin(scatterplotPlugin),
-    _dimensionSelectionAction(this),
+    _dimensionSelectionAction(this, "Dimensions"),
     _targetWidthAction(this, "Width ", 1, 10000),
     _targetHeightAction(this, "Height", 1, 10000),
     _lockAspectRatioAction(this, "Lock aspect ratio", true, true),

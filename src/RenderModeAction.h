@@ -1,31 +1,45 @@
 #pragma once
 
-#include "PluginAction.h"
-
-#include <QActionGroup>
-#include <QHBoxLayout>
+#include <actions/OptionAction.h>
+#include <actions/ToggleAction.h>
 
 using namespace hdps::gui;
 
-class QMenu;
-
-class RenderModeAction : public PluginAction
+class RenderModeAction : public OptionAction
 {
-protected: // Widget
-
-    class Widget : public WidgetActionWidget {
-    public:
-        Widget(QWidget* parent, RenderModeAction* renderModeAction, const std::int32_t& widgetFlags);
-    };
-
-    QWidget* getWidget(QWidget* parent, const std::int32_t& widgetFlags) override {
-        return new Widget(parent, this, widgetFlags);
+    Q_OBJECT
+    
+    enum class RenderMode {
+        ScatterPlot,
+        DensityPlot,
+        ContourPlot,
     };
 
 public:
-    RenderModeAction(ScatterplotPlugin* scatterplotPlugin);
+
+    /**
+     * Construct with \p parent and \p title
+     * @param parent Pointer to parent object
+     * @param title Title of the action
+     */
+    Q_INVOKABLE RenderModeAction(QObject* parent, const QString& title);
 
     QMenu* getContextMenu();
+
+public: // Linking
+
+    /**
+     * Connect this action to a public action
+     * @param publicAction Pointer to public action to connect to
+     * @param recursive Whether to also connect descendant child actions
+     */
+    void connectToPublicAction(WidgetAction* publicAction, bool recursive) override;
+
+    /**
+     * Disconnect this action from its public action
+     * @param recursive Whether to also disconnect descendant child actions
+     */
+    void disconnectFromPublicAction(bool recursive) override;
 
 public: // Serialization
 
@@ -39,13 +53,15 @@ public: // Serialization
      * Save widget action to variant map
      * @return Variant map representation of the widget action
      */
+
     QVariantMap toVariantMap() const override;
 
 protected:
     ToggleAction    _scatterPlotAction;
     ToggleAction    _densityPlotAction;
     ToggleAction    _contourPlotAction;
-    QActionGroup    _actionGroup;
-
-    friend class Widget;
 };
+
+Q_DECLARE_METATYPE(RenderModeAction)
+
+inline const auto renderModeActionMetaTypeId = qRegisterMetaType<RenderModeAction*>("RenderModeAction");

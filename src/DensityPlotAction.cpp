@@ -12,10 +12,6 @@ DensityPlotAction::DensityPlotAction(PlotAction* plotAction, ScatterplotPlugin* 
     _continuousUpdatesAction(this, "Live Updates", DEFAULT_CONTINUOUS_UPDATES, DEFAULT_CONTINUOUS_UPDATES)
 {
     setToolTip("Density plot settings");
-    setSerializationName("DensityPlot");
-
-    _sigmaAction.setSerializationName("Sigma");
-    _continuousUpdatesAction.setSerializationName("ContinuousUpdates");
 
     _scatterplotPlugin->getWidget().addAction(&_sigmaAction);
     _scatterplotPlugin->getWidget().addAction(&_continuousUpdatesAction);

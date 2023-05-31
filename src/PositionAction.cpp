@@ -14,10 +14,6 @@ PositionAction::PositionAction(ScatterplotPlugin* scatterplotPlugin) :
     _yDimensionPickerAction(this, "Y")
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("ruler-combined"));
-    setSerializationName("Position");
-
-    _xDimensionPickerAction.setSerializationName("X");
-    _yDimensionPickerAction.setSerializationName("Y");
 
     // Add actions to scatter plot plugin (for shortcuts)
     _scatterplotPlugin->getWidget().addAction(&_xDimensionPickerAction);

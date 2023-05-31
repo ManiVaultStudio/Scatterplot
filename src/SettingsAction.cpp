@@ -12,8 +12,8 @@ using namespace hdps::gui;
 
 SettingsAction::SettingsAction(ScatterplotPlugin* scatterplotPlugin) :
     PluginAction(scatterplotPlugin, scatterplotPlugin, "Settings"),
-    _currentDatasetAction(scatterplotPlugin),
-    _renderModeAction(scatterplotPlugin),
+    _currentDatasetAction(scatterplotPlugin, "Loaded datasets"),
+    _renderModeAction(scatterplotPlugin, "Render Mode"),
     _positionAction(scatterplotPlugin),
     _coloringAction(scatterplotPlugin),
     _subsetAction(scatterplotPlugin),
@@ -25,7 +25,6 @@ SettingsAction::SettingsAction(ScatterplotPlugin* scatterplotPlugin) :
     _showHighlightsAction(scatterplotPlugin, "Highlights", scatterplotPlugin->getHighlightBool())
 {
     setText("Settings");
-    setSerializationName("Settings");
 
     const auto updateEnabled = [this]() {
         const auto enabled = _scatterplotPlugin->getPositionDataset().isValid();

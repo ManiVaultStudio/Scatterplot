@@ -5,35 +5,31 @@
 
 using namespace hdps::gui;
 
-RenderModeAction::RenderModeAction(ScatterplotPlugin* scatterplotPlugin) :
-    PluginAction(scatterplotPlugin, scatterplotPlugin, "Render mode"),
+RenderModeAction::RenderModeAction(QObject* parent, const QString& title) :
+    OptionAction(parent, title, { "Scatter", "Density", "Contour" }),
     _scatterPlotAction(this, "Scatter"),
     _densityPlotAction(this, "Density"),
-    _contourPlotAction(this, "Contour"),
-    _actionGroup(this)
+    _contourPlotAction(this, "Contour")
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("image"));
-    setSerializationName("RenderMode");
+    setDefaultWidgetFlags(OptionAction::HorizontalButtons);
 
-    _scatterPlotAction.setSerializationName("ScatterPlotToggle");
-    _densityPlotAction.setSerializationName("DensityPlotToggle");
-    _contourPlotAction.setSerializationName("ContourPlotToggle");
+    _scatterPlotAction.setConnectionPermissionsToForceNone(true);
+    _densityPlotAction.setConnectionPermissionsToForceNone(true);
+    _contourPlotAction.setConnectionPermissionsToForceNone(true);
 
     _scatterPlotAction.setShortcutContext(Qt::WidgetWithChildrenShortcut);
     _densityPlotAction.setShortcutContext(Qt::WidgetWithChildrenShortcut);
     _contourPlotAction.setShortcutContext(Qt::WidgetWithChildrenShortcut);
 
-    _scatterplotPlugin->getWidget().addAction(&_scatterPlotAction);
-    _scatterplotPlugin->getWidget().addAction(&_densityPlotAction);
-    _scatterplotPlugin->getWidget().addAction(&_contourPlotAction);
+    auto scatterplotPlugin = dynamic_cast<ScatterplotPlugin*>(parent);
+    
+    if (scatterplotPlugin == nullptr)
+        return;
 
-    _actionGroup.addAction(&_scatterPlotAction);
-    _actionGroup.addAction(&_densityPlotAction);
-    _actionGroup.addAction(&_contourPlotAction);
-
-    _scatterPlotAction.setCheckable(true);
-    _densityPlotAction.setCheckable(true);
-    _contourPlotAction.setCheckable(true);
+    scatterplotPlugin->getWidget().addAction(&_scatterPlotAction);
+    scatterplotPlugin->getWidget().addAction(&_densityPlotAction);
+    scatterplotPlugin->getWidget().addAction(&_contourPlotAction);
 
     _scatterPlotAction.setShortcut(QKeySequence("S"));
     _densityPlotAction.setShortcut(QKeySequence("D"));
@@ -51,34 +47,34 @@ RenderModeAction::RenderModeAction(ScatterplotPlugin* scatterplotPlugin) :
     _contourPlotAction.setIcon(fontAwesome.getIcon("mountain"));
     */
 
-    connect(&_scatterPlotAction, &QAction::toggled, this, [this](bool toggled) {
-        if (toggled)
-            getScatterplotWidget().setRenderMode(ScatterplotWidget::RenderMode::SCATTERPLOT);
-    });
+    const auto currentIndexChanged = [this, scatterplotPlugin]() {
+        const auto renderMode = static_cast<RenderMode>(getCurrentIndex());
 
-    connect(&_densityPlotAction, &QAction::toggled, this, [this](bool toggled) {
-        if (toggled)
-            getScatterplotWidget().setRenderMode(ScatterplotWidget::RenderMode::DENSITY);
-    });
+        _scatterPlotAction.setChecked(renderMode == RenderMode::ScatterPlot);
+        _densityPlotAction.setChecked(renderMode == RenderMode::DensityPlot);
+        _contourPlotAction.setChecked(renderMode == RenderMode::ContourPlot);
 
-    connect(&_contourPlotAction, &QAction::toggled, this, [this](bool toggled) {
-        if (toggled)
-            getScatterplotWidget().setRenderMode(ScatterplotWidget::RenderMode::LANDSCAPE);
-    });
-
-    const auto updateButtons = [this]() -> void {
-        const auto renderMode = getScatterplotWidget().getRenderMode();
-
-        _scatterPlotAction.setChecked(renderMode == ScatterplotWidget::RenderMode::SCATTERPLOT);
-        _densityPlotAction.setChecked(renderMode == ScatterplotWidget::RenderMode::DENSITY);
-        _contourPlotAction.setChecked(renderMode == ScatterplotWidget::RenderMode::LANDSCAPE);
+        scatterplotPlugin->getScatterplotWidget().setRenderMode(static_cast<ScatterplotWidget::RenderMode>(getCurrentIndex()));
     };
 
-    connect(&getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, [this, updateButtons](const ScatterplotWidget::RenderMode& renderMode) {
-        updateButtons();
+    currentIndexChanged();
+
+    connect(this, &OptionAction::currentIndexChanged, this, currentIndexChanged);
+
+    connect(&_scatterPlotAction, &QAction::toggled, this, [this, scatterplotPlugin](bool toggled) {
+        if (toggled)
+            setCurrentIndex(static_cast<std::int32_t>(RenderMode::ScatterPlot));
     });
 
-    updateButtons();
+    connect(&_densityPlotAction, &QAction::toggled, this, [this, scatterplotPlugin](bool toggled) {
+        if (toggled)
+            setCurrentIndex(static_cast<std::int32_t>(RenderMode::DensityPlot));
+    });
+
+    connect(&_contourPlotAction, &QAction::toggled, this, [this, scatterplotPlugin](bool toggled) {
+        if (toggled)
+            setCurrentIndex(static_cast<std::int32_t>(RenderMode::ContourPlot));
+    });
 }
 
 QMenu* RenderModeAction::getContextMenu()
@@ -90,6 +86,16 @@ QMenu* RenderModeAction::getContextMenu()
     menu->addAction(&_contourPlotAction);
 
     return menu;
+}
+
+void RenderModeAction::connectToPublicAction(WidgetAction* publicAction, bool recursive)
+{
+    OptionAction::connectToPublicAction(publicAction, recursive);
+}
+
+void RenderModeAction::disconnectFromPublicAction(bool recursive)
+{
+    OptionAction::disconnectFromPublicAction(recursive);
 }
 
 void RenderModeAction::fromVariantMap(const QVariantMap& variantMap)
@@ -110,24 +116,4 @@ QVariantMap RenderModeAction::toVariantMap() const
     _contourPlotAction.insertIntoVariantMap(variantMap);
 
     return variantMap;
-}
-
-RenderModeAction::Widget::Widget(QWidget* parent, RenderModeAction* renderModeAction, const std::int32_t& widgetFlags) :
-    WidgetActionWidget(parent, renderModeAction, widgetFlags)
-{
-    auto layout = new QHBoxLayout();
-
-    layout->setSpacing(3);
-
-    layout->addWidget(renderModeAction->_scatterPlotAction.createWidget(this, ToggleAction::PushButton));
-    layout->addWidget(renderModeAction->_densityPlotAction.createWidget(this, ToggleAction::PushButton));
-    layout->addWidget(renderModeAction->_contourPlotAction.createWidget(this, ToggleAction::PushButton));
-
-    if (widgetFlags & PopupLayout) {
-        setPopupLayout(layout);
-    }
-    else {
-        layout->setContentsMargins(0, 0, 0, 0);
-        setLayout(layout);
-    }
 }

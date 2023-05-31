@@ -22,13 +22,6 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
     _colorMap2DAction(this, "Color map 2D", ColorMap::Type::TwoDimensional, "example_c", "example_c")
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("palette"));
-    setSerializationName("Coloring");
-
-    _colorByAction.setSerializationName("ColorBy");
-    _constantColorAction.setSerializationName("ConstantColor");
-    _dimensionAction.setSerializationName("ColorDimension");
-    _colorMapAction.setSerializationName("ColorMap");
-    _colorMap2DAction.setSerializationName("ColorMap 2D");
 
     _scatterplotPlugin->getWidget().addAction(&_colorByAction);
     _scatterplotPlugin->getWidget().addAction(&_dimensionAction);
