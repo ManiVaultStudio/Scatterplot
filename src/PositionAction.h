@@ -1,6 +1,6 @@
 #pragma once
 
-#include "PluginAction.h"
+#include <actions/WidgetAction.h>
 
 #include <PointData/DimensionPickerAction.h>
 
@@ -16,8 +16,10 @@ using namespace hdps::gui;
  *
  * @author Thomas Kroes
  */
-class PositionAction : public PluginAction
+class PositionAction : public WidgetAction
 {
+    Q_OBJECT
+
 protected: // Widget
 
     /** Widget class for position action */
@@ -46,10 +48,11 @@ protected:
 public:
 
     /**
-     * Constructor
-     * @param scatterplotPlugin Pointer to scatter plot plugin
+     * Construct with \p parent object and \p title
+     * @param parent Pointer to parent object
+     * @param title Title
      */
-    PositionAction(ScatterplotPlugin* scatterplotPlugin);
+    Q_INVOKABLE PositionAction(QObject* parent, const QString& title);
 
     /**
      * Get the context menu for the action
@@ -63,6 +66,21 @@ public:
 
     /** Get current y-dimension */
     std::int32_t getDimensionY() const;
+
+public: // Linking
+
+    /**
+     * Connect this action to a public action
+     * @param publicAction Pointer to public action to connect to
+     * @param recursive Whether to also connect descendant child actions
+     */
+    void connectToPublicAction(WidgetAction* publicAction, bool recursive) override;
+
+    /**
+     * Disconnect this action from its public action
+     * @param recursive Whether to also disconnect descendant child actions
+     */
+    void disconnectFromPublicAction(bool recursive) override;
 
 public: // Serialization
 
@@ -84,3 +102,7 @@ protected:
 
     friend class Widget;
 };
+
+Q_DECLARE_METATYPE(PositionAction)
+
+inline const auto positionActionMetaTypeId = qRegisterMetaType<PositionAction*>("PositionAction");

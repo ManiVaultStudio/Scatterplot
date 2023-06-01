@@ -1,4 +1,4 @@
-#include "LoadedDatasetsAction.h"
+#include "DatasetsAction.h"
 #include "ScatterplotPlugin.h"
 
 #include "PointData/PointData.h"
@@ -11,7 +11,7 @@
 using namespace hdps;
 using namespace hdps::gui;
 
-LoadedDatasetsAction::LoadedDatasetsAction(QObject* parent, const QString& title) :
+DatasetsAction::DatasetsAction(QObject* parent, const QString& title) :
     WidgetAction(parent, title),
     _positionDatasetPickerAction(this, "Position"),
     _colorDatasetPickerAction(this, "Color")
@@ -39,7 +39,7 @@ LoadedDatasetsAction::LoadedDatasetsAction(QObject* parent, const QString& title
         return colorDatasets;
     });
 
-    auto scatterplotPlugin = dynamic_cast<ScatterplotPlugin*>(parent);
+    auto scatterplotPlugin = dynamic_cast<ScatterplotPlugin*>(parent->parent());
 
     if (scatterplotPlugin == nullptr)
         return;
@@ -61,9 +61,9 @@ LoadedDatasetsAction::LoadedDatasetsAction(QObject* parent, const QString& title
     });
 }
 
-void LoadedDatasetsAction::connectToPublicAction(WidgetAction* publicAction, bool recursive)
+void DatasetsAction::connectToPublicAction(WidgetAction* publicAction, bool recursive)
 {
-    auto publicLoadedDatasetsAction = dynamic_cast<LoadedDatasetsAction*>(publicAction);
+    auto publicLoadedDatasetsAction = dynamic_cast<DatasetsAction*>(publicAction);
 
     Q_ASSERT(publicLoadedDatasetsAction != nullptr);
 
@@ -78,7 +78,7 @@ void LoadedDatasetsAction::connectToPublicAction(WidgetAction* publicAction, boo
     WidgetAction::connectToPublicAction(publicAction, recursive);
 }
 
-void LoadedDatasetsAction::disconnectFromPublicAction(bool recursive)
+void DatasetsAction::disconnectFromPublicAction(bool recursive)
 {
     if (!isConnected())
         return;
@@ -91,7 +91,7 @@ void LoadedDatasetsAction::disconnectFromPublicAction(bool recursive)
     WidgetAction::disconnectFromPublicAction(recursive);
 }
 
-void LoadedDatasetsAction::fromVariantMap(const QVariantMap& variantMap)
+void DatasetsAction::fromVariantMap(const QVariantMap& variantMap)
 {
     WidgetAction::fromVariantMap(variantMap);
 
@@ -99,7 +99,7 @@ void LoadedDatasetsAction::fromVariantMap(const QVariantMap& variantMap)
     _colorDatasetPickerAction.fromParentVariantMap(variantMap);
 }
 
-QVariantMap LoadedDatasetsAction::toVariantMap() const
+QVariantMap DatasetsAction::toVariantMap() const
 {
     QVariantMap variantMap = WidgetAction::toVariantMap();
 
@@ -109,7 +109,7 @@ QVariantMap LoadedDatasetsAction::toVariantMap() const
     return variantMap;
 }
 
-LoadedDatasetsAction::Widget::Widget(QWidget* parent, LoadedDatasetsAction* currentDatasetAction, const std::int32_t& widgetFlags) :
+DatasetsAction::Widget::Widget(QWidget* parent, DatasetsAction* currentDatasetAction, const std::int32_t& widgetFlags) :
     WidgetActionWidget(parent, currentDatasetAction)
 {
     setFixedWidth(300);

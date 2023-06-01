@@ -4,49 +4,41 @@
 #include "ScatterplotPlugin.h"
 
 #include <QMenu>
-#include <QComboBox>
 
 using namespace hdps::gui;
 
-PositionAction::PositionAction(ScatterplotPlugin* scatterplotPlugin) :
-    PluginAction(scatterplotPlugin, scatterplotPlugin, "Position"),
+PositionAction::PositionAction(QObject* parent, const QString& title) :
+    WidgetAction(parent, title),
     _xDimensionPickerAction(this, "X"),
     _yDimensionPickerAction(this, "Y")
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("ruler-combined"));
 
-    // Add actions to scatter plot plugin (for shortcuts)
-    _scatterplotPlugin->getWidget().addAction(&_xDimensionPickerAction);
-    _scatterplotPlugin->getWidget().addAction(&_yDimensionPickerAction);
-
-    // Set tooltips
     _xDimensionPickerAction.setToolTip("X dimension");
     _yDimensionPickerAction.setToolTip("Y dimension");
 
-    // Update scatter plot when the x-dimension changes
+    auto scatterplotPlugin = dynamic_cast<ScatterplotPlugin*>(parent->parent());
+
+    if (scatterplotPlugin == nullptr)
+        return;
+
     connect(&_xDimensionPickerAction, &DimensionPickerAction::currentDimensionIndexChanged, [this, scatterplotPlugin](const std::uint32_t& currentDimensionIndex) {
         scatterplotPlugin->setXDimension(currentDimensionIndex);
     });
 
-    // Update scatter plot when the y-dimension changes
     connect(&_yDimensionPickerAction, &DimensionPickerAction::currentDimensionIndexChanged, [this, scatterplotPlugin](const std::uint32_t& currentDimensionIndex) {
         scatterplotPlugin->setYDimension(currentDimensionIndex);
     });
 
-    // Set dimension defaults when the position dataset changes
-    connect(&scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, [this]() {
-        // Assign position dataset to x- and y dimension action
-        _xDimensionPickerAction.setPointsDataset(_scatterplotPlugin->getPositionDataset());
-        _yDimensionPickerAction.setPointsDataset(_scatterplotPlugin->getPositionDataset());
+    connect(&scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, [this, scatterplotPlugin]() {
+        _xDimensionPickerAction.setPointsDataset(scatterplotPlugin->getPositionDataset());
+        _yDimensionPickerAction.setPointsDataset(scatterplotPlugin->getPositionDataset());
 
-        // Assign current and default index to x-dimension action
         _xDimensionPickerAction.setCurrentDimensionIndex(0);
         _xDimensionPickerAction.setDefaultDimensionIndex(0);
 
-        // Establish y-dimension
         const auto yIndex = _xDimensionPickerAction.getNumberOfDimensions() >= 2 ? 1 : 0;
 
-        // Assign current and default index to y-dimension action
         _yDimensionPickerAction.setCurrentDimensionIndex(yIndex);
         _yDimensionPickerAction.setDefaultDimensionIndex(yIndex);
     });
@@ -76,6 +68,36 @@ std::int32_t PositionAction::getDimensionX() const
 std::int32_t PositionAction::getDimensionY() const
 {
     return _yDimensionPickerAction.getCurrentDimensionIndex();
+}
+
+void PositionAction::connectToPublicAction(WidgetAction* publicAction, bool recursive)
+{
+    auto publicPositionAction = dynamic_cast<PositionAction*>(publicAction);
+
+    Q_ASSERT(publicPositionAction != nullptr);
+
+    if (publicPositionAction == nullptr)
+        return;
+
+    if (recursive) {
+        _xDimensionPickerAction.connectToPublicAction(&publicPositionAction->_xDimensionPickerAction, recursive);
+        _yDimensionPickerAction.connectToPublicAction(&publicPositionAction->_yDimensionPickerAction, recursive);
+    }
+
+    WidgetAction::connectToPublicAction(publicAction, recursive);
+}
+
+void PositionAction::disconnectFromPublicAction(bool recursive)
+{
+    if (!isConnected())
+        return;
+
+    if (recursive) {
+        _xDimensionPickerAction.disconnectFromPublicAction(recursive);
+        _yDimensionPickerAction.disconnectFromPublicAction(recursive);
+    }
+
+    WidgetAction::disconnectFromPublicAction(recursive);
 }
 
 void PositionAction::fromVariantMap(const QVariantMap& variantMap)

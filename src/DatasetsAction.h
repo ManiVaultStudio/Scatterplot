@@ -5,7 +5,7 @@
 
 using namespace hdps::gui;
 
-class LoadedDatasetsAction : public WidgetAction
+class DatasetsAction : public WidgetAction
 {
     Q_OBJECT
 
@@ -13,7 +13,7 @@ protected:
 
     class Widget : public WidgetActionWidget {
     public:
-        Widget(QWidget* parent, LoadedDatasetsAction* currentDatasetAction, const std::int32_t& widgetFlags);
+        Widget(QWidget* parent, DatasetsAction* currentDatasetAction, const std::int32_t& widgetFlags);
     };
 
     QWidget* getWidget(QWidget* parent, const std::int32_t& widgetFlags) override {
@@ -27,7 +27,7 @@ public:
      * @param parent Pointer to parent object
      * @param title Title of the action
      */
-    Q_INVOKABLE LoadedDatasetsAction(QObject* parent, const QString& title);
+    Q_INVOKABLE DatasetsAction(QObject* parent, const QString& title);
 
 public: // Linking
 
@@ -65,6 +65,6 @@ protected:
     friend class Widget;
 };
 
-Q_DECLARE_METATYPE(LoadedDatasetsAction)
+Q_DECLARE_METATYPE(DatasetsAction)
 
-inline const auto loadedDatasetsActionMetaTypeId = qRegisterMetaType<LoadedDatasetsAction*>("LoadedDatasetsAction");
+inline const auto datasetsActionMetaTypeId = qRegisterMetaType<DatasetsAction*>("DatasetsAction");

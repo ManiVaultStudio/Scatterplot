@@ -12,17 +12,16 @@ using namespace hdps::gui;
 
 SettingsAction::SettingsAction(ScatterplotPlugin* scatterplotPlugin) :
     PluginAction(scatterplotPlugin, scatterplotPlugin, "Settings"),
-    _currentDatasetAction(scatterplotPlugin, "Loaded datasets"),
+    _datasetsAction(scatterplotPlugin, "Datasets"),
     _renderModeAction(scatterplotPlugin, "Render Mode"),
-    _positionAction(scatterplotPlugin),
+    _positionAction(this, "Position"),
     _coloringAction(scatterplotPlugin),
     _subsetAction(scatterplotPlugin),
     _manualClusteringAction(scatterplotPlugin),
     _selectionAction(*scatterplotPlugin),
     _plotAction(scatterplotPlugin, "Plot"),
     _exportAction(this, "Export to image/video"),
-    _miscellaneousAction(scatterplotPlugin),
-    _showHighlightsAction(scatterplotPlugin, "Highlights", scatterplotPlugin->getHighlightBool())
+    _miscellaneousAction(scatterplotPlugin)
 {
     setText("Settings");
 
@@ -43,10 +42,6 @@ SettingsAction::SettingsAction(ScatterplotPlugin* scatterplotPlugin) :
     const auto updateHighlights = [this](const bool& state) -> void {
         _scatterplotPlugin->getScatterplotWidget().showHighlights(state);
     };
-
-    connect(&_showHighlightsAction, &ToggleAction::toggled, this, [this, updateHighlights](const bool& state) {
-        updateHighlights(state);
-    });
 
     updateEnabled();
 
@@ -82,7 +77,7 @@ void SettingsAction::fromVariantMap(const QVariantMap& variantMap)
 {
     WidgetAction::fromVariantMap(variantMap);
 
-    _currentDatasetAction.fromParentVariantMap(variantMap);
+    _datasetsAction.fromParentVariantMap(variantMap);
     _plotAction.fromParentVariantMap(variantMap);
     _positionAction.fromParentVariantMap(variantMap);
     _coloringAction.fromParentVariantMap(variantMap);
@@ -93,7 +88,7 @@ QVariantMap SettingsAction::toVariantMap() const
 {
     QVariantMap variantMap = WidgetAction::toVariantMap();
 
-    _currentDatasetAction.insertIntoVariantMap(variantMap);
+    _datasetsAction.insertIntoVariantMap(variantMap);
     _renderModeAction.insertIntoVariantMap(variantMap);
     _plotAction.insertIntoVariantMap(variantMap);
     _positionAction.insertIntoVariantMap(variantMap);
@@ -116,7 +111,7 @@ SettingsAction::Widget::Widget(QWidget* parent, SettingsAction* settingsAction) 
     _toolBarLayout.setSpacing(0);
     _toolBarLayout.setSizeConstraint(QLayout::SetFixedSize);
 
-    addStateWidget(&settingsAction->_currentDatasetAction, 0);
+    addStateWidget(&settingsAction->_datasetsAction, 0);
     addStateWidget(&settingsAction->_renderModeAction, 4);
     addStateWidget(&settingsAction->_plotAction, 7);
     addStateWidget(&settingsAction->_positionAction, 10);
@@ -124,7 +119,6 @@ SettingsAction::Widget::Widget(QWidget* parent, SettingsAction* settingsAction) 
     addStateWidget(&settingsAction->_subsetAction, 3);
     addStateWidget(&settingsAction->_manualClusteringAction, 1);
     addStateWidget(&settingsAction->_selectionAction, 2);
-    addStateWidget(&settingsAction->_showHighlightsAction, 11);
 
     _toolBarLayout.addStretch(1);
 

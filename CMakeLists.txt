@@ -64,8 +64,8 @@ set(Actions
     src/SubsetAction.cpp
     src/ExportImageAction.h
     src/ExportImageAction.cpp
-    src/LoadedDatasetsAction.h
-    src/LoadedDatasetsAction.cpp
+    src/DatasetsAction.h
+    src/DatasetsAction.cpp
 )
 
 set(Models
@@ -74,7 +74,6 @@ set(Models
     src/ScalarSourceModel.h
     src/ScalarSourceModel.cpp
 )
-
 
 set(AUX
     src/ScatterplotPlugin.json
