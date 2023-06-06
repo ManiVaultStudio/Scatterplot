@@ -12,12 +12,17 @@ using namespace hdps;
 using namespace hdps::gui;
 
 DatasetsAction::DatasetsAction(QObject* parent, const QString& title) :
-    WidgetAction(parent, title),
+    GroupAction(parent, title),
+    _scatterplotPlugin(dynamic_cast<ScatterplotPlugin*>(parent->parent())),
     _positionDatasetPickerAction(this, "Position"),
     _colorDatasetPickerAction(this, "Color")
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("database"));
-    setToolTip("Manage loaded datasets for position and/or color");
+    setToolTip("Manage loaded datasets for position and color");
+    setConfigurationFlag(WidgetAction::ConfigurationFlag::ForceCollapsedInGroup);
+
+    addAction(&_positionDatasetPickerAction);
+    addAction(&_colorDatasetPickerAction);
 
     _positionDatasetPickerAction.setDatasetsFilterFunction([](const hdps::Datasets& datasets) -> Datasets {
         Datasets pointDatasets;
@@ -107,26 +112,4 @@ QVariantMap DatasetsAction::toVariantMap() const
     _colorDatasetPickerAction.insertIntoVariantMap(variantMap);
 
     return variantMap;
-}
-
-DatasetsAction::Widget::Widget(QWidget* parent, DatasetsAction* currentDatasetAction, const std::int32_t& widgetFlags) :
-    WidgetActionWidget(parent, currentDatasetAction)
-{
-    setFixedWidth(300);
-
-    auto layout = new QGridLayout();
-
-    layout->addWidget(currentDatasetAction->_positionDatasetPickerAction.createLabelWidget(this), 0, 0);
-    layout->addWidget(currentDatasetAction->_positionDatasetPickerAction.createWidget(this), 0, 1);
-    layout->addWidget(currentDatasetAction->_colorDatasetPickerAction.createLabelWidget(this), 1, 0);
-    layout->addWidget(currentDatasetAction->_colorDatasetPickerAction.createWidget(this), 1, 1);
-
-    if (widgetFlags & PopupLayout)
-    {
-        setPopupLayout(layout);
-            
-    } else {
-        layout->setContentsMargins(0, 0, 0, 0);
-        setLayout(layout);
-    }
 }

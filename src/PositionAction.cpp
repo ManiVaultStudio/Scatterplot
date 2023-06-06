@@ -8,11 +8,15 @@
 using namespace hdps::gui;
 
 PositionAction::PositionAction(QObject* parent, const QString& title) :
-    WidgetAction(parent, title),
+    GroupAction(parent, title),
     _xDimensionPickerAction(this, "X"),
     _yDimensionPickerAction(this, "Y")
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("ruler-combined"));
+    setDefaultWidgetFlags(GroupAction::Horizontal);
+
+    addAction(&_xDimensionPickerAction);
+    addAction(&_yDimensionPickerAction);
 
     _xDimensionPickerAction.setToolTip("X dimension");
     _yDimensionPickerAction.setToolTip("Y dimension");
@@ -116,38 +120,4 @@ QVariantMap PositionAction::toVariantMap() const
     _yDimensionPickerAction.insertIntoVariantMap(variantMap);
 
     return variantMap;
-}
-
-PositionAction::Widget::Widget(QWidget* parent, PositionAction* positionAction, const std::int32_t& widgetFlags) :
-    WidgetActionWidget(parent, positionAction, widgetFlags)
-{
-    auto xDimensionLabel    = positionAction->_xDimensionPickerAction.createLabelWidget(this);
-    auto yDimensionLabel    = positionAction->_yDimensionPickerAction.createLabelWidget(this);
-    auto xDimensionWidget   = positionAction->_xDimensionPickerAction.createWidget(this);
-    auto yDimensionWidget   = positionAction->_yDimensionPickerAction.createWidget(this);
-
-    xDimensionWidget->findChild<QComboBox*>("ComboBox")->setSizeAdjustPolicy(QComboBox::AdjustToContents);
-    yDimensionWidget->findChild<QComboBox*>("ComboBox")->setSizeAdjustPolicy(QComboBox::AdjustToContents);
-
-    if (widgetFlags & PopupLayout) {
-        auto layout = new QGridLayout();
-
-        layout->addWidget(xDimensionLabel, 0, 0);
-        layout->addWidget(xDimensionWidget, 0, 1);
-        layout->addWidget(yDimensionLabel, 1, 0);
-        layout->addWidget(yDimensionWidget, 1, 1);
-
-        setPopupLayout(layout);
-    }
-    else {
-        auto layout = new QHBoxLayout();
-
-        layout->setContentsMargins(0, 0, 0, 0);
-        layout->addWidget(xDimensionLabel);
-        layout->addWidget(xDimensionWidget);
-        layout->addWidget(yDimensionLabel);
-        layout->addWidget(yDimensionWidget);
-
-        setLayout(layout);
-    }
 }

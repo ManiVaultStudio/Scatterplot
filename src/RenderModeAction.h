@@ -5,6 +5,15 @@
 
 using namespace hdps::gui;
 
+class ScatterplotPlugin;
+
+/**
+ * Render mode action class
+ *
+ * Action class for configuring render mode settings
+ *
+ * @author Thomas Kroes
+ */
 class RenderModeAction : public OptionAction
 {
     Q_OBJECT
@@ -24,6 +33,16 @@ public:
      */
     Q_INVOKABLE RenderModeAction(QObject* parent, const QString& title);
 
+    /**
+     * Initialize the selection action with \p scatterplotPlugin
+     * @param scatterplotPlugin Pointer to scatterplot plugin
+     */
+    void initialize(ScatterplotPlugin* scatterplotPlugin);
+
+    /**
+     * Get action context menu
+     * @return Pointer to menu
+     */
     QMenu* getContextMenu();
 
 public: // Linking
@@ -57,9 +76,10 @@ public: // Serialization
     QVariantMap toVariantMap() const override;
 
 protected:
-    ToggleAction    _scatterPlotAction;
-    ToggleAction    _densityPlotAction;
-    ToggleAction    _contourPlotAction;
+    ScatterplotPlugin*  _scatterplotPlugin;     /** Pointer to scatterplot plugin */
+    ToggleAction        _scatterPlotAction;     /** Trigger action for activating the scatter plot render mode */
+    ToggleAction        _densityPlotAction;     /** Trigger action for activating the density plot render mode */
+    ToggleAction        _contourPlotAction;     /** Trigger action for activating the contour plot render mode */
 };
 
 Q_DECLARE_METATYPE(RenderModeAction)

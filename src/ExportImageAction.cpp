@@ -45,7 +45,9 @@ ExportImageAction::ExportImageAction(QObject* parent, ScatterplotPlugin& scatter
 {
     setText("Export");
     setLabelWidthFixed(100);
-    
+    setConnectionPermissionsToForceNone();
+    setConfigurationFlag(WidgetAction::ConfigurationFlag::ForceExpandedInGroup);
+
     _dimensionSelectionAction.setConnectionPermissionsToNone();
     _targetWidthAction.setConnectionPermissionsToNone();
     _targetHeightAction.setConnectionPermissionsToNone();

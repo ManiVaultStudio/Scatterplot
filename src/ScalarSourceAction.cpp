@@ -223,5 +223,5 @@ ScalarSourceAction::Widget::Widget(QWidget* parent, ScalarSourceAction* scalarSo
     layout->addWidget(rangeMaxSpinBoxWidget, 4, 1);
     layout->addWidget(rangeMaxSliderWidget, 4, 2);
 
-    setPopupLayout(layout);
+    setLayout(layout);
 }

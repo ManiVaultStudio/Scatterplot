@@ -1,6 +1,8 @@
 #pragma once
 
-#include "PluginAction.h"
+#include <actions/GroupAction.h>
+#include <actions/ColorMapAction.h>
+
 #include "ColorSourceModel.h"
 
 #include <PointData/DimensionPickerAction.h>
@@ -11,6 +13,8 @@
 
 using namespace hdps::gui;
 
+class ScatterplotPlugin;
+
 /**
  * Coloring action class
  *
@@ -18,42 +22,18 @@ using namespace hdps::gui;
  *
  * @author Thomas Kroes
  */
-class ColoringAction : public PluginAction
+class ColoringAction : public GroupAction
 {
     Q_OBJECT
-
-protected: // Widget
-
-    /** Widget class for coloring action */
-    class Widget : public WidgetActionWidget {
-    public:
-
-        /**
-         * Constructor
-         * @param parent Pointer to parent widget
-         * @param coloringAction Pointer to coloring action
-         */
-        Widget(QWidget* parent, ColoringAction* coloringAction, const std::int32_t& widgetFlags);
-    };
-
-protected:
-
-    /**
-     * Get widget representation of the coloring action
-     * @param parent Pointer to parent widget
-     * @param widgetFlags Widget flags for the configuration of the widget (type)
-     */
-    QWidget* getWidget(QWidget* parent, const std::int32_t& widgetFlags) override {
-        return new Widget(parent, this, widgetFlags);
-    };
 
 public:
 
     /**
-     * Constructor
-     * @param scatterplotPlugin Pointer to scatter plot plugin
+     * Construct with \p parent object and \p title
+     * @param parent Pointer to parent object
+     * @param title Title
      */
-    ColoringAction(ScatterplotPlugin* scatterplotPlugin);
+    Q_INVOKABLE ColoringAction(QObject* parent, const QString& title);
 
     /**
      * Get the context menu for the action
@@ -131,6 +111,7 @@ public: // Action getters
     ColorMapAction& getColorMap2DAction() { return _colorMap2DAction; }
 
 protected:
+    ScatterplotPlugin*      _scatterplotPlugin;         /** Pointer to scatter plot plugin */
     ColorSourceModel        _colorByModel;              /** Color by model (model input for the color by action) */
     OptionAction            _colorByAction;             /** Action for picking the coloring type */
     ColorAction             _constantColorAction;       /** Action for picking the constant color */
@@ -144,3 +125,7 @@ protected:
     friend class Widget;
     friend class ScatterplotPlugin;
 };
+
+Q_DECLARE_METATYPE(ColoringAction)
+
+inline const auto coloringActionMetaTypeId = qRegisterMetaType<ColoringAction*>("ColoringAction");

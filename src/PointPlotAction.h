@@ -1,40 +1,50 @@
 #pragma once
 
-#include <actions/WidgetAction.h>
+#include <actions/GroupAction.h>
 
 #include "ScalarAction.h"
 
-#include <QLabel>
-
-class PlotAction;
 class ScatterplotPlugin;
 
 using namespace hdps::gui;
 
-class PointPlotAction : public WidgetAction
+/**
+ * Point plot action class
+ *
+ * Action class for configuring point plot settings
+ *
+ * @author Thomas Kroes
+ */
+class PointPlotAction : public GroupAction
 {
-protected: // Widget
-
-    class Widget : public WidgetActionWidget {
-    public:
-        Widget(QWidget* parent, PointPlotAction* pointPlotAction, const std::int32_t& widgetFlags);
-    };
-
-    QWidget* getWidget(QWidget* parent, const std::int32_t& widgetFlags) override {
-        return new Widget(parent, this, widgetFlags);
-    };
+    Q_OBJECT
 
 public:
     
     /**
-     * Construct with \p parent
+     * Construct with \p parent and \p title
      * @param parent Pointer to parent object
+     * @param title Title of the action
      */
-    PointPlotAction(QObject* parent);
+    Q_INVOKABLE PointPlotAction(QObject* parent, const QString& title);
 
-    ScatterplotPlugin* getScatterplotPlugin();
+    /**
+     * Initialize the selection action with \p scatterplotPlugin
+     * @param scatterplotPlugin Pointer to scatterplot plugin
+     */
+    void initialize(ScatterplotPlugin* scatterplotPlugin);
 
+    /**
+     * Get action context menu
+     * @return Pointer to menu
+     */
     QMenu* getContextMenu();
+
+    /**
+     * Override to show/hide child actions
+     * @param visible Whether the action is visible or not
+     */
+    void setVisible(bool visible);
 
     /**
      * Add point size dataset
@@ -80,6 +90,7 @@ public: // Action getters
     ToggleAction& getFocusSelection() { return _focusSelection; }
 
 protected:
+    ScatterplotPlugin*      _scatterplotPlugin;         /** Pointer to scatterplot plugin */
     ScalarAction            _sizeAction;                /** Point size action */
     ScalarAction            _opacityAction;             /** Point opacity action */
     std::vector<float>      _pointSizeScalars;          /** Cached point size scalars */

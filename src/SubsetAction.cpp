@@ -1,6 +1,7 @@
 #include "SubsetAction.h"
 #include "ScatterplotPlugin.h"
-#include "PointData/PointData.h"
+
+#include <PointData/PointData.h>
 
 #include <Application.h>
 
@@ -9,16 +10,33 @@
 using namespace hdps;
 using namespace hdps::gui;
 
-SubsetAction::SubsetAction(ScatterplotPlugin* scatterplotPlugin) :
-    PluginAction(scatterplotPlugin, scatterplotPlugin, "Subset"),
+SubsetAction::SubsetAction(QObject* parent, const QString& title) :
+    GroupAction(parent, title),
+    _scatterplotPlugin(dynamic_cast<ScatterplotPlugin*>(parent->parent())),
     _subsetNameAction(this, "Subset name"),
-    _createSubsetAction(this, "Create subset"),
-    _sourceDataAction(this, "Source data")
+    _sourceDataAction(this, "Source data"),
+    _createSubsetAction(this, "Create subset")
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("crop"));
+    setDefaultWidgetFlags(GroupAction::Horizontal);
+    setConnectionPermissionsToForceNone(true);
+
+    addAction(&_subsetNameAction);
+    addAction(&_sourceDataAction);
+    addAction(&_createSubsetAction);
 
     _subsetNameAction.setToolTip("Name of the subset");
     _createSubsetAction.setToolTip("Create subset from selected data points");
+}
+
+void SubsetAction::initialize(ScatterplotPlugin* scatterplotPlugin)
+{
+    Q_ASSERT(scatterplotPlugin != nullptr);
+
+    if (scatterplotPlugin == nullptr)
+        return;
+
+    _scatterplotPlugin = scatterplotPlugin;
 
     connect(&_createSubsetAction, &QAction::triggered, this, [this]() {
         _scatterplotPlugin->createSubset(_sourceDataAction.getCurrentIndex() == 1, _subsetNameAction.getString());
@@ -45,7 +63,7 @@ SubsetAction::SubsetAction(ScatterplotPlugin* scatterplotPlugin) :
         _sourceDataAction.setEnabled(sourceDataOptions.count() >= 2);
     };
 
-    connect(&scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, onCurrentDatasetChanged);
+    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, onCurrentDatasetChanged);
 
     onCurrentDatasetChanged();
 }
@@ -58,22 +76,4 @@ QMenu* SubsetAction::getContextMenu()
     menu->addAction(&_sourceDataAction);
 
     return menu;
-}
-
-SubsetAction::Widget::Widget(QWidget* parent, SubsetAction* subsetAction, const std::int32_t& widgetFlags) :
-    WidgetActionWidget(parent, subsetAction)
-{
-    auto layout = new QHBoxLayout();
-
-    layout->addWidget(subsetAction->_createSubsetAction.createWidget(this));
-    layout->addWidget(subsetAction->_sourceDataAction.createWidget(this));
-
-    if (widgetFlags & PopupLayout)
-    {
-        setPopupLayout(layout);
-            
-    } else {
-        layout->setContentsMargins(0, 0, 0, 0);
-        setLayout(layout);
-    }
 }

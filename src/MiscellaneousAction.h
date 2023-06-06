@@ -1,35 +1,34 @@
 #pragma once
 
-#include "PluginAction.h"
-
-#include <QActionGroup>
+#include <actions/GroupAction.h>
+#include <actions/ColorAction.h>
 
 using namespace hdps::gui;
 
 class QMenu;
 
-class MiscellaneousAction : public PluginAction
+class ScatterplotPlugin;
+
+class MiscellaneousAction : public GroupAction
 {
-protected: // Widget
-
-    class Widget : public WidgetActionWidget {
-    public:
-        Widget(QWidget* parent, MiscellaneousAction* miscellaneousAction, const std::int32_t& widgetFlags);
-    };
-
-    QWidget* getWidget(QWidget* parent, const std::int32_t& widgetFlags) override {
-        return new Widget(parent, this, widgetFlags);
-    };
-
 public:
-    MiscellaneousAction(ScatterplotPlugin* scatterplotPlugin);
+
+    /**
+     * Construct with \p parent object and \p title
+     * @param parent Pointer to parent object
+     * @param title Title
+     */
+    Q_INVOKABLE MiscellaneousAction(QObject* parent, const QString& title);
 
     QMenu* getContextMenu();
 
 protected:
-    ColorAction  _backgroundColorAction;
+    ScatterplotPlugin*  _scatterplotPlugin;         /** Pointer to scatter plot plugin */
+    ColorAction         _backgroundColorAction;     /** Color action for settings the background color action */
 
     static const QColor DEFAULT_BACKGROUND_COLOR;
-
-    friend class Widget;
 };
+
+Q_DECLARE_METATYPE(MiscellaneousAction)
+
+inline const auto miscellaneousActionMetaTypeId = qRegisterMetaType<MiscellaneousAction*>("MiscellaneousAction");

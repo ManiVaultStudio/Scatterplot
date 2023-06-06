@@ -1,24 +1,15 @@
 #pragma once
 
-#include <actions/WidgetAction.h>
+#include <actions/GroupAction.h>
 #include <actions/DatasetPickerAction.h>
 
 using namespace hdps::gui;
 
-class DatasetsAction : public WidgetAction
+class ScatterplotPlugin;
+
+class DatasetsAction : public GroupAction
 {
     Q_OBJECT
-
-protected:
-
-    class Widget : public WidgetActionWidget {
-    public:
-        Widget(QWidget* parent, DatasetsAction* currentDatasetAction, const std::int32_t& widgetFlags);
-    };
-
-    QWidget* getWidget(QWidget* parent, const std::int32_t& widgetFlags) override {
-        return new Widget(parent, this, widgetFlags);
-    };
 
 public:
 
@@ -59,8 +50,9 @@ public: // Serialization
     QVariantMap toVariantMap() const override;
 
 protected:
-    DatasetPickerAction	    _positionDatasetPickerAction;
-    DatasetPickerAction     _colorDatasetPickerAction;
+    ScatterplotPlugin*      _scatterplotPlugin;                 /** Pointer to scatter plot plugin */
+    DatasetPickerAction	    _positionDatasetPickerAction;       /** Dataset picker action for position dataset */
+    DatasetPickerAction     _colorDatasetPickerAction;          /** Dataset picker action for color dataset */
 
     friend class Widget;
 };

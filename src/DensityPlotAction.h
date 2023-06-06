@@ -1,39 +1,50 @@
 #pragma once
 
-#include <actions/WidgetAction.h>
+#include <actions/GroupAction.h>
 #include <actions/DecimalAction.h>
 #include <actions/ToggleAction.h>
 
-#include <QLabel>
-
 using namespace hdps::gui;
 
-class PlotAction;
 class ScatterplotPlugin;
 
-class DensityPlotAction : public WidgetAction
+/**
+ * Density plot action class
+ *
+ * Action class for configuring density plot settings
+ *
+ * @author Thomas Kroes
+ */
+class DensityPlotAction : public GroupAction
 {
-protected:
-    class Widget : public WidgetActionWidget {
-    public:
-        Widget(QWidget* parent, DensityPlotAction* densityPlotAction);
-    };
-
-    QWidget* getWidget(QWidget* parent, const std::int32_t& widgetFlags) override {
-        return new Widget(parent, this);
-    };
+    Q_OBJECT
 
 public:
 
     /**
-     * Construct with \p parent
+     * Construct with \p parent and \p title
      * @param parent Pointer to parent object
+     * @param title Title of the action
      */
-    DensityPlotAction(QObject* parent);
+    Q_INVOKABLE DensityPlotAction(QObject* parent, const QString& title);
 
-    ScatterplotPlugin* getScatterplotPlugin();
+    /**
+     * Initialize the selection action with \p scatterplotPlugin
+     * @param scatterplotPlugin Pointer to scatterplot plugin
+     */
+    void initialize(ScatterplotPlugin* scatterplotPlugin);
 
+    /**
+     * Get action context menu
+     * @return Pointer to menu
+     */
     QMenu* getContextMenu();
+
+    /**
+     * Override to show/hide child actions
+     * @param visible Whether the action is visible or not
+     */
+    void setVisible(bool visible);
 
 public: // Serialization
 
@@ -49,9 +60,15 @@ public: // Serialization
      */
     QVariantMap toVariantMap() const override;
 
+public: // Action getters
+
+    DecimalAction& getSigmaAction() { return _sigmaAction; }
+    ToggleAction& getContinuousUpdatesAction() { return _continuousUpdatesAction; }
+
 protected:
-    DecimalAction       _sigmaAction;
-    ToggleAction        _continuousUpdatesAction;
+    ScatterplotPlugin*  _scatterplotPlugin;         /** Pointer to scatterplot plugin */
+    DecimalAction       _sigmaAction;               /** Density sigma action */
+    ToggleAction        _continuousUpdatesAction;   /** Live updates action */
 
     static constexpr double DEFAULT_SIGMA = 0.15f;
     static constexpr bool DEFAULT_CONTINUOUS_UPDATES = true;

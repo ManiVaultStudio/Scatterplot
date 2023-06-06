@@ -6,25 +6,41 @@
 
 using namespace hdps::gui;
 
-DensityPlotAction::DensityPlotAction(QObject* parent) :
-    WidgetAction(parent, "Density"),
+DensityPlotAction::DensityPlotAction(QObject* parent, const QString& title) :
+    GroupAction(parent, title),
     _sigmaAction(this, "Sigma", 0.01f, 0.5f, DEFAULT_SIGMA, DEFAULT_SIGMA, 3),
     _continuousUpdatesAction(this, "Live Updates", DEFAULT_CONTINUOUS_UPDATES, DEFAULT_CONTINUOUS_UPDATES)
 {
     setToolTip("Density plot settings");
+    setDefaultWidgetFlags(GroupAction::Horizontal);
+    setConfigurationFlag(WidgetAction::ConfigurationFlag::NoLabelInGroup);
+
+    addAction(&_sigmaAction);
+    addAction(&_continuousUpdatesAction);
+}
+
+void DensityPlotAction::initialize(ScatterplotPlugin* scatterplotPlugin)
+{
+    Q_ASSERT(scatterplotPlugin != nullptr);
+
+    if (scatterplotPlugin == nullptr)
+        return;
+
+    _scatterplotPlugin = scatterplotPlugin;
 
     const auto computeDensity = [this]() -> void {
-        getScatterplotPlugin()->getScatterplotWidget().setSigma(_sigmaAction.getValue());
+        if (static_cast<std::int32_t>(_scatterplotPlugin->getSettingsAction().getRenderModeAction().getCurrentIndex()) != ScatterplotWidget::RenderMode::DENSITY)
+            return;
 
-        const auto maxDensity = getScatterplotPlugin()->getScatterplotWidget().getDensityRenderer().getMaxDensity();
+        _scatterplotPlugin->getScatterplotWidget().setSigma(_sigmaAction.getValue());
+
+        const auto maxDensity = _scatterplotPlugin->getScatterplotWidget().getDensityRenderer().getMaxDensity();
 
         if (maxDensity > 0)
-            getScatterplotPlugin()->getSettingsAction().getColoringAction().getColorMapAction().getRangeAction(ColorMapAction::Axis::X).setRange({ 0.0f, maxDensity });
+            _scatterplotPlugin->getSettingsAction().getColoringAction().getColorMapAction().getRangeAction(ColorMapAction::Axis::X).setRange({ 0.0f, maxDensity });
     };
 
-    connect(&_sigmaAction, &DecimalAction::valueChanged, this, [this, computeDensity](const double& value) {
-        computeDensity();
-    });
+    connect(&_sigmaAction, &DecimalAction::valueChanged, this, computeDensity);
 
     const auto updateSigmaAction = [this]() {
         _sigmaAction.setUpdateDuringDrag(_continuousUpdatesAction.isChecked());
@@ -32,29 +48,23 @@ DensityPlotAction::DensityPlotAction(QObject* parent) :
 
     connect(&_continuousUpdatesAction, &ToggleAction::toggled, updateSigmaAction);
 
-    connect(&getScatterplotPlugin()->getPositionDataset(), &Dataset<Points>::changed, this, [this, updateSigmaAction, computeDensity](DatasetImpl* dataset) {
+    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, [this, updateSigmaAction, computeDensity](DatasetImpl* dataset) {
         updateSigmaAction();
         computeDensity();
     });
 
-    connect(&getScatterplotPlugin()->getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, [this, computeDensity](const ScatterplotWidget::RenderMode& renderMode) {
-        computeDensity();
-    });
+    connect(&_scatterplotPlugin->getSettingsAction().getRenderModeAction(), &OptionAction::currentIndexChanged, this, computeDensity);
 
     updateSigmaAction();
     computeDensity();
 }
 
-ScatterplotPlugin* DensityPlotAction::getScatterplotPlugin()
-{
-    return dynamic_cast<ScatterplotPlugin*>(parent()->parent());
-}
-
 QMenu* DensityPlotAction::getContextMenu()
 {
-    auto menu = new QMenu("Plot settings");
+    if (_scatterplotPlugin == nullptr)
+        return nullptr;
 
-    const auto renderMode = getScatterplotPlugin()->getScatterplotWidget().getRenderMode();
+    auto menu = new QMenu("Plot settings");
 
     const auto addActionToMenu = [menu](QAction* action) {
         auto actionMenu = new QMenu(action->text());
@@ -68,6 +78,12 @@ QMenu* DensityPlotAction::getContextMenu()
     addActionToMenu(&_continuousUpdatesAction);
 
     return menu;
+}
+
+void DensityPlotAction::setVisible(bool visible)
+{
+    _sigmaAction.setVisible(visible);
+    _continuousUpdatesAction.setVisible(visible);
 }
 
 void DensityPlotAction::fromVariantMap(const QVariantMap& variantMap)
@@ -86,17 +102,4 @@ QVariantMap DensityPlotAction::toVariantMap() const
     _continuousUpdatesAction.insertIntoVariantMap(variantMap);
 
     return variantMap;
-}
-
-DensityPlotAction::Widget::Widget(QWidget* parent, DensityPlotAction* densityPlotAction) :
-    WidgetActionWidget(parent, densityPlotAction)
-{
-    auto layout = new QHBoxLayout();
-
-    layout->setContentsMargins(0, 0, 0, 0);
-    layout->addWidget(densityPlotAction->_sigmaAction.createLabelWidget(this));
-    layout->addWidget(densityPlotAction->_sigmaAction.createWidget(this));
-    layout->addWidget(densityPlotAction->_continuousUpdatesAction.createWidget(this));
-
-    setLayout(layout);
 }

@@ -1,28 +1,24 @@
 #pragma once
 
-#include <actions/WidgetAction.h>
+#include <actions/GroupAction.h>
 
 #include "PointPlotAction.h"
 #include "DensityPlotAction.h"
 
+class ScatterplotPlugin;
+
 using namespace hdps::gui;
 
-class ScatterplotWidget;
-
-class PlotAction : public WidgetAction
+/**
+ * Plot action class
+ *
+ * Action class for configuring plot settings
+ *
+ * @author Thomas Kroes
+ */
+class PlotAction : public GroupAction
 {
     Q_OBJECT
-
-protected: // Widget
-
-    class Widget : public WidgetActionWidget {
-    public:
-        Widget(QWidget* parent, PlotAction* plotAction, const std::int32_t& widgetFlags);
-    };
-
-    QWidget* getWidget(QWidget* parent, const std::int32_t& widgetFlags) override {
-        return new Widget(parent, this, widgetFlags);
-    };
 
 public:
 
@@ -33,8 +29,16 @@ public:
      */
     Q_INVOKABLE PlotAction(QObject* parent, const QString& title);
 
-    ScatterplotWidget* getScatterplotWidget();
+    /**
+     * Initialize the selection action with \p scatterplotPlugin
+     * @param scatterplotPlugin Pointer to scatterplot plugin
+     */
+    void initialize(ScatterplotPlugin* scatterplotPlugin);
 
+    /**
+     * Get action context menu
+     * @return Pointer to menu
+     */
     QMenu* getContextMenu();
 
 public: // Serialization
@@ -57,8 +61,9 @@ public: // Action getters
     DensityPlotAction& getDensityPlotAction() { return _densityPlotAction; }
 
 protected:
-    PointPlotAction     _pointPlotAction;
-    DensityPlotAction   _densityPlotAction;
+    ScatterplotPlugin*  _scatterplotPlugin;     /** Pointer to scatterplot plugin */
+    PointPlotAction     _pointPlotAction;       /** Point plot action */
+    DensityPlotAction   _densityPlotAction;     /** Density plot action */
 
     friend class Widget;
 };

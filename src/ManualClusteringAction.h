@@ -1,14 +1,14 @@
 #pragma once
 
-#include "PluginAction.h"
-
-#include "actions/DatasetPickerAction.h"
+#include <actions/GroupAction.h>
+#include <actions/DatasetPickerAction.h>
 
 using namespace hdps;
 using namespace hdps::gui;
 using namespace hdps::util;
 
 class Clusters;
+class ScatterplotPlugin;
 
 /**
  * Manual clustering action class
@@ -17,39 +17,16 @@ class Clusters;
  *
  * @author Thomas Kroes
  */
-class ManualClusteringAction : public PluginAction
+class ManualClusteringAction : public GroupAction
 {
-protected:
-
-    class Widget : public WidgetActionWidget
-    {
-    public:
-
-        /**
-         * Constructor
-         * @param parent Pointer to parent widget
-         * @param manualClusteringAction Pointer to manual clustering action
-         * @param widgetFlags Widget flags for the configuration of the widget (type)
-         */
-        Widget(QWidget* parent, ManualClusteringAction* manualClusteringAction, const std::int32_t& widgetFlags);
-    };
-
-    /**
-     * Get widget representation of the cluster action
-     * @param parent Pointer to parent widget
-     * @param widgetFlags Widget flags for the configuration of the widget (type)
-     */
-    QWidget* getWidget(QWidget* parent, const std::int32_t& widgetFlags) override {
-        return new Widget(parent, this, widgetFlags);
-    };
-
 public:
 
     /**
-     * Constructor
-     * @param scatterplotPlugin Pointer to scatter plot plugin
+     * Construct with \p parent object and \p title
+     * @param parent Pointer to parent object
+     * @param title Title
      */
-    ManualClusteringAction(ScatterplotPlugin* scatterplotPlugin);
+    Q_INVOKABLE ManualClusteringAction(QObject* parent, const QString& title);
 
     /** Adds a clusters dataset to the position dataset as a child */
     void createDefaultClusterDataset();
@@ -71,6 +48,7 @@ public: // Action getters
     DatasetPickerAction& getTargetClusterDataset() { return _targetClusterDataset; }
 
 protected:
+    ScatterplotPlugin*      _scatterplotPlugin;         /** Pointer to scatter plot plugin */
     StringAction            _nameAction;                /** Cluster name action */
     ColorAction             _colorAction;               /** Cluster color action */
     TriggerAction           _addClusterAction;          /** Add manual cluster action */

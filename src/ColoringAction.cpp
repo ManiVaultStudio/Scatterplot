@@ -12,8 +12,9 @@ using namespace hdps::gui;
 
 const QColor ColoringAction::DEFAULT_CONSTANT_COLOR = qRgb(93, 93, 225);
 
-ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
-    PluginAction(scatterplotPlugin, scatterplotPlugin, "Coloring"),
+ColoringAction::ColoringAction(QObject* parent, const QString& title) :
+    GroupAction(parent, title),
+    _scatterplotPlugin(dynamic_cast<ScatterplotPlugin*>(parent->parent())),
     _colorByModel(this),
     _colorByAction(this, "Color by"),
     _constantColorAction(this, "Constant color", DEFAULT_CONSTANT_COLOR, DEFAULT_CONSTANT_COLOR),
@@ -22,6 +23,7 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
     _colorMap2DAction(this, "Color map 2D", ColorMap::Type::TwoDimensional, "example_c", "example_c")
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("palette"));
+    setDefaultWidgetFlags(GroupAction::Horizontal);
 
     _scatterplotPlugin->getWidget().addAction(&_colorByAction);
     _scatterplotPlugin->getWidget().addAction(&_dimensionAction);
@@ -146,6 +148,14 @@ ColoringAction::ColoringAction(ScatterplotPlugin* scatterplotPlugin) :
     // Enable/disable the color map action when the scatter plot widget rendering or coloring mode changes
     connect(&_scatterplotPlugin->getScatterplotWidget(), &ScatterplotWidget::coloringModeChanged, this, &ColoringAction::updateColorMapActionReadOnly);
     connect(&_scatterplotPlugin->getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, &ColoringAction::updateColorMapActionReadOnly);
+
+    const auto updateReadOnly = [this]() {
+        setEnabled(_scatterplotPlugin->getScatterplotWidget().getRenderMode() == ScatterplotWidget::SCATTERPLOT);
+    };
+
+    connect(&_scatterplotPlugin->getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, updateReadOnly);
+
+    updateReadOnly();
 
     updateScatterplotWidgetColorMap();
     updateColorMapActionScalarRange();
@@ -300,35 +310,26 @@ void ColoringAction::updateColorMapActionScalarRange()
 
 void ColoringAction::updateScatterplotWidgetColorMap()
 {
-    // The type of color map depends on the type of rendering and coloring
     switch (_scatterplotPlugin->getScatterplotWidget().getRenderMode())
     {
         case ScatterplotWidget::SCATTERPLOT:
         {
             if (_colorByAction.getCurrentIndex() == 0) {
-                
-                // Create 1x1 pixmap for the (constant) color map
                 QPixmap colorPixmap(1, 1);
 
-                // Fill it with the constant color
                 colorPixmap.fill(_constantColorAction.getColor());
 
-                // Update the scatter plot widget with the color map
-                getScatterplotWidget().setColorMap(colorPixmap.toImage());
-                getScatterplotWidget().setScalarEffect(PointEffect::Color);
-                getScatterplotWidget().setColoringMode(ScatterplotWidget::ColoringMode::Constant);
+                _scatterplotPlugin->getScatterplotWidget().setColorMap(colorPixmap.toImage());
+                _scatterplotPlugin->getScatterplotWidget().setScalarEffect(PointEffect::Color);
+                _scatterplotPlugin->getScatterplotWidget().setColoringMode(ScatterplotWidget::ColoringMode::Constant);
             }
             else if (_colorByAction.getCurrentIndex() == 1) {
-                
-                // Update the scatter plot widget with the 2D color map
-                getScatterplotWidget().setColorMap(_colorMap2DAction.getColorMapImage());
-                getScatterplotWidget().setScalarEffect(PointEffect::Color2D);
-                getScatterplotWidget().setColoringMode(ScatterplotWidget::ColoringMode::Scatter);
+                _scatterplotPlugin->getScatterplotWidget().setColorMap(_colorMap2DAction.getColorMapImage());
+                _scatterplotPlugin->getScatterplotWidget().setScalarEffect(PointEffect::Color2D);
+                _scatterplotPlugin->getScatterplotWidget().setColoringMode(ScatterplotWidget::ColoringMode::Scatter);
             }
             else {
-
-                // Update the scatter plot widget with the color map
-                getScatterplotWidget().setColorMap(_colorMapAction.getColorMapImage().mirrored(false, true));
+                _scatterplotPlugin->getScatterplotWidget().setColorMap(_colorMapAction.getColorMapImage().mirrored(false, true));
             }
 
             break;
@@ -339,9 +340,7 @@ void ColoringAction::updateScatterplotWidgetColorMap()
 
         case ScatterplotWidget::LANDSCAPE:
         {
-            // Update the scatter plot widget with the color map
-            getScatterplotWidget().setColorMap(_colorMapAction.getColorMapImage());
-
+            _scatterplotPlugin->getScatterplotWidget().setColorMap(_colorMapAction.getColorMapImage());
             break;
         }
 
@@ -354,7 +353,7 @@ void ColoringAction::updateScatterPlotWidgetColorMapRange()
 {
     const auto& rangeAction = _colorMapAction.getRangeAction(ColorMapAction::Axis::X);
 
-    getScatterplotWidget().setColorMapRange(rangeAction.getMinimum(), rangeAction.getMaximum());
+    _scatterplotPlugin->getScatterplotWidget().setColorMapRange(rangeAction.getMinimum(), rangeAction.getMaximum());
 }
 
 bool ColoringAction::shouldEnableColorMap() const
@@ -405,60 +404,4 @@ QVariantMap ColoringAction::toVariantMap() const
     _colorMap2DAction.insertIntoVariantMap(variantMap);
 
     return variantMap;
-}
-
-ColoringAction::Widget::Widget(QWidget* parent, ColoringAction* coloringAction, const std::int32_t& widgetFlags) :
-    WidgetActionWidget(parent, coloringAction, widgetFlags)
-{
-    auto layout = new QHBoxLayout();
-
-    // Enable/disable the widget depending on the render mode
-    const auto renderModeChanged = [this, coloringAction]() {
-        setEnabled(coloringAction->getScatterplotWidget().getRenderMode() == ScatterplotWidget::SCATTERPLOT);
-    };
-
-    // Enable/disable depending on the render mode
-    connect(&coloringAction->getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, renderModeChanged);
-
-    // Initial update
-    renderModeChanged();
-
-    // Create widgets for actions
-    auto labelWidget            = coloringAction->getColorByAction().createLabelWidget(this);
-    auto colorByWidget          = coloringAction->getColorByAction().createWidget(this);
-    auto colorByConstantWidget  = coloringAction->getConstantColorAction().createWidget(this);
-    auto dimensionPickerLabelWidget = coloringAction->getDimensionAction().createLabelWidget(this);
-    auto dimensionPickerWidget  = coloringAction->getDimensionAction().createWidget(this);
-
-    // Adjust width of the constant color widget
-    colorByConstantWidget->setFixedWidth(40);
-
-    // Adjust size of the combo boxes to the contents
-    colorByWidget->findChild<QComboBox*>("ComboBox")->setSizeAdjustPolicy(QComboBox::AdjustToContents);
-    dimensionPickerWidget->findChild<QComboBox*>("ComboBox")->setSizeAdjustPolicy(QComboBox::AdjustToContents);
-
-    // Add widgets
-    if (widgetFlags & PopupLayout) {
-        auto layout = new QGridLayout();
-
-        layout->addWidget(labelWidget, 0, 0);
-        layout->addWidget(colorByWidget, 0, 1);
-        layout->addWidget(colorByConstantWidget, 0, 2);
-        layout->addWidget(dimensionPickerLabelWidget, 0, 3);
-        layout->addWidget(dimensionPickerWidget, 0, 4);
-
-        setPopupLayout(layout);
-    }
-    else {
-        auto layout = new QHBoxLayout();
-
-        layout->setContentsMargins(0, 0, 0, 0);
-        layout->addWidget(labelWidget);
-        layout->addWidget(colorByWidget);
-        layout->addWidget(colorByConstantWidget);
-        layout->addWidget(dimensionPickerLabelWidget);
-        layout->addWidget(dimensionPickerWidget);
-
-        setLayout(layout);
-    }
 }

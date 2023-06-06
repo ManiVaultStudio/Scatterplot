@@ -42,7 +42,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     _numPoints(0),
     _scatterPlotWidget(new ScatterplotWidget()),
     _dropWidget(nullptr),
-    _settingsAction(this),
+    _settingsAction(this, "Settings"),
     _selectPointsTimer()
 {
     setObjectName("Scatterplot");
@@ -327,7 +327,7 @@ void ScatterplotPlugin::selectPoints()
     }
 
     // Selection should be subtracted when the selection process was aborted by the user (e.g. by pressing the escape key)
-    const auto selectionModifier = _scatterPlotWidget->getPixelSelectionTool().isAborted() ? PixelSelectionModifierType::Remove : _scatterPlotWidget->getPixelSelectionTool().getModifier();
+    const auto selectionModifier = _scatterPlotWidget->getPixelSelectionTool().isAborted() ? PixelSelectionModifierType::Subtract : _scatterPlotWidget->getPixelSelectionTool().getModifier();
 
     switch (selectionModifier)
     {
@@ -335,7 +335,7 @@ void ScatterplotPlugin::selectPoints()
             break;
 
         case PixelSelectionModifierType::Add:
-        case PixelSelectionModifierType::Remove:
+        case PixelSelectionModifierType::Subtract:
         {
             // Get reference to the indices of the selection set
             auto& selectionSetIndices = selectionSet->indices;
@@ -356,7 +356,7 @@ void ScatterplotPlugin::selectPoints()
             }
 
             // Remove points from the current selection
-            case PixelSelectionModifierType::Remove:
+            case PixelSelectionModifierType::Subtract:
             {
                 // Remove indices from the set 
                 for (const auto& targetIndex : targetSelectionIndices)

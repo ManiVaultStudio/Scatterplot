@@ -16,34 +16,9 @@ using namespace hdps::gui;
  *
  * @author Thomas Kroes
  */
-class PositionAction : public WidgetAction
+class PositionAction : public GroupAction
 {
     Q_OBJECT
-
-protected: // Widget
-
-    /** Widget class for position action */
-    class Widget : public WidgetActionWidget {
-    public:
-
-        /**
-         * Constructor
-         * @param parent Pointer to parent widget
-         * @param positionAction Pointer to position action
-         */
-        Widget(QWidget* parent, PositionAction* positionAction, const std::int32_t& widgetFlags);
-    };
-
-protected:
-
-    /**
-     * Get widget representation of the position action
-     * @param parent Pointer to parent widget
-     * @param widgetFlags Widget flags for the configuration of the widget (type)
-     */
-    QWidget* getWidget(QWidget* parent, const std::int32_t& widgetFlags) override {
-        return new Widget(parent, this, widgetFlags);
-    };
 
 public:
 

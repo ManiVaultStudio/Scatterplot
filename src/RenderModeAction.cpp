@@ -7,6 +7,7 @@ using namespace hdps::gui;
 
 RenderModeAction::RenderModeAction(QObject* parent, const QString& title) :
     OptionAction(parent, title, { "Scatter", "Density", "Contour" }),
+    _scatterplotPlugin(nullptr),
     _scatterPlotAction(this, "Scatter"),
     _densityPlotAction(this, "Density"),
     _contourPlotAction(this, "Contour")
@@ -22,15 +23,6 @@ RenderModeAction::RenderModeAction(QObject* parent, const QString& title) :
     _densityPlotAction.setShortcutContext(Qt::WidgetWithChildrenShortcut);
     _contourPlotAction.setShortcutContext(Qt::WidgetWithChildrenShortcut);
 
-    auto scatterplotPlugin = dynamic_cast<ScatterplotPlugin*>(parent);
-    
-    if (scatterplotPlugin == nullptr)
-        return;
-
-    scatterplotPlugin->getWidget().addAction(&_scatterPlotAction);
-    scatterplotPlugin->getWidget().addAction(&_densityPlotAction);
-    scatterplotPlugin->getWidget().addAction(&_contourPlotAction);
-
     _scatterPlotAction.setShortcut(QKeySequence("S"));
     _densityPlotAction.setShortcut(QKeySequence("D"));
     _contourPlotAction.setShortcut(QKeySequence("C"));
@@ -38,23 +30,29 @@ RenderModeAction::RenderModeAction(QObject* parent, const QString& title) :
     _scatterPlotAction.setToolTip("Set render mode to scatter plot (S)");
     _densityPlotAction.setToolTip("Set render mode to density plot (D)");
     _contourPlotAction.setToolTip("Set render mode to contour plot (C)");
+}
 
-    /*
-    const auto& fontAwesome = Application::getIconFont("FontAwesome");
+void RenderModeAction::initialize(ScatterplotPlugin* scatterplotPlugin)
+{
+    Q_ASSERT(scatterplotPlugin != nullptr);
 
-    _scatterPlotAction.setIcon(fontAwesome.getIcon("braille"));
-    _densityPlotAction.setIcon(fontAwesome.getIcon("cloud"));
-    _contourPlotAction.setIcon(fontAwesome.getIcon("mountain"));
-    */
+    if (scatterplotPlugin == nullptr)
+        return;
 
-    const auto currentIndexChanged = [this, scatterplotPlugin]() {
+    _scatterplotPlugin = scatterplotPlugin;
+
+    _scatterplotPlugin->getWidget().addAction(&_scatterPlotAction);
+    _scatterplotPlugin->getWidget().addAction(&_densityPlotAction);
+    _scatterplotPlugin->getWidget().addAction(&_contourPlotAction);
+
+    const auto currentIndexChanged = [this]() {
         const auto renderMode = static_cast<RenderMode>(getCurrentIndex());
 
         _scatterPlotAction.setChecked(renderMode == RenderMode::ScatterPlot);
         _densityPlotAction.setChecked(renderMode == RenderMode::DensityPlot);
         _contourPlotAction.setChecked(renderMode == RenderMode::ContourPlot);
 
-        scatterplotPlugin->getScatterplotWidget().setRenderMode(static_cast<ScatterplotWidget::RenderMode>(getCurrentIndex()));
+        _scatterplotPlugin->getScatterplotWidget().setRenderMode(static_cast<ScatterplotWidget::RenderMode>(getCurrentIndex()));
     };
 
     currentIndexChanged();
@@ -75,6 +73,8 @@ RenderModeAction::RenderModeAction(QObject* parent, const QString& title) :
         if (toggled)
             setCurrentIndex(static_cast<std::int32_t>(RenderMode::ContourPlot));
     });
+
+    setCurrentIndex(static_cast<std::int32_t>(RenderMode::ScatterPlot));
 }
 
 QMenu* RenderModeAction::getContextMenu()

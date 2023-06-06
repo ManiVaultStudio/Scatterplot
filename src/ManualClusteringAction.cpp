@@ -5,13 +5,13 @@
 #include "ClusterData/ClusterData.h"
 
 #include <QHBoxLayout>
-#include <QRandomGenerator>
 
 using namespace hdps;
 using namespace hdps::gui;
 
-ManualClusteringAction::ManualClusteringAction(ScatterplotPlugin* scatterplotPlugin) :
-    PluginAction(scatterplotPlugin, scatterplotPlugin, "Cluster"),
+ManualClusteringAction::ManualClusteringAction(QObject* parent, const QString& title) :
+    GroupAction(parent, title),
+    _scatterplotPlugin(dynamic_cast<ScatterplotPlugin*>(parent->parent())),
     _nameAction(this, "Name"),
     _colorAction(this, "Color"),
     _addClusterAction(this, "Add cluster"),
@@ -19,6 +19,12 @@ ManualClusteringAction::ManualClusteringAction(ScatterplotPlugin* scatterplotPlu
 {
     setText("Manual clustering");
     setIcon(Application::getIconFont("FontAwesome").getIcon("th-large"));
+    setConnectionPermissionsToForceNone();
+    setConfigurationFlag(WidgetAction::ConfigurationFlag::ForceCollapsedInGroup);
+
+    addAction(&_nameAction);
+    addAction(&_colorAction);
+    addAction(&_addClusterAction);
 
     _nameAction.setToolTip("Name of the cluster");
     _colorAction.setToolTip("Color of the cluster");
@@ -118,69 +124,4 @@ void ManualClusteringAction::updateActions()
     _nameAction.setEnabled(hasSelection);
     _colorAction.setEnabled(hasSelection);
     _addClusterAction.setEnabled(canAddCluster);
-}
-
-ManualClusteringAction::Widget::Widget(QWidget* parent, ManualClusteringAction* manualClusteringAction, const std::int32_t& widgetFlags) :
-    WidgetActionWidget(parent, manualClusteringAction, widgetFlags)
-{
-    auto rng = QRandomGenerator::global();
-
-    const auto randomHue        = rng->bounded(360);
-    const auto randomSaturation = rng->bounded(150, 255);
-    const auto randomLightness  = rng->bounded(100, 200);
-
-    // Add a cluster dataset if none exist
-    manualClusteringAction->createDefaultClusterDataset();
-
-    // Reset the cluster name
-    manualClusteringAction->getNameAction().reset();
-
-    // Update the state of the actions
-    manualClusteringAction->updateActions();
-
-    // And adjust the color
-    manualClusteringAction->getColorAction().setColor(QColor::fromHsl(randomHue, randomSaturation, randomLightness));
-
-    if (widgetFlags & PopupLayout) {
-        auto layout = new QGridLayout();
-
-        layout->setColumnMinimumWidth(1, 200);
-
-        // Populate layout with widgets from actions
-        layout->addWidget(manualClusteringAction->getTargetClusterDataset().createLabelWidget(this), 0, 0);
-        layout->addWidget(manualClusteringAction->getTargetClusterDataset().createWidget(this), 0, 1);
-        layout->addWidget(manualClusteringAction->getNameAction().createLabelWidget(this), 1, 0);
-        layout->addWidget(manualClusteringAction->getNameAction().createWidget(this), 1, 1);
-        layout->addWidget(manualClusteringAction->getColorAction().createLabelWidget(this), 2, 0);
-        layout->addWidget(manualClusteringAction->getColorAction().createWidget(this), 2, 1);
-
-        layout->addWidget(manualClusteringAction->getAddClusterAction().createWidget(this), 3, 1);
-
-        setPopupLayout(layout);
-    }
-    else {
-        auto layout = new QHBoxLayout();
-
-        layout->setContentsMargins(0, 0, 0, 0);
-
-        // Create widgets
-        auto targetClusterWidget    = manualClusteringAction->getTargetClusterDataset().createWidget(this);
-        auto nameWidget             = manualClusteringAction->getNameAction().createWidget(this);
-        auto colorWidget            = manualClusteringAction->getColorAction().createWidget(this);
-        auto createWidget           = manualClusteringAction->getAddClusterAction().createWidget(this);
-
-        // Configure them
-        targetClusterWidget->setFixedWidth(100);
-        nameWidget->setFixedWidth(100);
-        colorWidget->setFixedWidth(26);
-        createWidget->setFixedWidth(50);
-
-        // And add them to the layout
-        layout->addWidget(targetClusterWidget);
-        layout->addWidget(nameWidget);
-        layout->addWidget(colorWidget);
-        layout->addWidget(createWidget);
-
-        setLayout(layout);
-    }
 }

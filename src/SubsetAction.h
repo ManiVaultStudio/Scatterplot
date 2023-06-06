@@ -1,31 +1,53 @@
 #pragma once
 
-#include "PluginAction.h"
+#include <actions/GroupAction.h>
+#include <actions/StringAction.h>
+#include <actions/TriggerAction.h>
+#include <actions/OptionAction.h>
 
 using namespace hdps::gui;
 
-class SubsetAction : public PluginAction
+class ScatterplotPlugin;
+
+/**
+ * Subset action class
+ *
+ * Action class for creating a subset
+ *
+ * @author Thomas Kroes
+ */
+class SubsetAction : public GroupAction
 {
-protected: // Widget
-
-    class Widget : public WidgetActionWidget {
-    public:
-        Widget(QWidget* parent, SubsetAction* subsetAction, const std::int32_t& widgetFlags);
-    };
-
-    QWidget* getWidget(QWidget* parent, const std::int32_t& widgetFlags) override {
-        return new Widget(parent, this, widgetFlags);
-    };
+    Q_OBJECT
 
 public:
-    SubsetAction(ScatterplotPlugin* scatterplotPlugin);
+    
+    /**
+     * Construct with \p parent object and \p title
+     * @param parent Pointer to parent object
+     * @param title Title
+     */
+    Q_INVOKABLE SubsetAction(QObject* parent, const QString& title);
 
+    /**
+     * Initialize the selection action with \p scatterplotPlugin
+     * @param scatterplotPlugin Pointer to scatterplot plugin
+     */
+    void initialize(ScatterplotPlugin* scatterplotPlugin);
+
+    /**
+     * Get action context menu
+     * @return Pointer to menu
+     */
     QMenu* getContextMenu();
 
 protected:
-    StringAction     _subsetNameAction;
-    TriggerAction    _createSubsetAction;
-    OptionAction     _sourceDataAction;
-
-    friend class Widget;
+    ScatterplotPlugin*  _scatterplotPlugin;     /** Pointer to scatter plot plugin */
+    StringAction        _subsetNameAction;      /** String action for configuring the subset name */
+    OptionAction        _sourceDataAction;      /** Option action for picking the source dataset */
+    TriggerAction       _createSubsetAction;    /** Triggers the subset creation process */
 };
+
+Q_DECLARE_METATYPE(SubsetAction)
+
+inline const auto subsetActionMetaTypeId = qRegisterMetaType<SubsetAction*>("SubsetAction");
