@@ -20,6 +20,7 @@ SubsetAction::SubsetAction(QObject* parent, const QString& title) :
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("crop"));
     setDefaultWidgetFlags(GroupAction::Horizontal);
     setConnectionPermissionsToForceNone(true);
+    setConfigurationFlag(WidgetAction::ConfigurationFlag::ForceCollapsedInGroup);
 
     addAction(&_subsetNameAction);
     addAction(&_sourceDataAction);
