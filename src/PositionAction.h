@@ -71,11 +71,14 @@ public: // Serialization
      */
     QVariantMap toVariantMap() const override;
 
-protected:
+public: // Action getters
+
+    DimensionPickerAction& getXDimensionPickerAction() { return _xDimensionPickerAction; }
+    DimensionPickerAction& getYDimensionPickerAction() { return _yDimensionPickerAction; }
+
+private:
     DimensionPickerAction    _xDimensionPickerAction;   /** X-dimension picker action */
     DimensionPickerAction    _yDimensionPickerAction;   /** Y-dimension picker action */
-
-    friend class Widget;
 };
 
 Q_DECLARE_METATYPE(PositionAction)

@@ -41,6 +41,21 @@ public:
      */
     QMenu* getContextMenu();
 
+public: // Linking
+
+    /**
+     * Connect this action to a public action
+     * @param publicAction Pointer to public action to connect to
+     * @param recursive Whether to also connect descendant child actions
+     */
+    void connectToPublicAction(WidgetAction* publicAction, bool recursive) override;
+
+    /**
+     * Disconnect this action from its public action
+     * @param recursive Whether to also disconnect descendant child actions
+     */
+    void disconnectFromPublicAction(bool recursive) override;
+
 public: // Serialization
 
     /**
@@ -60,12 +75,10 @@ public: // Action getters
     PointPlotAction& getPointPlotAction() { return _pointPlotAction; }
     DensityPlotAction& getDensityPlotAction() { return _densityPlotAction; }
 
-protected:
+private:
     ScatterplotPlugin*  _scatterplotPlugin;     /** Pointer to scatterplot plugin */
     PointPlotAction     _pointPlotAction;       /** Point plot action */
     DensityPlotAction   _densityPlotAction;     /** Density plot action */
-
-    friend class Widget;
 };
 
 Q_DECLARE_METATYPE(PlotAction)

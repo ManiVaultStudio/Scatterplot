@@ -1,10 +1,9 @@
 #include "DatasetsAction.h"
 #include "ScatterplotPlugin.h"
 
-#include "PointData/PointData.h"
-#include "ClusterData/ClusterData.h"
-#include "ColorData/ColorData.h"
-#include "ScatterplotPlugin.h"
+#include <PointData/PointData.h>
+#include <ClusterData/ClusterData.h>
+#include <ColorData/ColorData.h>
 
 #include <QMenu>
 
@@ -68,19 +67,19 @@ DatasetsAction::DatasetsAction(QObject* parent, const QString& title) :
 
 void DatasetsAction::connectToPublicAction(WidgetAction* publicAction, bool recursive)
 {
-    auto publicLoadedDatasetsAction = dynamic_cast<DatasetsAction*>(publicAction);
+    auto publicDatasetsAction = dynamic_cast<DatasetsAction*>(publicAction);
 
-    Q_ASSERT(publicLoadedDatasetsAction != nullptr);
+    Q_ASSERT(publicDatasetsAction != nullptr);
 
-    if (publicLoadedDatasetsAction == nullptr)
+    if (publicDatasetsAction == nullptr)
         return;
 
     if (recursive) {
-        _positionDatasetPickerAction.connectToPublicAction(&publicLoadedDatasetsAction->_positionDatasetPickerAction, recursive);
-        _colorDatasetPickerAction.connectToPublicAction(&publicLoadedDatasetsAction->_colorDatasetPickerAction, recursive);
+        _positionDatasetPickerAction.connectToPublicAction(&publicDatasetsAction->getPositionDatasetPickerAction(), recursive);
+        _colorDatasetPickerAction.connectToPublicAction(&publicDatasetsAction->getColorDatasetPickerAction(), recursive);
     }
 
-    WidgetAction::connectToPublicAction(publicAction, recursive);
+    GroupAction::connectToPublicAction(publicAction, recursive);
 }
 
 void DatasetsAction::disconnectFromPublicAction(bool recursive)
@@ -93,12 +92,12 @@ void DatasetsAction::disconnectFromPublicAction(bool recursive)
         _colorDatasetPickerAction.disconnectFromPublicAction(recursive);
     }
 
-    WidgetAction::disconnectFromPublicAction(recursive);
+    GroupAction::disconnectFromPublicAction(recursive);
 }
 
 void DatasetsAction::fromVariantMap(const QVariantMap& variantMap)
 {
-    WidgetAction::fromVariantMap(variantMap);
+    GroupAction::fromVariantMap(variantMap);
 
     _positionDatasetPickerAction.fromParentVariantMap(variantMap);
     _colorDatasetPickerAction.fromParentVariantMap(variantMap);
@@ -106,7 +105,7 @@ void DatasetsAction::fromVariantMap(const QVariantMap& variantMap)
 
 QVariantMap DatasetsAction::toVariantMap() const
 {
-    QVariantMap variantMap = WidgetAction::toVariantMap();
+    auto variantMap = GroupAction::toVariantMap();
 
     _positionDatasetPickerAction.insertIntoVariantMap(variantMap);
     _colorDatasetPickerAction.insertIntoVariantMap(variantMap);

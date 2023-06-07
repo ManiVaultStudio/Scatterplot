@@ -1,6 +1,4 @@
 #include "PositionAction.h"
-#include "Application.h"
-
 #include "ScatterplotPlugin.h"
 
 #include <QMenu>
@@ -84,11 +82,11 @@ void PositionAction::connectToPublicAction(WidgetAction* publicAction, bool recu
         return;
 
     if (recursive) {
-        _xDimensionPickerAction.connectToPublicAction(&publicPositionAction->_xDimensionPickerAction, recursive);
-        _yDimensionPickerAction.connectToPublicAction(&publicPositionAction->_yDimensionPickerAction, recursive);
+        _xDimensionPickerAction.connectToPublicAction(&publicPositionAction->getXDimensionPickerAction(), recursive);
+        _yDimensionPickerAction.connectToPublicAction(&publicPositionAction->getYDimensionPickerAction(), recursive);
     }
 
-    WidgetAction::connectToPublicAction(publicAction, recursive);
+    GroupAction::connectToPublicAction(publicAction, recursive);
 }
 
 void PositionAction::disconnectFromPublicAction(bool recursive)
@@ -101,12 +99,12 @@ void PositionAction::disconnectFromPublicAction(bool recursive)
         _yDimensionPickerAction.disconnectFromPublicAction(recursive);
     }
 
-    WidgetAction::disconnectFromPublicAction(recursive);
+    GroupAction::disconnectFromPublicAction(recursive);
 }
 
 void PositionAction::fromVariantMap(const QVariantMap& variantMap)
 {
-    WidgetAction::fromVariantMap(variantMap);
+    GroupAction::fromVariantMap(variantMap);
 
     _xDimensionPickerAction.fromParentVariantMap(variantMap);
     _yDimensionPickerAction.fromParentVariantMap(variantMap);
@@ -114,7 +112,7 @@ void PositionAction::fromVariantMap(const QVariantMap& variantMap)
 
 QVariantMap PositionAction::toVariantMap() const
 {
-    QVariantMap variantMap = WidgetAction::toVariantMap();
+    auto variantMap = GroupAction::toVariantMap();
 
     _xDimensionPickerAction.insertIntoVariantMap(variantMap);
     _yDimensionPickerAction.insertIntoVariantMap(variantMap);

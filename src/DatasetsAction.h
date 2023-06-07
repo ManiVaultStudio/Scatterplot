@@ -49,12 +49,15 @@ public: // Serialization
      */
     QVariantMap toVariantMap() const override;
 
-protected:
+public: // Action getters
+
+    DatasetPickerAction& getPositionDatasetPickerAction() { return _positionDatasetPickerAction; }
+    DatasetPickerAction& getColorDatasetPickerAction() { return _colorDatasetPickerAction; }
+
+private:
     ScatterplotPlugin*      _scatterplotPlugin;                 /** Pointer to scatter plot plugin */
     DatasetPickerAction	    _positionDatasetPickerAction;       /** Dataset picker action for position dataset */
     DatasetPickerAction     _colorDatasetPickerAction;          /** Dataset picker action for color dataset */
-
-    friend class Widget;
 };
 
 Q_DECLARE_METATYPE(DatasetsAction)

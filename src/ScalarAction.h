@@ -1,6 +1,6 @@
 #pragma once
 
-#include <actions/WidgetAction.h>
+#include <actions/GroupAction.h>
 
 #include "ScalarSourceAction.h"
 
@@ -13,34 +13,9 @@ using namespace hdps::gui;
  *
  * @author Thomas Kroes
  */
-class ScalarAction : public WidgetAction
+class ScalarAction : public GroupAction
 {
     Q_OBJECT
-
-protected: // Widget
-
-    /** Widget class for scalar action */
-    class Widget : public WidgetActionWidget {
-    public:
-
-        /**
-         * Constructor
-         * @param parent Pointer to parent widget
-         * @param scalarAction Pointer to scalar action
-         */
-        Widget(QWidget* parent, ScalarAction* scalarAction);
-    };
-
-protected:
-
-    /**
-     * Get widget representation of the scalar action
-     * @param parent Pointer to parent widget
-     * @param widgetFlags Widget flags for the configuration of the widget (type)
-     */
-    QWidget* getWidget(QWidget* parent, const std::int32_t& widgetFlags) override {
-        return new Widget(parent, this);
-    };
 
 public:
 
@@ -154,7 +129,7 @@ signals:
      */
     void offsetChanged(const float& offset);
 
-protected:
+private:
     DecimalAction           _magnitudeAction;   /** Scalar magnitude action */
     ScalarSourceAction      _sourceAction;      /** Scalar source action */
 };

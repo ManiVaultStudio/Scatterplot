@@ -11,13 +11,13 @@ class Clusters;
 class ScatterplotPlugin;
 
 /**
- * Manual clustering action class
+ * Clustering action class
  *
- * Action class for manual clustering
+ * Action class for clustering
  *
  * @author Thomas Kroes
  */
-class ManualClusteringAction : public GroupAction
+class ClusteringAction : public GroupAction
 {
 public:
 
@@ -26,7 +26,7 @@ public:
      * @param parent Pointer to parent object
      * @param title Title
      */
-    Q_INVOKABLE ManualClusteringAction(QObject* parent, const QString& title);
+    Q_INVOKABLE ClusteringAction(QObject* parent, const QString& title);
 
     /** Adds a clusters dataset to the position dataset as a child */
     void createDefaultClusterDataset();
@@ -47,7 +47,7 @@ public: // Action getters
     TriggerAction& getAddClusterAction() { return _addClusterAction; }
     DatasetPickerAction& getTargetClusterDataset() { return _targetClusterDataset; }
 
-protected:
+private:
     ScatterplotPlugin*      _scatterplotPlugin;         /** Pointer to scatter plot plugin */
     StringAction            _nameAction;                /** Cluster name action */
     ColorAction             _colorAction;               /** Cluster color action */

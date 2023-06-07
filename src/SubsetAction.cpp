@@ -78,3 +78,19 @@ QMenu* SubsetAction::getContextMenu()
 
     return menu;
 }
+
+void SubsetAction::fromVariantMap(const QVariantMap& variantMap)
+{
+    GroupAction::fromVariantMap(variantMap);
+
+    _subsetNameAction.fromParentVariantMap(variantMap);
+}
+
+QVariantMap SubsetAction::toVariantMap() const
+{
+    auto variantMap = GroupAction::toVariantMap();
+
+    _subsetNameAction.insertIntoVariantMap(variantMap);
+
+    return variantMap;
+}

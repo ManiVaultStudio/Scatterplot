@@ -29,8 +29,6 @@ set(PLUGIN
 set(UI
     src/ScatterplotWidget.h
     src/ScatterplotWidget.cpp
-    src/ExportImageDialog.h
-    src/ExportImageDialog.cpp
 )
 
 set(Actions
@@ -38,14 +36,12 @@ set(Actions
     src/ColoringAction.cpp
     src/DensityPlotAction.h
     src/DensityPlotAction.cpp
-    src/ManualClusteringAction.h
-    src/ManualClusteringAction.cpp
+    src/ClusteringAction.h
+    src/ClusteringAction.cpp
     src/MiscellaneousAction.h
     src/MiscellaneousAction.cpp
     src/PlotAction.h
     src/PlotAction.cpp
-    src/PluginAction.h
-    src/PluginAction.cpp
     src/PointPlotAction.h
     src/PointPlotAction.cpp
     src/PositionAction.h
@@ -62,8 +58,8 @@ set(Actions
     src/SettingsAction.cpp
     src/SubsetAction.h
     src/SubsetAction.cpp
-    src/ExportImageAction.h
-    src/ExportImageAction.cpp
+    src/ExportAction.h
+    src/ExportAction.cpp
     src/DatasetsAction.h
     src/DatasetsAction.cpp
 )

@@ -3,9 +3,9 @@
 #include <actions/GroupAction.h>
 #include <actions/ColorMapAction.h>
 
-#include "ColorSourceModel.h"
-
 #include <PointData/DimensionPickerAction.h>
+
+#include "ColorSourceModel.h"
 
 #include <QHBoxLayout>
 #include <QLabel>
@@ -85,8 +85,20 @@ protected: // Color map
     /** Enables/disables the color map */
     void updateColorMapActionReadOnly();
 
-signals:
-    void currentColorDatasetChanged(Dataset<DatasetImpl> currentColorDataset);
+public: // Linking
+
+    /**
+     * Connect this action to a public action
+     * @param publicAction Pointer to public action to connect to
+     * @param recursive Whether to also connect descendant child actions
+     */
+    void connectToPublicAction(WidgetAction* publicAction, bool recursive) override;
+
+    /**
+     * Disconnect this action from its public action
+     * @param recursive Whether to also disconnect descendant child actions
+     */
+    void disconnectFromPublicAction(bool recursive) override;
 
 public: // Serialization
 
@@ -108,21 +120,21 @@ public: // Action getters
     ColorAction& getConstantColorAction() { return _constantColorAction; }
     DimensionPickerAction& getDimensionAction() { return _dimensionAction; }
     ColorMapAction& getColorMapAction() { return _colorMapAction; }
-    ColorMapAction& getColorMap2DAction() { return _colorMap2DAction; }
 
-protected:
+signals:
+    void currentColorDatasetChanged(Dataset<DatasetImpl> currentColorDataset);
+
+private:
     ScatterplotPlugin*      _scatterplotPlugin;         /** Pointer to scatter plot plugin */
     ColorSourceModel        _colorByModel;              /** Color by model (model input for the color by action) */
     OptionAction            _colorByAction;             /** Action for picking the coloring type */
     ColorAction             _constantColorAction;       /** Action for picking the constant color */
     DimensionPickerAction   _dimensionAction;           /** Dimension picker action */
     ColorMapAction          _colorMapAction;            /** Color map action */
-    ColorMapAction          _colorMap2DAction;          /** Color map 2D action */
 
     /** Default constant color */
     static const QColor DEFAULT_CONSTANT_COLOR;
 
-    friend class Widget;
     friend class ScatterplotPlugin;
 };
 

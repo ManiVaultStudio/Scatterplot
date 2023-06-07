@@ -1,11 +1,9 @@
 #include "PointPlotAction.h"
 #include "ScalarSourceAction.h"
-
-#include "Application.h"
-
 #include "ScatterplotPlugin.h"
 #include "ScatterplotWidget.h"
-#include "DataHierarchyItem.h"
+
+#include <DataHierarchyItem.h>
 
 using namespace gui;
 
@@ -370,9 +368,41 @@ void PointPlotAction::updateScatterPlotWidgetPointOpacityScalars()
     _scatterplotPlugin->getScatterplotWidget().setPointOpacityScalars(_pointOpacityScalars);
 }
 
+void PointPlotAction::connectToPublicAction(WidgetAction* publicAction, bool recursive)
+{
+    auto publicPointPlotAction = dynamic_cast<PointPlotAction*>(publicAction);
+
+    Q_ASSERT(publicPointPlotAction != nullptr);
+
+    if (publicPointPlotAction == nullptr)
+        return;
+
+    if (recursive) {
+        _sizeAction.connectToPublicAction(&publicPointPlotAction->getSizeAction(), recursive);
+        _opacityAction.connectToPublicAction(&publicPointPlotAction->getOpacityAction(), recursive);
+        _focusSelection.connectToPublicAction(&publicPointPlotAction->getFocusSelection(), recursive);
+    }
+
+    GroupAction::connectToPublicAction(publicAction, recursive);
+}
+
+void PointPlotAction::disconnectFromPublicAction(bool recursive)
+{
+    if (!isConnected())
+        return;
+
+    if (recursive) {
+        _sizeAction.disconnectFromPublicAction(recursive);
+        _opacityAction.disconnectFromPublicAction(recursive);
+        _focusSelection.disconnectFromPublicAction(recursive);
+    }
+
+    GroupAction::disconnectFromPublicAction(recursive);
+}
+
 void PointPlotAction::fromVariantMap(const QVariantMap& variantMap)
 {
-    WidgetAction::fromVariantMap(variantMap);
+    GroupAction::fromVariantMap(variantMap);
 
     _sizeAction.fromParentVariantMap(variantMap);
     _opacityAction.fromParentVariantMap(variantMap);
@@ -381,7 +411,7 @@ void PointPlotAction::fromVariantMap(const QVariantMap& variantMap)
 
 QVariantMap PointPlotAction::toVariantMap() const
 {
-    QVariantMap variantMap = WidgetAction::toVariantMap();
+    auto variantMap = GroupAction::toVariantMap();
 
     _sizeAction.insertIntoVariantMap(variantMap);
     _opacityAction.insertIntoVariantMap(variantMap);

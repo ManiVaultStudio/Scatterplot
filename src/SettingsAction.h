@@ -1,16 +1,17 @@
 #pragma once
 
-#include <actions/HorizontalToolbarAction.h>
+#include <actions/GroupAction.h>
 
-#include "DatasetsAction.h"
 #include "RenderModeAction.h"
-#include "PlotAction.h"
 #include "PositionAction.h"
+#include "PlotAction.h"
 #include "ColoringAction.h"
 #include "SubsetAction.h"
+#include "ClusteringAction.h"
 #include "SelectionAction.h"
-#include "ManualClusteringAction.h"
+#include "ExportAction.h"
 #include "MiscellaneousAction.h"
+#include "DatasetsAction.h"
 
 using namespace hdps::gui;
 
@@ -23,7 +24,7 @@ class ScatterplotPlugin;
  *
  * @author Thomas Kroes
  */
-class SettingsAction : public HorizontalToolbarAction
+class SettingsAction : public GroupAction
 {
 public:
     
@@ -55,26 +56,28 @@ public: // Serialization
     QVariantMap toVariantMap() const override;
 
 public: // Action getters
-
+    
     RenderModeAction& getRenderModeAction() { return _renderModeAction; }
     PositionAction& getPositionAction() { return _positionAction; }
+    PlotAction& getPlotAction() { return _plotAction; }
     ColoringAction& getColoringAction() { return _coloringAction; }
     SubsetAction& getSubsetAction() { return _subsetAction; }
+    ClusteringAction& getClusteringAction() { return _clusteringAction; }
     SelectionAction& getSelectionAction() { return _selectionAction; }
-    PlotAction& getPlotAction() { return _plotAction; }
-    TriggerAction& getExportAction() { return _exportAction; }
+    ExportAction& getExportAction() { return _exportAction; }
     MiscellaneousAction& getMiscellaneousAction() { return _miscellaneousAction; }
+    DatasetsAction& getDatasetsAction() { return _datasetsAction; }
 
 protected:
-    ScatterplotPlugin*          _scatterplotPlugin;         /** Pointer to scatter plot plugin */
-    RenderModeAction            _renderModeAction;          /** Action for configuring render mode */
-    PositionAction              _positionAction;            /** Action for configuring point positions */
-    ColoringAction              _coloringAction;            /** Action for configuring point coloring */
-    DatasetsAction              _datasetsAction;            /** Action for picking dataset(s) */
-    SubsetAction                _subsetAction;              /** Action for creating subset(s) */
-    ManualClusteringAction      _manualClusteringAction;    /** Action for creating clusters */
-    SelectionAction             _selectionAction;           /** Action for selecting points */
-    PlotAction                  _plotAction;                /** Action for configuring plot settings */
-    TriggerAction               _exportAction;              /** Action for creating screenshot(s) */
-    MiscellaneousAction         _miscellaneousAction;       /** Action for miscellaneous settings */
+    ScatterplotPlugin*      _scatterplotPlugin;         /** Pointer to scatter plot plugin */
+    RenderModeAction        _renderModeAction;          /** Action for configuring render mode */
+    PositionAction          _positionAction;            /** Action for configuring point positions */
+    PlotAction              _plotAction;                /** Action for configuring plot settings */
+    ColoringAction          _coloringAction;            /** Action for configuring point coloring */
+    SubsetAction            _subsetAction;              /** Action for creating subset(s) */
+    ClusteringAction        _clusteringAction;          /** Action for creating clusters */
+    SelectionAction         _selectionAction;           /** Action for selecting points */
+    ExportAction            _exportAction;              /** Action for exporting */
+    MiscellaneousAction     _miscellaneousAction;       /** Action for miscellaneous settings */
+    DatasetsAction          _datasetsAction;            /** Action for picking dataset(s) */
 };

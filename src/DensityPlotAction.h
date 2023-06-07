@@ -46,6 +46,21 @@ public:
      */
     void setVisible(bool visible);
 
+public: // Linking
+
+    /**
+     * Connect this action to a public action
+     * @param publicAction Pointer to public action to connect to
+     * @param recursive Whether to also connect descendant child actions
+     */
+    void connectToPublicAction(WidgetAction* publicAction, bool recursive) override;
+
+    /**
+     * Disconnect this action from its public action
+     * @param recursive Whether to also disconnect descendant child actions
+     */
+    void disconnectFromPublicAction(bool recursive) override;
+
 public: // Serialization
 
     /**
@@ -65,7 +80,7 @@ public: // Action getters
     DecimalAction& getSigmaAction() { return _sigmaAction; }
     ToggleAction& getContinuousUpdatesAction() { return _continuousUpdatesAction; }
 
-protected:
+private:
     ScatterplotPlugin*  _scatterplotPlugin;         /** Pointer to scatterplot plugin */
     DecimalAction       _sigmaAction;               /** Density sigma action */
     ToggleAction        _continuousUpdatesAction;   /** Live updates action */
@@ -73,6 +88,5 @@ protected:
     static constexpr double DEFAULT_SIGMA = 0.15f;
     static constexpr bool DEFAULT_CONTINUOUS_UPDATES = true;
 
-    friend class Widget;
     friend class PlotAction;
 };

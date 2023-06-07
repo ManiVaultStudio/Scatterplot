@@ -3,7 +3,9 @@
 #include <ViewPlugin.h>
 
 #include <util/PixelSelectionTool.h>
+
 #include <actions/TriggerAction.h>
+#include <actions/HorizontalToolbarAction.h>
 
 #include "Common.h"
 
@@ -127,9 +129,11 @@ private:
     static const std::int32_t LAZY_UPDATE_INTERVAL = 2;
 
 protected:
-    ScatterplotWidget* _scatterPlotWidget;
-    hdps::gui::DropWidget* _dropWidget;
-    SettingsAction              _settingsAction;
+    ScatterplotWidget*          _scatterPlotWidget;         /** THe visualization widget */
+    hdps::gui::DropWidget*      _dropWidget;                /** Widget for dropping datasets */
+    SettingsAction              _settingsAction;            /** Group action for all settings */
+    HorizontalToolbarAction     _primaryToolbarAction;      /** Horizontal toolbar for primary content */
+    HorizontalToolbarAction     _secondaryToolbarAction;    /** Secondary toolbar for secondary content */
 };
 
 // =============================================================================

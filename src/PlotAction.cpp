@@ -1,7 +1,6 @@
 #include "PlotAction.h"
 #include "ScatterplotPlugin.h"
 #include "ScatterplotWidget.h"
-#include "Application.h"
 
 using namespace hdps::gui;
 
@@ -70,9 +69,39 @@ QMenu* PlotAction::getContextMenu()
     return new QMenu("Plot");
 }
 
+void PlotAction::connectToPublicAction(WidgetAction* publicAction, bool recursive)
+{
+    auto publicPlotAction = dynamic_cast<PlotAction*>(publicAction);
+
+    Q_ASSERT(publicPlotAction != nullptr);
+
+    if (publicPlotAction == nullptr)
+        return;
+
+    if (recursive) {
+        _pointPlotAction.connectToPublicAction(&publicPlotAction->getPointPlotAction(), recursive);
+        _densityPlotAction.connectToPublicAction(&publicPlotAction->getDensityPlotAction(), recursive);
+    }
+
+    GroupAction::connectToPublicAction(publicAction, recursive);
+}
+
+void PlotAction::disconnectFromPublicAction(bool recursive)
+{
+    if (!isConnected())
+        return;
+
+    if (recursive) {
+        _pointPlotAction.disconnectFromPublicAction(recursive);
+        _densityPlotAction.disconnectFromPublicAction(recursive);
+    }
+
+    GroupAction::disconnectFromPublicAction(recursive);
+}
+
 void PlotAction::fromVariantMap(const QVariantMap& variantMap)
 {
-    WidgetAction::fromVariantMap(variantMap);
+    GroupAction::fromVariantMap(variantMap);
 
     _pointPlotAction.fromParentVariantMap(variantMap);
     _densityPlotAction.fromParentVariantMap(variantMap);
@@ -80,7 +109,7 @@ void PlotAction::fromVariantMap(const QVariantMap& variantMap)
 
 QVariantMap PlotAction::toVariantMap() const
 {
-    QVariantMap variantMap = WidgetAction::toVariantMap();
+    auto variantMap = GroupAction::toVariantMap();
 
     _pointPlotAction.insertIntoVariantMap(variantMap);
     _densityPlotAction.insertIntoVariantMap(variantMap);

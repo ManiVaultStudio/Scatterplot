@@ -1,11 +1,11 @@
 #pragma once
 
-#include <actions/WidgetAction.h>
+#include <actions/GroupAction.h>
 #include <actions/DecimalRangeAction.h>
 
-#include "ScalarSourceModel.h"
-
 #include <PointData/DimensionPickerAction.h>
+
+#include "ScalarSourceModel.h"
 
 using namespace hdps::gui;
 
@@ -16,34 +16,9 @@ using namespace hdps::gui;
  *
  * @author Thomas Kroes
  */
-class ScalarSourceAction : public WidgetAction
+class ScalarSourceAction : public GroupAction
 {
     Q_OBJECT
-
-protected: // Widget
-
-    /** Widget class for scalar source action */
-    class Widget : public WidgetActionWidget {
-    public:
-
-        /**
-         * Constructor
-         * @param parent Pointer to parent widget
-         * @param scalarSourceAction Pointer to scalar source action
-         */
-        Widget(QWidget* parent, ScalarSourceAction* scalarSourceAction);
-    };
-
-protected:
-
-    /**
-     * Get widget representation of the scalar source action
-     * @param parent Pointer to parent widget
-     * @param widgetFlags Widget flags for the configuration of the widget (type)
-     */
-    QWidget* getWidget(QWidget* parent, const std::int32_t& widgetFlags) override {
-        return new Widget(parent, this);
-    };
 
 public:
 
@@ -96,10 +71,7 @@ public: // Action getters
     DecimalAction& getOffsetAction() { return _offsetAction; }
     DecimalRangeAction& getRangeAction() { return _rangeAction; }
 
-    const OptionAction& getPickerAction() const { return _pickerAction; }
-    const DimensionPickerAction& getDimensionPickerAction() const { return _dimensionPickerAction; }
-    const DecimalAction& getOffsetAction() const { return _offsetAction; }
-    const DecimalRangeAction& getRangeAction() const { return _rangeAction; }
+    const OptionAction& getPickerAction() const  { return _pickerAction; }
 
 signals:
 
@@ -110,7 +82,7 @@ signals:
      */
     void scalarRangeChanged(const float& minimum, const float& maximum);
 
-protected:
+private:
     ScalarSourceModel       _model;                     /** Scalar model */
     OptionAction            _pickerAction;              /** Source picker action */
     DimensionPickerAction   _dimensionPickerAction;     /** Dimension picker action */

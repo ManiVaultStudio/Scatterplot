@@ -1,5 +1,4 @@
 #include "RenderModeAction.h"
-#include "Application.h"
 #include "ScatterplotPlugin.h"
 #include "ScatterplotWidget.h"
 
@@ -90,17 +89,39 @@ QMenu* RenderModeAction::getContextMenu()
 
 void RenderModeAction::connectToPublicAction(WidgetAction* publicAction, bool recursive)
 {
+    auto publicRenderModeAction = dynamic_cast<RenderModeAction*>(publicAction);
+
+    Q_ASSERT(publicRenderModeAction != nullptr);
+
+    if (publicRenderModeAction == nullptr)
+        return;
+
+    if (recursive) {
+        _scatterPlotAction.connectToPublicAction(&publicRenderModeAction->getScatterPlotAction(), recursive);
+        _densityPlotAction.connectToPublicAction(&publicRenderModeAction->getDensityPlotAction(), recursive);
+        _contourPlotAction.connectToPublicAction(&publicRenderModeAction->getContourPlotAction(), recursive);
+    }
+
     OptionAction::connectToPublicAction(publicAction, recursive);
 }
 
 void RenderModeAction::disconnectFromPublicAction(bool recursive)
 {
+    if (!isConnected())
+        return;
+
+    if (recursive) {
+        _scatterPlotAction.disconnectFromPublicAction(recursive);
+        _densityPlotAction.disconnectFromPublicAction(recursive);
+        _contourPlotAction.disconnectFromPublicAction(recursive);
+    }
+
     OptionAction::disconnectFromPublicAction(recursive);
 }
 
 void RenderModeAction::fromVariantMap(const QVariantMap& variantMap)
 {
-    WidgetAction::fromVariantMap(variantMap);
+    OptionAction::fromVariantMap(variantMap);
 
     _scatterPlotAction.fromParentVariantMap(variantMap);
     _densityPlotAction.fromParentVariantMap(variantMap);
@@ -109,7 +130,7 @@ void RenderModeAction::fromVariantMap(const QVariantMap& variantMap)
 
 QVariantMap RenderModeAction::toVariantMap() const
 {
-    QVariantMap variantMap = WidgetAction::toVariantMap();
+    auto variantMap = OptionAction::toVariantMap();
 
     _scatterPlotAction.insertIntoVariantMap(variantMap);
     _densityPlotAction.insertIntoVariantMap(variantMap);

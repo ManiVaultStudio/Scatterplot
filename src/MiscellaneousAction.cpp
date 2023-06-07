@@ -1,5 +1,4 @@
 #include "MiscellaneousAction.h"
-#include "Application.h"
 #include "ScatterplotPlugin.h"
 #include "ScatterplotWidget.h"
 
@@ -42,3 +41,46 @@ QMenu* MiscellaneousAction::getContextMenu()
     return menu;
 }
 
+void MiscellaneousAction::connectToPublicAction(WidgetAction* publicAction, bool recursive)
+{
+    auto publicMiscellaneousAction = dynamic_cast<MiscellaneousAction*>(publicAction);
+
+    Q_ASSERT(publicMiscellaneousAction != nullptr);
+
+    if (publicMiscellaneousAction == nullptr)
+        return;
+
+    if (recursive) {
+        _backgroundColorAction.connectToPublicAction(&publicMiscellaneousAction->getBackgroundColorAction(), recursive);
+    }
+
+    GroupAction::connectToPublicAction(publicAction, recursive);
+}
+
+void MiscellaneousAction::disconnectFromPublicAction(bool recursive)
+{
+    if (!isConnected())
+        return;
+
+    if (recursive) {
+        _backgroundColorAction.disconnectFromPublicAction(recursive);
+    }
+
+    GroupAction::disconnectFromPublicAction(recursive);
+}
+
+void MiscellaneousAction::fromVariantMap(const QVariantMap& variantMap)
+{
+    GroupAction::fromVariantMap(variantMap);
+
+    _backgroundColorAction.fromParentVariantMap(variantMap);
+}
+
+QVariantMap MiscellaneousAction::toVariantMap() const
+{
+    auto variantMap = GroupAction::toVariantMap();
+
+    _backgroundColorAction.insertIntoVariantMap(variantMap);
+
+    return variantMap;
+}

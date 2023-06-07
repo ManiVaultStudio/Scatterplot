@@ -69,6 +69,21 @@ protected:
     /** Update the scatter plot widget point opacity scalars */
     void updateScatterPlotWidgetPointOpacityScalars();
 
+public: // Linking
+
+    /**
+     * Connect this action to a public action
+     * @param publicAction Pointer to public action to connect to
+     * @param recursive Whether to also connect descendant child actions
+     */
+    void connectToPublicAction(WidgetAction* publicAction, bool recursive) override;
+
+    /**
+     * Disconnect this action from its public action
+     * @param recursive Whether to also disconnect descendant child actions
+     */
+    void disconnectFromPublicAction(bool recursive) override;
+
 public: // Serialization
 
     /**
@@ -89,7 +104,7 @@ public: // Action getters
     ScalarAction& getOpacityAction() { return _opacityAction; }
     ToggleAction& getFocusSelection() { return _focusSelection; }
 
-protected:
+private:
     ScatterplotPlugin*      _scatterplotPlugin;         /** Pointer to scatterplot plugin */
     ScalarAction            _sizeAction;                /** Point size action */
     ScalarAction            _opacityAction;             /** Point opacity action */
@@ -101,6 +116,5 @@ protected:
     static constexpr double DEFAULT_POINT_SIZE      = 10.0;     /** Default point size */
     static constexpr double DEFAULT_POINT_OPACITY   = 50.0;     /** Default point opacity */
 
-    friend class PlotAction;
     friend class ScatterplotPlugin;
 };

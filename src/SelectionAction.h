@@ -64,7 +64,7 @@ public: // Action getters
     DecimalAction& getOutlineOpacityAction() { return _outlineOpacityAction; }
     ToggleAction& getOutlineHaloEnabledAction() { return _outlineHaloEnabledAction; }
 
-protected:
+private:
     PixelSelectionAction    _pixelSelectionAction;          /** Pixel selection action */
     OptionAction            _displayModeAction;             /** Type of selection display (e.g. outline or override) */
     ToggleAction            _outlineOverrideColorAction;    /** Selection outline override color action */

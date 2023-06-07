@@ -43,6 +43,8 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     _scatterPlotWidget(new ScatterplotWidget()),
     _dropWidget(nullptr),
     _settingsAction(this, "Settings"),
+    _primaryToolbarAction(this, "Primary Toolbar"),
+    _secondaryToolbarAction(this, "Secondary Toolbar"),
     _selectPointsTimer()
 {
     setObjectName("Scatterplot");
@@ -50,6 +52,20 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     _dropWidget = new DropWidget(_scatterPlotWidget);
 
     getWidget().setFocusPolicy(Qt::ClickFocus);
+
+    _primaryToolbarAction.addAction(&_settingsAction.getDatasetsAction());
+    _primaryToolbarAction.addAction(&_settingsAction.getRenderModeAction(), 100);
+    _primaryToolbarAction.addAction(&_settingsAction.getPositionAction(), 50);
+    _primaryToolbarAction.addAction(&_settingsAction.getPlotAction(), 50);
+    _primaryToolbarAction.addAction(&_settingsAction.getColoringAction());
+    _primaryToolbarAction.addAction(&_settingsAction.getSubsetAction());
+    _primaryToolbarAction.addAction(&_settingsAction.getClusteringAction());
+    _primaryToolbarAction.addAction(&_settingsAction.getSelectionAction());
+
+    _secondaryToolbarAction.addAction(&_settingsAction.getColoringAction().getColorMapAction());
+    _secondaryToolbarAction.addAction(&_settingsAction.getPlotAction().getPointPlotAction().getFocusSelection());
+    _secondaryToolbarAction.addAction(&_settingsAction.getExportAction());
+    _secondaryToolbarAction.addAction(&_settingsAction.getMiscellaneousAction());
 
     connect(_scatterPlotWidget, &ScatterplotWidget::customContextMenuRequested, this, [this](const QPoint& point) {
         if (!_positionDataset.isValid())
@@ -193,26 +209,9 @@ void ScatterplotPlugin::init()
 
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
-    layout->addWidget(_settingsAction.createWidget(&getWidget()));
+    layout->addWidget(_primaryToolbarAction.createWidget(&getWidget()));
     layout->addWidget(_scatterPlotWidget, 100);
-
-    auto bottomToolbarWidget = new QWidget();
-    auto bottomToolbarLayout = new QHBoxLayout();
-
-    bottomToolbarWidget->setAutoFillBackground(true);
-    bottomToolbarWidget->setLayout(bottomToolbarLayout);
-
-    bottomToolbarLayout->setContentsMargins(0, 0, 0, 0);
-    bottomToolbarLayout->addWidget(_settingsAction.getColoringAction().getColorMapAction().createLabelWidget(&getWidget()));
-    bottomToolbarLayout->addWidget(_settingsAction.getColoringAction().getColorMapAction().createWidget(&getWidget()));
-    bottomToolbarLayout->addWidget(_settingsAction.getColoringAction().getColorMap2DAction().createLabelWidget(&getWidget()));
-    bottomToolbarLayout->addWidget(_settingsAction.getColoringAction().getColorMap2DAction().createWidget(&getWidget()));
-    bottomToolbarLayout->addWidget(_settingsAction.getPlotAction().getPointPlotAction().getFocusSelection().createWidget(&getWidget()));
-    bottomToolbarLayout->addStretch(1);
-    bottomToolbarLayout->addWidget(_settingsAction.getExportAction().createWidget(&getWidget()));
-    bottomToolbarLayout->addWidget(_settingsAction.getMiscellaneousAction().createCollapsedWidget(&getWidget()));
-
-    layout->addWidget(bottomToolbarWidget, 1);
+    layout->addWidget(_secondaryToolbarAction.createWidget(&getWidget()));
 
     getWidget().setLayout(layout);
 

@@ -75,7 +75,13 @@ public: // Serialization
 
     QVariantMap toVariantMap() const override;
 
-protected:
+public: // Action getters
+
+    ToggleAction& getScatterPlotAction() { return _scatterPlotAction; }
+    ToggleAction& getDensityPlotAction() { return _densityPlotAction; }
+    ToggleAction& getContourPlotAction() { return _contourPlotAction; }
+
+private:
     ScatterplotPlugin*  _scatterplotPlugin;     /** Pointer to scatterplot plugin */
     ToggleAction        _scatterPlotAction;     /** Trigger action for activating the scatter plot render mode */
     ToggleAction        _densityPlotAction;     /** Trigger action for activating the density plot render mode */

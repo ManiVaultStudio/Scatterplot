@@ -1,6 +1,4 @@
 #include "DensityPlotAction.h"
-#include "Application.h"
-
 #include "ScatterplotPlugin.h"
 #include "ScatterplotWidget.h"
 
@@ -86,9 +84,39 @@ void DensityPlotAction::setVisible(bool visible)
     _continuousUpdatesAction.setVisible(visible);
 }
 
+void DensityPlotAction::connectToPublicAction(WidgetAction* publicAction, bool recursive)
+{
+    auto publicDensityPlotAction = dynamic_cast<DensityPlotAction*>(publicAction);
+
+    Q_ASSERT(publicDensityPlotAction != nullptr);
+
+    if (publicDensityPlotAction == nullptr)
+        return;
+
+    if (recursive) {
+        _sigmaAction.connectToPublicAction(&publicDensityPlotAction->getSigmaAction(), recursive);
+        _continuousUpdatesAction.connectToPublicAction(&publicDensityPlotAction->getContinuousUpdatesAction(), recursive);
+    }
+
+    GroupAction::connectToPublicAction(publicAction, recursive);
+}
+
+void DensityPlotAction::disconnectFromPublicAction(bool recursive)
+{
+    if (!isConnected())
+        return;
+
+    if (recursive) {
+        _sigmaAction.disconnectFromPublicAction(recursive);
+        _continuousUpdatesAction.disconnectFromPublicAction(recursive);
+    }
+
+    GroupAction::disconnectFromPublicAction(recursive);
+}
+
 void DensityPlotAction::fromVariantMap(const QVariantMap& variantMap)
 {
-    WidgetAction::fromVariantMap(variantMap);
+    GroupAction::fromVariantMap(variantMap);
 
     _sigmaAction.fromParentVariantMap(variantMap);
     _continuousUpdatesAction.fromParentVariantMap(variantMap);
@@ -96,7 +124,7 @@ void DensityPlotAction::fromVariantMap(const QVariantMap& variantMap)
 
 QVariantMap DensityPlotAction::toVariantMap() const
 {
-    QVariantMap variantMap = WidgetAction::toVariantMap();
+    auto variantMap = GroupAction::toVariantMap();
 
     _sigmaAction.insertIntoVariantMap(variantMap);
     _continuousUpdatesAction.insertIntoVariantMap(variantMap);
