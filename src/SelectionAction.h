@@ -26,7 +26,7 @@ public:
      */
     void initialize(ScatterplotPlugin* scatterplotPlugin);
 
-public: // Linking
+protected: // Linking
 
     /**
      * Connect this action to a public action
@@ -71,6 +71,8 @@ private:
     DecimalAction           _outlineScaleAction;            /** Selection outline scale action */
     DecimalAction           _outlineOpacityAction;          /** Selection outline opacity action */
     ToggleAction            _outlineHaloEnabledAction;      /** Selection outline halo enabled action */
+
+    friend class hdps::AbstractActionsManager;
 };
 
 Q_DECLARE_METATYPE(SelectionAction)

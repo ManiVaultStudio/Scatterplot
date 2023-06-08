@@ -17,7 +17,7 @@ SettingsAction::SettingsAction(QObject* parent, const QString& title) :
     _subsetAction(this, "Subset"),
     _clusteringAction(this, "Clustering"),
     _selectionAction(this, "Selection"),
-    _exportAction(this, "Export to image/video"),
+    _exportAction(this, "Export"),
     _miscellaneousAction(this, "Miscellaneous"),
     _datasetsAction(this, "Datasets")
 {
@@ -25,9 +25,10 @@ SettingsAction::SettingsAction(QObject* parent, const QString& title) :
     setConnectionPermissionsToForceNone();
 
     _renderModeAction.initialize(_scatterplotPlugin);
-    _selectionAction.initialize(_scatterplotPlugin);
-    _subsetAction.initialize(_scatterplotPlugin);
     _plotAction.initialize(_scatterplotPlugin);
+    _subsetAction.initialize(_scatterplotPlugin);
+    _selectionAction.initialize(_scatterplotPlugin);
+    _exportAction.initialize(_scatterplotPlugin);
 
     const auto updateEnabled = [this]() {
         const auto enabled = _scatterplotPlugin->getPositionDataset().isValid();

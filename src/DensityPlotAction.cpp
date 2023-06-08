@@ -94,8 +94,8 @@ void DensityPlotAction::connectToPublicAction(WidgetAction* publicAction, bool r
         return;
 
     if (recursive) {
-        _sigmaAction.connectToPublicAction(&publicDensityPlotAction->getSigmaAction(), recursive);
-        _continuousUpdatesAction.connectToPublicAction(&publicDensityPlotAction->getContinuousUpdatesAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_sigmaAction, &publicDensityPlotAction->getSigmaAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_continuousUpdatesAction, &publicDensityPlotAction->getContinuousUpdatesAction(), recursive);
     }
 
     GroupAction::connectToPublicAction(publicAction, recursive);
@@ -107,8 +107,8 @@ void DensityPlotAction::disconnectFromPublicAction(bool recursive)
         return;
 
     if (recursive) {
-        _sigmaAction.disconnectFromPublicAction(recursive);
-        _continuousUpdatesAction.disconnectFromPublicAction(recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_sigmaAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_continuousUpdatesAction, recursive);
     }
 
     GroupAction::disconnectFromPublicAction(recursive);

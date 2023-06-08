@@ -97,9 +97,9 @@ void RenderModeAction::connectToPublicAction(WidgetAction* publicAction, bool re
         return;
 
     if (recursive) {
-        _scatterPlotAction.connectToPublicAction(&publicRenderModeAction->getScatterPlotAction(), recursive);
-        _densityPlotAction.connectToPublicAction(&publicRenderModeAction->getDensityPlotAction(), recursive);
-        _contourPlotAction.connectToPublicAction(&publicRenderModeAction->getContourPlotAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_scatterPlotAction, &publicRenderModeAction->getScatterPlotAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_densityPlotAction, &publicRenderModeAction->getDensityPlotAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_contourPlotAction, &publicRenderModeAction->getContourPlotAction(), recursive);
     }
 
     OptionAction::connectToPublicAction(publicAction, recursive);
@@ -111,9 +111,9 @@ void RenderModeAction::disconnectFromPublicAction(bool recursive)
         return;
 
     if (recursive) {
-        _scatterPlotAction.disconnectFromPublicAction(recursive);
-        _densityPlotAction.disconnectFromPublicAction(recursive);
-        _contourPlotAction.disconnectFromPublicAction(recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_scatterPlotAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_densityPlotAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_contourPlotAction, recursive);
     }
 
     OptionAction::disconnectFromPublicAction(recursive);

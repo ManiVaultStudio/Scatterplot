@@ -324,10 +324,10 @@ void ColoringAction::connectToPublicAction(WidgetAction* publicAction, bool recu
         return;
 
     if (recursive) {
-        _colorByAction.connectToPublicAction(&publicColoringAction->getColorByAction(), recursive);
-        _constantColorAction.connectToPublicAction(&publicColoringAction->getConstantColorAction(), recursive);
-        _dimensionAction.connectToPublicAction(&publicColoringAction->getDimensionAction(), recursive);
-        _colorMapAction.connectToPublicAction(&publicColoringAction->getColorMapAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_colorByAction, &publicColoringAction->getColorByAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_constantColorAction, &publicColoringAction->getConstantColorAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_dimensionAction, &publicColoringAction->getDimensionAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_colorMapAction, &publicColoringAction->getColorMapAction(), recursive);
     }
 
     GroupAction::connectToPublicAction(publicAction, recursive);
@@ -339,10 +339,10 @@ void ColoringAction::disconnectFromPublicAction(bool recursive)
         return;
 
     if (recursive) {
-        _colorByAction.disconnectFromPublicAction(recursive);
-        _constantColorAction.disconnectFromPublicAction(recursive);
-        _dimensionAction.disconnectFromPublicAction(recursive);
-        _colorMapAction.disconnectFromPublicAction(recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_colorByAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_constantColorAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_dimensionAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_colorMapAction, recursive);
     }
 
     GroupAction::disconnectFromPublicAction(recursive);

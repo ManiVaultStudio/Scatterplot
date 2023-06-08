@@ -62,7 +62,7 @@ public:
     /** Determines whether the scalar source is a dataset */
     bool isSourceDataset() const;
 
-public: // Linking
+protected: // Linking
 
     /**
      * Connect this action to a public action
@@ -132,6 +132,8 @@ signals:
 private:
     DecimalAction           _magnitudeAction;   /** Scalar magnitude action */
     ScalarSourceAction      _sourceAction;      /** Scalar source action */
+
+    friend class hdps::AbstractActionsManager;
 };
 
 Q_DECLARE_METATYPE(ScalarAction)

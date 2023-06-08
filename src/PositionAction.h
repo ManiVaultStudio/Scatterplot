@@ -42,7 +42,7 @@ public:
     /** Get current y-dimension */
     std::int32_t getDimensionY() const;
 
-public: // Linking
+protected: // Linking
 
     /**
      * Connect this action to a public action
@@ -79,6 +79,8 @@ public: // Action getters
 private:
     DimensionPickerAction    _xDimensionPickerAction;   /** X-dimension picker action */
     DimensionPickerAction    _yDimensionPickerAction;   /** Y-dimension picker action */
+
+    friend class hdps::AbstractActionsManager;
 };
 
 Q_DECLARE_METATYPE(PositionAction)

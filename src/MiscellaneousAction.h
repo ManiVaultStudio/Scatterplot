@@ -33,7 +33,7 @@ public:
      */
     QMenu* getContextMenu();
 
-public: // Linking
+protected: // Linking
 
     /**
      * Connect this action to a public action
@@ -71,6 +71,8 @@ private:
     ColorAction         _backgroundColorAction;     /** Color action for settings the background color action */
 
     static const QColor DEFAULT_BACKGROUND_COLOR;
+
+    friend class hdps::AbstractActionsManager;
 };
 
 Q_DECLARE_METATYPE(MiscellaneousAction)

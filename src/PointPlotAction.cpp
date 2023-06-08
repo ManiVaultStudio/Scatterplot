@@ -378,9 +378,9 @@ void PointPlotAction::connectToPublicAction(WidgetAction* publicAction, bool rec
         return;
 
     if (recursive) {
-        _sizeAction.connectToPublicAction(&publicPointPlotAction->getSizeAction(), recursive);
-        _opacityAction.connectToPublicAction(&publicPointPlotAction->getOpacityAction(), recursive);
-        _focusSelection.connectToPublicAction(&publicPointPlotAction->getFocusSelection(), recursive);
+        actions().connectPrivateActionToPublicAction(&_sizeAction, &publicPointPlotAction->getSizeAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_opacityAction, &publicPointPlotAction->getOpacityAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_focusSelection, &publicPointPlotAction->getFocusSelection(), recursive);
     }
 
     GroupAction::connectToPublicAction(publicAction, recursive);
@@ -392,9 +392,9 @@ void PointPlotAction::disconnectFromPublicAction(bool recursive)
         return;
 
     if (recursive) {
-        _sizeAction.disconnectFromPublicAction(recursive);
-        _opacityAction.disconnectFromPublicAction(recursive);
-        _focusSelection.disconnectFromPublicAction(recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_sizeAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_opacityAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_focusSelection, recursive);
     }
 
     GroupAction::disconnectFromPublicAction(recursive);

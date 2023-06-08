@@ -46,7 +46,7 @@ public:
      */
     void setVisible(bool visible);
 
-public: // Linking
+protected: // Linking
 
     /**
      * Connect this action to a public action
@@ -89,4 +89,5 @@ private:
     static constexpr bool DEFAULT_CONTINUOUS_UPDATES = true;
 
     friend class PlotAction;
+    friend class hdps::AbstractActionsManager;
 };

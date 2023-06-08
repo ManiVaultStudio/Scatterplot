@@ -82,8 +82,8 @@ void PositionAction::connectToPublicAction(WidgetAction* publicAction, bool recu
         return;
 
     if (recursive) {
-        _xDimensionPickerAction.connectToPublicAction(&publicPositionAction->getXDimensionPickerAction(), recursive);
-        _yDimensionPickerAction.connectToPublicAction(&publicPositionAction->getYDimensionPickerAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_xDimensionPickerAction, &publicPositionAction->getXDimensionPickerAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_yDimensionPickerAction, &publicPositionAction->getYDimensionPickerAction(), recursive);
     }
 
     GroupAction::connectToPublicAction(publicAction, recursive);
@@ -95,8 +95,8 @@ void PositionAction::disconnectFromPublicAction(bool recursive)
         return;
 
     if (recursive) {
-        _xDimensionPickerAction.disconnectFromPublicAction(recursive);
-        _yDimensionPickerAction.disconnectFromPublicAction(recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_xDimensionPickerAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_yDimensionPickerAction, recursive);
     }
 
     GroupAction::disconnectFromPublicAction(recursive);

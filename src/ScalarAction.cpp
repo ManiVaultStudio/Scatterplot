@@ -12,13 +12,11 @@ ScalarAction::ScalarAction(QObject* parent, const QString& title, const float& m
     _sourceAction(this, QString("%1 source").arg(title))
 {
     setText(title);
+    setDefaultWidgetFlags(GroupAction::Horizontal);
+    setShowLabels(false);
 
     addAction(&_magnitudeAction);
-
-    addAction(&_sourceAction.getPickerAction());
-    addAction(&_sourceAction.getDimensionPickerAction());
-    addAction(&_sourceAction.getOffsetAction());
-    addAction(&_sourceAction.getRangeAction());
+    addAction(&_sourceAction);
 
     connect(&_sourceAction.getPickerAction(), &OptionAction::currentIndexChanged, this, [this](const std::uint32_t& currentIndex) {
         emit sourceSelectionChanged(currentIndex);
@@ -115,8 +113,8 @@ void ScalarAction::connectToPublicAction(WidgetAction* publicAction, bool recurs
         return;
 
     if (recursive) {
-        getMagnitudeAction().connectToPublicAction(&publicScalarAction->getMagnitudeAction(), recursive);
-        getSourceAction().connectToPublicAction(&publicScalarAction->getSourceAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_magnitudeAction, &publicScalarAction->getMagnitudeAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_sourceAction, &publicScalarAction->getSourceAction(), recursive);
     }
 
     GroupAction::connectToPublicAction(publicAction, recursive);
@@ -128,8 +126,8 @@ void ScalarAction::disconnectFromPublicAction(bool recursive)
         return;
 
     if (recursive) {
-        getMagnitudeAction().disconnectFromPublicAction(recursive);
-        getSourceAction().disconnectFromPublicAction(recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_magnitudeAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_sourceAction, recursive);
     }
 
     GroupAction::disconnectFromPublicAction(recursive);

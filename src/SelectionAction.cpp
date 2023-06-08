@@ -127,12 +127,12 @@ void SelectionAction::connectToPublicAction(WidgetAction* publicAction, bool rec
         return;
 
     if (recursive) {
-        _pixelSelectionAction.connectToPublicAction(&publicSelectionAction->getPixelSelectionAction(), recursive);
-        _displayModeAction.connectToPublicAction(&publicSelectionAction->getDisplayModeAction(), recursive);
-        _outlineOverrideColorAction.connectToPublicAction(&publicSelectionAction->getOutlineOverrideColorAction(), recursive);
-        _outlineScaleAction.connectToPublicAction(&publicSelectionAction->getOutlineScaleAction(), recursive);
-        _outlineOpacityAction.connectToPublicAction(&publicSelectionAction->getOutlineOpacityAction(), recursive);
-        _outlineHaloEnabledAction.connectToPublicAction(&publicSelectionAction->getOutlineHaloEnabledAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_pixelSelectionAction, &publicSelectionAction->getPixelSelectionAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_displayModeAction, &publicSelectionAction->getDisplayModeAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_outlineOverrideColorAction, &publicSelectionAction->getOutlineOverrideColorAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_outlineScaleAction, &publicSelectionAction->getOutlineScaleAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_outlineOpacityAction, &publicSelectionAction->getOutlineOpacityAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_outlineHaloEnabledAction, &publicSelectionAction->getOutlineHaloEnabledAction(), recursive);
     }
 
     GroupAction::connectToPublicAction(publicAction, recursive);
@@ -144,12 +144,12 @@ void SelectionAction::disconnectFromPublicAction(bool recursive)
         return;
 
     if (recursive) {
-        _pixelSelectionAction.disconnectFromPublicAction(recursive);
-        _displayModeAction.disconnectFromPublicAction(recursive);
-        _outlineOverrideColorAction.disconnectFromPublicAction(recursive);
-        _outlineScaleAction.disconnectFromPublicAction(recursive);
-        _outlineOpacityAction.disconnectFromPublicAction(recursive);
-        _outlineHaloEnabledAction.disconnectFromPublicAction(recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_pixelSelectionAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_displayModeAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_outlineOverrideColorAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_outlineScaleAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_outlineOpacityAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_outlineHaloEnabledAction, recursive);
     }
 
     GroupAction::disconnectFromPublicAction(recursive);

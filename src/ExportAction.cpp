@@ -38,7 +38,7 @@ ExportAction::ExportAction(QObject* parent, const QString& title) :
     _fileNamePrefixAction(this, "Filename prefix"),
     _statusAction(this, "Status"),
     _outputDirectoryAction(this, "Output"),
-    _exportCancelAction(this, "", { TriggersAction::Trigger("Export", "Export dimensions"), TriggersAction::Trigger("Cancel", "Cancel export")  }),
+    _exportCancelAction(this, "Cancel", { TriggersAction::Trigger("Export", "Export dimensions"), TriggersAction::Trigger("Cancel", "Cancel export")  }),
     _aspectRatio()
 {
     setText("Export");
@@ -66,6 +66,41 @@ ExportAction::ExportAction(QObject* parent, const QString& title) :
 
     _targetWidthAction.setSuffix("px");
     _targetHeightAction.setSuffix("px");
+}
+
+void ExportAction::initialize(ScatterplotPlugin* scatterplotPlugin)
+{
+    Q_ASSERT(scatterplotPlugin != nullptr);
+
+    if (scatterplotPlugin == nullptr)
+        return;
+
+    _scatterplotPlugin = scatterplotPlugin;
+
+    _outputDirectoryAction.setSettingsPrefix(_scatterplotPlugin, "Screenshot/OutputDirectory");
+
+    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, &ExportAction::updateDimensionsPickerAction);
+
+    const auto scale = [this](float scaleFactor) {
+        _targetWidthAction.setValue(scaleFactor * static_cast<float>(_scatterplotPlugin->getScatterplotWidget().width()));
+        _targetHeightAction.setValue(scaleFactor * static_cast<float>(_scatterplotPlugin->getScatterplotWidget().height()));
+    };
+
+    connect(&_scaleAction, &TriggersAction::triggered, this, [this, scale](std::int32_t triggerIndex) {
+        scale(scaleFactors.values().at(triggerIndex));
+    });
+
+    const auto positionDatasetChanged = [this]() -> void {
+        auto& positionDataset = _scatterplotPlugin->getPositionDataset();
+
+        if (!positionDataset.isValid())
+            return;
+
+        _dimensionSelectionAction.setObjectName("Dimensions/" + positionDataset->getGuiName());
+        _fileNamePrefixAction.setString(positionDataset->getGuiName() + "_");
+    };
+
+    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<DatasetImpl>::changed, this, positionDatasetChanged);
 
     const auto updateTargetHeightAction = [this]() -> void {
         _targetHeightAction.setEnabled(!_lockAspectRatioAction.isChecked());
@@ -96,7 +131,6 @@ ExportAction::ExportAction(QObject* parent, const QString& title) :
             default:
                 break;
         }
-        
     });
 
     const auto updateFixedRangeReadOnly = [this]() {
@@ -116,33 +150,6 @@ ExportAction::ExportAction(QObject* parent, const QString& title) :
     updateDimensionsPickerAction();
 
     updateExportTrigger();
-}
-
-void ExportAction::initialize(ScatterplotPlugin* scatterplotPlugin)
-{
-    Q_ASSERT(scatterplotPlugin != nullptr);
-
-    if (scatterplotPlugin == nullptr)
-        return;
-
-    _scatterplotPlugin = scatterplotPlugin;
-
-    _outputDirectoryAction.setSettingsPrefix(_scatterplotPlugin, "Screenshot/OutputDirectory");
-
-    _dimensionSelectionAction.setObjectName("Dimensions/" + _scatterplotPlugin->getPositionDataset()->getGuiName());
-
-    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, &ExportAction::updateDimensionsPickerAction);
-
-    const auto scale = [this](float scaleFactor) {
-        _targetWidthAction.setValue(scaleFactor * static_cast<float>(_scatterplotPlugin->getScatterplotWidget().width()));
-        _targetHeightAction.setValue(scaleFactor * static_cast<float>(_scatterplotPlugin->getScatterplotWidget().height()));
-    };
-
-    connect(&_scaleAction, &TriggersAction::triggered, this, [this, scale](std::int32_t triggerIndex) {
-        scale(scaleFactors.values().at(triggerIndex));
-    });
-
-    _fileNamePrefixAction.setString(_scatterplotPlugin->getPositionDataset()->getGuiName() + "_");
 }
 
 void ExportAction::initializeTargetSize()

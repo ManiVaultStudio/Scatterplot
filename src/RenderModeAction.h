@@ -45,7 +45,7 @@ public:
      */
     QMenu* getContextMenu();
 
-public: // Linking
+protected: // Linking
 
     /**
      * Connect this action to a public action
@@ -86,6 +86,8 @@ private:
     ToggleAction        _scatterPlotAction;     /** Trigger action for activating the scatter plot render mode */
     ToggleAction        _densityPlotAction;     /** Trigger action for activating the density plot render mode */
     ToggleAction        _contourPlotAction;     /** Trigger action for activating the contour plot render mode */
+
+    friend class hdps::AbstractActionsManager;
 };
 
 Q_DECLARE_METATYPE(RenderModeAction)

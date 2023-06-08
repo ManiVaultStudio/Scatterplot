@@ -69,7 +69,7 @@ protected:
     /** Update the scatter plot widget point opacity scalars */
     void updateScatterPlotWidgetPointOpacityScalars();
 
-public: // Linking
+protected: // Linking
 
     /**
      * Connect this action to a public action
@@ -117,4 +117,5 @@ private:
     static constexpr double DEFAULT_POINT_OPACITY   = 50.0;     /** Default point opacity */
 
     friend class ScatterplotPlugin;
+    friend class hdps::AbstractActionsManager;
 };

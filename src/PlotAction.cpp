@@ -79,8 +79,8 @@ void PlotAction::connectToPublicAction(WidgetAction* publicAction, bool recursiv
         return;
 
     if (recursive) {
-        _pointPlotAction.connectToPublicAction(&publicPlotAction->getPointPlotAction(), recursive);
-        _densityPlotAction.connectToPublicAction(&publicPlotAction->getDensityPlotAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_pointPlotAction, &publicPlotAction->getPointPlotAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_densityPlotAction, &publicPlotAction->getDensityPlotAction(), recursive);
     }
 
     GroupAction::connectToPublicAction(publicAction, recursive);
@@ -92,8 +92,8 @@ void PlotAction::disconnectFromPublicAction(bool recursive)
         return;
 
     if (recursive) {
-        _pointPlotAction.disconnectFromPublicAction(recursive);
-        _densityPlotAction.disconnectFromPublicAction(recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_pointPlotAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_densityPlotAction, recursive);
     }
 
     GroupAction::disconnectFromPublicAction(recursive);

@@ -41,7 +41,7 @@ public:
      */
     QMenu* getContextMenu();
 
-public: // Linking
+protected: // Linking
 
     /**
      * Connect this action to a public action
@@ -79,6 +79,8 @@ private:
     ScatterplotPlugin*  _scatterplotPlugin;     /** Pointer to scatterplot plugin */
     PointPlotAction     _pointPlotAction;       /** Point plot action */
     DensityPlotAction   _densityPlotAction;     /** Density plot action */
+
+    friend class hdps::AbstractActionsManager;
 };
 
 Q_DECLARE_METATYPE(PlotAction)

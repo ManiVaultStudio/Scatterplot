@@ -35,7 +35,7 @@ public:
     /** Update scalar range */
     void updateScalarRange();
 
-public: // Linking
+protected: // Linking
 
     /**
      * Connect this action to a public action
@@ -88,6 +88,8 @@ private:
     DimensionPickerAction   _dimensionPickerAction;     /** Dimension picker action */
     DecimalAction           _offsetAction;              /** Scalar source offset action */
     DecimalRangeAction      _rangeAction;               /** Range action */
+
+    friend class hdps::AbstractActionsManager;
 };
 
 Q_DECLARE_METATYPE(ScalarSourceAction)

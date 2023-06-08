@@ -51,7 +51,7 @@ void MiscellaneousAction::connectToPublicAction(WidgetAction* publicAction, bool
         return;
 
     if (recursive) {
-        _backgroundColorAction.connectToPublicAction(&publicMiscellaneousAction->getBackgroundColorAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_backgroundColorAction, &publicMiscellaneousAction->getBackgroundColorAction(), recursive);
     }
 
     GroupAction::connectToPublicAction(publicAction, recursive);
@@ -63,7 +63,7 @@ void MiscellaneousAction::disconnectFromPublicAction(bool recursive)
         return;
 
     if (recursive) {
-        _backgroundColorAction.disconnectFromPublicAction(recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_backgroundColorAction, recursive);
     }
 
     GroupAction::disconnectFromPublicAction(recursive);

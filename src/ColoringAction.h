@@ -85,7 +85,7 @@ protected: // Color map
     /** Enables/disables the color map */
     void updateColorMapActionReadOnly();
 
-public: // Linking
+protected: // Linking
 
     /**
      * Connect this action to a public action
@@ -136,6 +136,7 @@ private:
     static const QColor DEFAULT_CONSTANT_COLOR;
 
     friend class ScatterplotPlugin;
+    friend class hdps::AbstractActionsManager;
 };
 
 Q_DECLARE_METATYPE(ColoringAction)

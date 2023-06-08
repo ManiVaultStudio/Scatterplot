@@ -20,7 +20,7 @@ public:
      */
     Q_INVOKABLE DatasetsAction(QObject* parent, const QString& title);
 
-public: // Linking
+protected: // Linking
 
     /**
      * Connect this action to a public action
@@ -58,6 +58,8 @@ private:
     ScatterplotPlugin*      _scatterplotPlugin;                 /** Pointer to scatter plot plugin */
     DatasetPickerAction	    _positionDatasetPickerAction;       /** Dataset picker action for position dataset */
     DatasetPickerAction     _colorDatasetPickerAction;          /** Dataset picker action for color dataset */
+
+    friend class hdps::AbstractActionsManager;
 };
 
 Q_DECLARE_METATYPE(DatasetsAction)

@@ -16,6 +16,15 @@ ScalarSourceAction::ScalarSourceAction(QObject* parent, const QString& title) :
     _offsetAction(this, "Offset", 0.0f, 100.0f, 0.0f, 0.0f, 2),
     _rangeAction(this, "Scalar range")
 {
+    setConfigurationFlag(WidgetAction::ConfigurationFlag::ForceCollapsedInGroup);
+    setPopupSizeHint(QSize(400, 0));
+    setConnectionPermissionsToForceNone(true);
+
+    addAction(&_pickerAction);
+    addAction(&_dimensionPickerAction);
+    addAction(&_offsetAction);
+    addAction(&_rangeAction);
+
     _pickerAction.setCustomModel(&_model);
     _pickerAction.setToolTip("Pick scalar option");
 
@@ -101,13 +110,13 @@ void ScalarSourceAction::connectToPublicAction(WidgetAction* publicAction, bool 
         return;
 
     if (recursive) {
-        _pickerAction.connectToPublicAction(&publicScalarSourceAction->getPickerAction(), recursive);
-        _dimensionPickerAction.connectToPublicAction(&publicScalarSourceAction->getDimensionPickerAction(), recursive);
-        _offsetAction.connectToPublicAction(&publicScalarSourceAction->getOffsetAction(), recursive);
-        _rangeAction.connectToPublicAction(&publicScalarSourceAction->getRangeAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_pickerAction, &publicScalarSourceAction->getPickerAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_dimensionPickerAction, &publicScalarSourceAction->getDimensionPickerAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_offsetAction, &publicScalarSourceAction->getOffsetAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_rangeAction, &publicScalarSourceAction->getRangeAction(), recursive);
     }
 
-    WidgetAction::connectToPublicAction(publicAction, recursive);
+    GroupAction::connectToPublicAction(publicAction, recursive);
 }
 
 void ScalarSourceAction::disconnectFromPublicAction(bool recursive)
@@ -116,13 +125,13 @@ void ScalarSourceAction::disconnectFromPublicAction(bool recursive)
         return;
 
     if (recursive) {
-        _pickerAction.disconnectFromPublicAction(recursive);
-        _dimensionPickerAction.disconnectFromPublicAction(recursive);
-        _offsetAction.disconnectFromPublicAction(recursive);
-        _rangeAction.disconnectFromPublicAction(recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_pickerAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_dimensionPickerAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_offsetAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_rangeAction, recursive);
     }
 
-    WidgetAction::disconnectFromPublicAction(recursive);
+    GroupAction::disconnectFromPublicAction(recursive);
 }
 
 void ScalarSourceAction::fromVariantMap(const QVariantMap& variantMap)
