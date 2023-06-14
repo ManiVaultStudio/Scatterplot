@@ -91,3 +91,7 @@ private:
     friend class PlotAction;
     friend class hdps::AbstractActionsManager;
 };
+
+Q_DECLARE_METATYPE(DensityPlotAction)
+
+inline const auto densityPlotActionMetaTypeId = qRegisterMetaType<DensityPlotAction*>("DensityPlotAction");

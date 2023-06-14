@@ -66,15 +66,14 @@ ColoringAction::ColoringAction(QObject* parent, const QString& title) :
     connect(&_colorByAction, &OptionAction::currentIndexChanged, this, [this](const std::int32_t& currentIndex) {
         _scatterplotPlugin->getScatterplotWidget().setColoringMode(currentIndex == 0 ? ScatterplotWidget::ColoringMode::Constant : ScatterplotWidget::ColoringMode::Data);
 
-        _constantColorAction.setVisible(_colorByAction.getCurrentIndex() == 0);
-
+        _constantColorAction.setEnabled(_colorByAction.getCurrentIndex() == 0);
         _colorMapAction.setEnabled(_colorByAction.getCurrentIndex() >= 1);
 
         if (_colorByAction.getCurrentIndex() == 1)
-            _colorMapAction.setColorMapType(ColorMap::Type::OneDimensional);
-
-        if (_colorByAction.getCurrentIndex() > 1)
             _colorMapAction.setColorMapType(ColorMap::Type::TwoDimensional);
+
+        if (_colorByAction.getCurrentIndex() == 2)
+            _colorMapAction.setColorMapType(ColorMap::Type::OneDimensional);
 
         const auto currentColorDataset = getCurrentColorDataset();
 
@@ -82,13 +81,13 @@ ColoringAction::ColoringAction(QObject* parent, const QString& title) :
             const auto currentColorDatasetTypeIsPointType = currentColorDataset->getDataType() == PointType;
 
             _dimensionAction.setPointsDataset(currentColorDatasetTypeIsPointType ? Dataset<Points>(currentColorDataset) : Dataset<Points>());
-            _dimensionAction.setVisible(currentColorDatasetTypeIsPointType);
+            //_dimensionAction.setVisible(currentColorDatasetTypeIsPointType);
 
             emit currentColorDatasetChanged(currentColorDataset);
         }
         else {
             _dimensionAction.setPointsDataset(Dataset<Points>());
-            _dimensionAction.setVisible(false);
+            //_dimensionAction.setVisible(false);
         }
 
         updateScatterPlotWidgetColors();
@@ -230,6 +229,8 @@ void ColoringAction::updateScatterPlotWidgetColors()
         if (currentDimensionIndex >= 0)
             _scatterplotPlugin->loadColors(currentColorDataset.get<Points>(), _dimensionAction.getCurrentDimensionIndex());
     }
+
+    updateScatterplotWidgetColorMap();
 }
 
 void ColoringAction::updateColorMapActionScalarRange()
@@ -247,7 +248,9 @@ void ColoringAction::updateColorMapActionScalarRange()
 
 void ColoringAction::updateScatterplotWidgetColorMap()
 {
-    switch (_scatterplotPlugin->getScatterplotWidget().getRenderMode())
+    auto& scatterplotWidget = _scatterplotPlugin->getScatterplotWidget();
+
+    switch (scatterplotWidget.getRenderMode())
     {
         case ScatterplotWidget::SCATTERPLOT:
         {
@@ -256,17 +259,17 @@ void ColoringAction::updateScatterplotWidgetColorMap()
 
                 colorPixmap.fill(_constantColorAction.getColor());
 
-                _scatterplotPlugin->getScatterplotWidget().setColorMap(colorPixmap.toImage());
-                _scatterplotPlugin->getScatterplotWidget().setScalarEffect(PointEffect::Color);
-                _scatterplotPlugin->getScatterplotWidget().setColoringMode(ScatterplotWidget::ColoringMode::Constant);
+                scatterplotWidget.setColorMap(colorPixmap.toImage());
+                scatterplotWidget.setScalarEffect(PointEffect::Color);
+                scatterplotWidget.setColoringMode(ScatterplotWidget::ColoringMode::Constant);
             }
             else if (_colorByAction.getCurrentIndex() == 1) {
-                _scatterplotPlugin->getScatterplotWidget().setColorMap(_colorMapAction.getColorMapImage());
-                _scatterplotPlugin->getScatterplotWidget().setScalarEffect(PointEffect::Color2D);
-                _scatterplotPlugin->getScatterplotWidget().setColoringMode(ScatterplotWidget::ColoringMode::Scatter);
+                scatterplotWidget.setColorMap(_colorMapAction.getColorMapImage());
+                scatterplotWidget.setScalarEffect(PointEffect::Color2D);
+                scatterplotWidget.setColoringMode(ScatterplotWidget::ColoringMode::Scatter);
             }
             else {
-                _scatterplotPlugin->getScatterplotWidget().setColorMap(_colorMapAction.getColorMapImage().mirrored(false, true));
+                scatterplotWidget.setColorMap(_colorMapAction.getColorMapImage().mirrored(false, true));
             }
 
             break;
@@ -277,13 +280,18 @@ void ColoringAction::updateScatterplotWidgetColorMap()
 
         case ScatterplotWidget::LANDSCAPE:
         {
-            _scatterplotPlugin->getScatterplotWidget().setColorMap(_colorMapAction.getColorMapImage());
+            scatterplotWidget.setScalarEffect(PointEffect::Color);
+            scatterplotWidget.setColoringMode(ScatterplotWidget::ColoringMode::Scatter);
+            scatterplotWidget.setColorMap(_colorMapAction.getColorMapImage());
+            
             break;
         }
 
         default:
             break;
     }
+
+    updateScatterPlotWidgetColorMapRange();
 }
 
 void ColoringAction::updateScatterPlotWidgetColorMapRange()
@@ -295,18 +303,18 @@ void ColoringAction::updateScatterPlotWidgetColorMapRange()
 
 bool ColoringAction::shouldEnableColorMap() const
 {
-    if (_scatterplotPlugin->getScatterplotWidget().getRenderMode() == ScatterplotWidget::DENSITY)
-        return false;
-
-    if (_scatterplotPlugin->getScatterplotWidget().getColoringMode() == ScatterplotWidget::ColoringMode::Constant)
-        return false;
-
     const auto currentColorDataset = getCurrentColorDataset();
 
     if (currentColorDataset.isValid() && currentColorDataset->getDataType() == ClusterType)
         return false;
 
-    return true;
+    if (_scatterplotPlugin->getScatterplotWidget().getRenderMode() == ScatterplotWidget::LANDSCAPE)
+        return true;
+
+    if (_scatterplotPlugin->getScatterplotWidget().getRenderMode() == ScatterplotWidget::SCATTERPLOT && _colorByAction.getCurrentIndex() > 0)
+        return true;
+
+    return false;
 }
 
 void ColoringAction::updateColorMapActionReadOnly()

@@ -33,6 +33,7 @@ PointPlotAction::PointPlotAction(QObject* parent, const QString& title) :
     _opacityAction.getSourceAction().getOffsetAction().setSuffix("%");
 
     _focusSelection.setToolTip("Put focus on selected points by modulating the point opacity");
+    _focusSelection.setDefaultWidgetFlags(ToggleAction::PushButton);
 
     connect(&_sizeAction, &ScalarAction::sourceSelectionChanged, this, [this](const std::uint32_t& sourceSelectionIndex) {
         switch (sourceSelectionIndex)

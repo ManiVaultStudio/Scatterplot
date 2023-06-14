@@ -119,3 +119,7 @@ private:
     friend class ScatterplotPlugin;
     friend class hdps::AbstractActionsManager;
 };
+
+Q_DECLARE_METATYPE(PointPlotAction)
+
+inline const auto pointPlotActionMetaTypeId = qRegisterMetaType<PointPlotAction*>("PointPlotAction");
