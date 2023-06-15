@@ -16,6 +16,8 @@
 
 #include <actions/PluginTriggerAction.h>
 
+#include <DatasetsMimeData.h>
+
 #include <QtCore>
 #include <QApplication>
 #include <QDebug>
@@ -84,16 +86,19 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     _dropWidget->initialize([this](const QMimeData* mimeData) -> DropWidget::DropRegions {
         DropWidget::DropRegions dropRegions;
 
-        const auto mimeText = mimeData->text();
-        const auto tokens = mimeText.split("\n");
+        const auto datasetsMimeData = dynamic_cast<const DatasetsMimeData*>(mimeData);
 
-        if (tokens.count() == 1)
+        if (datasetsMimeData == nullptr)
             return dropRegions;
 
-        const auto datasetGuiName = tokens[0];
-        const auto datasetId = tokens[1];
-        const auto dataType = DataType(tokens[2]);
-        const auto dataTypes = DataTypes({ PointType , ColorType, ClusterType });
+        if (datasetsMimeData->getDatasets().count() > 1)
+            return dropRegions;
+
+        const auto dataset          = datasetsMimeData->getDatasets().first();
+        const auto datasetGuiName   = dataset->getGuiName();
+        const auto datasetId        = dataset->getGuid();
+        const auto dataType         = dataset->getDataType();
+        const auto dataTypes        = DataTypes({ PointType , ColorType, ClusterType });
 
         // Check if the data type can be dropped
         if (!dataTypes.contains(dataType))
