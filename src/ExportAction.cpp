@@ -210,7 +210,7 @@ void ExportAction::exportImages()
             coloringAction.getDimensionAction().setCurrentDimensionName(dimensionNames[dimensionIndex]);
 
             if (_overrideRangesAction.isChecked()) {
-                auto& rangeAction = coloringAction.getColorMapAction().getRangeAction(ColorMapAction::Axis::X);
+                auto& rangeAction = coloringAction.getColorMap1DAction().getRangeAction(ColorMapAction::Axis::X);
 
                 rangeAction.initialize({ _fixedRangeAction.getMinimum(), _fixedRangeAction.getMaximum() }, { _fixedRangeAction.getMinimum(), _fixedRangeAction.getMaximum() });
             }

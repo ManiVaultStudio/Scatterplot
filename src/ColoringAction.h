@@ -83,7 +83,7 @@ protected: // Color map
     bool shouldEnableColorMap() const;
 
     /** Enables/disables the color map */
-    void updateColorMapActionReadOnly();
+    void updateColorMapActionsReadOnly();
 
 protected: // Linking
 
@@ -119,18 +119,20 @@ public: // Action getters
     OptionAction& getColorByAction() { return _colorByAction; }
     ColorAction& getConstantColorAction() { return _constantColorAction; }
     DimensionPickerAction& getDimensionAction() { return _dimensionAction; }
-    ColorMapAction& getColorMapAction() { return _colorMapAction; }
+    ColorMapAction& getColorMap1DAction() { return _colorMap1DAction; }
+    ColorMapAction& getColorMap2DAction() { return _colorMap2DAction; }
 
 signals:
     void currentColorDatasetChanged(Dataset<DatasetImpl> currentColorDataset);
 
 private:
-    ScatterplotPlugin*      _scatterplotPlugin;         /** Pointer to scatter plot plugin */
-    ColorSourceModel        _colorByModel;              /** Color by model (model input for the color by action) */
-    OptionAction            _colorByAction;             /** Action for picking the coloring type */
-    ColorAction             _constantColorAction;       /** Action for picking the constant color */
-    DimensionPickerAction   _dimensionAction;           /** Dimension picker action */
-    ColorMapAction          _colorMapAction;            /** Color map action */
+    ScatterplotPlugin*      _scatterplotPlugin;     /** Pointer to scatter plot plugin */
+    ColorSourceModel        _colorByModel;          /** Color by model (model input for the color by action) */
+    OptionAction            _colorByAction;         /** Action for picking the coloring type */
+    ColorAction             _constantColorAction;   /** Action for picking the constant color */
+    DimensionPickerAction   _dimensionAction;       /** Dimension picker action */
+    ColorMapAction          _colorMap1DAction;      /** One-dimensional color map action */
+    ColorMapAction          _colorMap2DAction;      /** Two-dimensional color map action */
 
     /** Default constant color */
     static const QColor DEFAULT_CONSTANT_COLOR;

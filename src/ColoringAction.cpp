@@ -16,23 +16,27 @@ ColoringAction::ColoringAction(QObject* parent, const QString& title) :
     _colorByModel(this),
     _colorByAction(this, "Color by"),
     _constantColorAction(this, "Constant color", DEFAULT_CONSTANT_COLOR, DEFAULT_CONSTANT_COLOR),
-    _dimensionAction(this, "Dim"),
-    _colorMapAction(this, "Color map")
+    _dimensionAction(this, "Dimension"),
+    _colorMap1DAction(this, "1D Color map"),
+    _colorMap2DAction(this, "2D Color map")
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("palette"));
     setDefaultWidgetFlags(GroupAction::Horizontal);
-    setShowLabels(false);
 
     addAction(&_colorByAction);
     addAction(&_constantColorAction);
+    addAction(&_colorMap2DAction);
+    addAction(&_colorMap1DAction);
     addAction(&_dimensionAction);
-    addAction(&_colorMapAction);
 
     _scatterplotPlugin->getWidget().addAction(&_colorByAction);
     _scatterplotPlugin->getWidget().addAction(&_dimensionAction);
 
     _colorByAction.setCustomModel(&_colorByModel);
     _colorByAction.setToolTip("Color by");
+
+    _colorMap1DAction.setColorMapType(ColorMap::Type::OneDimensional);
+    _colorMap2DAction.setColorMapType(ColorMap::Type::TwoDimensional);
 
     connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, [this]() {
         const auto positionDataset = _scatterplotPlugin->getPositionDataset();
@@ -66,14 +70,7 @@ ColoringAction::ColoringAction(QObject* parent, const QString& title) :
     connect(&_colorByAction, &OptionAction::currentIndexChanged, this, [this](const std::int32_t& currentIndex) {
         _scatterplotPlugin->getScatterplotWidget().setColoringMode(currentIndex == 0 ? ScatterplotWidget::ColoringMode::Constant : ScatterplotWidget::ColoringMode::Data);
 
-        _constantColorAction.setEnabled(_colorByAction.getCurrentIndex() == 0);
-        _colorMapAction.setEnabled(_colorByAction.getCurrentIndex() >= 1);
-
-        if (_colorByAction.getCurrentIndex() == 1)
-            _colorMapAction.setColorMapType(ColorMap::Type::TwoDimensional);
-
-        if (_colorByAction.getCurrentIndex() == 2)
-            _colorMapAction.setColorMapType(ColorMap::Type::OneDimensional);
+        _constantColorAction.setEnabled(currentIndex == 0);
 
         const auto currentColorDataset = getCurrentColorDataset();
 
@@ -93,7 +90,7 @@ ColoringAction::ColoringAction(QObject* parent, const QString& title) :
         updateScatterPlotWidgetColors();
         updateScatterplotWidgetColorMap();
         updateColorMapActionScalarRange();
-        updateColorMapActionReadOnly();
+        updateColorMapActionsReadOnly();
     });
 
     connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::dataChildAdded, this, &ColoringAction::updateColorByActionOptions);
@@ -106,14 +103,16 @@ ColoringAction::ColoringAction(QObject* parent, const QString& title) :
     connect(&_dimensionAction, &DimensionPickerAction::currentDimensionIndexChanged, this, &ColoringAction::updateColorMapActionScalarRange);
     
     connect(&_constantColorAction, &ColorAction::colorChanged, this, &ColoringAction::updateScatterplotWidgetColorMap);
-    connect(&_colorMapAction, &ColorMapAction::imageChanged, this, &ColoringAction::updateScatterplotWidgetColorMap);
+    connect(&_colorMap1DAction, &ColorMapAction::imageChanged, this, &ColoringAction::updateScatterplotWidgetColorMap);
+    connect(&_colorMap2DAction, &ColorMapAction::imageChanged, this, &ColoringAction::updateScatterplotWidgetColorMap);
     connect(&_scatterplotPlugin->getScatterplotWidget(), &ScatterplotWidget::coloringModeChanged, this, &ColoringAction::updateScatterplotWidgetColorMap);
     connect(&_scatterplotPlugin->getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, &ColoringAction::updateScatterplotWidgetColorMap);
 
-    connect(&_colorMapAction.getRangeAction(ColorMapAction::Axis::X), &DecimalRangeAction::rangeChanged, this, &ColoringAction::updateScatterPlotWidgetColorMapRange);
+    connect(&_colorMap1DAction.getRangeAction(ColorMapAction::Axis::X), &DecimalRangeAction::rangeChanged, this, &ColoringAction::updateScatterPlotWidgetColorMapRange);
+    connect(&_colorMap2DAction.getRangeAction(ColorMapAction::Axis::X), &DecimalRangeAction::rangeChanged, this, &ColoringAction::updateScatterPlotWidgetColorMapRange);
 
-    connect(&_scatterplotPlugin->getScatterplotWidget(), &ScatterplotWidget::coloringModeChanged, this, &ColoringAction::updateColorMapActionReadOnly);
-    connect(&_scatterplotPlugin->getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, &ColoringAction::updateColorMapActionReadOnly);
+    connect(&_scatterplotPlugin->getScatterplotWidget(), &ScatterplotWidget::coloringModeChanged, this, &ColoringAction::updateColorMapActionsReadOnly);
+    connect(&_scatterplotPlugin->getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, &ColoringAction::updateColorMapActionsReadOnly);
 
     const auto updateReadOnly = [this]() {
         setEnabled(_scatterplotPlugin->getScatterplotWidget().getRenderMode() == ScatterplotWidget::SCATTERPLOT);
@@ -239,11 +238,11 @@ void ColoringAction::updateColorMapActionScalarRange()
     const auto colorMapRangeMin = colorMapRange.x;
     const auto colorMapRangeMax = colorMapRange.y;
 
-    auto& colorMapRangeAction = _colorMapAction.getRangeAction(ColorMapAction::Axis::X);
+    auto& colorMapRangeAction = _colorMap1DAction.getRangeAction(ColorMapAction::Axis::X);
 
     colorMapRangeAction.initialize({ colorMapRangeMin, colorMapRangeMax }, { colorMapRangeMin, colorMapRangeMax });
 	
-	_colorMapAction.getDataRangeAction(ColorMapAction::Axis::X).setRange({ colorMapRangeMin, colorMapRangeMax });
+	_colorMap1DAction.getDataRangeAction(ColorMapAction::Axis::X).setRange({ colorMapRangeMin, colorMapRangeMax });
 }
 
 void ColoringAction::updateScatterplotWidgetColorMap()
@@ -264,12 +263,12 @@ void ColoringAction::updateScatterplotWidgetColorMap()
                 scatterplotWidget.setColoringMode(ScatterplotWidget::ColoringMode::Constant);
             }
             else if (_colorByAction.getCurrentIndex() == 1) {
-                scatterplotWidget.setColorMap(_colorMapAction.getColorMapImage());
+                scatterplotWidget.setColorMap(_colorMap2DAction.getColorMapImage());
                 scatterplotWidget.setScalarEffect(PointEffect::Color2D);
                 scatterplotWidget.setColoringMode(ScatterplotWidget::ColoringMode::Scatter);
             }
             else {
-                scatterplotWidget.setColorMap(_colorMapAction.getColorMapImage().mirrored(false, true));
+                scatterplotWidget.setColorMap(_colorMap1DAction.getColorMapImage().mirrored(false, true));
             }
 
             break;
@@ -282,7 +281,7 @@ void ColoringAction::updateScatterplotWidgetColorMap()
         {
             scatterplotWidget.setScalarEffect(PointEffect::Color);
             scatterplotWidget.setColoringMode(ScatterplotWidget::ColoringMode::Scatter);
-            scatterplotWidget.setColorMap(_colorMapAction.getColorMapImage());
+            scatterplotWidget.setColorMap(_colorMap1DAction.getColorMapImage());
             
             break;
         }
@@ -296,7 +295,7 @@ void ColoringAction::updateScatterplotWidgetColorMap()
 
 void ColoringAction::updateScatterPlotWidgetColorMapRange()
 {
-    const auto& rangeAction = _colorMapAction.getRangeAction(ColorMapAction::Axis::X);
+    const auto& rangeAction = _colorMap1DAction.getRangeAction(ColorMapAction::Axis::X);
 
     _scatterplotPlugin->getScatterplotWidget().setColorMapRange(rangeAction.getMinimum(), rangeAction.getMaximum());
 }
@@ -317,9 +316,12 @@ bool ColoringAction::shouldEnableColorMap() const
     return false;
 }
 
-void ColoringAction::updateColorMapActionReadOnly()
+void ColoringAction::updateColorMapActionsReadOnly()
 {
-    _colorMapAction.setEnabled(shouldEnableColorMap());
+    const auto currentIndex = _colorByAction.getCurrentIndex();
+
+    _colorMap1DAction.setEnabled(shouldEnableColorMap() && currentIndex == 2);
+    _colorMap2DAction.setEnabled(shouldEnableColorMap() && currentIndex == 1);
 }
 
 void ColoringAction::connectToPublicAction(WidgetAction* publicAction, bool recursive)
@@ -335,7 +337,8 @@ void ColoringAction::connectToPublicAction(WidgetAction* publicAction, bool recu
         actions().connectPrivateActionToPublicAction(&_colorByAction, &publicColoringAction->getColorByAction(), recursive);
         actions().connectPrivateActionToPublicAction(&_constantColorAction, &publicColoringAction->getConstantColorAction(), recursive);
         actions().connectPrivateActionToPublicAction(&_dimensionAction, &publicColoringAction->getDimensionAction(), recursive);
-        actions().connectPrivateActionToPublicAction(&_colorMapAction, &publicColoringAction->getColorMapAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_colorMap1DAction, &publicColoringAction->getColorMap1DAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_colorMap2DAction, &publicColoringAction->getColorMap2DAction(), recursive);
     }
 
     GroupAction::connectToPublicAction(publicAction, recursive);
@@ -350,7 +353,7 @@ void ColoringAction::disconnectFromPublicAction(bool recursive)
         actions().disconnectPrivateActionFromPublicAction(&_colorByAction, recursive);
         actions().disconnectPrivateActionFromPublicAction(&_constantColorAction, recursive);
         actions().disconnectPrivateActionFromPublicAction(&_dimensionAction, recursive);
-        actions().disconnectPrivateActionFromPublicAction(&_colorMapAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_colorMap2DAction, recursive);
     }
 
     GroupAction::disconnectFromPublicAction(recursive);
@@ -363,7 +366,7 @@ void ColoringAction::fromVariantMap(const QVariantMap& variantMap)
     _colorByAction.fromParentVariantMap(variantMap);
     _constantColorAction.fromParentVariantMap(variantMap);
     _dimensionAction.fromParentVariantMap(variantMap);
-    _colorMapAction.fromParentVariantMap(variantMap);
+    _colorMap2DAction.fromParentVariantMap(variantMap);
 }
 
 QVariantMap ColoringAction::toVariantMap() const
@@ -373,7 +376,7 @@ QVariantMap ColoringAction::toVariantMap() const
     _colorByAction.insertIntoVariantMap(variantMap);
     _constantColorAction.insertIntoVariantMap(variantMap);
     _dimensionAction.insertIntoVariantMap(variantMap);
-    _colorMapAction.insertIntoVariantMap(variantMap);
+    _colorMap2DAction.insertIntoVariantMap(variantMap);
 
     return variantMap;
 }
