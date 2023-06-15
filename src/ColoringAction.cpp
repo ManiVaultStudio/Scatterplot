@@ -35,9 +35,6 @@ ColoringAction::ColoringAction(QObject* parent, const QString& title) :
     _colorByAction.setCustomModel(&_colorByModel);
     _colorByAction.setToolTip("Color by");
 
-    _colorMap1DAction.setColorMapType(ColorMap::Type::OneDimensional);
-    _colorMap2DAction.setColorMapType(ColorMap::Type::TwoDimensional);
-
     connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, [this]() {
         const auto positionDataset = _scatterplotPlugin->getPositionDataset();
 

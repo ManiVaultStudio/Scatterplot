@@ -1,7 +1,8 @@
 #pragma once
 
 #include <actions/GroupAction.h>
-#include <actions/ColorMapAction.h>
+#include <actions/ColorMap1DAction.h>
+#include <actions/ColorMap2DAction.h>
 
 #include <PointData/DimensionPickerAction.h>
 
@@ -131,8 +132,8 @@ private:
     OptionAction            _colorByAction;         /** Action for picking the coloring type */
     ColorAction             _constantColorAction;   /** Action for picking the constant color */
     DimensionPickerAction   _dimensionAction;       /** Dimension picker action */
-    ColorMapAction          _colorMap1DAction;      /** One-dimensional color map action */
-    ColorMapAction          _colorMap2DAction;      /** Two-dimensional color map action */
+    ColorMap1DAction        _colorMap1DAction;      /** One-dimensional color map action */
+    ColorMap2DAction        _colorMap2DAction;      /** Two-dimensional color map action */
 
     /** Default constant color */
     static const QColor DEFAULT_CONSTANT_COLOR;
