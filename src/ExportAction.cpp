@@ -30,10 +30,10 @@ ExportAction::ExportAction(QObject* parent, const QString& title) :
     _dimensionSelectionAction(this, "Dimensions"),
     _targetWidthAction(this, "Width ", 1, 10000),
     _targetHeightAction(this, "Height", 1, 10000),
-    _lockAspectRatioAction(this, "Lock aspect ratio", true, true),
+    _lockAspectRatioAction(this, "Lock aspect ratio", true),
     _scaleAction(this, "Scale", triggers.values().toVector()),
-    _backgroundColorAction(this, "Background color", QColor(Qt::white), QColor(Qt::white)),
-    _overrideRangesAction(this, "Override ranges", false, false),
+    _backgroundColorAction(this, "Background color", QColor(Qt::white)),
+    _overrideRangesAction(this, "Override ranges", false),
     _fixedRangeAction(this, "Fixed range"),
     _fileNamePrefixAction(this, "Filename prefix"),
     _statusAction(this, "Status"),
@@ -156,8 +156,8 @@ void ExportAction::initializeTargetSize()
 {
     const auto scatterPlotWidgetSize = _scatterplotPlugin->getScatterplotWidget().size();
 
-    _targetWidthAction.initialize(1, 8 * scatterPlotWidgetSize.width(), scatterPlotWidgetSize.width(), scatterPlotWidgetSize.width());
-    _targetHeightAction.initialize(1, 8 * scatterPlotWidgetSize.height(), scatterPlotWidgetSize.height(), scatterPlotWidgetSize.height());
+    _targetWidthAction.initialize(1, 8 * scatterPlotWidgetSize.width(), scatterPlotWidgetSize.width());
+    _targetHeightAction.initialize(1, 8 * scatterPlotWidgetSize.height(), scatterPlotWidgetSize.height());
 
     _aspectRatio = static_cast<float>(_targetHeightAction.getValue()) / static_cast<float>(_targetWidthAction.getValue());
 }

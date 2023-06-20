@@ -6,8 +6,8 @@ using namespace hdps::gui;
 
 DensityPlotAction::DensityPlotAction(QObject* parent, const QString& title) :
     GroupAction(parent, title),
-    _sigmaAction(this, "Sigma", 0.01f, 0.5f, DEFAULT_SIGMA, DEFAULT_SIGMA, 3),
-    _continuousUpdatesAction(this, "Live Updates", DEFAULT_CONTINUOUS_UPDATES, DEFAULT_CONTINUOUS_UPDATES)
+    _sigmaAction(this, "Sigma", 0.01f, 0.5f, DEFAULT_SIGMA, 3),
+    _continuousUpdatesAction(this, "Live Updates", DEFAULT_CONTINUOUS_UPDATES)
 {
     setToolTip("Density plot settings");
     setDefaultWidgetFlags(GroupAction::Horizontal);

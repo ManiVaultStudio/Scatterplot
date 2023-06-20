@@ -13,9 +13,9 @@ SelectionAction::SelectionAction(QObject* parent, const QString& title) :
     GroupAction(parent, title),
     _pixelSelectionAction(this, "Point Selection"),
     _displayModeAction(this, "Display mode", { "Outline", "Override" }),
-    _outlineOverrideColorAction(this, "Custom color", true, true),
-    _outlineScaleAction(this, "Scale", 100.0f, 500.0f, 200.0f, 200.0f, 1),
-    _outlineOpacityAction(this, "Opacity", 0.0f, 100.0f, 100.0f, 100.0f, 1),
+    _outlineOverrideColorAction(this, "Custom color", true),
+    _outlineScaleAction(this, "Scale", 100.0f, 500.0f, 200.0f, 1),
+    _outlineOpacityAction(this, "Opacity", 0.0f, 100.0f, 100.0f, 1),
     _outlineHaloEnabledAction(this, "Halo")
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("mouse-pointer"));

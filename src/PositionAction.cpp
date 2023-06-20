@@ -37,12 +37,10 @@ PositionAction::PositionAction(QObject* parent, const QString& title) :
         _yDimensionPickerAction.setPointsDataset(scatterplotPlugin->getPositionDataset());
 
         _xDimensionPickerAction.setCurrentDimensionIndex(0);
-        _xDimensionPickerAction.setDefaultDimensionIndex(0);
 
         const auto yIndex = _xDimensionPickerAction.getNumberOfDimensions() >= 2 ? 1 : 0;
 
         _yDimensionPickerAction.setCurrentDimensionIndex(yIndex);
-        _yDimensionPickerAction.setDefaultDimensionIndex(yIndex);
     });
 }
 

@@ -15,7 +15,7 @@ ColoringAction::ColoringAction(QObject* parent, const QString& title) :
     _scatterplotPlugin(dynamic_cast<ScatterplotPlugin*>(parent->parent())),
     _colorByModel(this),
     _colorByAction(this, "Color by"),
-    _constantColorAction(this, "Constant color", DEFAULT_CONSTANT_COLOR, DEFAULT_CONSTANT_COLOR),
+    _constantColorAction(this, "Constant color", DEFAULT_CONSTANT_COLOR),
     _dimensionAction(this, "Dimension"),
     _colorMap1DAction(this, "1D Color map"),
     _colorMap2DAction(this, "2D Color map")

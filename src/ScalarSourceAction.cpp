@@ -13,7 +13,7 @@ ScalarSourceAction::ScalarSourceAction(QObject* parent, const QString& title) :
     _model(this),
     _pickerAction(this, "Source"),
     _dimensionPickerAction(this, "Data dimension"),
-    _offsetAction(this, "Offset", 0.0f, 100.0f, 0.0f, 0.0f, 2),
+    _offsetAction(this, "Offset", 0.0f, 100.0f, 0.0f, 2),
     _rangeAction(this, "Scalar range")
 {
     setConfigurationFlag(WidgetAction::ConfigurationFlag::ForceCollapsedInGroup);

@@ -19,7 +19,6 @@ MiscellaneousAction::MiscellaneousAction(QObject* parent, const QString& title) 
     _scatterplotPlugin->getWidget().addAction(&_backgroundColorAction);
 
     _backgroundColorAction.setColor(DEFAULT_BACKGROUND_COLOR);
-    _backgroundColorAction.setDefaultColor(DEFAULT_BACKGROUND_COLOR);
 
     const auto updateBackgroundColor = [this]() -> void {
         _scatterplotPlugin->getScatterplotWidget().setBackgroundColor(_backgroundColorAction.getColor());
