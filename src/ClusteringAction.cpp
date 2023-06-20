@@ -12,14 +12,14 @@ using namespace hdps::gui;
 ClusteringAction::ClusteringAction(QObject* parent, const QString& title) :
     GroupAction(parent, title),
     _scatterplotPlugin(dynamic_cast<ScatterplotPlugin*>(parent->parent())),
-    _nameAction(this, "Name"),
-    _colorAction(this, "Color"),
+    _nameAction(this, "Cluster name"),
+    _colorAction(this, "Cluster color"),
     _addClusterAction(this, "Add cluster"),
     _clusterDatasetPickerAction(this, "Add to"),
-    _clusterDatasetNameAction(this, "Cluster dataset name"),
+    _clusterDatasetNameAction(this, "Dataset name"),
     _createClusterDatasetAction(this, "Create"),
     _clusterDatasetWizardAction(this, "Create cluster dataset"),
-    _clusterDatasetAction(this, "Target cluster dataset")
+    _clusterDatasetAction(this, "Target clusters dataset")
 {
     setText("Manual clustering");
     setIcon(Application::getIconFont("FontAwesome").getIcon("th-large"));
