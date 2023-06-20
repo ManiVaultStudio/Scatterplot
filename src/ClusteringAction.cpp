@@ -19,19 +19,18 @@ ClusteringAction::ClusteringAction(QObject* parent, const QString& title) :
     _clusterDatasetNameAction(this, "Cluster dataset name"),
     _createClusterDatasetAction(this, "Create"),
     _clusterDatasetWizardAction(this, "Create cluster dataset"),
-    _clusterDatasetAction(this, "Target Cluster")
+    _clusterDatasetAction(this, "Target cluster dataset")
 {
     setText("Manual clustering");
     setIcon(Application::getIconFont("FontAwesome").getIcon("th-large"));
     setConnectionPermissionsToForceNone();
     setConfigurationFlag(WidgetAction::ConfigurationFlag::ForceCollapsedInGroup);
+    setLabelSizingType(LabelSizingType::Auto);
 
     addAction(&_nameAction);
     addAction(&_colorAction);
     addAction(&_clusterDatasetAction);
     addAction(&_addClusterAction);
-
-    //setPopupSizeHint(QSize(400, 0));
 
     _clusterDatasetAction.setShowLabels(false);
     _clusterDatasetAction.addAction(&_clusterDatasetPickerAction);
@@ -43,12 +42,15 @@ ClusteringAction::ClusteringAction(QObject* parent, const QString& title) :
     _clusterDatasetPickerAction.setToolTip("Target cluster set");
     
     _clusterDatasetNameAction.setToolTip("Name of the new cluster dataset");
+    _clusterDatasetNameAction.setClearable(true);
     
     _createClusterDatasetAction.setToolTip("Create new cluster dataset");
+    _createClusterDatasetAction.setEnabled(false);
 
     _clusterDatasetWizardAction.setIcon(Application::getIconFont("FontAwesome").getIcon("magic"));
     _clusterDatasetWizardAction.setToolTip("Create a new cluster dataset");
     _clusterDatasetWizardAction.setConfigurationFlag(WidgetAction::ConfigurationFlag::ForceCollapsedInGroup);
+    _clusterDatasetWizardAction.setLabelSizingType(LabelSizingType::Auto);
     _clusterDatasetWizardAction.addAction(&_clusterDatasetNameAction);
     _clusterDatasetWizardAction.addAction(&_createClusterDatasetAction);
 
@@ -62,12 +64,20 @@ ClusteringAction::ClusteringAction(QObject* parent, const QString& title) :
         return clusterDatasets;
     });
 
+    connect(& _clusterDatasetNameAction, & StringAction::stringChanged, this, [this](const QString& string) -> void {
+        _createClusterDatasetAction.setEnabled(!string.isEmpty());
+    });
+
     connect(&_createClusterDatasetAction, &TriggerAction::triggered, this, [this]() -> void {
-        const auto defaultClusters = Application::core()->addDataset<Clusters>("Cluster", _clusterDatasetNameAction.getString(), _scatterplotPlugin->getPositionDataset());
+        const auto clustersDataset = Application::core()->addDataset<Clusters>("Cluster", _clusterDatasetNameAction.getString(), _scatterplotPlugin->getPositionDataset());
 
-        events().notifyDatasetAdded(defaultClusters);
+        events().notifyDatasetAdded(clustersDataset);
 
-        _scatterplotPlugin->getSettingsAction().getColoringAction().setCurrentColorDataset(defaultClusters);
+        _clusterDatasetPickerAction.setCurrentDataset(clustersDataset);
+    });
+
+    connect(&_clusterDatasetPickerAction, &DatasetPickerAction::datasetPicked, this, [this](Dataset<DatasetImpl> dataset) -> void {
+        _scatterplotPlugin->getSettingsAction().getColoringAction().setCurrentColorDataset(dataset);
     });
 
     connect(&_addClusterAction, &TriggerAction::triggered, this, [this]() {
@@ -100,7 +110,7 @@ ClusteringAction::ClusteringAction(QObject* parent, const QString& title) :
         const auto hasSelection             = numberOfSelectedPoints >= 1;
         const auto canAddCluster            = hasSelection && !_nameAction.getString().isEmpty();
         
-        setEnabled(hasSelection);
+        setEnabled(_scatterplotPlugin->getPositionDataset().isValid() && hasSelection);
 
         _nameAction.setEnabled(_clusterDatasetPickerAction.hasSelection());
         _colorAction.setEnabled(_clusterDatasetPickerAction.hasSelection());
@@ -109,6 +119,7 @@ ClusteringAction::ClusteringAction(QObject* parent, const QString& title) :
 
     updateActionsReadOnly();
 
+    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, updateActionsReadOnly);
     connect(&_nameAction, &StringAction::stringChanged, this, updateActionsReadOnly);
     connect(&_clusterDatasetPickerAction, &DatasetPickerAction::datasetPicked, this, updateActionsReadOnly);
     connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::dataSelectionChanged, this, updateActionsReadOnly);

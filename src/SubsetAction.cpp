@@ -21,6 +21,7 @@ SubsetAction::SubsetAction(QObject* parent, const QString& title) :
     setDefaultWidgetFlags(GroupAction::Horizontal);
     setConnectionPermissionsToForceNone(true);
     setConfigurationFlag(WidgetAction::ConfigurationFlag::ForceCollapsedInGroup);
+    setLabelSizingType(LabelSizingType::Auto);
 
     addAction(&_subsetNameAction);
     addAction(&_sourceDataAction);
@@ -28,6 +29,14 @@ SubsetAction::SubsetAction(QObject* parent, const QString& title) :
 
     _subsetNameAction.setToolTip("Name of the subset");
     _createSubsetAction.setToolTip("Create subset from selected data points");
+
+    const auto updateReadOnly = [this]() -> void {
+        _createSubsetAction.setEnabled(!_subsetNameAction.getString().isEmpty());
+    };
+
+    updateReadOnly();
+
+    connect(&_subsetNameAction, &StringAction::stringChanged, this, updateReadOnly);
 }
 
 void SubsetAction::initialize(ScatterplotPlugin* scatterplotPlugin)

@@ -22,6 +22,7 @@ ColoringAction::ColoringAction(QObject* parent, const QString& title) :
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("palette"));
     setDefaultWidgetFlags(GroupAction::Horizontal);
+    setLabelSizingType(LabelSizingType::Auto);
 
     addAction(&_colorByAction);
     addAction(&_constantColorAction);

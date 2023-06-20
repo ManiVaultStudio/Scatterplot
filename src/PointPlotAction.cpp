@@ -20,6 +20,7 @@ PointPlotAction::PointPlotAction(QObject* parent, const QString& title) :
     setToolTip("Point plot settings");
     setDefaultWidgetFlags(GroupAction::Horizontal);
     setConfigurationFlag(WidgetAction::ConfigurationFlag::NoLabelInGroup);
+    setLabelSizingType(LabelSizingType::Auto);
 
     addAction(&_sizeAction);
     addAction(&_opacityAction);

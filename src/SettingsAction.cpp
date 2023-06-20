@@ -38,7 +38,6 @@ SettingsAction::SettingsAction(QObject* parent, const QString& title) :
         _positionAction.setEnabled(enabled);
         _coloringAction.setEnabled(enabled);
         _subsetAction.setEnabled(enabled);
-        _clusteringAction.setEnabled(enabled);
         _selectionAction.setEnabled(enabled);
         _exportAction.setEnabled(enabled);
     };

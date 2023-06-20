@@ -13,6 +13,7 @@ PlotAction::PlotAction(QObject* parent, const QString& title) :
     setToolTip("Plot settings");
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("paint-brush"));
     setDefaultWidgetFlags(GroupAction::Horizontal);
+    setLabelSizingType(LabelSizingType::Auto);
 
     addAction(&_pointPlotAction.getSizeAction());
     addAction(&_pointPlotAction.getOpacityAction());

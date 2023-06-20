@@ -19,6 +19,7 @@ DatasetsAction::DatasetsAction(QObject* parent, const QString& title) :
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("database"));
     setToolTip("Manage loaded datasets for position and color");
     setConfigurationFlag(WidgetAction::ConfigurationFlag::ForceCollapsedInGroup);
+    setLabelSizingType(LabelSizingType::Auto);
 
     addAction(&_positionDatasetPickerAction);
     addAction(&_colorDatasetPickerAction);

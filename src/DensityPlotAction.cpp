@@ -12,6 +12,7 @@ DensityPlotAction::DensityPlotAction(QObject* parent, const QString& title) :
     setToolTip("Density plot settings");
     setDefaultWidgetFlags(GroupAction::Horizontal);
     setConfigurationFlag(WidgetAction::ConfigurationFlag::NoLabelInGroup);
+    setLabelSizingType(LabelSizingType::Auto);
 
     addAction(&_sigmaAction);
     addAction(&_continuousUpdatesAction);

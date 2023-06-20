@@ -12,6 +12,7 @@ PositionAction::PositionAction(QObject* parent, const QString& title) :
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("ruler-combined"));
     setDefaultWidgetFlags(GroupAction::Horizontal);
+    setLabelSizingType(LabelSizingType::Auto);
 
     addAction(&_xDimensionPickerAction);
     addAction(&_yDimensionPickerAction);

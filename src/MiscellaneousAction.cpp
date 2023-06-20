@@ -13,6 +13,7 @@ MiscellaneousAction::MiscellaneousAction(QObject* parent, const QString& title) 
 {
     setIcon(Application::getIconFont("FontAwesome").getIcon("cog"));
     setConnectionPermissionsToForceNone(true);
+    setLabelSizingType(LabelSizingType::Auto);
 
     addAction(&_backgroundColorAction);
 
