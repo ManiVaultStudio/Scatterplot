@@ -122,5 +122,5 @@ ClusteringAction::ClusteringAction(QObject* parent, const QString& title) :
     connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, updateActionsReadOnly);
     connect(&_nameAction, &StringAction::stringChanged, this, updateActionsReadOnly);
     connect(&_clusterDatasetPickerAction, &DatasetPickerAction::datasetPicked, this, updateActionsReadOnly);
-    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::dataSelectionChanged, this, updateActionsReadOnly);
+    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::datasetSelectionChanged, this, updateActionsReadOnly);
 }

@@ -96,8 +96,8 @@ void ExportAction::initialize(ScatterplotPlugin* scatterplotPlugin)
         if (!positionDataset.isValid())
             return;
 
-        _dimensionSelectionAction.setObjectName("Dimensions/" + positionDataset->getGuiName());
-        _fileNamePrefixAction.setString(positionDataset->getGuiName() + "_");
+        _dimensionSelectionAction.setObjectName("Dimensions/" + positionDataset->text());
+        _fileNamePrefixAction.setString(positionDataset->text() + "_");
     };
 
     connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<DatasetImpl>::changed, this, positionDatasetChanged);

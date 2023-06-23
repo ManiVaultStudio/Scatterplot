@@ -95,8 +95,8 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
             return dropRegions;
 
         const auto dataset          = datasetsMimeData->getDatasets().first();
-        const auto datasetGuiName   = dataset->getGuiName();
-        const auto datasetId        = dataset->getGuid();
+        const auto datasetGuiName   = dataset->text();
+        const auto datasetId        = dataset->getId();
         const auto dataType         = dataset->getDataType();
         const auto dataTypes        = DataTypes({ PointType , ColorType, ClusterType });
 
@@ -132,19 +132,19 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                 if (candidateDataset->getNumPoints() == _positionDataset->getNumPoints()) {
 
                     // The number of points is equal, so offer the option to use the points dataset as source for points colors
-                    dropRegions << new DropWidget::DropRegion(this, "Point color", QString("Colorize %1 points with %2").arg(_positionDataset->getGuiName(), candidateDataset->getGuiName()), "palette", true, [this, candidateDataset]() {
+                    dropRegions << new DropWidget::DropRegion(this, "Point color", QString("Colorize %1 points with %2").arg(_positionDataset->text(), candidateDataset->text()), "palette", true, [this, candidateDataset]() {
                         _settingsAction.getColoringAction().addColorDataset(candidateDataset);
                         _settingsAction.getColoringAction().setCurrentColorDataset(candidateDataset);
                         });
 
                     // The number of points is equal, so offer the option to use the points dataset as source for points size
-                    dropRegions << new DropWidget::DropRegion(this, "Point size", QString("Size %1 points with %2").arg(_positionDataset->getGuiName(), candidateDataset->getGuiName()), "ruler-horizontal", true, [this, candidateDataset]() {
+                    dropRegions << new DropWidget::DropRegion(this, "Point size", QString("Size %1 points with %2").arg(_positionDataset->text(), candidateDataset->text()), "ruler-horizontal", true, [this, candidateDataset]() {
                         _settingsAction.getPlotAction().getPointPlotAction().addPointSizeDataset(candidateDataset);
                         _settingsAction.getPlotAction().getPointPlotAction().getSizeAction().setCurrentDataset(candidateDataset);
                         });
 
                     // The number of points is equal, so offer the option to use the points dataset as source for points opacity
-                    dropRegions << new DropWidget::DropRegion(this, "Point opacity", QString("Set %1 points opacity with %2").arg(_positionDataset->getGuiName(), candidateDataset->getGuiName()), "brush", true, [this, candidateDataset]() {
+                    dropRegions << new DropWidget::DropRegion(this, "Point opacity", QString("Set %1 points opacity with %2").arg(_positionDataset->text(), candidateDataset->text()), "brush", true, [this, candidateDataset]() {
                         _settingsAction.getPlotAction().getPointPlotAction().addPointOpacityDataset(candidateDataset);
                         _settingsAction.getPlotAction().getPointPlotAction().getOpacityAction().setCurrentDataset(candidateDataset);
                         });
@@ -159,7 +159,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
             auto candidateDataset = _core->requestDataset<Clusters>(datasetId);
 
             // Establish drop region description
-            const auto description = QString("Color points by %1").arg(candidateDataset->getGuiName());
+            const auto description = QString("Color points by %1").arg(candidateDataset->text());
 
             // Only allow user to color by clusters when there is a positions dataset loaded
             if (_positionDataset.isValid()) {
@@ -240,17 +240,10 @@ void ScatterplotPlugin::init()
         selectPoints();
     });
 
-    // Load points when the pointer to the position dataset changes
     connect(&_positionDataset, &Dataset<Points>::changed, this, &ScatterplotPlugin::positionDatasetChanged);
-
-    // Update points when the position dataset data changes
-    connect(&_positionDataset, &Dataset<Points>::dataChanged, this, &ScatterplotPlugin::updateData);
-
-    // Update point selection when the position dataset data changes
-    connect(&_positionDataset, &Dataset<Points>::dataSelectionChanged, this, &ScatterplotPlugin::updateSelection);
-
-    // Update the window title when the GUI name of the position dataset changes
-    connect(&_positionDataset, &Dataset<Points>::dataGuiNameChanged, this, &ScatterplotPlugin::updateWindowTitle);
+    connect(&_positionDataset, &Dataset<Points>::datasetChanged, this, &ScatterplotPlugin::updateData);
+    connect(&_positionDataset, &Dataset<Points>::datasetSelectionChanged, this, &ScatterplotPlugin::updateSelection);
+    connect(_positionDataset.get(), &Points::textChanged, this, &ScatterplotPlugin::updateWindowTitle);
 
     // Do an initial update of the window title
     updateWindowTitle();
@@ -276,10 +269,10 @@ void ScatterplotPlugin::createSubset(const bool& fromSourceData /*= false*/, con
 
     if (fromSourceData)
         // Make subset from the source data, this is not the displayed data, so no restrictions here
-        subset = _positionSourceDataset->createSubsetFromSelection(_positionSourceDataset->getGuiName(), _positionSourceDataset);
+        subset = _positionSourceDataset->createSubsetFromSelection(name, _positionSourceDataset);
     else
         // Avoid making a bigger subset than the current data by restricting the selection to the current data
-        subset = _positionDataset->createSubsetFromVisibleSelection(_positionDataset->getGuiName(), _positionDataset);
+        subset = _positionDataset->createSubsetFromVisibleSelection(_positionDataset->text(), _positionDataset);
 
     // Notify others that the subset was added
     events().notifyDatasetAdded(subset);
@@ -393,7 +386,7 @@ void ScatterplotPlugin::updateWindowTitle()
     if (!_positionDataset.isValid())
         getWidget().setWindowTitle(getGuiName());
     else
-        getWidget().setWindowTitle(QString("%1: %2").arg(getGuiName(), _positionDataset->getDataHierarchyItem().getFullPathName()));
+        getWidget().setWindowTitle(QString("%1: %2").arg(getGuiName(), _positionDataset->getLocation()));
 }
 
 Dataset<Points>& ScatterplotPlugin::getPositionDataset()

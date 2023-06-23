@@ -149,10 +149,10 @@ void PointPlotAction::initialize(ScatterplotPlugin* scatterplotPlugin)
         _opacityAction.getSourceAction().getPickerAction().setCurrentIndex(0);
     });
 
-    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::dataChildAdded, this, &PointPlotAction::updateDefaultDatasets);
-    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::dataChildRemoved, this, &PointPlotAction::updateDefaultDatasets);
-    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::dataSelectionChanged, this, &PointPlotAction::updateScatterPlotWidgetPointSizeScalars);
-    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::dataSelectionChanged, this, &PointPlotAction::updateScatterPlotWidgetPointOpacityScalars);
+    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::datasetChildAdded, this, &PointPlotAction::updateDefaultDatasets);
+    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::datasetChildRemoved, this, &PointPlotAction::updateDefaultDatasets);
+    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::datasetSelectionChanged, this, &PointPlotAction::updateScatterPlotWidgetPointSizeScalars);
+    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::datasetSelectionChanged, this, &PointPlotAction::updateScatterPlotWidgetPointOpacityScalars);
 
     connect(&_sizeAction, &ScalarAction::magnitudeChanged, this, &PointPlotAction::updateScatterPlotWidgetPointSizeScalars);
     connect(&_sizeAction, &ScalarAction::offsetChanged, this, &PointPlotAction::updateScatterPlotWidgetPointSizeScalars);

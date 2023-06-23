@@ -56,12 +56,12 @@ void SubsetAction::initialize(ScatterplotPlugin* scatterplotPlugin)
         if (!_scatterplotPlugin->getPositionDataset().isValid())
             return;
 
-        const auto datasetGuiName = _scatterplotPlugin->getPositionDataset()->getGuiName();
+        const auto datasetGuiName = _scatterplotPlugin->getPositionDataset()->text();
 
         QStringList sourceDataOptions;
 
         if (!datasetGuiName.isEmpty()) {
-            const auto sourceDatasetGuiName = _scatterplotPlugin->getPositionDataset()->getSourceDataset<Points>()->getGuiName();
+            const auto sourceDatasetGuiName = _scatterplotPlugin->getPositionDataset()->getSourceDataset<Points>()->text();
 
             sourceDataOptions << QString("From: %1").arg(datasetGuiName);
 
