@@ -17,7 +17,7 @@ ScalarSourceAction::ScalarSourceAction(QObject* parent, const QString& title) :
     _rangeAction(this, "Scalar range")
 {
     setConfigurationFlag(WidgetAction::ConfigurationFlag::ForceCollapsedInGroup);
-    setPopupSizeHint(QSize(400, 0));
+    setPopupSizeHint(QSize(250, 0));
     setConnectionPermissionsToForceNone(true);
 
     addAction(&_pickerAction);

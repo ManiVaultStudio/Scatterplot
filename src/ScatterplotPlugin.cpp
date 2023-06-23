@@ -272,7 +272,7 @@ void ScatterplotPlugin::createSubset(const bool& fromSourceData /*= false*/, con
         subset = _positionSourceDataset->createSubsetFromSelection(name, _positionSourceDataset);
     else
         // Avoid making a bigger subset than the current data by restricting the selection to the current data
-        subset = _positionDataset->createSubsetFromVisibleSelection(_positionDataset->text(), _positionDataset);
+        subset = _positionDataset->createSubsetFromVisibleSelection(name, _positionDataset);
 
     // Notify others that the subset was added
     events().notifyDatasetAdded(subset);
