@@ -12,7 +12,6 @@ MiscellaneousAction::MiscellaneousAction(QObject* parent, const QString& title) 
     _backgroundColorAction(this, "Background color")
 {
     setIcon(Application::getIconFont("FontAwesome").getIcon("cog"));
-    setConnectionPermissionsToForceNone(true);
     setLabelSizingType(LabelSizingType::Auto);
 
     addAction(&_backgroundColorAction);

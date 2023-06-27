@@ -78,6 +78,7 @@ void SettingsAction::fromVariantMap(const QVariantMap& variantMap)
     _coloringAction.fromParentVariantMap(variantMap);
     _renderModeAction.fromParentVariantMap(variantMap);
     _selectionAction.fromParentVariantMap(variantMap);
+    _miscellaneousAction.fromParentVariantMap(variantMap);
 }
 
 QVariantMap SettingsAction::toVariantMap() const
@@ -90,6 +91,7 @@ QVariantMap SettingsAction::toVariantMap() const
     _positionAction.insertIntoVariantMap(variantMap);
     _coloringAction.insertIntoVariantMap(variantMap);
     _selectionAction.insertIntoVariantMap(variantMap);
+    _miscellaneousAction.insertIntoVariantMap(variantMap);
 
     return variantMap;
 }
