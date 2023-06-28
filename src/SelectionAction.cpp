@@ -115,6 +115,14 @@ void SelectionAction::initialize(ScatterplotPlugin* scatterplotPlugin)
     connect(&_outlineOverrideColorAction, &ToggleAction::toggled, this, [this, scatterplotPlugin](bool toggled) {
         scatterplotPlugin->getScatterplotWidget().setSelectionOutlineOverrideColor(toggled);
     });
+
+    const auto updateReadOnly = [this, scatterplotPlugin]() -> void {
+        setEnabled(scatterplotPlugin->getPositionDataset().isValid());
+    };
+
+    updateReadOnly();
+
+    connect(&scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, updateReadOnly);
 }
 
 void SelectionAction::connectToPublicAction(WidgetAction* publicAction, bool recursive)

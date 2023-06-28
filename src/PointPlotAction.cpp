@@ -243,6 +243,9 @@ void PointPlotAction::updateScatterPlotWidgetPointSizeScalars()
     if (_scatterplotPlugin == nullptr)
         return;
 
+    if (!_scatterplotPlugin->getPositionDataset().isValid())
+        return;
+
     const auto numberOfPoints = _scatterplotPlugin->getPositionDataset()->getNumPoints();
 
     if (numberOfPoints != _pointSizeScalars.size())
@@ -304,6 +307,9 @@ void PointPlotAction::updateScatterPlotWidgetPointSizeScalars()
 void PointPlotAction::updateScatterPlotWidgetPointOpacityScalars()
 {
     if (_scatterplotPlugin == nullptr)
+        return;
+
+    if (!_scatterplotPlugin->getPositionDataset().isValid())
         return;
 
     const auto numberOfPoints = _scatterplotPlugin->getPositionDataset()->getNumPoints();

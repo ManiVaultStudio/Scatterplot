@@ -88,11 +88,6 @@ public: // Miscellaneous
     /** Use the pixel selection tool to select data points */
     void selectPoints();
 
-protected:
-
-    /** Updates the window title (displays the name of the view and the GUI name of the loaded points dataset) */
-    void updateWindowTitle();
-
 public:
 
     /** Get reference to the scatter plot widget */

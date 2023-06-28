@@ -113,7 +113,7 @@ ColoringAction::ColoringAction(QObject* parent, const QString& title) :
     connect(&_scatterplotPlugin->getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, &ColoringAction::updateColorMapActionsReadOnly);
 
     const auto updateReadOnly = [this]() {
-        setEnabled(_scatterplotPlugin->getScatterplotWidget().getRenderMode() == ScatterplotWidget::SCATTERPLOT);
+        setEnabled(_scatterplotPlugin->getPositionDataset().isValid() && _scatterplotPlugin->getScatterplotWidget().getRenderMode() == ScatterplotWidget::SCATTERPLOT);
     };
 
     connect(&_scatterplotPlugin->getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, updateReadOnly);
@@ -300,6 +300,9 @@ void ColoringAction::updateScatterPlotWidgetColorMapRange()
 
 bool ColoringAction::shouldEnableColorMap() const
 {
+    if (!_scatterplotPlugin->getPositionDataset().isValid())
+        return false;
+
     const auto currentColorDataset = getCurrentColorDataset();
 
     if (currentColorDataset.isValid() && currentColorDataset->getDataType() == ClusterType)
@@ -318,8 +321,8 @@ void ColoringAction::updateColorMapActionsReadOnly()
 {
     const auto currentIndex = _colorByAction.getCurrentIndex();
 
-    _colorMap1DAction.setEnabled(_scatterplotPlugin->getScatterplotWidget().getRenderMode() == ScatterplotWidget::LANDSCAPE ? true : shouldEnableColorMap() && currentIndex == 2);
-    _colorMap2DAction.setEnabled(shouldEnableColorMap() && currentIndex == 1);
+    _colorMap1DAction.setEnabled(shouldEnableColorMap() && (currentIndex == 2));
+    _colorMap2DAction.setEnabled(shouldEnableColorMap() && (currentIndex == 1));
 }
 
 void ColoringAction::connectToPublicAction(WidgetAction* publicAction, bool recursive)

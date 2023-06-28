@@ -64,8 +64,8 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     _primaryToolbarAction.addAction(&_settingsAction.getClusteringAction());
     _primaryToolbarAction.addAction(&_settingsAction.getSelectionAction());
 
-    _secondaryToolbarAction.addAction(&_settingsAction.getColoringAction().getColorMap1DAction());
-    _secondaryToolbarAction.addAction(&_settingsAction.getPlotAction().getPointPlotAction().getFocusSelection());
+    _secondaryToolbarAction.addAction(&_settingsAction.getColoringAction().getColorMap1DAction(), 1);
+    _secondaryToolbarAction.addAction(&_settingsAction.getPlotAction().getPointPlotAction().getFocusSelection(), 2);
     _secondaryToolbarAction.addAction(&_settingsAction.getExportAction());
     _secondaryToolbarAction.addAction(&_settingsAction.getMiscellaneousAction());
 
@@ -243,10 +243,6 @@ void ScatterplotPlugin::init()
     connect(&_positionDataset, &Dataset<Points>::changed, this, &ScatterplotPlugin::positionDatasetChanged);
     connect(&_positionDataset, &Dataset<Points>::datasetChanged, this, &ScatterplotPlugin::updateData);
     connect(&_positionDataset, &Dataset<Points>::datasetSelectionChanged, this, &ScatterplotPlugin::updateSelection);
-    connect(_positionDataset.get(), &Points::textChanged, this, &ScatterplotPlugin::updateWindowTitle);
-
-    // Do an initial update of the window title
-    updateWindowTitle();
 }
 
 void ScatterplotPlugin::loadData(const Datasets& datasets)
@@ -381,14 +377,6 @@ void ScatterplotPlugin::selectPoints()
     events().notifyDatasetSelectionChanged(_positionDataset->getSourceDataset<Points>());
 }
 
-void ScatterplotPlugin::updateWindowTitle()
-{
-    if (!_positionDataset.isValid())
-        getWidget().setWindowTitle(getGuiName());
-    else
-        getWidget().setWindowTitle(QString("%1: %2").arg(getGuiName(), _positionDataset->getLocation()));
-}
-
 Dataset<Points>& ScatterplotPlugin::getPositionDataset()
 {
     return _positionDataset;
@@ -401,7 +389,6 @@ Dataset<Points>& ScatterplotPlugin::getPositionSourceDataset()
 
 void ScatterplotPlugin::positionDatasetChanged()
 {
-    // Only proceed if we have a valid position dataset
     if (!_positionDataset.isValid())
         return;
 
@@ -414,17 +401,11 @@ void ScatterplotPlugin::positionDatasetChanged()
 
     _numPoints = _positionDataset->getNumPoints();
 
-    // Enable pixel selection if the point positions dataset is valid
     _scatterPlotWidget->getPixelSelectionTool().setEnabled(_positionDataset.isValid());
 
-    // Do not show the drop indicator if there is a valid point positions dataset
     _dropWidget->setShowDropIndicator(!_positionDataset.isValid());
 
-    // Update positions data
     updateData();
-
-    // Update the window title to reflect the position dataset change
-    updateWindowTitle();
 }
 
 void ScatterplotPlugin::loadColors(const Dataset<Points>& points, const std::uint32_t& dimensionIndex)

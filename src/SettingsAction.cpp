@@ -33,7 +33,6 @@ SettingsAction::SettingsAction(QObject* parent, const QString& title) :
     const auto updateEnabled = [this]() {
         const auto enabled = _scatterplotPlugin->getPositionDataset().isValid();
 
-        _renderModeAction.setEnabled(enabled);
         _plotAction.setEnabled(enabled);
         _positionAction.setEnabled(enabled);
         _coloringAction.setEnabled(enabled);
