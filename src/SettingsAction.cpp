@@ -37,15 +37,12 @@ SettingsAction::SettingsAction(QObject* parent, const QString& title) :
         _positionAction.setEnabled(enabled);
         _coloringAction.setEnabled(enabled);
         _subsetAction.setEnabled(enabled);
-        _selectionAction.setEnabled(enabled);
         _exportAction.setEnabled(enabled);
     };
 
     updateEnabled();
 
     connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, updateEnabled);
-
-    _exportAction.setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("camera"));
 }
 
 QMenu* SettingsAction::getContextMenu()

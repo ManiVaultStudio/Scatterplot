@@ -42,6 +42,14 @@ PositionAction::PositionAction(QObject* parent, const QString& title) :
 
         _yDimensionPickerAction.setCurrentDimensionIndex(yIndex);
     });
+
+    const auto updateReadOnly = [this, scatterplotPlugin]() -> void {
+        setEnabled(scatterplotPlugin->getPositionDataset().isValid());
+    };
+
+    updateReadOnly();
+
+    connect(&scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, updateReadOnly);
 }
 
 QMenu* PositionAction::getContextMenu(QWidget* parent /*= nullptr*/)

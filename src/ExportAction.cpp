@@ -41,7 +41,7 @@ ExportAction::ExportAction(QObject* parent, const QString& title) :
     _exportCancelAction(this, "Cancel", { TriggersAction::Trigger("Export", "Export dimensions"), TriggersAction::Trigger("Cancel", "Cancel export")  }),
     _aspectRatio()
 {
-    setText("Export");
+    setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("camera"));
     setLabelWidthFixed(100);
     setConnectionPermissionsToForceNone(true);
     setConfigurationFlag(WidgetAction::ConfigurationFlag::ForceCollapsedInGroup);
