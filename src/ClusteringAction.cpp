@@ -102,6 +102,8 @@ ClusteringAction::ClusteringAction(QObject* parent, const QString& title) :
         events().notifyDatasetChanged(targetClusterDataset);
 
         _nameAction.reset();
+
+        randomizeClusterColor();
     });
 
     const auto updateActionsReadOnly = [this]() -> void {
@@ -123,4 +125,13 @@ ClusteringAction::ClusteringAction(QObject* parent, const QString& title) :
     connect(&_nameAction, &StringAction::stringChanged, this, updateActionsReadOnly);
     connect(&_clusterDatasetPickerAction, &DatasetPickerAction::datasetPicked, this, updateActionsReadOnly);
     connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::datasetSelectionChanged, this, updateActionsReadOnly);
+
+    randomizeClusterColor();
+}
+
+void ClusteringAction::randomizeClusterColor()
+{
+    auto rng = QRandomGenerator::global();
+
+    _colorAction.setColor(QColor::fromHsl(rng->bounded(360), rng->bounded(150, 255), rng->bounded(100, 200)));
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <actions/GroupAction.h>
+#include <actions/VerticalGroupAction.h>
 #include <actions/ColorMap1DAction.h>
 #include <actions/ColorMap2DAction.h>
 
@@ -23,7 +23,7 @@ class ScatterplotPlugin;
  *
  * @author Thomas Kroes
  */
-class ColoringAction : public GroupAction
+class ColoringAction : public VerticalGroupAction
 {
     Q_OBJECT
 

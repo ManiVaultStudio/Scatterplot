@@ -5,14 +5,13 @@
 using namespace hdps::gui;
 
 PlotAction::PlotAction(QObject* parent, const QString& title) :
-    GroupAction(parent, title),
+    VerticalGroupAction(parent, title),
     _scatterplotPlugin(nullptr),
     _pointPlotAction(this, "Point"),
     _densityPlotAction(this, "Density")
 {
     setToolTip("Plot settings");
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("paint-brush"));
-    setDefaultWidgetFlags(GroupAction::Horizontal);
     setLabelSizingType(LabelSizingType::Auto);
 
     addAction(&_pointPlotAction.getSizeAction());

@@ -56,9 +56,9 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     getWidget().setFocusPolicy(Qt::ClickFocus);
 
     _primaryToolbarAction.addAction(&_settingsAction.getDatasetsAction());
-    _primaryToolbarAction.addAction(&_settingsAction.getRenderModeAction(), 100);
-    _primaryToolbarAction.addAction(&_settingsAction.getPositionAction(), 50);
-    _primaryToolbarAction.addAction(&_settingsAction.getPlotAction(), 50);
+    _primaryToolbarAction.addAction(&_settingsAction.getRenderModeAction(), 3, GroupAction::Horizontal);
+    _primaryToolbarAction.addAction(&_settingsAction.getPositionAction(), 1, GroupAction::Horizontal);
+    _primaryToolbarAction.addAction(&_settingsAction.getPlotAction(), 2, GroupAction::Horizontal);
     _primaryToolbarAction.addAction(&_settingsAction.getColoringAction());
     _primaryToolbarAction.addAction(&_settingsAction.getSubsetAction());
     _primaryToolbarAction.addAction(&_settingsAction.getClusteringAction());

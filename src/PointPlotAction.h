@@ -1,6 +1,6 @@
 #pragma once
 
-#include <actions/GroupAction.h>
+#include <actions/VerticalGroupAction.h>
 
 #include "ScalarAction.h"
 
@@ -15,7 +15,7 @@ using namespace hdps::gui;
  *
  * @author Thomas Kroes
  */
-class PointPlotAction : public GroupAction
+class PointPlotAction : public VerticalGroupAction
 {
     Q_OBJECT
 

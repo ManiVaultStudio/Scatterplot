@@ -5,12 +5,11 @@
 using namespace hdps::gui;
 
 DensityPlotAction::DensityPlotAction(QObject* parent, const QString& title) :
-    GroupAction(parent, title),
+    VerticalGroupAction(parent, title),
     _sigmaAction(this, "Sigma", 0.01f, 0.5f, DEFAULT_SIGMA, 3),
     _continuousUpdatesAction(this, "Live Updates", DEFAULT_CONTINUOUS_UPDATES)
 {
     setToolTip("Density plot settings");
-    setDefaultWidgetFlags(GroupAction::Horizontal);
     setConfigurationFlag(WidgetAction::ConfigurationFlag::NoLabelInGroup);
     setLabelSizingType(LabelSizingType::Auto);
 

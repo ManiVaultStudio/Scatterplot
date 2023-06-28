@@ -1,6 +1,6 @@
 #pragma once
 
-#include <actions/GroupAction.h>
+#include <actions/VerticalGroupAction.h>
 #include <actions/ColorAction.h>
 
 using namespace hdps::gui;
@@ -16,7 +16,7 @@ class ScatterplotPlugin;
  *
  * @author Thomas Kroes
  */
-class MiscellaneousAction : public GroupAction
+class MiscellaneousAction : public VerticalGroupAction
 {
 public:
 

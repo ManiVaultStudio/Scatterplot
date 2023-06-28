@@ -11,14 +11,13 @@ using namespace hdps;
 using namespace hdps::gui;
 
 SubsetAction::SubsetAction(QObject* parent, const QString& title) :
-    GroupAction(parent, title),
+    VerticalGroupAction(parent, title),
     _scatterplotPlugin(dynamic_cast<ScatterplotPlugin*>(parent->parent())),
     _subsetNameAction(this, "Subset name"),
     _sourceDataAction(this, "Source data"),
     _createSubsetAction(this, "Create subset")
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("crop"));
-    setDefaultWidgetFlags(GroupAction::Horizontal);
     setConnectionPermissionsToForceNone(true);
     setConfigurationFlag(WidgetAction::ConfigurationFlag::ForceCollapsedInGroup);
     setLabelSizingType(LabelSizingType::Auto);

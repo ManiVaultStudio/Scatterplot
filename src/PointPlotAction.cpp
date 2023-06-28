@@ -8,7 +8,7 @@
 using namespace gui;
 
 PointPlotAction::PointPlotAction(QObject* parent, const QString& title) :
-    GroupAction(parent, title),
+    VerticalGroupAction(parent, title),
     _scatterplotPlugin(nullptr),
     _sizeAction(this, "Point size", 0.0, 100.0, DEFAULT_POINT_SIZE),
     _opacityAction(this, "Point opacity", 0.0, 100.0, DEFAULT_POINT_OPACITY),
@@ -18,7 +18,6 @@ PointPlotAction::PointPlotAction(QObject* parent, const QString& title) :
     _lastOpacitySourceIndex(-1)
 {
     setToolTip("Point plot settings");
-    setDefaultWidgetFlags(GroupAction::Horizontal);
     setConfigurationFlag(WidgetAction::ConfigurationFlag::NoLabelInGroup);
     setLabelSizingType(LabelSizingType::Auto);
 
@@ -34,7 +33,7 @@ PointPlotAction::PointPlotAction(QObject* parent, const QString& title) :
     _opacityAction.getSourceAction().getOffsetAction().setSuffix("%");
 
     _focusSelection.setToolTip("Put focus on selected points by modulating the point opacity");
-    _focusSelection.setDefaultWidgetFlags(ToggleAction::PushButton);
+    _focusSelection.setDefaultWidgetFlags(ToggleAction::CheckBox);
 
     connect(&_sizeAction, &ScalarAction::sourceSelectionChanged, this, [this](const std::uint32_t& sourceSelectionIndex) {
         switch (sourceSelectionIndex)

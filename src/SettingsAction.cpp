@@ -47,7 +47,6 @@ SettingsAction::SettingsAction(QObject* parent, const QString& title) :
     connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, updateEnabled);
 
     _exportAction.setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("camera"));
-    _exportAction.setDefaultWidgetFlags(TriggerAction::Icon);
 }
 
 QMenu* SettingsAction::getContextMenu()

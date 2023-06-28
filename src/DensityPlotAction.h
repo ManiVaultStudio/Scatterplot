@@ -1,6 +1,6 @@
 #pragma once
 
-#include <actions/GroupAction.h>
+#include <actions/VerticalGroupAction.h>
 #include <actions/DecimalAction.h>
 #include <actions/ToggleAction.h>
 
@@ -15,7 +15,7 @@ class ScatterplotPlugin;
  *
  * @author Thomas Kroes
  */
-class DensityPlotAction : public GroupAction
+class DensityPlotAction : public VerticalGroupAction
 {
     Q_OBJECT
 

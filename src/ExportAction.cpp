@@ -25,7 +25,7 @@ const QMap<ExportAction::Scale, float> ExportAction::scaleFactors = QMap<ExportA
 });
 
 ExportAction::ExportAction(QObject* parent, const QString& title) :
-    GroupAction(parent, title),
+    VerticalGroupAction(parent, title),
     _scatterplotPlugin(nullptr),
     _dimensionSelectionAction(this, "Dimensions"),
     _targetWidthAction(this, "Width ", 1, 10000),

@@ -6,12 +6,11 @@
 using namespace hdps::gui;
 
 PositionAction::PositionAction(QObject* parent, const QString& title) :
-    GroupAction(parent, title),
+    VerticalGroupAction(parent, title),
     _xDimensionPickerAction(this, "X"),
     _yDimensionPickerAction(this, "Y")
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("ruler-combined"));
-    setDefaultWidgetFlags(GroupAction::Horizontal);
     setLabelSizingType(LabelSizingType::Auto);
 
     addAction(&_xDimensionPickerAction);

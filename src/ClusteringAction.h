@@ -20,7 +20,7 @@ class ScatterplotPlugin;
  *
  * @author Thomas Kroes
  */
-class ClusteringAction : public GroupAction
+class ClusteringAction final : public GroupAction
 {
 public:
 
@@ -35,6 +35,11 @@ protected:
 
     /** Update the state of the actions */
     void updateActions();
+
+private:
+
+    /** Come up with a pseudo-random cluster color and assign it to the color action */
+    void randomizeClusterColor();
 
 public: // Action getters
 

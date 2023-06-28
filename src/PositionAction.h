@@ -1,6 +1,6 @@
 #pragma once
 
-#include <actions/WidgetAction.h>
+#include <actions/VerticalGroupAction.h>
 
 #include <PointData/DimensionPickerAction.h>
 
@@ -16,7 +16,7 @@ using namespace hdps::gui;
  *
  * @author Thomas Kroes
  */
-class PositionAction : public GroupAction
+class PositionAction : public VerticalGroupAction
 {
     Q_OBJECT
 

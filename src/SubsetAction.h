@@ -1,6 +1,6 @@
 #pragma once
 
-#include <actions/GroupAction.h>
+#include <actions/VerticalGroupAction.h>
 #include <actions/StringAction.h>
 #include <actions/TriggerAction.h>
 #include <actions/OptionAction.h>
@@ -16,7 +16,7 @@ class ScatterplotPlugin;
  *
  * @author Thomas Kroes
  */
-class SubsetAction : public GroupAction
+class SubsetAction : public VerticalGroupAction
 {
     Q_OBJECT
 

@@ -11,7 +11,7 @@ using namespace hdps::gui;
 const QColor ColoringAction::DEFAULT_CONSTANT_COLOR = qRgb(93, 93, 225);
 
 ColoringAction::ColoringAction(QObject* parent, const QString& title) :
-    GroupAction(parent, title),
+    VerticalGroupAction(parent, title),
     _scatterplotPlugin(dynamic_cast<ScatterplotPlugin*>(parent->parent())),
     _colorByModel(this),
     _colorByAction(this, "Color by"),
@@ -21,8 +21,8 @@ ColoringAction::ColoringAction(QObject* parent, const QString& title) :
     _colorMap2DAction(this, "2D Color map")
 {
     setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("palette"));
-    setDefaultWidgetFlags(GroupAction::Horizontal);
     setLabelSizingType(LabelSizingType::Auto);
+    setConfigurationFlag(WidgetAction::ConfigurationFlag::ForceCollapsedInGroup);
 
     addAction(&_colorByAction);
     addAction(&_constantColorAction);
@@ -318,7 +318,7 @@ void ColoringAction::updateColorMapActionsReadOnly()
 {
     const auto currentIndex = _colorByAction.getCurrentIndex();
 
-    _colorMap1DAction.setEnabled(shouldEnableColorMap() && currentIndex == 2);
+    _colorMap1DAction.setEnabled(_scatterplotPlugin->getScatterplotWidget().getRenderMode() == ScatterplotWidget::LANDSCAPE ? true : shouldEnableColorMap() && currentIndex == 2);
     _colorMap2DAction.setEnabled(shouldEnableColorMap() && currentIndex == 1);
 }
 
