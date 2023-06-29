@@ -367,6 +367,7 @@ void ColoringAction::fromVariantMap(const QVariantMap& variantMap)
     _colorByAction.fromParentVariantMap(variantMap);
     _constantColorAction.fromParentVariantMap(variantMap);
     _dimensionAction.fromParentVariantMap(variantMap);
+    _colorMap1DAction.fromParentVariantMap(variantMap);
     _colorMap2DAction.fromParentVariantMap(variantMap);
 }
 
@@ -377,6 +378,7 @@ QVariantMap ColoringAction::toVariantMap() const
     _colorByAction.insertIntoVariantMap(variantMap);
     _constantColorAction.insertIntoVariantMap(variantMap);
     _dimensionAction.insertIntoVariantMap(variantMap);
+    _colorMap1DAction.insertIntoVariantMap(variantMap);
     _colorMap2DAction.insertIntoVariantMap(variantMap);
 
     return variantMap;

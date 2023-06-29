@@ -68,6 +68,8 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
 
     auto focusSelectionAction = new ToggleAction(this, "Focus selection");
 
+    focusSelectionAction->setIcon(Application::getIconFont("FontAwesome").getIcon("mouse-pointer"));
+
     connect(focusSelectionAction, &ToggleAction::toggled, this, [this](bool toggled) -> void {
         _settingsAction.getPlotAction().getPointPlotAction().getFocusSelection().setChecked(toggled);
     });
@@ -75,6 +77,15 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     connect(&_settingsAction.getPlotAction().getPointPlotAction().getFocusSelection(), &ToggleAction::toggled, this, [this, focusSelectionAction](bool toggled) -> void {
         focusSelectionAction->setChecked(toggled);
     });
+
+    const auto updateReadOnly = [this, focusSelectionAction]() {
+        focusSelectionAction->setEnabled(getScatterplotWidget().getRenderMode() == ScatterplotWidget::SCATTERPLOT && _positionDataset.isValid());
+    };
+
+    updateReadOnly();
+
+    connect(_scatterPlotWidget, &ScatterplotWidget::renderModeChanged, this, updateReadOnly);
+    connect(&_positionDataset, &Dataset<Points>::changed, this, updateReadOnly);
 
     _secondaryToolbarAction.addAction(focusSelectionAction, 2);
     _secondaryToolbarAction.addAction(&_settingsAction.getExportAction());
