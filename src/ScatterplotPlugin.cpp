@@ -65,7 +65,18 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     _primaryToolbarAction.addAction(&_settingsAction.getSelectionAction());
 
     _secondaryToolbarAction.addAction(&_settingsAction.getColoringAction().getColorMap1DAction(), 1);
-    _secondaryToolbarAction.addAction(&_settingsAction.getPlotAction().getPointPlotAction().getFocusSelection(), 2);
+
+    auto focusSelectionAction = new ToggleAction(this, "Focus selection");
+
+    connect(focusSelectionAction, &ToggleAction::toggled, this, [this](bool toggled) -> void {
+        _settingsAction.getPlotAction().getPointPlotAction().getFocusSelection().setChecked(toggled);
+    });
+
+    connect(&_settingsAction.getPlotAction().getPointPlotAction().getFocusSelection(), &ToggleAction::toggled, this, [this, focusSelectionAction](bool toggled) -> void {
+        focusSelectionAction->setChecked(toggled);
+    });
+
+    _secondaryToolbarAction.addAction(focusSelectionAction, 2);
     _secondaryToolbarAction.addAction(&_settingsAction.getExportAction());
     _secondaryToolbarAction.addAction(&_settingsAction.getMiscellaneousAction());
 

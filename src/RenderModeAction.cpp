@@ -76,13 +76,13 @@ void RenderModeAction::initialize(ScatterplotPlugin* scatterplotPlugin)
 
     setCurrentIndex(static_cast<std::int32_t>(RenderMode::ScatterPlot));
 
-    //const auto updateReadOnly = [this]() -> void {
-    //    setEnabled(_scatterplotPlugin->getPositionDataset().isValid());
-    //};
+    const auto updateReadOnly = [this]() -> void {
+        setEnabled(_scatterplotPlugin->getPositionDataset().isValid());
+    };
 
-    //updateReadOnly();
+    updateReadOnly();
 
-    //connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, updateReadOnly);
+    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, updateReadOnly);
 }
 
 QMenu* RenderModeAction::getContextMenu()

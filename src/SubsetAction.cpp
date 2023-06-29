@@ -1,5 +1,6 @@
 #include "SubsetAction.h"
 #include "ScatterplotPlugin.h"
+#include "ScatterplotWidget.h"
 
 #include <PointData/PointData.h>
 
@@ -75,6 +76,19 @@ void SubsetAction::initialize(ScatterplotPlugin* scatterplotPlugin)
     connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, onCurrentDatasetChanged);
 
     onCurrentDatasetChanged();
+
+    const auto updateReadOnly = [this]() {
+        const auto positionDataset          = _scatterplotPlugin->getPositionDataset();
+        const auto numberOfSelectedPoints   = positionDataset.isValid() ? positionDataset->getSelectionSize() : 0;
+        const auto hasSelection             = numberOfSelectedPoints >= 1;
+
+        setEnabled(_scatterplotPlugin->getScatterplotWidget().getRenderMode() == ScatterplotWidget::SCATTERPLOT && hasSelection);
+    };
+
+    updateReadOnly();
+
+    connect(&_scatterplotPlugin->getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, updateReadOnly);
+    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::dataSelectionChanged, this, updateReadOnly);
 }
 
 QMenu* SubsetAction::getContextMenu()

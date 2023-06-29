@@ -116,9 +116,9 @@ ColoringAction::ColoringAction(QObject* parent, const QString& title) :
         setEnabled(_scatterplotPlugin->getPositionDataset().isValid() && _scatterplotPlugin->getScatterplotWidget().getRenderMode() == ScatterplotWidget::SCATTERPLOT);
     };
 
-    connect(&_scatterplotPlugin->getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, updateReadOnly);
-
     updateReadOnly();
+
+    connect(&_scatterplotPlugin->getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, updateReadOnly);
 
     updateScatterplotWidgetColorMap();
     updateColorMapActionScalarRange();
