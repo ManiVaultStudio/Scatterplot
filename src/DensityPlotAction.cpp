@@ -27,7 +27,7 @@ void DensityPlotAction::initialize(ScatterplotPlugin* scatterplotPlugin)
     _scatterplotPlugin = scatterplotPlugin;
 
     const auto computeDensity = [this]() -> void {
-        if (static_cast<std::int32_t>(_scatterplotPlugin->getSettingsAction().getRenderModeAction().getCurrentIndex()) != ScatterplotWidget::RenderMode::DENSITY)
+        if (static_cast<std::int32_t>(_scatterplotPlugin->getSettingsAction().getRenderModeAction().getCurrentIndex()) == ScatterplotWidget::RenderMode::SCATTERPLOT)
             return;
 
         _scatterplotPlugin->getScatterplotWidget().setSigma(_sigmaAction.getValue());

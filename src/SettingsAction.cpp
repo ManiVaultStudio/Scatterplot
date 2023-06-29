@@ -38,7 +38,6 @@ SettingsAction::SettingsAction(QObject* parent, const QString& title) :
         _plotAction.setEnabled(enabled);
         _positionAction.setEnabled(enabled);
         _coloringAction.setEnabled(enabled);
-        _exportAction.setEnabled(enabled);
     };
 
     updateEnabled();
