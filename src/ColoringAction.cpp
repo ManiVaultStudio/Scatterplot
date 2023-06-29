@@ -91,8 +91,8 @@ ColoringAction::ColoringAction(QObject* parent, const QString& title) :
         updateColorMapActionsReadOnly();
     });
 
-    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::datasetChildAdded, this, &ColoringAction::updateColorByActionOptions);
-    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::datasetChildRemoved, this, &ColoringAction::updateColorByActionOptions);
+    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::childAdded, this, &ColoringAction::updateColorByActionOptions);
+    connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::childRemoved, this, &ColoringAction::updateColorByActionOptions);
 
     connect(&_scatterplotPlugin->getScatterplotWidget(), &ScatterplotWidget::renderModeChanged, this, &ColoringAction::updateScatterPlotWidgetColors);
     connect(&_scatterplotPlugin->getScatterplotWidget(), &ScatterplotWidget::coloringModeChanged, this, &ColoringAction::updateScatterPlotWidgetColors);
@@ -151,7 +151,7 @@ void ColoringAction::addColorDataset(const Dataset<DatasetImpl>& colorDataset)
     auto& addedDataset = _colorByModel.getDatasets().last();
 
     for (const auto& dataset : _colorByModel.getDatasets()) {
-        connect(&dataset, &Dataset<DatasetImpl>::datasetChanged, this, [this, dataset]() {
+        connect(&dataset, &Dataset<DatasetImpl>::dataChanged, this, [this, dataset]() {
             const auto currentColorDataset = getCurrentColorDataset();
 
             if (!currentColorDataset.isValid())

@@ -41,7 +41,7 @@ void ScalarAction::addDataset(const Dataset<DatasetImpl>& dataset)
 
     sourceModel.addDataset(dataset);
 
-    connect(&sourceModel.getDatasets().last(), &Dataset<DatasetImpl>::datasetChanged, this, [this, dataset]() {
+    connect(&sourceModel.getDatasets().last(), &Dataset<DatasetImpl>::dataChanged, this, [this, dataset]() {
         const auto currentDataset = getCurrentDataset();
 
         if (!currentDataset.isValid())

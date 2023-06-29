@@ -87,7 +87,7 @@ void ColorSourceModel::addDataset(const Dataset<DatasetImpl>& dataset)
     auto& addedDataset = _datasets.last();
 
     // Remove a dataset from the model when it is about to be deleted
-    connect(&addedDataset, &Dataset<DatasetImpl>::datasetAboutToBeRemoved, this, [this, &addedDataset]() {
+    connect(&addedDataset, &Dataset<DatasetImpl>::aboutToBeRemoved, this, [this, &addedDataset]() {
         removeDataset(addedDataset);
     });
 

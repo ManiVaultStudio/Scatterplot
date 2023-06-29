@@ -241,8 +241,8 @@ void ScatterplotPlugin::init()
     });
 
     connect(&_positionDataset, &Dataset<Points>::changed, this, &ScatterplotPlugin::positionDatasetChanged);
-    connect(&_positionDataset, &Dataset<Points>::datasetChanged, this, &ScatterplotPlugin::updateData);
-    connect(&_positionDataset, &Dataset<Points>::datasetSelectionChanged, this, &ScatterplotPlugin::updateSelection);
+    connect(&_positionDataset, &Dataset<Points>::dataChanged, this, &ScatterplotPlugin::updateData);
+    connect(&_positionDataset, &Dataset<Points>::dataSelectionChanged, this, &ScatterplotPlugin::updateSelection);
 }
 
 void ScatterplotPlugin::loadData(const Datasets& datasets)
@@ -374,7 +374,7 @@ void ScatterplotPlugin::selectPoints()
 
     _positionDataset->setSelectionIndices(targetSelectionIndices);
 
-    events().notifyDatasetSelectionChanged(_positionDataset->getSourceDataset<Points>());
+    events().notifyDatasetDataSelectionChanged(_positionDataset->getSourceDataset<Points>());
 }
 
 Dataset<Points>& ScatterplotPlugin::getPositionDataset()
