@@ -5,6 +5,7 @@
 #include <actions/TriggerAction.h>
 #include <actions/VerticalGroupAction.h>
 #include <actions/HorizontalGroupAction.h>
+#include <actions/ColorAction.h>
 
 using namespace hdps;
 using namespace hdps::gui;
