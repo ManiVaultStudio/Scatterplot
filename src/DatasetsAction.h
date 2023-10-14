@@ -3,7 +3,7 @@
 #include <actions/GroupAction.h>
 #include <actions/DatasetPickerAction.h>
 
-using namespace hdps::gui;
+using namespace mv::gui;
 
 class ScatterplotPlugin;
 
@@ -59,7 +59,7 @@ private:
     DatasetPickerAction	    _positionDatasetPickerAction;       /** Dataset picker action for position dataset */
     DatasetPickerAction     _colorDatasetPickerAction;          /** Dataset picker action for color dataset */
 
-    friend class hdps::AbstractActionsManager;
+    friend class mv::AbstractActionsManager;
 };
 
 Q_DECLARE_METATYPE(DatasetsAction)

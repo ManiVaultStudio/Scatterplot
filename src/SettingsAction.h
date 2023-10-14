@@ -13,7 +13,7 @@
 #include "MiscellaneousAction.h"
 #include "DatasetsAction.h"
 
-using namespace hdps::gui;
+using namespace mv::gui;
 
 class ScatterplotPlugin;
 

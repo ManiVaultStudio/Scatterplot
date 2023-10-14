@@ -6,7 +6,7 @@
 
 class ScatterplotPlugin;
 
-using namespace hdps::gui;
+using namespace mv::gui;
 
 /**
  * Point plot action class
@@ -117,7 +117,7 @@ private:
     static constexpr double DEFAULT_POINT_OPACITY   = 50.0;     /** Default point opacity */
 
     friend class ScatterplotPlugin;
-    friend class hdps::AbstractActionsManager;
+    friend class mv::AbstractActionsManager;
 };
 
 Q_DECLARE_METATYPE(PointPlotAction)

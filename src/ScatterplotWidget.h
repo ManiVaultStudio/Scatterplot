@@ -16,9 +16,9 @@
 #include <QMouseEvent>
 #include <QMenu>
 
-using namespace hdps;
-using namespace hdps::gui;
-using namespace hdps::util;
+using namespace mv;
+using namespace mv::gui;
+using namespace mv::util;
 
 class ScatterplotWidget : public QOpenGLWidget, QOpenGLFunctions_3_3_Core
 {
@@ -86,7 +86,7 @@ public:
     void setPointOpacityScalars(const std::vector<float>& pointOpacityScalars);
 
     void setScalarEffect(PointEffect effect);
-    void setPointScaling(hdps::gui::PointScaling scalingMode);
+    void setPointScaling(mv::gui::PointScaling scalingMode);
 
     void showHighlights(bool show);
 

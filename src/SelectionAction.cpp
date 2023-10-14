@@ -7,7 +7,7 @@
 #include <QHBoxLayout>
 #include <QPushButton>
 
-using namespace hdps::gui;
+using namespace mv::gui;
 
 SelectionAction::SelectionAction(QObject* parent, const QString& title) :
     GroupAction(parent, title),
@@ -18,7 +18,7 @@ SelectionAction::SelectionAction(QObject* parent, const QString& title) :
     _outlineOpacityAction(this, "Opacity", 0.0f, 100.0f, 100.0f, 1),
     _outlineHaloEnabledAction(this, "Halo")
 {
-    setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("mouse-pointer"));
+    setIcon(mv::Application::getIconFont("FontAwesome").getIcon("mouse-pointer"));
     setConfigurationFlag(WidgetAction::ConfigurationFlag::ForceCollapsedInGroup);
 
     addAction(&_pixelSelectionAction.getTypeAction());

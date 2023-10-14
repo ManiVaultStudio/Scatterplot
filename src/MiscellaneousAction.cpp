@@ -2,7 +2,7 @@
 #include "ScatterplotPlugin.h"
 #include "ScatterplotWidget.h"
 
-using namespace hdps::gui;
+using namespace mv::gui;
 
 const QColor MiscellaneousAction::DEFAULT_BACKGROUND_COLOR = qRgb(255, 255, 255);
 

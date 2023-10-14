@@ -33,8 +33,8 @@
 
 Q_PLUGIN_METADATA(IID "nl.tudelft.ScatterplotPlugin")
 
-using namespace hdps;
-using namespace hdps::util;
+using namespace mv;
+using namespace mv::util;
 
 ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     ViewPlugin(factory),
@@ -283,7 +283,7 @@ void ScatterplotPlugin::loadData(const Datasets& datasets)
 void ScatterplotPlugin::createSubset(const bool& fromSourceData /*= false*/, const QString& name /*= ""*/)
 {
     // Create the subset
-    hdps::Dataset<DatasetImpl> subset;
+    mv::Dataset<DatasetImpl> subset;
 
     if (fromSourceData)
         // Make subset from the source data, this is not the displayed data, so no restrictions here
@@ -621,7 +621,7 @@ ViewPlugin* ScatterplotPluginFactory::produce()
     return new ScatterplotPlugin(this);
 }
 
-PluginTriggerActions ScatterplotPluginFactory::getPluginTriggerActions(const hdps::Datasets& datasets) const
+PluginTriggerActions ScatterplotPluginFactory::getPluginTriggerActions(const mv::Datasets& datasets) const
 {
     PluginTriggerActions pluginTriggerActions;
 

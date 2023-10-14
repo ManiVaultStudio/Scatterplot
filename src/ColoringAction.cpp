@@ -6,7 +6,7 @@
 #include <PointData/PointData.h>
 #include <ClusterData/ClusterData.h>
 
-using namespace hdps::gui;
+using namespace mv::gui;
 
 const QColor ColoringAction::DEFAULT_CONSTANT_COLOR = qRgb(93, 93, 225);
 
@@ -20,7 +20,7 @@ ColoringAction::ColoringAction(QObject* parent, const QString& title) :
     _colorMap1DAction(this, "1D Color map"),
     _colorMap2DAction(this, "2D Color map")
 {
-    setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("palette"));
+    setIcon(mv::Application::getIconFont("FontAwesome").getIcon("palette"));
     setLabelSizingType(LabelSizingType::Auto);
     setConfigurationFlag(WidgetAction::ConfigurationFlag::ForceCollapsedInGroup);
 

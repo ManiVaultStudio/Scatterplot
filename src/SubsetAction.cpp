@@ -8,8 +8,8 @@
 
 #include <QMenu>
 
-using namespace hdps;
-using namespace hdps::gui;
+using namespace mv;
+using namespace mv::gui;
 
 SubsetAction::SubsetAction(QObject* parent, const QString& title) :
     VerticalGroupAction(parent, title),
@@ -18,7 +18,7 @@ SubsetAction::SubsetAction(QObject* parent, const QString& title) :
     _sourceDataAction(this, "Source data"),
     _createSubsetAction(this, "Create subset")
 {
-    setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("crop"));
+    setIcon(mv::Application::getIconFont("FontAwesome").getIcon("crop"));
     setConnectionPermissionsToForceNone(true);
     setConfigurationFlag(WidgetAction::ConfigurationFlag::ForceCollapsedInGroup);
     setLabelSizingType(LabelSizingType::Auto);

@@ -3,7 +3,7 @@
 #include <actions/OptionAction.h>
 #include <actions/ToggleAction.h>
 
-using namespace hdps::gui;
+using namespace mv::gui;
 
 class ScatterplotPlugin;
 
@@ -87,7 +87,7 @@ private:
     ToggleAction        _densityPlotAction;     /** Trigger action for activating the density plot render mode */
     ToggleAction        _contourPlotAction;     /** Trigger action for activating the contour plot render mode */
 
-    friend class hdps::AbstractActionsManager;
+    friend class mv::AbstractActionsManager;
 };
 
 Q_DECLARE_METATYPE(RenderModeAction)

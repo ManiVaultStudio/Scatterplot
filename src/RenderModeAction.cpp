@@ -2,7 +2,7 @@
 #include "ScatterplotPlugin.h"
 #include "ScatterplotWidget.h"
 
-using namespace hdps::gui;
+using namespace mv::gui;
 
 RenderModeAction::RenderModeAction(QObject* parent, const QString& title) :
     OptionAction(parent, title, { "Scatter", "Density", "Contour" }),
@@ -11,7 +11,7 @@ RenderModeAction::RenderModeAction(QObject* parent, const QString& title) :
     _densityPlotAction(this, "Density"),
     _contourPlotAction(this, "Contour")
 {
-    setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("image"));
+    setIcon(mv::Application::getIconFont("FontAwesome").getIcon("image"));
     setDefaultWidgetFlags(OptionAction::HorizontalButtons);
     setEnabled(false);
 

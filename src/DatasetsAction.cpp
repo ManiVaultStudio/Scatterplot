@@ -7,8 +7,8 @@
 
 #include <QMenu>
 
-using namespace hdps;
-using namespace hdps::gui;
+using namespace mv;
+using namespace mv::gui;
 
 DatasetsAction::DatasetsAction(QObject* parent, const QString& title) :
     GroupAction(parent, title),
@@ -16,7 +16,7 @@ DatasetsAction::DatasetsAction(QObject* parent, const QString& title) :
     _positionDatasetPickerAction(this, "Position"),
     _colorDatasetPickerAction(this, "Color")
 {
-    setIcon(hdps::Application::getIconFont("FontAwesome").getIcon("database"));
+    setIcon(mv::Application::getIconFont("FontAwesome").getIcon("database"));
     setToolTip("Manage loaded datasets for position and color");
     setConfigurationFlag(WidgetAction::ConfigurationFlag::ForceCollapsedInGroup);
     setLabelSizingType(LabelSizingType::Auto);
@@ -24,7 +24,7 @@ DatasetsAction::DatasetsAction(QObject* parent, const QString& title) :
     addAction(&_positionDatasetPickerAction);
     addAction(&_colorDatasetPickerAction);
 
-    _positionDatasetPickerAction.setDatasetsFilterFunction([](const hdps::Datasets& datasets) -> Datasets {
+    _positionDatasetPickerAction.setDatasetsFilterFunction([](const mv::Datasets& datasets) -> Datasets {
         Datasets pointDatasets;
 
         for (auto dataset : datasets)
@@ -34,7 +34,7 @@ DatasetsAction::DatasetsAction(QObject* parent, const QString& title) :
         return pointDatasets;
     });
 
-    _colorDatasetPickerAction.setDatasetsFilterFunction([](const hdps::Datasets& datasets) -> Datasets {
+    _colorDatasetPickerAction.setDatasetsFilterFunction([](const mv::Datasets& datasets) -> Datasets {
         Datasets colorDatasets;
 
         for (auto dataset : datasets)

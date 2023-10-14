@@ -6,8 +6,8 @@
 
 #include <QHBoxLayout>
 
-using namespace hdps;
-using namespace hdps::gui;
+using namespace mv;
+using namespace mv::gui;
 
 ClusteringAction::ClusteringAction(QObject* parent, const QString& title) :
     GroupAction(parent, title),
@@ -53,7 +53,7 @@ ClusteringAction::ClusteringAction(QObject* parent, const QString& title) :
     _clusterDatasetWizardAction.addAction(&_clusterDatasetNameAction);
     _clusterDatasetWizardAction.addAction(&_createClusterDatasetAction);
 
-    _clusterDatasetPickerAction.setDatasetsFilterFunction([this](const hdps::Datasets& datasets) ->hdps::Datasets {
+    _clusterDatasetPickerAction.setDatasetsFilterFunction([this](const mv::Datasets& datasets) ->mv::Datasets {
         Datasets clusterDatasets;
 
         for (auto dataset : datasets)

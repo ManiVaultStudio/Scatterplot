@@ -12,7 +12,7 @@
 #include <QLabel>
 #include <QStackedWidget>
 
-using namespace hdps::gui;
+using namespace mv::gui;
 
 class ScatterplotPlugin;
 
@@ -139,7 +139,7 @@ private:
     static const QColor DEFAULT_CONSTANT_COLOR;
 
     friend class ScatterplotPlugin;
-    friend class hdps::AbstractActionsManager;
+    friend class mv::AbstractActionsManager;
 };
 
 Q_DECLARE_METATYPE(ColoringAction)

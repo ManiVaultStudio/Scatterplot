@@ -247,7 +247,7 @@ void ScatterplotWidget::setPointOpacityScalars(const std::vector<float>& pointOp
     update();
 }
 
-void ScatterplotWidget::setPointScaling(hdps::gui::PointScaling scalingMode)
+void ScatterplotWidget::setPointScaling(mv::gui::PointScaling scalingMode)
 {
     _pointRenderer.setPointScaling(scalingMode);
 
@@ -268,7 +268,7 @@ void ScatterplotWidget::setSigma(const float sigma)
     update();
 }
 
-hdps::Vector3f ScatterplotWidget::getColorMapRange() const
+mv::Vector3f ScatterplotWidget::getColorMapRange() const
 {
     switch (_renderMode) {
         case SCATTERPLOT:
