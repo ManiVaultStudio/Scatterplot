@@ -43,6 +43,30 @@ PositionAction::PositionAction(QObject* parent, const QString& title) :
         _yDimensionPickerAction.setCurrentDimensionIndex(yIndex);
     });
 
+    connect(&scatterplotPlugin->getPositionDataset(), &Dataset<Points>::dataDimensionsChanged, this, [this, scatterplotPlugin]() {
+        // if the new number of dimensions allows it, keep the previous dimension indices
+        auto xDim = _xDimensionPickerAction.getCurrentDimensionIndex();
+        auto yDim = _yDimensionPickerAction.getCurrentDimensionIndex();
+
+        _xDimensionPickerAction.setPointsDataset(scatterplotPlugin->getPositionDataset());
+        _yDimensionPickerAction.setPointsDataset(scatterplotPlugin->getPositionDataset());
+
+        if (static_cast<uint32_t>(xDim) < _xDimensionPickerAction.getNumberOfDimensions())
+            _xDimensionPickerAction.setCurrentDimensionIndex(xDim);
+        else
+            _xDimensionPickerAction.setCurrentDimensionIndex(0);
+
+        if (static_cast<uint32_t>(yDim) < _yDimensionPickerAction.getNumberOfDimensions())
+            _yDimensionPickerAction.setCurrentDimensionIndex(yDim);
+        else
+        {
+            const auto yIndex = _xDimensionPickerAction.getNumberOfDimensions() >= 2 ? 1 : 0;
+
+            _yDimensionPickerAction.setCurrentDimensionIndex(yIndex);
+        }
+
+    });
+
     const auto updateReadOnly = [this, scatterplotPlugin]() -> void {
         setEnabled(scatterplotPlugin->getPositionDataset().isValid());
     };
