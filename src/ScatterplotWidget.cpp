@@ -81,11 +81,29 @@ ScatterplotWidget::ScatterplotWidget() :
 
     setFormat(surfaceFormat);
     
-    // we connect screenChanged to updating the pixel ratio
-    // this is necessary in case the window is moved between hi and low dpi screens
+    // Call updatePixelRatio when the window is moved between hi and low dpi screens
     // e.g., from a laptop display to a projector
-    winId(); // This is needed to produce a valid windowHandle
-    QObject::connect(windowHandle(), &QWindow::screenChanged, this, &ScatterplotWidget::updatePixelRatio);
+    // Wait with the connection until we are sure that the window is created
+    connect(this, &ScatterplotWidget::created, this, [this](){
+        [[maybe_unused]] auto windowID = this->window()->winId(); // This is needed to produce a valid windowHandle on some systems
+
+        QWindow* winHandle = windowHandle();
+
+        // On some systems we might need to use a different windowHandle
+        if(!winHandle)
+        {
+            const QWidget* nativeParent = nativeParentWidget();
+            winHandle = nativeParent->windowHandle();
+        }
+        
+        if(winHandle == nullptr)
+        {
+            qDebug() << "ScatterplotWidget: Not connecting updatePixelRatio - could not get window handle";
+            return;
+        }
+
+        QObject::connect(winHandle, &QWindow::screenChanged, this, &ScatterplotWidget::updatePixelRatio, Qt::UniqueConnection);
+    });
 }
 
 bool ScatterplotWidget::isInitialized()
