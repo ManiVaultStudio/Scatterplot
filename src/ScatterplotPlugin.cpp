@@ -538,6 +538,7 @@ void ScatterplotPlugin::updateData()
         updateSelection();
     }
     else {
+        _numPoints = 0;
         _positions.clear();
         _scatterPlotWidget->setData(&_positions);
     }
