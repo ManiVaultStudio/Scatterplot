@@ -559,7 +559,7 @@ void ScatterplotPlugin::updateSelection()
 
     highlights.resize(_positionDataset->getNumPoints(), 0);
 
-    for (int i = 0; i < selected.size(); i++)
+    for (std::size_t i = 0; i < selected.size(); i++)
         highlights[i] = selected[i] ? 1 : 0;
 
     _scatterPlotWidget->setHighlights(highlights, static_cast<std::int32_t>(selection->indices.size()));
