@@ -446,8 +446,7 @@ void ScatterplotPlugin::loadColors(const Dataset<Points>& points, const std::uin
     }
 
     // Populate point scalars
-    if (dimensionIndex >= 0)
-        points->extractDataForDimension(scalars, dimensionIndex);
+    points->extractDataForDimension(scalars, dimensionIndex);
 
     // Assign scalars and scalar effect
     _scatterPlotWidget->setScalars(scalars);
