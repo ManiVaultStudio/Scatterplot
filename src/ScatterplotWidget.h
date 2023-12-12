@@ -243,9 +243,6 @@ private slots:
 private:
     PointRenderer           _pointRenderer;                     
     DensityRenderer         _densityRenderer;                   
-    const Matrix3f          _toClipCoordinates = Matrix3f(2, 0, 0, 2, -1, -1);
-    Matrix3f                toNormalisedCoordinates;
-    Matrix3f                toIsotropicCoordinates;
     bool                    _isInitialized;
     RenderMode              _renderMode;
     QColor                  _backgroundColor;
