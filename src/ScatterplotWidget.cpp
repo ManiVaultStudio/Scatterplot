@@ -35,9 +35,15 @@ namespace
 
 ScatterplotWidget::ScatterplotWidget() :
     QOpenGLWidget(),
-    _densityRenderer(DensityRenderer::RenderMode::DENSITY),
-    _backgroundColor(1, 1, 1),
     _pointRenderer(),
+    _densityRenderer(DensityRenderer::RenderMode::DENSITY),
+    _isInitialized(false),
+    _renderMode(SCATTERPLOT),
+    _backgroundColor(1, 1, 1),
+    _coloringMode(ColoringMode::Constant),
+    _windowSize(),
+    _dataBounds(),
+    _colorMapImage(),
     _pixelSelectionTool(this),
     _pixelRatio(1.0)
 {

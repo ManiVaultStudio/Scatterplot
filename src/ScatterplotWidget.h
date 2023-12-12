@@ -241,15 +241,15 @@ private slots:
     void updatePixelRatio();
 
 private:
-    const Matrix3f          toClipCoordinates = Matrix3f(2, 0, 0, 2, -1, -1);
-    Matrix3f                toNormalisedCoordinates;
-    Matrix3f                toIsotropicCoordinates;
-    bool                    _isInitialized = false;
-    RenderMode              _renderMode = SCATTERPLOT;
-    QColor                  _backgroundColor;
-    ColoringMode            _coloringMode = ColoringMode::Constant;
     PointRenderer           _pointRenderer;                     
     DensityRenderer         _densityRenderer;                   
+    const Matrix3f          _toClipCoordinates = Matrix3f(2, 0, 0, 2, -1, -1);
+    Matrix3f                toNormalisedCoordinates;
+    Matrix3f                toIsotropicCoordinates;
+    bool                    _isInitialized;
+    RenderMode              _renderMode;
+    QColor                  _backgroundColor;
+    ColoringMode            _coloringMode;
     QSize                   _windowSize;                        /** Size of the scatterplot widget */
     Bounds                  _dataBounds;                        /** Bounds of the loaded data */
     QImage                  _colorMapImage;
