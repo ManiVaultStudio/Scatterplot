@@ -97,7 +97,6 @@ public:
 
 private:
     void updateData();
-    void calculatePositions(const Points& points);
     void updateSelection();
 
 public: // Serialization

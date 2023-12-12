@@ -531,7 +531,7 @@ void ScatterplotPlugin::updateData()
         _numPoints = _positionDataset->getNumPoints();
 
         // Extract 2-dimensional points from the data set based on the selected dimensions
-        calculatePositions(*_positionDataset);
+        _positionDataset->extractDataForDimensions(_positions, xDim, yDim);
 
         // Pass the 2D points to the scatter plot widget
         _scatterPlotWidget->setData(&_positions);
@@ -542,11 +542,6 @@ void ScatterplotPlugin::updateData()
         _positions.clear();
         _scatterPlotWidget->setData(&_positions);
     }
-}
-
-void ScatterplotPlugin::calculatePositions(const Points& points)
-{
-    points.extractDataForDimensions(_positions, _settingsAction.getPositionAction().getDimensionX(), _settingsAction.getPositionAction().getDimensionY());
 }
 
 void ScatterplotPlugin::updateSelection()
