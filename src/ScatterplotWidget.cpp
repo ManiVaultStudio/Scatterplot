@@ -1,7 +1,6 @@
 #include "ScatterplotWidget.h"
 #include "Application.h"
 
-#include "util/PixelSelectionTool.h"
 #include "util/Math.h"
 #include "util/Exception.h"
 
@@ -100,7 +99,7 @@ ScatterplotWidget::ScatterplotWidget() :
     });
 }
 
-bool ScatterplotWidget::isInitialized()
+bool ScatterplotWidget::isInitialized() const
 {
     return _isInitialized;
 }
@@ -547,9 +546,6 @@ void ScatterplotWidget::resizeGL(int w, int h)
 void ScatterplotWidget::paintGL()
 {
     try {
-        const auto areaPixmap   = _pixelSelectionTool.getAreaPixmap();
-        const auto shapePixmap  = _pixelSelectionTool.getShapePixmap();
-
         QPainter painter;
 
         // Begin mixed OpenGL/native painting
@@ -588,6 +584,8 @@ void ScatterplotWidget::paintGL()
         
         // Draw the pixel selection tool overlays if the pixel selection tool is enabled
         if (_pixelSelectionTool.isEnabled()) {
+            const auto areaPixmap   = _pixelSelectionTool.getAreaPixmap();
+            const auto shapePixmap  = _pixelSelectionTool.getShapePixmap();
             painter.drawPixmap(rect(), areaPixmap);
             painter.drawPixmap(rect(), shapePixmap);
         }

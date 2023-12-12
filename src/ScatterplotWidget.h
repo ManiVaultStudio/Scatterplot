@@ -43,7 +43,7 @@ public:
     ~ScatterplotWidget();
 
     /** Returns true when the widget was initialized and is ready to be used. */
-    bool isInitialized();
+    bool isInitialized() const;
 
     /** Get/set render mode */
     RenderMode getRenderMode() const;
