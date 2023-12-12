@@ -38,7 +38,7 @@ ScatterplotWidget::ScatterplotWidget() :
     _densityRenderer(DensityRenderer::RenderMode::DENSITY),
     _isInitialized(false),
     _renderMode(SCATTERPLOT),
-    _backgroundColor(1, 1, 1),
+    _backgroundColor(255, 255, 255, 255),
     _coloringMode(ColoringMode::Constant),
     _windowSize(),
     _dataBounds(),
