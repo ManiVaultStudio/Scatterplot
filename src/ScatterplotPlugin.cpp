@@ -38,12 +38,12 @@ using namespace mv::util;
 
 ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     ViewPlugin(factory),
+    _dropWidget(nullptr),
+    _scatterPlotWidget(new ScatterplotWidget()),
     _positionDataset(),
     _positionSourceDataset(),
     _positions(),
     _numPoints(0),
-    _scatterPlotWidget(new ScatterplotWidget()),
-    _dropWidget(nullptr),
     _settingsAction(this, "Settings"),
     _primaryToolbarAction(this, "Primary Toolbar"),
     _secondaryToolbarAction(this, "Secondary Toolbar"),

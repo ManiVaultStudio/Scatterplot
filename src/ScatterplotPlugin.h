@@ -114,20 +114,22 @@ public: // Serialization
     QVariantMap toVariantMap() const override;
 
 private:
+    mv::gui::DropWidget*            _dropWidget;                /** Widget for dropping datasets */
+    ScatterplotWidget*              _scatterPlotWidget;         /** THe visualization widget */
+
     Dataset<Points>                 _positionDataset;           /** Smart pointer to points dataset for point position */
     Dataset<Points>                 _positionSourceDataset;     /** Smart pointer to source of the points dataset for point position (if any) */
-    std::vector<mv::Vector2f>     _positions;                 /** Point positions */
+    std::vector<mv::Vector2f>       _positions;                 /** Point positions */
     unsigned int                    _numPoints;                 /** Number of point positions */
+
+    SettingsAction                  _settingsAction;            /** Group action for all settings */
+    HorizontalToolbarAction         _primaryToolbarAction;      /** Horizontal toolbar for primary content */
+    HorizontalToolbarAction         _secondaryToolbarAction;    /** Secondary toolbar for secondary content */
+
     QTimer                          _selectPointsTimer;         /** Timer to limit the refresh rate of selection updates */
 
     static const std::int32_t LAZY_UPDATE_INTERVAL = 2;
 
-protected:
-    ScatterplotWidget*          _scatterPlotWidget;         /** THe visualization widget */
-    mv::gui::DropWidget*      _dropWidget;                /** Widget for dropping datasets */
-    SettingsAction              _settingsAction;            /** Group action for all settings */
-    HorizontalToolbarAction     _primaryToolbarAction;      /** Horizontal toolbar for primary content */
-    HorizontalToolbarAction     _secondaryToolbarAction;    /** Secondary toolbar for secondary content */
 };
 
 // =============================================================================
