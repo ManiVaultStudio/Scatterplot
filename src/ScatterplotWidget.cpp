@@ -45,8 +45,6 @@ ScatterplotWidget::ScatterplotWidget() :
     setMouseTracking(true);
     setFocusPolicy(Qt::ClickFocus);
 
-    _pointRenderer.setPointScaling(Absolute);
-
     // Configure pixel selection tool
     _pixelSelectionTool.setEnabled(true);
     _pixelSelectionTool.setMainColor(QColor(Qt::black));
@@ -507,6 +505,7 @@ void ScatterplotWidget::initializeGL()
     // Set a default color map for both renderers
     _pointRenderer.setScalarEffect(PointEffect::Color);
 
+    _pointRenderer.setPointScaling(Absolute);
     _pointRenderer.setSelectionOutlineColor(Vector3f(1, 0, 0));
 
     // OpenGL is initialized
