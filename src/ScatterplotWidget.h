@@ -11,7 +11,7 @@
 #include "graphics/Selection.h"
 
 #include <QOpenGLWidget>
-#include <QOpenGLFunctions_3_3_Core>
+#include <QOpenGLFunctions>
 
 #include <QMouseEvent>
 #include <QMenu>
@@ -20,7 +20,7 @@ using namespace mv;
 using namespace mv::gui;
 using namespace mv::util;
 
-class ScatterplotWidget : public QOpenGLWidget, QOpenGLFunctions_3_3_Core
+class ScatterplotWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
     Q_OBJECT
 

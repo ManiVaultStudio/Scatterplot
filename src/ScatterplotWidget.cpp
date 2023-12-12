@@ -34,6 +34,7 @@ namespace
 }
 
 ScatterplotWidget::ScatterplotWidget() :
+    QOpenGLWidget(),
     _densityRenderer(DensityRenderer::RenderMode::DENSITY),
     _backgroundColor(1, 1, 1),
     _pointRenderer(),
@@ -55,27 +56,16 @@ ScatterplotWidget::ScatterplotWidget() :
     });
 
     QSurfaceFormat surfaceFormat;
-
     surfaceFormat.setRenderableType(QSurfaceFormat::OpenGL);
-
-    // Ask for an different OpenGL versions depending on OS
-#if defined(__APPLE__) 
-    surfaceFormat.setVersion(3, 3); // https://support.apple.com/en-us/101525
+    surfaceFormat.setVersion(3, 3); 
     surfaceFormat.setProfile(QSurfaceFormat::CoreProfile);
-#elif defined(__linux__ )
-    surfaceFormat.setVersion(4, 2); // glxinfo | grep "OpenGL version"
-    surfaceFormat.setProfile(QSurfaceFormat::CompatibilityProfile);
-#else
-    surfaceFormat.setVersion(4, 3);
-    surfaceFormat.setProfile(QSurfaceFormat::CoreProfile);
-#endif
+    surfaceFormat.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
+    surfaceFormat.setSamples(16);
+    surfaceFormat.setStencilBufferSize(8);
 
 #ifdef _DEBUG
     surfaceFormat.setOption(QSurfaceFormat::DebugContext);
 #endif
-
-    surfaceFormat.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
-    surfaceFormat.setSamples(16);
 
     setFormat(surfaceFormat);
     
