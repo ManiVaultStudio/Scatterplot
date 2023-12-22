@@ -20,7 +20,7 @@ using namespace mv;
 using namespace mv::gui;
 using namespace mv::util;
 
-class ScatterplotWidget : public QOpenGLWidget, QOpenGLFunctions_3_3_Core
+class ScatterplotWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
 {
     Q_OBJECT
 
@@ -43,7 +43,7 @@ public:
     ~ScatterplotWidget();
 
     /** Returns true when the widget was initialized and is ready to be used. */
-    bool isInitialized();
+    bool isInitialized() const;
 
     /** Get/set render mode */
     RenderMode getRenderMode() const;
@@ -191,6 +191,12 @@ protected:
     void paintGL()              Q_DECL_OVERRIDE;
     void cleanup();
     
+    void showEvent(QShowEvent* event) Q_DECL_OVERRIDE
+    {
+        emit created();
+        QWidget::showEvent(event);
+    }
+
 public: // Const access to renderers
 
     const PointRenderer& getPointRenderer() const { 
@@ -208,6 +214,7 @@ public:
 
 signals:
     void initialized();
+    void created();
 
     /**
      * Signals that the render mode changed
@@ -234,15 +241,12 @@ private slots:
     void updatePixelRatio();
 
 private:
-    const Matrix3f          toClipCoordinates = Matrix3f(2, 0, 0, 2, -1, -1);
-    Matrix3f                toNormalisedCoordinates;
-    Matrix3f                toIsotropicCoordinates;
-    bool                    _isInitialized = false;
-    RenderMode              _renderMode = SCATTERPLOT;
-    QColor                  _backgroundColor;
-    ColoringMode            _coloringMode = ColoringMode::Constant;
     PointRenderer           _pointRenderer;                     
     DensityRenderer         _densityRenderer;                   
+    bool                    _isInitialized;
+    RenderMode              _renderMode;
+    QColor                  _backgroundColor;
+    ColoringMode            _coloringMode;
     QSize                   _windowSize;                        /** Size of the scatterplot widget */
     Bounds                  _dataBounds;                        /** Bounds of the loaded data */
     QImage                  _colorMapImage;

@@ -32,17 +32,6 @@ PositionAction::PositionAction(QObject* parent, const QString& title) :
         scatterplotPlugin->setYDimension(currentDimensionIndex);
     });
 
-    connect(&scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, [this, scatterplotPlugin]() {
-        _xDimensionPickerAction.setPointsDataset(scatterplotPlugin->getPositionDataset());
-        _yDimensionPickerAction.setPointsDataset(scatterplotPlugin->getPositionDataset());
-
-        _xDimensionPickerAction.setCurrentDimensionIndex(0);
-
-        const auto yIndex = _xDimensionPickerAction.getNumberOfDimensions() >= 2 ? 1 : 0;
-
-        _yDimensionPickerAction.setCurrentDimensionIndex(yIndex);
-    });
-
     connect(&scatterplotPlugin->getPositionDataset(), &Dataset<Points>::dataDimensionsChanged, this, [this, scatterplotPlugin]() {
         // if the new number of dimensions allows it, keep the previous dimension indices
         auto xDim = _xDimensionPickerAction.getCurrentDimensionIndex();
@@ -73,7 +62,19 @@ PositionAction::PositionAction(QObject* parent, const QString& title) :
 
     updateReadOnly();
 
-    connect(&scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, updateReadOnly);
+    connect(&scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, [this, scatterplotPlugin, updateReadOnly](mv::DatasetImpl* dataset) {
+        updateReadOnly();
+
+        _xDimensionPickerAction.setPointsDataset(scatterplotPlugin->getPositionDataset());
+        _yDimensionPickerAction.setPointsDataset(scatterplotPlugin->getPositionDataset());
+
+        _xDimensionPickerAction.setCurrentDimensionIndex(0);
+
+        const auto yIndex = _xDimensionPickerAction.getNumberOfDimensions() >= 2 ? 1 : 0;
+
+        _yDimensionPickerAction.setCurrentDimensionIndex(yIndex);
+    });
+
 }
 
 QMenu* PositionAction::getContextMenu(QWidget* parent /*= nullptr*/)

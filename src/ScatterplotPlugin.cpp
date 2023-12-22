@@ -38,12 +38,12 @@ using namespace mv::util;
 
 ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     ViewPlugin(factory),
+    _dropWidget(nullptr),
+    _scatterPlotWidget(new ScatterplotWidget()),
     _positionDataset(),
     _positionSourceDataset(),
     _positions(),
     _numPoints(0),
-    _scatterPlotWidget(new ScatterplotWidget()),
-    _dropWidget(nullptr),
     _settingsAction(this, "Settings"),
     _primaryToolbarAction(this, "Primary Toolbar"),
     _secondaryToolbarAction(this, "Secondary Toolbar"),
@@ -446,8 +446,7 @@ void ScatterplotPlugin::loadColors(const Dataset<Points>& points, const std::uin
     }
 
     // Populate point scalars
-    if (dimensionIndex >= 0)
-        points->extractDataForDimension(scalars, dimensionIndex);
+    points->extractDataForDimension(scalars, dimensionIndex);
 
     // Assign scalars and scalar effect
     _scatterPlotWidget->setScalars(scalars);
@@ -531,7 +530,7 @@ void ScatterplotPlugin::updateData()
         _numPoints = _positionDataset->getNumPoints();
 
         // Extract 2-dimensional points from the data set based on the selected dimensions
-        calculatePositions(*_positionDataset);
+        _positionDataset->extractDataForDimensions(_positions, xDim, yDim);
 
         // Pass the 2D points to the scatter plot widget
         _scatterPlotWidget->setData(&_positions);
@@ -539,14 +538,10 @@ void ScatterplotPlugin::updateData()
         updateSelection();
     }
     else {
+        _numPoints = 0;
         _positions.clear();
         _scatterPlotWidget->setData(&_positions);
     }
-}
-
-void ScatterplotPlugin::calculatePositions(const Points& points)
-{
-    points.extractDataForDimensions(_positions, _settingsAction.getPositionAction().getDimensionX(), _settingsAction.getPositionAction().getDimensionY());
 }
 
 void ScatterplotPlugin::updateSelection()
@@ -565,7 +560,7 @@ void ScatterplotPlugin::updateSelection()
 
     highlights.resize(_positionDataset->getNumPoints(), 0);
 
-    for (int i = 0; i < selected.size(); i++)
+    for (std::size_t i = 0; i < selected.size(); i++)
         highlights[i] = selected[i] ? 1 : 0;
 
     _scatterPlotWidget->setHighlights(highlights, static_cast<std::int32_t>(selection->indices.size()));

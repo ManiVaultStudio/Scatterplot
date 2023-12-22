@@ -1,7 +1,6 @@
 #include "ScatterplotWidget.h"
 #include "Application.h"
 
-#include "util/PixelSelectionTool.h"
 #include "util/Math.h"
 #include "util/Exception.h"
 
@@ -34,9 +33,16 @@ namespace
 }
 
 ScatterplotWidget::ScatterplotWidget() :
-    _densityRenderer(DensityRenderer::RenderMode::DENSITY),
-    _backgroundColor(1, 1, 1),
+    QOpenGLWidget(),
     _pointRenderer(),
+    _densityRenderer(DensityRenderer::RenderMode::DENSITY),
+    _isInitialized(false),
+    _renderMode(SCATTERPLOT),
+    _backgroundColor(255, 255, 255, 255),
+    _coloringMode(ColoringMode::Constant),
+    _windowSize(),
+    _dataBounds(),
+    _colorMapImage(),
     _pixelSelectionTool(this),
     _pixelRatio(1.0)
 {
@@ -44,8 +50,6 @@ ScatterplotWidget::ScatterplotWidget() :
     setAcceptDrops(true);
     setMouseTracking(true);
     setFocusPolicy(Qt::ClickFocus);
-
-    _pointRenderer.setPointScaling(Absolute);
 
     // Configure pixel selection tool
     _pixelSelectionTool.setEnabled(true);
@@ -57,38 +61,45 @@ ScatterplotWidget::ScatterplotWidget() :
     });
 
     QSurfaceFormat surfaceFormat;
-
     surfaceFormat.setRenderableType(QSurfaceFormat::OpenGL);
-
-    // Ask for an different OpenGL versions depending on OS
-#if defined(__APPLE__) 
-    surfaceFormat.setVersion(3, 3); // https://support.apple.com/en-us/101525
+    surfaceFormat.setVersion(3, 3); 
     surfaceFormat.setProfile(QSurfaceFormat::CoreProfile);
-#elif defined(__linux__ )
-    surfaceFormat.setVersion(4, 2); // glxinfo | grep "OpenGL version"
-    surfaceFormat.setProfile(QSurfaceFormat::CompatibilityProfile);
-#else
-    surfaceFormat.setVersion(4, 3);
-    surfaceFormat.setProfile(QSurfaceFormat::CoreProfile);
-#endif
+    surfaceFormat.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
+    surfaceFormat.setSamples(16);
+    surfaceFormat.setStencilBufferSize(8);
 
 #ifdef _DEBUG
     surfaceFormat.setOption(QSurfaceFormat::DebugContext);
 #endif
 
-    surfaceFormat.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
-    surfaceFormat.setSamples(16);
-
     setFormat(surfaceFormat);
     
-    // we connect screenChanged to updating the pixel ratio
-    // this is necessary in case the window is moved between hi and low dpi screens
+    // Call updatePixelRatio when the window is moved between hi and low dpi screens
     // e.g., from a laptop display to a projector
-    winId(); // This is needed to produce a valid windowHandle
-    QObject::connect(windowHandle(), &QWindow::screenChanged, this, &ScatterplotWidget::updatePixelRatio);
+    // Wait with the connection until we are sure that the window is created
+    connect(this, &ScatterplotWidget::created, this, [this](){
+        [[maybe_unused]] auto windowID = this->window()->winId(); // This is needed to produce a valid windowHandle on some systems
+
+        QWindow* winHandle = windowHandle();
+
+        // On some systems we might need to use a different windowHandle
+        if(!winHandle)
+        {
+            const QWidget* nativeParent = nativeParentWidget();
+            winHandle = nativeParent->windowHandle();
+        }
+        
+        if(winHandle == nullptr)
+        {
+            qDebug() << "ScatterplotWidget: Not connecting updatePixelRatio - could not get window handle";
+            return;
+        }
+
+        QObject::connect(winHandle, &QWindow::screenChanged, this, &ScatterplotWidget::updatePixelRatio, Qt::UniqueConnection);
+    });
 }
 
-bool ScatterplotWidget::isInitialized()
+bool ScatterplotWidget::isInitialized() const
 {
     return _isInitialized;
 }
@@ -489,6 +500,7 @@ void ScatterplotWidget::initializeGL()
     // Set a default color map for both renderers
     _pointRenderer.setScalarEffect(PointEffect::Color);
 
+    _pointRenderer.setPointScaling(Absolute);
     _pointRenderer.setSelectionOutlineColor(Vector3f(1, 0, 0));
 
     // OpenGL is initialized
@@ -516,27 +528,11 @@ void ScatterplotWidget::resizeGL(int w, int h)
 
     _pointRenderer.resize(QSize(w, h));
     _densityRenderer.resize(QSize(w, h));
-
-    // Set matrix for normalizing from pixel coordinates to [0, 1]
-    toNormalisedCoordinates = Matrix3f(1.0f / w, 0, 0, 1.0f / h, 0, 0);
-
-    // Take the smallest dimensions in order to calculate the aspect ratio
-    int size = w < h ? w : h;
-
-    float wAspect = (float)w / size;
-    float hAspect = (float)h / size;
-    float wDiff = ((wAspect - 1) / 2.0);
-    float hDiff = ((hAspect - 1) / 2.0);
-
-    toIsotropicCoordinates = Matrix3f(wAspect, 0, 0, hAspect, -wDiff, -hDiff);
 }
 
 void ScatterplotWidget::paintGL()
 {
     try {
-        const auto areaPixmap   = _pixelSelectionTool.getAreaPixmap();
-        const auto shapePixmap  = _pixelSelectionTool.getShapePixmap();
-
         QPainter painter;
 
         // Begin mixed OpenGL/native painting
@@ -575,6 +571,8 @@ void ScatterplotWidget::paintGL()
         
         // Draw the pixel selection tool overlays if the pixel selection tool is enabled
         if (_pixelSelectionTool.isEnabled()) {
+            const auto areaPixmap   = _pixelSelectionTool.getAreaPixmap();
+            const auto shapePixmap  = _pixelSelectionTool.getShapePixmap();
             painter.drawPixmap(rect(), areaPixmap);
             painter.drawPixmap(rect(), shapePixmap);
         }

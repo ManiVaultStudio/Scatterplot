@@ -173,8 +173,6 @@ QMenu* PointPlotAction::getContextMenu()
 
     auto menu = new QMenu("Plot settings");
 
-    const auto renderMode = _scatterplotPlugin->getScatterplotWidget().getRenderMode();
-
     const auto addActionToMenu = [menu](QAction* action) {
         auto actionMenu = new QMenu(action->text());
 
