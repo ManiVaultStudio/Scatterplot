@@ -32,7 +32,15 @@ PositionAction::PositionAction(QObject* parent, const QString& title) :
         scatterplotPlugin->setYDimension(currentDimensionIndex);
     });
 
-    connect(&scatterplotPlugin->getPositionDataset(), &Dataset<Points>::dataDimensionsChanged, this, [this, scatterplotPlugin]() {
+    const auto updateReadOnly = [this, scatterplotPlugin]() -> void {
+        setEnabled(scatterplotPlugin->getPositionDataset().isValid());
+        };
+
+    updateReadOnly();
+
+    connect(&scatterplotPlugin->getPositionDataset(), &Dataset<Points>::dataDimensionsChanged, this, [this, scatterplotPlugin, updateReadOnly]() {
+        updateReadOnly();
+
         // if the new number of dimensions allows it, keep the previous dimension indices
         auto xDim = _xDimensionPickerAction.getCurrentDimensionIndex();
         auto yDim = _yDimensionPickerAction.getCurrentDimensionIndex();
@@ -55,12 +63,6 @@ PositionAction::PositionAction(QObject* parent, const QString& title) :
         _yDimensionPickerAction.setCurrentDimensionIndex(yDim);
 
     });
-
-    const auto updateReadOnly = [this, scatterplotPlugin]() -> void {
-        setEnabled(scatterplotPlugin->getPositionDataset().isValid());
-    };
-
-    updateReadOnly();
 
     connect(&scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, [this, scatterplotPlugin, updateReadOnly](mv::DatasetImpl* dataset) {
         updateReadOnly();
