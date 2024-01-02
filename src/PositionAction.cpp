@@ -37,22 +37,22 @@ PositionAction::PositionAction(QObject* parent, const QString& title) :
         auto xDim = _xDimensionPickerAction.getCurrentDimensionIndex();
         auto yDim = _yDimensionPickerAction.getCurrentDimensionIndex();
 
-        _xDimensionPickerAction.setPointsDataset(scatterplotPlugin->getPositionDataset());
-        _yDimensionPickerAction.setPointsDataset(scatterplotPlugin->getPositionDataset());
+        const auto& currentData = scatterplotPlugin->getPositionDataset();
+        const auto numDimensions = static_cast<int32_t>(currentData->getNumDimensions());
 
-        if (static_cast<uint32_t>(xDim) < _xDimensionPickerAction.getNumberOfDimensions())
-            _xDimensionPickerAction.setCurrentDimensionIndex(xDim);
-        else
-            _xDimensionPickerAction.setCurrentDimensionIndex(0);
-
-        if (static_cast<uint32_t>(yDim) < _yDimensionPickerAction.getNumberOfDimensions())
-            _yDimensionPickerAction.setCurrentDimensionIndex(yDim);
-        else
+        if (xDim >= numDimensions || yDim >= numDimensions)
         {
-            const auto yIndex = _xDimensionPickerAction.getNumberOfDimensions() >= 2 ? 1 : 0;
-
-            _yDimensionPickerAction.setCurrentDimensionIndex(yIndex);
+            xDim = 0;
+            yDim = _xDimensionPickerAction.getNumberOfDimensions() >= 2 ? 1 : 0;
+            _xDimensionPickerAction.setCurrentDimensionIndex(xDim);
+            _yDimensionPickerAction.setCurrentDimensionIndex(yDim);
         }
+
+        _xDimensionPickerAction.setPointsDataset(currentData);
+        _yDimensionPickerAction.setPointsDataset(currentData);
+
+        _xDimensionPickerAction.setCurrentDimensionIndex(xDim);
+        _yDimensionPickerAction.setCurrentDimensionIndex(yDim);
 
     });
 
