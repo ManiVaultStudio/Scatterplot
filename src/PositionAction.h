@@ -80,6 +80,8 @@ private:
     DimensionPickerAction    _xDimensionPickerAction;   /** X-dimension picker action */
     DimensionPickerAction    _yDimensionPickerAction;   /** Y-dimension picker action */
 
+    bool                     _dontUpdateScatterplot;
+
     friend class mv::AbstractActionsManager;
 };
 

@@ -8,7 +8,8 @@ using namespace mv::gui;
 PositionAction::PositionAction(QObject* parent, const QString& title) :
     VerticalGroupAction(parent, title),
     _xDimensionPickerAction(this, "X"),
-    _yDimensionPickerAction(this, "Y")
+    _yDimensionPickerAction(this, "Y"),
+    _dontUpdateScatterplot(false)
 {
     setIcon(mv::Application::getIconFont("FontAwesome").getIcon("ruler-combined"));
     setLabelSizingType(LabelSizingType::Auto);
@@ -25,10 +26,16 @@ PositionAction::PositionAction(QObject* parent, const QString& title) :
         return;
 
     connect(&_xDimensionPickerAction, &DimensionPickerAction::currentDimensionIndexChanged, [this, scatterplotPlugin](const std::uint32_t& currentDimensionIndex) {
+        if (_dontUpdateScatterplot)
+            return;
+
         scatterplotPlugin->setXDimension(currentDimensionIndex);
     });
 
     connect(&_yDimensionPickerAction, &DimensionPickerAction::currentDimensionIndexChanged, [this, scatterplotPlugin](const std::uint32_t& currentDimensionIndex) {
+        if (_dontUpdateScatterplot)
+            return;
+
         scatterplotPlugin->setYDimension(currentDimensionIndex);
     });
 
@@ -38,9 +45,7 @@ PositionAction::PositionAction(QObject* parent, const QString& title) :
 
     updateReadOnly();
 
-    connect(&scatterplotPlugin->getPositionDataset(), &Dataset<Points>::dataDimensionsChanged, this, [this, scatterplotPlugin, updateReadOnly]() {
-        updateReadOnly();
-
+    auto onDimensionsChanged = [this, scatterplotPlugin]() {
         // if the new number of dimensions allows it, keep the previous dimension indices
         auto xDim = _xDimensionPickerAction.getCurrentDimensionIndex();
         auto yDim = _yDimensionPickerAction.getCurrentDimensionIndex();
@@ -51,30 +56,42 @@ PositionAction::PositionAction(QObject* parent, const QString& title) :
         if (xDim >= numDimensions || yDim >= numDimensions)
         {
             xDim = 0;
-            yDim = _xDimensionPickerAction.getNumberOfDimensions() >= 2 ? 1 : 0;
-            _xDimensionPickerAction.setCurrentDimensionIndex(xDim);
-            _yDimensionPickerAction.setCurrentDimensionIndex(yDim);
+            yDim = numDimensions >= 2 ? 1 : 0;
         }
+
+        // Ensure that we never access non-existing dimensions
+        // Data is re-drawn for each setPointsDataset call
+        // with the dimension index of the respective _xDimensionPickerAction set to 0
+        // This prevents the _yDimensionPickerAction dimension being larger than 
+        // the new numDimensions during the first setPointsDataset call
+        _dontUpdateScatterplot = true;
+        _yDimensionPickerAction.setCurrentDimensionIndex(yDim);
 
         _xDimensionPickerAction.setPointsDataset(currentData);
         _yDimensionPickerAction.setPointsDataset(currentData);
 
+        // setXDimension() ignores its argument and will update the 
+        // scatterplot with both current dimension indices
         _xDimensionPickerAction.setCurrentDimensionIndex(xDim);
         _yDimensionPickerAction.setCurrentDimensionIndex(yDim);
+        scatterplotPlugin->setXDimension(xDim);
+        _dontUpdateScatterplot = false;
+    };
 
+    connect(&scatterplotPlugin->getPositionDataset(), &Dataset<Points>::dataDimensionsChanged, this, [this, updateReadOnly, onDimensionsChanged]() {
+        updateReadOnly();
+        onDimensionsChanged();
     });
 
-    connect(&scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, [this, scatterplotPlugin, updateReadOnly](mv::DatasetImpl* dataset) {
+    connect(&scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, [this, scatterplotPlugin, updateReadOnly, onDimensionsChanged]([[maybe_unused]] mv::DatasetImpl* dataset) {
         updateReadOnly();
 
-        _xDimensionPickerAction.setPointsDataset(scatterplotPlugin->getPositionDataset());
-        _yDimensionPickerAction.setPointsDataset(scatterplotPlugin->getPositionDataset());
+        const auto& currentData = scatterplotPlugin->getPositionDataset();
+        const auto numDimensions = static_cast<int32_t>(currentData->getNumDimensions());
 
-        _xDimensionPickerAction.setCurrentDimensionIndex(0);
-
-        const auto yIndex = _xDimensionPickerAction.getNumberOfDimensions() >= 2 ? 1 : 0;
-
-        _yDimensionPickerAction.setCurrentDimensionIndex(yIndex);
+        if (_xDimensionPickerAction.getNumberOfDimensions() != numDimensions ||
+            _yDimensionPickerAction.getNumberOfDimensions() != numDimensions)
+            onDimensionsChanged();
     });
 
 }
