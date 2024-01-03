@@ -45,20 +45,7 @@ PositionAction::PositionAction(QObject* parent, const QString& title) :
 
     updateReadOnly();
 
-    auto onDimensionsChanged = [this, scatterplotPlugin]() {
-        // if the new number of dimensions allows it, keep the previous dimension indices
-        auto xDim = _xDimensionPickerAction.getCurrentDimensionIndex();
-        auto yDim = _yDimensionPickerAction.getCurrentDimensionIndex();
-
-        const auto& currentData = scatterplotPlugin->getPositionDataset();
-        const auto numDimensions = static_cast<int32_t>(currentData->getNumDimensions());
-
-        if (xDim >= numDimensions || yDim >= numDimensions)
-        {
-            xDim = 0;
-            yDim = numDimensions >= 2 ? 1 : 0;
-        }
-
+    auto onDimensionsChanged = [this, scatterplotPlugin](int32_t xDim, int32_t yDim, auto& currentData) {
         // Ensure that we never access non-existing dimensions
         // Data is re-drawn for each setPointsDataset call
         // with the dimension index of the respective _xDimensionPickerAction set to 0
@@ -78,9 +65,23 @@ PositionAction::PositionAction(QObject* parent, const QString& title) :
         _dontUpdateScatterplot = false;
     };
 
-    connect(&scatterplotPlugin->getPositionDataset(), &Dataset<Points>::dataDimensionsChanged, this, [this, updateReadOnly, onDimensionsChanged]() {
+    connect(&scatterplotPlugin->getPositionDataset(), &Dataset<Points>::dataDimensionsChanged, this, [this, updateReadOnly, scatterplotPlugin, onDimensionsChanged]() {
         updateReadOnly();
-        onDimensionsChanged();
+
+        // if the new number of dimensions allows it, keep the previous dimension indices
+        auto xDim = _xDimensionPickerAction.getCurrentDimensionIndex();
+        auto yDim = _yDimensionPickerAction.getCurrentDimensionIndex();
+
+        const auto& currentData = scatterplotPlugin->getPositionDataset();
+        const auto numDimensions = static_cast<int32_t>(currentData->getNumDimensions());
+
+        if (xDim >= numDimensions || yDim >= numDimensions)
+        {
+            xDim = 0;
+            yDim = numDimensions >= 2 ? 1 : 0;
+        }
+
+        onDimensionsChanged(xDim, yDim, currentData);
     });
 
     connect(&scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, [this, scatterplotPlugin, updateReadOnly, onDimensionsChanged]([[maybe_unused]] mv::DatasetImpl* dataset) {
@@ -89,9 +90,10 @@ PositionAction::PositionAction(QObject* parent, const QString& title) :
         const auto& currentData = scatterplotPlugin->getPositionDataset();
         const auto numDimensions = static_cast<int32_t>(currentData->getNumDimensions());
 
-        if (_xDimensionPickerAction.getNumberOfDimensions() != numDimensions ||
-            _yDimensionPickerAction.getNumberOfDimensions() != numDimensions)
-            onDimensionsChanged();
+        const int32_t xDim = 0;
+        const int32_t yDim = numDimensions >= 2 ? 1 : 0;
+
+        onDimensionsChanged(xDim, yDim, currentData);
     });
 
 }
