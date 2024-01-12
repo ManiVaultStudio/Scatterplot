@@ -67,33 +67,39 @@ PositionAction::PositionAction(QObject* parent, const QString& title) :
 
     connect(&scatterplotPlugin->getPositionDataset(), &Dataset<Points>::dataDimensionsChanged, this, [this, updateReadOnly, scatterplotPlugin, onDimensionsChanged]() {
         updateReadOnly();
-
+        
         // if the new number of dimensions allows it, keep the previous dimension indices
         auto xDim = _xDimensionPickerAction.getCurrentDimensionIndex();
         auto yDim = _yDimensionPickerAction.getCurrentDimensionIndex();
-
+        
         const auto& currentData = scatterplotPlugin->getPositionDataset();
         const auto numDimensions = static_cast<int32_t>(currentData->getNumDimensions());
-
+        
         if (xDim >= numDimensions || yDim >= numDimensions)
         {
             xDim = 0;
             yDim = numDimensions >= 2 ? 1 : 0;
         }
-
+        
         onDimensionsChanged(xDim, yDim, currentData);
     });
 
     connect(&scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, [this, scatterplotPlugin, updateReadOnly, onDimensionsChanged]([[maybe_unused]] mv::DatasetImpl* dataset) {
-        updateReadOnly();
+        if (scatterplotPlugin->getPositionDataset().isValid()) {
+            updateReadOnly();
 
-        const auto& currentData = scatterplotPlugin->getPositionDataset();
-        const auto numDimensions = static_cast<int32_t>(currentData->getNumDimensions());
+            const auto& currentData = scatterplotPlugin->getPositionDataset();
+            const auto numDimensions = static_cast<int32_t>(currentData->getNumDimensions());
 
-        const int32_t xDim = 0;
-        const int32_t yDim = numDimensions >= 2 ? 1 : 0;
+            const int32_t xDim = 0;
+            const int32_t yDim = numDimensions >= 2 ? 1 : 0;
 
-        onDimensionsChanged(xDim, yDim, currentData);
+            onDimensionsChanged(xDim, yDim, currentData);
+        }
+        else {
+            _xDimensionPickerAction.setPointsDataset(Dataset<Points>());
+            _yDimensionPickerAction.setPointsDataset(Dataset<Points>());
+        }
     });
 
 }
