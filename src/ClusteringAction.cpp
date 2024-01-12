@@ -68,7 +68,7 @@ ClusteringAction::ClusteringAction(QObject* parent, const QString& title) :
     });
 
     connect(&_createClusterDatasetAction, &TriggerAction::triggered, this, [this]() -> void {
-        const auto clustersDataset = Application::core()->addDataset<Clusters>("Cluster", _clusterDatasetNameAction.getString(), _scatterplotPlugin->getPositionDataset());
+        const auto clustersDataset = mv::data().createDataset<Clusters>("Cluster", _clusterDatasetNameAction.getString(), _scatterplotPlugin->getPositionDataset());
 
         _clusterDatasetPickerAction.setCurrentDataset(clustersDataset);
     });
