@@ -68,9 +68,7 @@ ClusteringAction::ClusteringAction(QObject* parent, const QString& title) :
     });
 
     connect(&_createClusterDatasetAction, &TriggerAction::triggered, this, [this]() -> void {
-        const auto clustersDataset = Application::core()->addDataset<Clusters>("Cluster", _clusterDatasetNameAction.getString(), _scatterplotPlugin->getPositionDataset());
-
-        events().notifyDatasetAdded(clustersDataset);
+        const auto clustersDataset = mv::data().createDataset<Clusters>("Cluster", _clusterDatasetNameAction.getString(), _scatterplotPlugin->getPositionDataset());
 
         _clusterDatasetPickerAction.setCurrentDataset(clustersDataset);
     });
@@ -99,8 +97,6 @@ ClusteringAction::ClusteringAction(QObject* parent, const QString& title) :
         targetClusterDataset->addCluster(cluster);
 
         events().notifyDatasetDataChanged(targetClusterDataset);
-
-        _nameAction.reset();
 
         randomizeClusterColor();
     });

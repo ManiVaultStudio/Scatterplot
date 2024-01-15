@@ -130,7 +130,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
         if (dataType == PointType) {
 
             // Get points dataset from the core
-            auto candidateDataset = _core->requestDataset<Points>(datasetId);
+            auto candidateDataset = mv::data().getDataset<Points>(datasetId);
 
             // Establish drop region description
             const auto description = QString("Visualize %1 as points or density/contour map").arg(datasetGuiName);
@@ -178,7 +178,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
         if (dataType == ClusterType) {
 
             // Get clusters dataset from the core
-            auto candidateDataset = _core->requestDataset<Clusters>(datasetId);
+            auto candidateDataset = mv::data().getDataset<Clusters>(datasetId);
 
             // Establish drop region description
             const auto description = QString("Color points by %1").arg(candidateDataset->text());
@@ -292,10 +292,6 @@ void ScatterplotPlugin::createSubset(const bool& fromSourceData /*= false*/, con
         // Avoid making a bigger subset than the current data by restricting the selection to the current data
         subset = _positionDataset->createSubsetFromVisibleSelection(name, _positionDataset);
 
-    // Notify others that the subset was added
-    events().notifyDatasetAdded(subset);
-
-    // And select the subset
     subset->getDataHierarchyItem().select();
 }
 
@@ -411,9 +407,12 @@ Dataset<Points>& ScatterplotPlugin::getPositionSourceDataset()
 
 void ScatterplotPlugin::positionDatasetChanged()
 {
+    _dropWidget->setShowDropIndicator(!_positionDataset.isValid());
+    _scatterPlotWidget->getPixelSelectionTool().setEnabled(_positionDataset.isValid());
+
     if (!_positionDataset.isValid())
         return;
-
+     
     // Reset dataset references
     //_positionSourceDataset.reset();
 
@@ -422,11 +421,7 @@ void ScatterplotPlugin::positionDatasetChanged()
     _positionSourceDataset = _positionDataset->getSourceDataset<Points>();
 
     _numPoints = _positionDataset->getNumPoints();
-
-    _scatterPlotWidget->getPixelSelectionTool().setEnabled(_positionDataset.isValid());
-
-    _dropWidget->setShowDropIndicator(!_positionDataset.isValid());
-
+    
     updateData();
 }
 
