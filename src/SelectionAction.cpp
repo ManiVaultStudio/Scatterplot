@@ -19,6 +19,8 @@ SelectionAction::SelectionAction(QObject* parent, const QString& title) :
     _outlineHaloEnabledAction(this, "Halo")
 {
     setIcon(mv::Application::getIconFont("FontAwesome").getIcon("mouse-pointer"));
+    
+    setConfigurationFlag(WidgetAction::ConfigurationFlag::HiddenInActionContextMenu);
     setConfigurationFlag(WidgetAction::ConfigurationFlag::ForceCollapsedInGroup);
 
     addAction(&_pixelSelectionAction.getTypeAction());

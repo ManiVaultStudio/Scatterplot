@@ -55,7 +55,6 @@ QMenu* SettingsAction::getContextMenu()
     menu->addMenu(_coloringAction.getContextMenu());
     menu->addSeparator();
     menu->addMenu(_subsetAction.getContextMenu());
-    menu->addMenu(_selectionAction.getContextMenu());
     menu->addSeparator();
     menu->addMenu(_miscellaneousAction.getContextMenu());
 
