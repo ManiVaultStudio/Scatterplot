@@ -115,6 +115,51 @@ void ColorSourceModel::removeAllDatasets()
 {
 }
 
+Datasets ColorSourceModel::getDatasets() const
+{
+    const auto numberOfRows = rowCount();
+
+    if (numberOfRows <= 2)
+        return {};
+
+    Datasets datasets;
+
+    for (int rowIndex = 0; rowIndex < numberOfRows; ++rowIndex) {
+        auto datasetItem = dynamic_cast<DatasetItem*>(itemFromIndex(index(rowIndex, 0)));
+
+        if (datasetItem)
+            datasets << datasetItem->getDataset();
+    }
+
+    return datasets;
+}
+
+Dataset<DatasetImpl> ColorSourceModel::getDataset(std::int32_t rowIndex) const
+{
+    if (rowIndex <= 1)
+        return {};
+
+    auto datasetItem = dynamic_cast<DatasetItem*>(itemFromIndex(index(rowIndex, 0)));
+
+    if (datasetItem)
+        return datasetItem->getDataset();
+
+    return {};
+}
+
+int ColorSourceModel::rowIndex(Dataset<DatasetImpl> dataset) const
+{
+    if (!dataset.isValid())
+        return -1;
+
+    const auto matches = match(QModelIndex(), 200, dataset->getId(), 1, Qt::MatchExactly);
+
+    if (matches.isEmpty())
+        return -1;
+
+    return matches.first().row();
+}
+
 bool ColorSourceModel::getShowFullPathName() const
 {
     return _showFullPathName;

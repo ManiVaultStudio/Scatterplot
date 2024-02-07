@@ -90,6 +90,28 @@ public:
     /** Remove all datasets from the model */
     void removeAllDatasets();
 
+    /**
+     * Get datasets
+     * @return Vector of smart pointers to datasets
+     */
+    Datasets getDatasets() const;
+
+    /**
+     * Get dataset at \p rowIndex
+     * @param rowIndex Index of the row
+     * @return Smart pointer to dataset
+     */
+    Dataset<DatasetImpl> getDataset(std::int32_t rowIndex) const;
+
+    /**
+     * Get the row index of \p dataset
+     * @param parent Parent model index
+     * @return Row index of the dataset
+     */
+    int rowIndex(Dataset<DatasetImpl> dataset) const;
+
+public: // Full path name vs name
+
     /** Get whether to show the full path name in the GUI */
     bool getShowFullPathName() const;
 
