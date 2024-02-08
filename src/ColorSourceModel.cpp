@@ -103,7 +103,7 @@ void ColorSourceModel::addDataset(Dataset<DatasetImpl> dataset)
 
 void ColorSourceModel::removeDataset(Dataset<DatasetImpl> dataset)
 {
-    const auto matches = match(QModelIndex(), 200, dataset->getId(), 1, Qt::MatchExactly);
+    const auto matches = match(index(0, 0), 200, dataset->getId(), 1, Qt::MatchExactly);
 
     if (matches.isEmpty())
         return;
