@@ -1,15 +1,14 @@
 #include "ScatterplotWidget.h"
-#include "Application.h"
 
-#include "util/Math.h"
-#include "util/Exception.h"
+#include <util/Exception.h>
+#include <util/Math.h>
 
 #include <vector>
 
-#include <QSize>
-#include <QPainter>
 #include <QDebug>
 #include <QOpenGLFramebufferObject>
+#include <QPainter>
+#include <QSize>
 #include <QWindow>
 
 #include <math.h>

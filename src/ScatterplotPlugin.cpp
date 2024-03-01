@@ -1,34 +1,33 @@
 #include "ScatterplotPlugin.h"
+
 #include "ScatterplotWidget.h"
-#include "DataHierarchyItem.h"
-#include "Application.h"
 
-#include "util/PixelSelectionTool.h"
-#include "util/Timer.h"
+#include <Application.h>
+#include <DataHierarchyItem.h>
 
-#include "PointData/PointData.h"
-#include "ClusterData/ClusterData.h"
-#include "ColorData/ColorData.h"
+#include <util/PixelSelectionTool.h>
+#include <util/Timer.h>
 
-#include "graphics/Vector2f.h"
-#include "graphics/Vector3f.h"
-#include "widgets/DropWidget.h"
+#include <ClusterData/ClusterData.h>
+#include <ColorData/ColorData.h>
+#include <PointData/PointData.h>
+
+#include <graphics/Vector3f.h>
+#include <widgets/DropWidget.h>
 
 #include <actions/PluginTriggerAction.h>
 
 #include <DatasetsMimeData.h>
 
-#include <QtCore>
+#include <QAction>
 #include <QApplication>
 #include <QDebug>
 #include <QMenu>
-#include <QAction>
 #include <QMetaType>
+#include <QtCore>
 
 #include <algorithm>
 #include <functional>
-#include <limits>
-#include <set>
 #include <vector>
 
 Q_PLUGIN_METADATA(IID "nl.tudelft.ScatterplotPlugin")

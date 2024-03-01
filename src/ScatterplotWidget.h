@@ -1,20 +1,18 @@
 #pragma once
 
-#include "renderers/PointRenderer.h"
-#include "renderers/DensityRenderer.h"
-#include "util/PixelSelectionTool.h"
+#include <renderers/DensityRenderer.h>
+#include <renderers/PointRenderer.h>
+#include <util/PixelSelectionTool.h>
 
-#include "graphics/Vector2f.h"
-#include "graphics/Vector3f.h"
-#include "graphics/Matrix3f.h"
-#include "graphics/Bounds.h"
-#include "graphics/Selection.h"
+#include <graphics/Bounds.h>
+#include <graphics/Vector2f.h>
+#include <graphics/Vector3f.h>
 
-#include <QOpenGLWidget>
 #include <QOpenGLFunctions_3_3_Core>
+#include <QOpenGLWidget>
 
-#include <QMouseEvent>
 #include <QMenu>
+#include <QMouseEvent>
 
 using namespace mv;
 using namespace mv::gui;

@@ -1,15 +1,14 @@
 #pragma once
 
-#include <actions/VerticalGroupAction.h>
-#include <actions/IntegralAction.h>
-#include <actions/ToggleAction.h>
-#include <actions/TriggerAction.h>
-#include <actions/TriggersAction.h>
 #include <actions/ColorAction.h>
-#include <actions/StringAction.h>
-#include <actions/StatusAction.h>
 #include <actions/DecimalRangeAction.h>
 #include <actions/DirectoryPickerAction.h>
+#include <actions/IntegralAction.h>
+#include <actions/StatusAction.h>
+#include <actions/StringAction.h>
+#include <actions/ToggleAction.h>
+#include <actions/TriggersAction.h>
+#include <actions/VerticalGroupAction.h>
 
 #include <PointData/DimensionsPickerAction.h>
 

@@ -1,7 +1,8 @@
 #include "SettingsAction.h"
+
 #include "ScatterplotPlugin.h"
-#include "ScatterplotWidget.h"
-#include "PointData/PointData.h"
+
+#include <PointData/PointData.h>
 
 #include <QMenu>
 

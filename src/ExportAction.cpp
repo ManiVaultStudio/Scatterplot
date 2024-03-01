@@ -1,4 +1,5 @@
 #include "ExportAction.h"
+
 #include "ScatterplotPlugin.h"
 #include "ScatterplotWidget.h"
 
