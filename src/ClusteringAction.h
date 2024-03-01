@@ -1,11 +1,11 @@
 #pragma once
 
-#include <actions/GroupAction.h>
+#include <actions/ColorAction.h>
 #include <actions/DatasetPickerAction.h>
+#include <actions/GroupAction.h>
+#include <actions/HorizontalGroupAction.h>
 #include <actions/TriggerAction.h>
 #include <actions/VerticalGroupAction.h>
-#include <actions/HorizontalGroupAction.h>
-#include <actions/ColorAction.h>
 
 using namespace mv;
 using namespace mv::gui;

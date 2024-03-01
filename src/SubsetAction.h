@@ -1,9 +1,9 @@
 #pragma once
 
-#include <actions/VerticalGroupAction.h>
+#include <actions/OptionAction.h>
 #include <actions/StringAction.h>
 #include <actions/TriggerAction.h>
-#include <actions/OptionAction.h>
+#include <actions/VerticalGroupAction.h>
 
 using namespace mv::gui;
 
