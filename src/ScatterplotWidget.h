@@ -50,7 +50,7 @@ public:
     void setRenderMode(const RenderMode& renderMode);
 
     /** Get/set background color */
-    QColor getBackgroundColor();
+    QColor getBackgroundColor() const;
     void setBackgroundColor(QColor color);
 
     /** Get/set coloring mode */

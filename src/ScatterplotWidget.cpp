@@ -209,7 +209,7 @@ void ScatterplotWidget::setData(const std::vector<Vector2f>* points)
     update();
 }
 
-QColor ScatterplotWidget::getBackgroundColor()
+QColor ScatterplotWidget::getBackgroundColor() const
 {
     return _backgroundColor;
 }
