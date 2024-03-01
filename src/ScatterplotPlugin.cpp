@@ -88,7 +88,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     connect(&_positionDataset, &Dataset<Points>::changed, this, updateReadOnly);
 
     _secondaryToolbarAction.addAction(focusSelectionAction, 2);
-    _secondaryToolbarAction.addAction(&_settingsAction.getExportAction());
+    //_secondaryToolbarAction.addAction(&_settingsAction.getExportAction());
     _secondaryToolbarAction.addAction(&_settingsAction.getMiscellaneousAction());
 
     connect(_scatterPlotWidget, &ScatterplotWidget::customContextMenuRequested, this, [this](const QPoint& point) {

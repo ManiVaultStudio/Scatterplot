@@ -29,8 +29,6 @@ SettingsAction::SettingsAction(QObject* parent, const QString& title) :
     _selectionAction.initialize(_scatterplotPlugin);
     _exportAction.initialize(_scatterplotPlugin);
 
-    _exportAction.setEnabled(false);
-
     const auto updateEnabled = [this]() {
         const auto enabled = _scatterplotPlugin->getPositionDataset().isValid();
 
