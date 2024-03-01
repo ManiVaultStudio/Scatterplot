@@ -32,11 +32,6 @@ public:
      */
     Q_INVOKABLE ClusteringAction(QObject* parent, const QString& title);
 
-protected:
-
-    /** Update the state of the actions */
-    void updateActions();
-
 private:
 
     /** Come up with a pseudo-random cluster color and assign it to the color action */
