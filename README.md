@@ -17,6 +17,7 @@ git clone git@github.com:ManiVaultStudio/Scatterplot.git
 - Create clusters from selections
 
 ## Gallery
+Have a look at the [wiki](https://github.com/ManiVaultStudio/Scatterplot/wiki/Scatterplot-plugin-for-ManiVault) for videos which showcase the scatterplot in more depths.
 
 <p align="middle">
   <img align="top" src="https://github.com/ManiVaultStudio/Scatterplot/assets/58806453/1ec4c359-3587-4d55-b1be-6bf08eac0a65" width="30%" />
