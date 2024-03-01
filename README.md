@@ -16,6 +16,8 @@ git clone git@github.com:ManiVaultStudio/Scatterplot.git
 - Create subsets from selections
 - Create clusters from selections
 
+The scatterplot requires at least OpenGL 3.3.
+
 ## Gallery
 Have a look at the [wiki](https://github.com/ManiVaultStudio/Scatterplot/wiki/Scatterplot-plugin-for-ManiVault) for videos which showcase the scatterplot in more depths.
 
