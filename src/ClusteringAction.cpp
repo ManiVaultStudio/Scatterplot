@@ -1,8 +1,8 @@
 #include "ClusteringAction.h"
 #include "ScatterplotPlugin.h"
 
-#include <PointData/PointData.h>
 #include <ClusterData/ClusterData.h>
+#include <PointData/PointData.h>
 
 #include <QHBoxLayout>
 

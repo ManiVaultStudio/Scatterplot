@@ -1,7 +1,8 @@
 #include "SettingsAction.h"
+
 #include "ScatterplotPlugin.h"
-#include "ScatterplotWidget.h"
-#include "PointData/PointData.h"
+
+#include <PointData/PointData.h>
 
 #include <QMenu>
 
@@ -28,8 +29,6 @@ SettingsAction::SettingsAction(QObject* parent, const QString& title) :
     _subsetAction.initialize(_scatterplotPlugin);
     _selectionAction.initialize(_scatterplotPlugin);
     _exportAction.initialize(_scatterplotPlugin);
-
-    _exportAction.setEnabled(false);
 
     const auto updateEnabled = [this]() {
         const auto enabled = _scatterplotPlugin->getPositionDataset().isValid();

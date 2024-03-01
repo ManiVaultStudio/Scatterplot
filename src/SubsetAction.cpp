@@ -1,4 +1,5 @@
 #include "SubsetAction.h"
+
 #include "ScatterplotPlugin.h"
 #include "ScatterplotWidget.h"
 

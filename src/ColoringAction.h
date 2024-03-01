@@ -1,8 +1,8 @@
 #pragma once
 
-#include <actions/VerticalGroupAction.h>
 #include <actions/ColorMap1DAction.h>
 #include <actions/ColorMap2DAction.h>
+#include <actions/VerticalGroupAction.h>
 
 #include <PointData/DimensionPickerAction.h>
 

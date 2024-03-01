@@ -2,16 +2,16 @@
 
 #include <actions/GroupAction.h>
 
-#include "RenderModeAction.h"
-#include "PositionAction.h"
-#include "PlotAction.h"
-#include "ColoringAction.h"
-#include "SubsetAction.h"
 #include "ClusteringAction.h"
-#include "SelectionAction.h"
+#include "ColoringAction.h"
+#include "DatasetsAction.h"
 #include "ExportAction.h"
 #include "MiscellaneousAction.h"
-#include "DatasetsAction.h"
+#include "PlotAction.h"
+#include "PositionAction.h"
+#include "RenderModeAction.h"
+#include "SelectionAction.h"
+#include "SubsetAction.h"
 
 using namespace mv::gui;
 

@@ -2,12 +2,7 @@
 
 #include <ViewPlugin.h>
 
-#include <util/PixelSelectionTool.h>
-
-#include <actions/TriggerAction.h>
 #include <actions/HorizontalToolbarAction.h>
-
-#include "Common.h"
 
 #include "SettingsAction.h"
 
