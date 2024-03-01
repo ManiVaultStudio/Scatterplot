@@ -40,7 +40,6 @@ find_package(Qt6 COMPONENTS Widgets WebEngineWidgets OpenGL OpenGLWidgets REQUIR
 # Source files
 # -----------------------------------------------------------------------------
 set(PLUGIN
-    src/Common.h
     src/ScatterplotPlugin.h
     src/ScatterplotPlugin.cpp
 )

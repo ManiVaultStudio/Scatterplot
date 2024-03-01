@@ -7,8 +7,6 @@
 #include <actions/TriggerAction.h>
 #include <actions/HorizontalToolbarAction.h>
 
-#include "Common.h"
-
 #include "SettingsAction.h"
 
 #include <QTimer>
