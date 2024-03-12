@@ -152,7 +152,10 @@ int ColorSourceModel::rowIndex(Dataset<DatasetImpl> dataset) const
     if (!dataset.isValid())
         return -1;
 
-    const auto matches = match(QModelIndex(), 200, dataset->getId(), 1, Qt::MatchExactly);
+    if (!hasIndex(0, 0))
+        return -1;
+
+    const auto matches = match(index(0, 0), 200, dataset->getId(), 1, Qt::MatchExactly);
 
     if (matches.isEmpty())
         return -1;
