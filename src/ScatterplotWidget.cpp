@@ -244,6 +244,9 @@ void ScatterplotWidget::setColors(const std::vector<Vector3f>& colors)
 
 void ScatterplotWidget::setPointSizeScalars(const std::vector<float>& pointSizeScalars)
 {
+    if (pointSizeScalars.empty())
+        return;
+
     _pointRenderer.setSizeChannelScalars(pointSizeScalars);
     _pointRenderer.setPointSize(*std::max_element(pointSizeScalars.begin(), pointSizeScalars.end()));
 
