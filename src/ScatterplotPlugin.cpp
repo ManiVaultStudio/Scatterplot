@@ -320,16 +320,23 @@ void ScatterplotPlugin::selectPoints()
     // Get global indices from the position dataset
     _positionDataset->getGlobalIndices(localGlobalIndices);
 
-    const auto dataBounds = _scatterPlotWidget->getBounds();
-    const auto width = selectionAreaImage.width();
-    const auto height = selectionAreaImage.height();
-    const auto size = width < height ? width : height;
+    const auto viewBounds   = _scatterPlotWidget->getZoomBounds();
+    const auto width        = selectionAreaImage.width();
+    const auto height       = selectionAreaImage.height();
+    const auto size         = width < height ? width : height;
+    const auto uvOffset     = QPoint((selectionAreaImage.width() - size) / 2.0f, (selectionAreaImage.height() - size) / 2.0f);
+
+    QPointF uvNormalized    = {};
+    QPoint uv               = {};
 
     // Loop over all points and establish whether they are selected or not
     for (std::uint32_t i = 0; i < _positions.size(); i++) {
-        const auto uvNormalized = QPointF((_positions[i].x - dataBounds.getLeft()) / dataBounds.getWidth(), (dataBounds.getTop() - _positions[i].y) / dataBounds.getHeight());
-        const auto uvOffset     = QPoint((selectionAreaImage.width() - size) / 2.0f, (selectionAreaImage.height() - size) / 2.0f);
-        const auto uv           = uvOffset + QPoint(uvNormalized.x() * size, uvNormalized.y() * size);
+        uvNormalized = QPointF((_positions[i].x - viewBounds.getLeft()) / viewBounds.getWidth(), (viewBounds.getTop() - _positions[i].y) / viewBounds.getHeight());
+        uv           = uvOffset + QPoint(uvNormalized.x() * size, uvNormalized.y() * size);
+
+        if (uv.x() >= selectionAreaImage.width()  || uv.x() < 0 ||
+            uv.y() >= selectionAreaImage.height() || uv.y() < 0)
+            continue;
 
         // Add point if the corresponding pixel selection is on
         if (selectionAreaImage.pixelColor(uv).alpha() > 0)
