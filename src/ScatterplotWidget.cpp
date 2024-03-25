@@ -34,35 +34,12 @@ namespace
         return bounds;
     }
 
-    void confineBoundsWithin(const Bounds& ref, Bounds& check)
-    {
-        if (check.getLeft() < ref.getLeft())
-            check.setLeft(ref.getLeft());
-
-        if (check.getRight() < ref.getRight())
-            check.setRight(ref.getRight());
-
-        if (check.getBottom() < ref.getBottom())
-            check.setBottom(ref.getBottom());
-
-        if (check.getTop() < ref.getTop())
-            check.setTop(ref.getTop());
-    }
-
     void translateBounds(Bounds& b, float x, float y)
     {
         b.setLeft(b.getLeft() + x);
         b.setRight(b.getRight() + x);
         b.setBottom(b.getBottom() + y);
         b.setTop(b.getTop() + y);
-    }
-
-    bool operator==(const Bounds& lhs, const Bounds& rhs) {
-        float eps = 0.0001f;
-        return std::abs(lhs.getLeft() - rhs.getLeft()) < eps &&
-            std::abs(lhs.getRight() - rhs.getRight()) < eps &&
-            std::abs(lhs.getBottom() - rhs.getBottom()) < eps &&
-            std::abs(lhs.getTop() - rhs.getTop()) < eps;
     }
 }
 
