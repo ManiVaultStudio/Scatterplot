@@ -13,6 +13,8 @@
 
 #include <math.h>
 
+using namespace mv;
+
 namespace
 {
     Bounds getDataBounds(const std::vector<Vector2f>& points)

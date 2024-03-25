@@ -10,11 +10,8 @@
 
 #include <QOpenGLFunctions_3_3_Core>
 #include <QOpenGLWidget>
+#include <QPoint>
 
-#include <QMenu>
-#include <QMouseEvent>
-
-using namespace mv;
 using namespace mv::gui;
 using namespace mv::util;
 
@@ -61,7 +58,7 @@ public:
     /**
      * Feed 2-dimensional data to the scatterplot.
      */
-    void setData(const std::vector<Vector2f>* data);
+    void setData(const std::vector<mv::Vector2f>* data);
     void setHighlights(const std::vector<char>& highlights, const std::int32_t& numSelectedPoints);
     void setScalars(const std::vector<float>& scalars);
 
@@ -69,7 +66,7 @@ public:
      * Set colors for each individual data point
      * @param colors Vector of colors (size must match that of the loaded points dataset)
      */
-    void setColors(const std::vector<Vector3f>& colors);
+    void setColors(const std::vector<mv::Vector3f>& colors);
 
     /**
      * Set point size scalars
@@ -94,11 +91,11 @@ public:
      */
     void setSigma(const float sigma);
 
-    Bounds getBounds() const {
+    mv::Bounds getBounds() const {
         return _dataBounds;
     }
 
-    Vector3f getColorMapRange() const;
+    mv::Vector3f getColorMapRange() const;
     void setColorMapRange(const float& min, const float& max);
 
     /**
@@ -197,7 +194,7 @@ protected:
 
 public: // Const access to renderers
 
-    const PointRenderer& getPointRenderer() const { 
+    const PointRenderer& getPointRenderer() const {
         return _pointRenderer;
     }
 
@@ -239,14 +236,14 @@ private slots:
     void updatePixelRatio();
 
 private:
-    PointRenderer           _pointRenderer;                     
-    DensityRenderer         _densityRenderer;                   
+    PointRenderer           _pointRenderer;
+    DensityRenderer         _densityRenderer;
     bool                    _isInitialized;
     RenderMode              _renderMode;
     QColor                  _backgroundColor;
     ColoringMode            _coloringMode;
     QSize                   _windowSize;                        /** Size of the scatterplot widget */
-    Bounds                  _dataBounds;                        /** Bounds of the loaded data */
+    mv::Bounds              _dataBounds;                        /** Bounds of the loaded data */
     QImage                  _colorMapImage;
     PixelSelectionTool      _pixelSelectionTool;
     float                   _pixelRatio;
