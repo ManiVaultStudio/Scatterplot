@@ -674,6 +674,7 @@ void ScatterplotWidget::initializeGL()
 
 void ScatterplotWidget::resizeGL(int w, int h)
 {
+    _widgetSizeInfo.width       = static_cast<float>(w);
     _widgetSizeInfo.height      = static_cast<float>(h);
     _widgetSizeInfo.minWH       = _widgetSizeInfo.width < _widgetSizeInfo.height ? _widgetSizeInfo.width : _widgetSizeInfo.height;
     _widgetSizeInfo.ratioWidth  = _widgetSizeInfo.width / _widgetSizeInfo.minWH;
