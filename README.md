@@ -12,11 +12,29 @@ git clone git@github.com:ManiVaultStudio/Scatterplot.git
 - Set which data dimensions are shown on the x- and y-axis on the fly
 - Adjust point size, opacity and color
 - Use scalars from other datasets (with same number of points) to set point size, opacity and color
+- Zoom and pan
 - Several selection modes (rectangle, lasso, brush)
 - Create subsets from selections
 - Create clusters from selections
 
 The scatterplot requires at least OpenGL 3.3.
+
+### Keybindings
+**Selection**
+- `R` Retangle (default)
+- `L` Lasson
+- `B` Brush, circular. Mouse wheel adjusts the radius
+- `Shift` Add to selection
+- `Control` Remove from selection
+
+**Render**
+- `S` Scatter (default)
+- `D` Density
+- `C` Contour
+
+**Navigation**
+- `Alt` + `Mouse grab` Pan
+- `Alt` + `Mouse wheel` Zoom
 
 ## Gallery
 Have a look at the [wiki](https://github.com/ManiVaultStudio/Scatterplot/wiki/Scatterplot-plugin-for-ManiVault) for videos which showcase the scatterplot in more depths.
