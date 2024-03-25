@@ -103,6 +103,10 @@ public:
         return _dataBounds;
     }
 
+    mv::Bounds getZoomBounds() const {
+        return _zoomBounds;
+    }
+
     mv::Vector3f getColorMapRange() const;
     void setColorMapRange(const float& min, const float& max);
 
@@ -252,6 +256,7 @@ private:
     ColoringMode            _coloringMode;
     widgetSizeInfo          _widgetSizeInfo;                    /** Info about size of the scatterplot widget */
     mv::Bounds              _dataBounds;                        /** Bounds of the loaded data */
+    mv::Bounds              _zoomBounds;                        /** Bounds of the current view */
     QImage                  _colorMapImage;
     PixelSelectionTool      _pixelSelectionTool;
     float                   _pixelRatio;

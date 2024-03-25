@@ -43,6 +43,7 @@ ScatterplotWidget::ScatterplotWidget() :
     _coloringMode(ColoringMode::Constant),
     _widgetSizeInfo(),
     _dataBounds(),
+    _zoomBounds(),
     _colorMapImage(),
     _pixelSelectionTool(this),
     _pixelRatio(1.0)
@@ -175,17 +176,17 @@ void ScatterplotWidget::computeDensity()
 // by reference then we can upload the data to the GPU, but not store it in the widget.
 void ScatterplotWidget::setData(const std::vector<Vector2f>* points)
 {
-    auto dataBounds = getDataBounds(*points);
+    _dataBounds = getDataBounds(*points);
 
-    dataBounds.ensureMinimumSize(1e-07f, 1e-07f);
-    dataBounds.makeSquare();
-    dataBounds.expand(0.1f);
+    _dataBounds.ensureMinimumSize(1e-07f, 1e-07f);
+    _dataBounds.makeSquare();
+    _dataBounds.expand(0.1f);
 
-    _dataBounds = dataBounds;
+    _zoomBounds = _dataBounds;
 
     // Pass bounds and data to renderers
-    _pointRenderer.setBounds(_dataBounds);
-    _densityRenderer.setBounds(_dataBounds);
+    _pointRenderer.setBounds(_zoomBounds);
+    _densityRenderer.setBounds(_zoomBounds);
 
     _pointRenderer.setData(*points);
     _densityRenderer.setData(points);
