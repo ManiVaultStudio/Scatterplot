@@ -41,7 +41,7 @@ ScatterplotWidget::ScatterplotWidget() :
     _renderMode(SCATTERPLOT),
     _backgroundColor(255, 255, 255, 255),
     _coloringMode(ColoringMode::Constant),
-    _windowSize(),
+    _widgetSizeInfo(),
     _dataBounds(),
     _colorMapImage(),
     _pixelSelectionTool(this),
@@ -524,8 +524,11 @@ void ScatterplotWidget::resizeGL(int w, int h)
     w *= _pixelRatio;
     h *= _pixelRatio;
     
-    _windowSize.setWidth(w);
-    _windowSize.setHeight(h);
+    _widgetSizeInfo.width       = static_cast<float>(w);
+    _widgetSizeInfo.height      = static_cast<float>(h);
+    _widgetSizeInfo.minWH       = _widgetSizeInfo.width < _widgetSizeInfo.height ? _widgetSizeInfo.width : _widgetSizeInfo.height;
+    _widgetSizeInfo.ratioWidth  = _widgetSizeInfo.width / _widgetSizeInfo.minWH;
+    _widgetSizeInfo.ratioHeight = _widgetSizeInfo.height / _widgetSizeInfo.minWH;
 
     _pointRenderer.resize(QSize(w, h));
     _densityRenderer.resize(QSize(w, h));

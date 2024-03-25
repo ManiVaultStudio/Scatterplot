@@ -15,6 +15,14 @@
 using namespace mv::gui;
 using namespace mv::util;
 
+struct widgetSizeInfo {
+    float width;
+    float height;
+    float minWH;
+    float ratioWidth;
+    float ratioHeight;
+};
+
 class ScatterplotWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
 {
     Q_OBJECT
@@ -242,7 +250,7 @@ private:
     RenderMode              _renderMode;
     QColor                  _backgroundColor;
     ColoringMode            _coloringMode;
-    QSize                   _windowSize;                        /** Size of the scatterplot widget */
+    widgetSizeInfo          _widgetSizeInfo;                    /** Info about size of the scatterplot widget */
     mv::Bounds              _dataBounds;                        /** Bounds of the loaded data */
     QImage                  _colorMapImage;
     PixelSelectionTool      _pixelSelectionTool;
