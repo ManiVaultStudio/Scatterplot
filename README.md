@@ -35,6 +35,7 @@ The scatterplot requires at least OpenGL 3.3.
 **Navigation**
 - `Alt` + `Mouse grab` Pan
 - `Alt` + `Mouse wheel` Zoom
+- `Alt` + `O` Original view
 
 ## Gallery
 Have a look at the [wiki](https://github.com/ManiVaultStudio/Scatterplot/wiki/Scatterplot-plugin-for-ManiVault) for videos which showcase the scatterplot in more depths.
