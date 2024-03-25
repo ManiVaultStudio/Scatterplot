@@ -297,7 +297,7 @@ void ScatterplotPlugin::createSubset(const bool& fromSourceData /*= false*/, con
 void ScatterplotPlugin::selectPoints()
 {
     // Only proceed with a valid points position dataset and when the pixel selection tool is active
-    if (!_positionDataset.isValid() || !_scatterPlotWidget->getPixelSelectionTool().isActive())
+    if (!_positionDataset.isValid() || !_scatterPlotWidget->getPixelSelectionTool().isActive() || _scatterPlotWidget->isNavigating())
         return;
 
     //qDebug() << _positionDataset->getGuiName() << "selectPoints";

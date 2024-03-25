@@ -107,6 +107,10 @@ public:
         return _zoomBounds;
     }
 
+    bool isNavigating() const {
+        return _isNavigating;
+    }
+
     mv::Vector3f getColorMapRange() const;
     void setColorMapRange(const float& min, const float& max);
 
@@ -204,6 +208,12 @@ protected:
         QWidget::showEvent(event);
     }
 
+    bool event(QEvent* event) override;
+
+    void zoomAround(const QPointF& at, float factor);
+    void panBy(const QPointF& to);
+    void resetView();
+
 public: // Const access to renderers
 
     const PointRenderer& getPointRenderer() const {
@@ -260,4 +270,6 @@ private:
     QImage                  _colorMapImage;
     PixelSelectionTool      _pixelSelectionTool;
     float                   _pixelRatio;
+    QVector<QPoint>         _mousePositions;
+    bool                    _isNavigating;
 };
