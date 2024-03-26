@@ -89,7 +89,7 @@ public:
     void setPointOpacityScalars(const std::vector<float>& pointOpacityScalars);
 
     void setScalarEffect(PointEffect effect);
-    void setPointScaling(mv::gui::PointScaling scalingMode);
+    void setPointScaling(PointScaling scalingMode);
 
     void showHighlights(bool show);
 
@@ -105,6 +105,13 @@ public:
 
     mv::Bounds getZoomBounds() const {
         return _zoomBounds;
+    }
+
+    void setZoomBounds(const mv::Bounds& newBounds) {
+        _zoomBounds = newBounds;
+        _pointRenderer.setBounds(_zoomBounds);
+        emit zoomBoundsChanged(_zoomBounds);
+        update();
     }
 
     bool isNavigating() const {
@@ -250,6 +257,9 @@ signals:
 
     /** Signals that the density computation has ended */
     void densityComputationEnded();
+
+    /** Signals that zoom rectangle has changed  */
+    void zoomBoundsChanged(const mv::Bounds& newZoomBounds);
 
 public slots:
     void computeDensity();

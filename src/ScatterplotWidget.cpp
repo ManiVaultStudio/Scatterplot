@@ -217,9 +217,7 @@ bool ScatterplotWidget::event(QEvent* event)
 
 void ScatterplotWidget::resetView()
 {
-    _zoomBounds = _dataBounds;
-    _pointRenderer.setBounds(_zoomBounds);
-    update();
+    setZoomBounds(_dataBounds);
 }
 
 void ScatterplotWidget::panBy(const QPointF& to)
@@ -229,6 +227,8 @@ void ScatterplotWidget::panBy(const QPointF& to)
 
     translateBounds(_zoomBounds, moveBy.x(), moveBy.y());
     _pointRenderer.setBounds(_zoomBounds);
+
+    emit zoomBoundsChanged(_zoomBounds);
     update();
 }
 
@@ -256,6 +256,7 @@ void ScatterplotWidget::zoomAround(const QPointF& at, float factor)
     translateBounds(_zoomBounds, moveMouseX, moveMouseY);
 
     _pointRenderer.setBounds(_zoomBounds);
+    emit zoomBoundsChanged(_zoomBounds);
     update();
 }
 
@@ -366,6 +367,7 @@ void ScatterplotWidget::setData(const std::vector<Vector2f>* points)
     }
    // _pointRenderer.setSelectionOutlineColor(Vector3f(1, 0, 0));
 
+    emit zoomBoundsChanged(_zoomBounds);
     update();
 }
 
