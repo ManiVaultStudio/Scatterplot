@@ -67,9 +67,8 @@ public: // Action getters
     ColorAction& getBackgroundColorAction() { return _backgroundColorAction; }
 
 private:
-    ScatterplotPlugin*      _scatterplotPlugin;         /** Pointer to scatter plot plugin */
-    ColorAction             _backgroundColorAction;     /** Color action for setting the background color action */
-    bool                    _updateZoom;
+    ScatterplotPlugin*  _scatterplotPlugin;         /** Pointer to scatter plot plugin */
+    ColorAction         _backgroundColorAction;     /** Color action for setting the background color action */
 
     static const QColor DEFAULT_BACKGROUND_COLOR;
 

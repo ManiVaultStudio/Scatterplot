@@ -3,8 +3,6 @@
 #include "ScatterplotPlugin.h"
 #include "ScatterplotWidget.h"
 
-#include <graphics/Bounds.h>
-
 using namespace mv::gui;
 
 const QColor MiscellaneousAction::DEFAULT_BACKGROUND_COLOR = qRgb(255, 255, 255);
@@ -12,8 +10,7 @@ const QColor MiscellaneousAction::DEFAULT_BACKGROUND_COLOR = qRgb(255, 255, 255)
 MiscellaneousAction::MiscellaneousAction(QObject* parent, const QString& title) :
     VerticalGroupAction(parent, title),
     _scatterplotPlugin(dynamic_cast<ScatterplotPlugin*>(parent->parent())),
-    _backgroundColorAction(this, "Background color"),
-    _updateZoom(true)
+    _backgroundColorAction(this, "Background color")
 {
     setIcon(Application::getIconFont("FontAwesome").getIcon("cog"));
     setLabelSizingType(LabelSizingType::Auto);
