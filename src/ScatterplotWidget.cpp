@@ -12,6 +12,7 @@
 #include <QSize>
 #include <QWheelEvent>
 #include <QWindow>
+#include <QRectF>
 
 #include <math.h>
 
@@ -52,8 +53,8 @@ ScatterplotWidget::ScatterplotWidget() :
     _backgroundColor(255, 255, 255, 255),
     _coloringMode(ColoringMode::Constant),
     _widgetSizeInfo(),
-    _dataBounds(),
-    _zoomBounds(),
+    _dataRectangleAction(this, "Data rectangle"),
+    _navigationAction(this, "Navigation"),
     _colorMapImage(),
     _pixelSelectionTool(this),
     _pixelRatio(1.0),
@@ -65,6 +66,8 @@ ScatterplotWidget::ScatterplotWidget() :
     setMouseTracking(true);
     setFocusPolicy(Qt::ClickFocus);
     grabGesture(Qt::PinchGesture);
+
+    _navigationAction.initialize(this);
 
     // Configure pixel selection tool
     _pixelSelectionTool.setEnabled(true);
@@ -112,6 +115,19 @@ ScatterplotWidget::ScatterplotWidget() :
 
         QObject::connect(winHandle, &QWindow::screenChanged, this, &ScatterplotWidget::updatePixelRatio, Qt::UniqueConnection);
     });
+
+    connect(&_navigationAction.getZoomRectangleAction(), &DecimalRectangleAction::rectangleChanged, this, [this]() -> void {
+        auto& zoomRectangleAction = _navigationAction.getZoomRectangleAction();
+
+        const auto zoomBounds = zoomRectangleAction.getBounds();
+
+        _pointRenderer.setBounds(zoomBounds);
+        _densityRenderer.setBounds(zoomBounds);
+
+        _navigationAction.getZoomDataExtentsAction().setEnabled(zoomBounds != _dataRectangleAction.getBounds());
+
+        update();
+    });
 }
 
 bool ScatterplotWidget::event(QEvent* event)
@@ -122,94 +138,96 @@ bool ScatterplotWidget::event(QEvent* event)
 
         switch (event->type())
         {
-        case QEvent::Wheel:
-        {
-            // Scroll to zoom
-            if (auto* wheelEvent = static_cast<QWheelEvent*>(event))
-                zoomAround(wheelEvent->position().toPoint(), wheelEvent->angleDelta().x() / 1200.f);
-
-            break;
-        }
-        case QEvent::MouseButtonPress:
-        {
-
-            if (auto* mouseEvent = static_cast<QMouseEvent*>(event))
+            case QEvent::Wheel:
             {
-                if(mouseEvent->button() == Qt::MiddleButton)
-                resetView();
+                // Scroll to zoom
+                if (auto* wheelEvent = static_cast<QWheelEvent*>(event))
+                    zoomAround(wheelEvent->position().toPoint(), wheelEvent->angleDelta().x() / 1200.f);
 
-                // Navigation
-                if (mouseEvent->buttons() == Qt::LeftButton)
+                break;
+            }
+
+            case QEvent::MouseButtonPress:
+            {
+
+                if (auto* mouseEvent = static_cast<QMouseEvent*>(event))
                 {
-                    _pixelSelectionTool.setEnabled(false);
-                    setCursor(Qt::ClosedHandCursor);
-                    _mousePositions << mouseEvent->pos();
-                    update();
+                    if(mouseEvent->button() == Qt::MiddleButton)
+                        resetView();
+
+                    // Navigation
+                    if (mouseEvent->buttons() == Qt::LeftButton)
+                    {
+                        _pixelSelectionTool.setEnabled(false);
+                        setCursor(Qt::ClosedHandCursor);
+                        _mousePositions << mouseEvent->pos();
+                        update();
+                    }
                 }
+
+                break;
             }
 
-            break;
-        }
-        case QEvent::MouseButtonRelease:
-        {
-            if (_isNavigating)
-            {
-                _isNavigating = false;
-                _pixelSelectionTool.setEnabled(true);
-                setCursor(Qt::ArrowCursor);
-                _mousePositions.clear();
-                update();
-            }
-
-            break;
-        }
-        case QEvent::MouseMove:
-        {
-            if (auto* mouseEvent = static_cast<QMouseEvent*>(event))
+            case QEvent::MouseButtonRelease:
             {
                 if (_isNavigating)
                 {
-                    _mousePositions << mouseEvent->pos();
+                    _isNavigating = false;
+                    _pixelSelectionTool.setEnabled(true);
+                    setCursor(Qt::ArrowCursor);
+                    _mousePositions.clear();
+                    update();
+                }
 
-                    if (mouseEvent->buttons() & Qt::LeftButton && _mousePositions.size() >= 2) {
-                        const auto& previousMousePosition = _mousePositions[_mousePositions.size() - 2];
-                        const auto& currentMousePosition = _mousePositions[_mousePositions.size() - 1];
-                        const auto panVector = currentMousePosition - previousMousePosition;
+                break;
+            }
 
-                        panBy(panVector);
+            case QEvent::MouseMove:
+            {
+                if (auto* mouseEvent = static_cast<QMouseEvent*>(event))
+                {
+                    if (_isNavigating)
+                    {
+                        _mousePositions << mouseEvent->pos();
+
+                        if (mouseEvent->buttons() & Qt::LeftButton && _mousePositions.size() >= 2) {
+                            const auto& previousMousePosition = _mousePositions[_mousePositions.size() - 2];
+                            const auto& currentMousePosition = _mousePositions[_mousePositions.size() - 1];
+                            const auto panVector = currentMousePosition - previousMousePosition;
+
+                            panBy(panVector);
+                        }
                     }
                 }
+
+                break;
             }
 
-            break;
-        }
-        case QEvent::KeyPress:
-        {
+            //case QEvent::KeyPress:
+            //{
+            //    if (auto* keyEvent = static_cast<QKeyEvent*>(event))
+            //    {
+            //        // Reset zoom
+            //        if (keyEvent && keyEvent->key() == Qt::Key_O)
+            //            resetView();
+            //    }
 
-            if (auto* keyEvent = static_cast<QKeyEvent*>(event))
+            //    break;
+            //}
+
+            case QEvent::KeyRelease:
             {
-                // Reset zoom
-                if (keyEvent && keyEvent->key() == Qt::Key_O)
-                    resetView();
+                if (auto* keyEvent = static_cast<QKeyEvent*>(event))
+                {
+                    // Reset navigation
+                    if (keyEvent && keyEvent->key() == Qt::Key_Alt)
+                        _isNavigating = false;
 
+                }
+                break;
             }
-            break;
-        }
-        case QEvent::KeyRelease:
-        {
-
-            if(auto* keyEvent = static_cast<QKeyEvent*>(event))
-            {
-                // Reset navigation
-                if (keyEvent && keyEvent->key() == Qt::Key_Alt)
-                    _isNavigating = false;
-
-            }
-            break;
-        }
 
         } // end switch
-
     }
 
     return QWidget::event(event);
@@ -217,46 +235,47 @@ bool ScatterplotWidget::event(QEvent* event)
 
 void ScatterplotWidget::resetView()
 {
-    setZoomBounds(_dataBounds);
+    _navigationAction.getZoomRectangleAction().setBounds(_dataRectangleAction.getBounds());
 }
 
 void ScatterplotWidget::panBy(const QPointF& to)
 {
-    const auto moveBy = QPointF(to.x() / _widgetSizeInfo.width * _zoomBounds.getWidth() * _widgetSizeInfo.ratioWidth * -1.f,
-                                to.y() / _widgetSizeInfo.height * _zoomBounds.getHeight() * _widgetSizeInfo.ratioHeight);
+    auto& zoomRectangleAction = _navigationAction.getZoomRectangleAction();
 
-    translateBounds(_zoomBounds, moveBy.x(), moveBy.y());
-    _pointRenderer.setBounds(_zoomBounds);
+    const auto moveBy = QPointF(to.x() / _widgetSizeInfo.width * zoomRectangleAction.getWidth() * _widgetSizeInfo.ratioWidth * -1.f,
+                                to.y() / _widgetSizeInfo.height * zoomRectangleAction.getHeight() * _widgetSizeInfo.ratioHeight);
 
-    emit zoomBoundsChanged(_zoomBounds);
+    zoomRectangleAction.translateBy({ moveBy.x(), moveBy.y() });
+
     update();
 }
 
 void ScatterplotWidget::zoomAround(const QPointF& at, float factor)
 {
-    // the widget might have a different aspect ratio than the square opengl viewport
-    const auto offsetBounds = QPointF(_zoomBounds.getWidth()  * (0.5f * (1 - _widgetSizeInfo.ratioWidth)),
-                                      _zoomBounds.getHeight() * (0.5f * (1 - _widgetSizeInfo.ratioHeight)) * -1.f);
+    auto& zoomRectangleAction = _navigationAction.getZoomRectangleAction();
 
-    const auto originBounds = QPointF(_zoomBounds.getLeft(), _zoomBounds.getTop());
+    // the widget might have a different aspect ratio than the square opengl viewport
+    const auto offsetBounds = QPointF(zoomRectangleAction.getWidth()  * (0.5f * (1 - _widgetSizeInfo.ratioWidth)),
+                                      zoomRectangleAction.getHeight() * (0.5f * (1 - _widgetSizeInfo.ratioHeight)) * -1.f);
+
+    const auto originBounds = QPointF(zoomRectangleAction.getLeft(), zoomRectangleAction.getTop());
 
     // translate mouse point in widget to mouse point in bounds coordinates
-    const auto atTransformed = QPointF(at.x() / _widgetSizeInfo.width * _zoomBounds.getWidth() * _widgetSizeInfo.ratioWidth,
-                                       at.y() / _widgetSizeInfo.height * _zoomBounds.getHeight() * _widgetSizeInfo.ratioHeight * -1.f);
+    const auto atTransformed = QPointF(at.x() / _widgetSizeInfo.width * zoomRectangleAction.getWidth() * _widgetSizeInfo.ratioWidth,
+                                       at.y() / _widgetSizeInfo.height * zoomRectangleAction.getHeight() * _widgetSizeInfo.ratioHeight * -1.f);
 
     const auto atInBounds = originBounds + offsetBounds + atTransformed;
 
     // ensure mouse position is the same after zooming
-    const auto currentBoundCenter = _zoomBounds.getCenter();
-    float moveMouseX = (atInBounds.x() - currentBoundCenter.x) * factor;
-    float moveMouseY = (atInBounds.y() - currentBoundCenter.y) * factor;
+    const auto currentBoundCenter = zoomRectangleAction.getCenter();
+
+    float moveMouseX = (atInBounds.x() - currentBoundCenter.first) * factor;
+    float moveMouseY = (atInBounds.y() - currentBoundCenter.second) * factor;
 
     // zoom and move view
-    _zoomBounds.expand(-1.f * factor);
-    translateBounds(_zoomBounds, moveMouseX, moveMouseY);
+    zoomRectangleAction.translateBy({ moveMouseX, moveMouseY });
+    zoomRectangleAction.expandBy(-1.f * factor);
 
-    _pointRenderer.setBounds(_zoomBounds);
-    emit zoomBoundsChanged(_zoomBounds);
     update();
 }
 
@@ -335,17 +354,14 @@ void ScatterplotWidget::computeDensity()
 // by reference then we can upload the data to the GPU, but not store it in the widget.
 void ScatterplotWidget::setData(const std::vector<Vector2f>* points)
 {
-    _dataBounds = getDataBounds(*points);
+    auto dataBounds = getDataBounds(*points);
 
-    _dataBounds.ensureMinimumSize(1e-07f, 1e-07f);
-    _dataBounds.makeSquare();
-    _dataBounds.expand(0.1f);
+    dataBounds.ensureMinimumSize(1e-07f, 1e-07f);
+    dataBounds.makeSquare();
+    dataBounds.expand(0.1f);
 
-    _zoomBounds = _dataBounds;
-
-    // Pass bounds and data to renderers
-    _pointRenderer.setBounds(_zoomBounds);
-    _densityRenderer.setBounds(_zoomBounds);
+    _dataRectangleAction.setBounds(dataBounds);
+    _navigationAction.getZoomRectangleAction().setBounds(dataBounds);
 
     _pointRenderer.setData(*points);
     _densityRenderer.setData(points);
@@ -367,7 +383,6 @@ void ScatterplotWidget::setData(const std::vector<Vector2f>* points)
     }
    // _pointRenderer.setSelectionOutlineColor(Vector3f(1, 0, 0));
 
-    emit zoomBoundsChanged(_zoomBounds);
     update();
 }
 
@@ -685,7 +700,7 @@ void ScatterplotWidget::resizeGL(int w, int h)
     // we need this here as we do not have the screen yet to get the actual devicePixelRatio when the view is created
     _pixelRatio = devicePixelRatio();
 
-    // Pixelration tells us how many pixels map to a point
+    // Pixel ratio tells us how many pixels map to a point
     // That is needed as macOS calculates in points and we do in pixels
     // On macOS high dpi displays pixel ration is 2
     w *= _pixelRatio;

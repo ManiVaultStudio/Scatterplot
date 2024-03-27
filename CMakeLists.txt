@@ -84,6 +84,8 @@ set(Actions
     src/ExportAction.cpp
     src/DatasetsAction.h
     src/DatasetsAction.cpp
+    src/NavigationAction.h
+    src/NavigationAction.cpp
 )
 
 set(Models

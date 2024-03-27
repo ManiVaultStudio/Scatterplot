@@ -52,6 +52,8 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
 
     _dropWidget = new DropWidget(_scatterPlotWidget);
 
+    _scatterPlotWidget->getNavigationAction().setParent(this);
+
     getWidget().setFocusPolicy(Qt::ClickFocus);
 
     _primaryToolbarAction.addAction(&_settingsAction.getDatasetsAction());
@@ -89,6 +91,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     _secondaryToolbarAction.addAction(focusSelectionAction, 2);
     //_secondaryToolbarAction.addAction(&_settingsAction.getExportAction());
     _secondaryToolbarAction.addAction(&_settingsAction.getMiscellaneousAction());
+    _secondaryToolbarAction.addAction(&_scatterPlotWidget->getNavigationAction());
 
     connect(_scatterPlotWidget, &ScatterplotWidget::customContextMenuRequested, this, [this](const QPoint& point) {
         if (!_positionDataset.isValid())
@@ -320,7 +323,8 @@ void ScatterplotPlugin::selectPoints()
     // Get global indices from the position dataset
     _positionDataset->getGlobalIndices(localGlobalIndices);
 
-    const auto viewBounds   = _scatterPlotWidget->getZoomBounds();
+    auto& zoomRectangleAction = _scatterPlotWidget->getNavigationAction().getZoomRectangleAction();
+
     const auto width        = selectionAreaImage.width();
     const auto height       = selectionAreaImage.height();
     const auto size         = width < height ? width : height;
@@ -331,7 +335,7 @@ void ScatterplotPlugin::selectPoints()
 
     // Loop over all points and establish whether they are selected or not
     for (std::uint32_t i = 0; i < _positions.size(); i++) {
-        uvNormalized = QPointF((_positions[i].x - viewBounds.getLeft()) / viewBounds.getWidth(), (viewBounds.getTop() - _positions[i].y) / viewBounds.getHeight());
+        uvNormalized = QPointF((_positions[i].x - zoomRectangleAction.getLeft()) / zoomRectangleAction.getWidth(), (zoomRectangleAction.getTop() - _positions[i].y) / zoomRectangleAction.getHeight());
         uv           = uvOffset + QPoint(uvNormalized.x() * size, uvNormalized.y() * size);
 
         if (uv.x() >= selectionAreaImage.width()  || uv.x() < 0 ||
@@ -575,7 +579,9 @@ void ScatterplotPlugin::fromVariantMap(const QVariantMap& variantMap)
 
     _primaryToolbarAction.fromParentVariantMap(variantMap);
     _secondaryToolbarAction.fromParentVariantMap(variantMap);
-    _settingsAction.fromVariantMap(variantMap["Settings"].toMap());
+    _settingsAction.fromParentVariantMap(variantMap);
+    
+    _scatterPlotWidget->getNavigationAction().fromParentVariantMap(variantMap);
 }
 
 QVariantMap ScatterplotPlugin::toVariantMap() const
@@ -585,6 +591,8 @@ QVariantMap ScatterplotPlugin::toVariantMap() const
     _primaryToolbarAction.insertIntoVariantMap(variantMap);
     _secondaryToolbarAction.insertIntoVariantMap(variantMap);
     _settingsAction.insertIntoVariantMap(variantMap);
+
+    _scatterPlotWidget->getNavigationAction().insertIntoVariantMap(variantMap);
 
     return variantMap;
 }

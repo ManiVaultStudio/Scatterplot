@@ -1,7 +1,6 @@
 #pragma once
 
 #include <actions/ColorAction.h>
-#include <actions/DecimalRectangleAction.h>
 #include <actions/VerticalGroupAction.h>
 
 using namespace mv::gui;
@@ -66,12 +65,10 @@ public: // Serialization
 public: // Action getters
 
     ColorAction& getBackgroundColorAction() { return _backgroundColorAction; }
-    DecimalRectangleAction& getZoomRectangleAction() { return _zoomRectangleAction; }
 
 private:
     ScatterplotPlugin*      _scatterplotPlugin;         /** Pointer to scatter plot plugin */
     ColorAction             _backgroundColorAction;     /** Color action for setting the background color action */
-    DecimalRectangleAction  _zoomRectangleAction;       /** Rectangle action for setting the current zoom bounds */
     bool                    _updateZoom;
 
     static const QColor DEFAULT_BACKGROUND_COLOR;
