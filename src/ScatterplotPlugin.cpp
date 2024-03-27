@@ -52,6 +52,8 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
 
     _dropWidget = new DropWidget(_scatterPlotWidget);
 
+    _scatterPlotWidget->getNavigationAction().setParent(this);
+
     getWidget().setFocusPolicy(Qt::ClickFocus);
 
     _primaryToolbarAction.addAction(&_settingsAction.getDatasetsAction());
@@ -89,6 +91,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     _secondaryToolbarAction.addAction(focusSelectionAction, 2);
     //_secondaryToolbarAction.addAction(&_settingsAction.getExportAction());
     _secondaryToolbarAction.addAction(&_settingsAction.getMiscellaneousAction());
+    _secondaryToolbarAction.addAction(&_scatterPlotWidget->getNavigationAction());
 
     connect(_scatterPlotWidget, &ScatterplotWidget::customContextMenuRequested, this, [this](const QPoint& point) {
         if (!_positionDataset.isValid())
@@ -297,7 +300,7 @@ void ScatterplotPlugin::createSubset(const bool& fromSourceData /*= false*/, con
 void ScatterplotPlugin::selectPoints()
 {
     // Only proceed with a valid points position dataset and when the pixel selection tool is active
-    if (!_positionDataset.isValid() || !_scatterPlotWidget->getPixelSelectionTool().isActive())
+    if (!_positionDataset.isValid() || !_scatterPlotWidget->getPixelSelectionTool().isActive() || _scatterPlotWidget->isNavigating())
         return;
 
     //qDebug() << _positionDataset->getGuiName() << "selectPoints";
@@ -320,16 +323,24 @@ void ScatterplotPlugin::selectPoints()
     // Get global indices from the position dataset
     _positionDataset->getGlobalIndices(localGlobalIndices);
 
-    const auto dataBounds = _scatterPlotWidget->getBounds();
-    const auto width = selectionAreaImage.width();
-    const auto height = selectionAreaImage.height();
-    const auto size = width < height ? width : height;
+    auto& zoomRectangleAction = _scatterPlotWidget->getNavigationAction().getZoomRectangleAction();
+
+    const auto width        = selectionAreaImage.width();
+    const auto height       = selectionAreaImage.height();
+    const auto size         = width < height ? width : height;
+    const auto uvOffset     = QPoint((selectionAreaImage.width() - size) / 2.0f, (selectionAreaImage.height() - size) / 2.0f);
+
+    QPointF uvNormalized    = {};
+    QPoint uv               = {};
 
     // Loop over all points and establish whether they are selected or not
     for (std::uint32_t i = 0; i < _positions.size(); i++) {
-        const auto uvNormalized = QPointF((_positions[i].x - dataBounds.getLeft()) / dataBounds.getWidth(), (dataBounds.getTop() - _positions[i].y) / dataBounds.getHeight());
-        const auto uvOffset     = QPoint((selectionAreaImage.width() - size) / 2.0f, (selectionAreaImage.height() - size) / 2.0f);
-        const auto uv           = uvOffset + QPoint(uvNormalized.x() * size, uvNormalized.y() * size);
+        uvNormalized = QPointF((_positions[i].x - zoomRectangleAction.getLeft()) / zoomRectangleAction.getWidth(), (zoomRectangleAction.getTop() - _positions[i].y) / zoomRectangleAction.getHeight());
+        uv           = uvOffset + QPoint(uvNormalized.x() * size, uvNormalized.y() * size);
+
+        if (uv.x() >= selectionAreaImage.width()  || uv.x() < 0 ||
+            uv.y() >= selectionAreaImage.height() || uv.y() < 0)
+            continue;
 
         // Add point if the corresponding pixel selection is on
         if (selectionAreaImage.pixelColor(uv).alpha() > 0)
@@ -568,7 +579,9 @@ void ScatterplotPlugin::fromVariantMap(const QVariantMap& variantMap)
 
     _primaryToolbarAction.fromParentVariantMap(variantMap);
     _secondaryToolbarAction.fromParentVariantMap(variantMap);
-    _settingsAction.fromVariantMap(variantMap["Settings"].toMap());
+    _settingsAction.fromParentVariantMap(variantMap);
+    
+    _scatterPlotWidget->getNavigationAction().fromParentVariantMap(variantMap);
 }
 
 QVariantMap ScatterplotPlugin::toVariantMap() const
@@ -578,6 +591,8 @@ QVariantMap ScatterplotPlugin::toVariantMap() const
     _primaryToolbarAction.insertIntoVariantMap(variantMap);
     _secondaryToolbarAction.insertIntoVariantMap(variantMap);
     _settingsAction.insertIntoVariantMap(variantMap);
+
+    _scatterPlotWidget->getNavigationAction().insertIntoVariantMap(variantMap);
 
     return variantMap;
 }

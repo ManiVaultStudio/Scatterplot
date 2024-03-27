@@ -1,17 +1,22 @@
 #include "ScatterplotWidget.h"
 
 #include <util/Exception.h>
-#include <util/Math.h>
 
 #include <vector>
 
 #include <QDebug>
+#include <QGuiApplication>
+#include <QMatrix4x4>
 #include <QOpenGLFramebufferObject>
 #include <QPainter>
 #include <QSize>
+#include <QWheelEvent>
 #include <QWindow>
+#include <QRectF>
 
 #include <math.h>
+
+using namespace mv;
 
 namespace
 {
@@ -29,6 +34,14 @@ namespace
 
         return bounds;
     }
+
+    void translateBounds(Bounds& b, float x, float y)
+    {
+        b.setLeft(b.getLeft() + x);
+        b.setRight(b.getRight() + x);
+        b.setBottom(b.getBottom() + y);
+        b.setTop(b.getTop() + y);
+    }
 }
 
 ScatterplotWidget::ScatterplotWidget() :
@@ -39,16 +52,22 @@ ScatterplotWidget::ScatterplotWidget() :
     _renderMode(SCATTERPLOT),
     _backgroundColor(255, 255, 255, 255),
     _coloringMode(ColoringMode::Constant),
-    _windowSize(),
-    _dataBounds(),
+    _widgetSizeInfo(),
+    _dataRectangleAction(this, "Data rectangle"),
+    _navigationAction(this, "Navigation"),
     _colorMapImage(),
     _pixelSelectionTool(this),
-    _pixelRatio(1.0)
+    _pixelRatio(1.0),
+    _mousePositions(),
+    _isNavigating(false)
 {
     setContextMenuPolicy(Qt::CustomContextMenu);
     setAcceptDrops(true);
     setMouseTracking(true);
     setFocusPolicy(Qt::ClickFocus);
+    grabGesture(Qt::PinchGesture);
+
+    _navigationAction.initialize(this);
 
     // Configure pixel selection tool
     _pixelSelectionTool.setEnabled(true);
@@ -96,6 +115,168 @@ ScatterplotWidget::ScatterplotWidget() :
 
         QObject::connect(winHandle, &QWindow::screenChanged, this, &ScatterplotWidget::updatePixelRatio, Qt::UniqueConnection);
     });
+
+    connect(&_navigationAction.getZoomRectangleAction(), &DecimalRectangleAction::rectangleChanged, this, [this]() -> void {
+        auto& zoomRectangleAction = _navigationAction.getZoomRectangleAction();
+
+        const auto zoomBounds = zoomRectangleAction.getBounds();
+
+        _pointRenderer.setBounds(zoomBounds);
+        _densityRenderer.setBounds(zoomBounds);
+
+        _navigationAction.getZoomDataExtentsAction().setEnabled(zoomBounds != _dataRectangleAction.getBounds());
+
+        update();
+    });
+}
+
+bool ScatterplotWidget::event(QEvent* event)
+{
+    // Interactions when Alt is pressed
+    if (isInitialized() && QGuiApplication::keyboardModifiers() == Qt::AltModifier) {
+        _isNavigating = true;
+
+        switch (event->type())
+        {
+            case QEvent::Wheel:
+            {
+                // Scroll to zoom
+                if (auto* wheelEvent = static_cast<QWheelEvent*>(event))
+                    zoomAround(wheelEvent->position().toPoint(), wheelEvent->angleDelta().x() / 1200.f);
+
+                break;
+            }
+
+            case QEvent::MouseButtonPress:
+            {
+
+                if (auto* mouseEvent = static_cast<QMouseEvent*>(event))
+                {
+                    if(mouseEvent->button() == Qt::MiddleButton)
+                        resetView();
+
+                    // Navigation
+                    if (mouseEvent->buttons() == Qt::LeftButton)
+                    {
+                        _pixelSelectionTool.setEnabled(false);
+                        setCursor(Qt::ClosedHandCursor);
+                        _mousePositions << mouseEvent->pos();
+                        update();
+                    }
+                }
+
+                break;
+            }
+
+            case QEvent::MouseButtonRelease:
+            {
+                if (_isNavigating)
+                {
+                    _isNavigating = false;
+                    _pixelSelectionTool.setEnabled(true);
+                    setCursor(Qt::ArrowCursor);
+                    _mousePositions.clear();
+                    update();
+                }
+
+                break;
+            }
+
+            case QEvent::MouseMove:
+            {
+                if (auto* mouseEvent = static_cast<QMouseEvent*>(event))
+                {
+                    if (_isNavigating)
+                    {
+                        _mousePositions << mouseEvent->pos();
+
+                        if (mouseEvent->buttons() & Qt::LeftButton && _mousePositions.size() >= 2) {
+                            const auto& previousMousePosition = _mousePositions[_mousePositions.size() - 2];
+                            const auto& currentMousePosition = _mousePositions[_mousePositions.size() - 1];
+                            const auto panVector = currentMousePosition - previousMousePosition;
+
+                            panBy(panVector);
+                        }
+                    }
+                }
+
+                break;
+            }
+
+            //case QEvent::KeyPress:
+            //{
+            //    if (auto* keyEvent = static_cast<QKeyEvent*>(event))
+            //    {
+            //        // Reset zoom
+            //        if (keyEvent && keyEvent->key() == Qt::Key_O)
+            //            resetView();
+            //    }
+
+            //    break;
+            //}
+
+            case QEvent::KeyRelease:
+            {
+                if (auto* keyEvent = static_cast<QKeyEvent*>(event))
+                {
+                    // Reset navigation
+                    if (keyEvent && keyEvent->key() == Qt::Key_Alt)
+                        _isNavigating = false;
+
+                }
+                break;
+            }
+
+        } // end switch
+    }
+
+    return QWidget::event(event);
+}
+
+void ScatterplotWidget::resetView()
+{
+    _navigationAction.getZoomRectangleAction().setBounds(_dataRectangleAction.getBounds());
+}
+
+void ScatterplotWidget::panBy(const QPointF& to)
+{
+    auto& zoomRectangleAction = _navigationAction.getZoomRectangleAction();
+
+    const auto moveBy = QPointF(to.x() / _widgetSizeInfo.width * zoomRectangleAction.getWidth() * _widgetSizeInfo.ratioWidth * -1.f,
+                                to.y() / _widgetSizeInfo.height * zoomRectangleAction.getHeight() * _widgetSizeInfo.ratioHeight);
+
+    zoomRectangleAction.translateBy({ moveBy.x(), moveBy.y() });
+
+    update();
+}
+
+void ScatterplotWidget::zoomAround(const QPointF& at, float factor)
+{
+    auto& zoomRectangleAction = _navigationAction.getZoomRectangleAction();
+
+    // the widget might have a different aspect ratio than the square opengl viewport
+    const auto offsetBounds = QPointF(zoomRectangleAction.getWidth()  * (0.5f * (1 - _widgetSizeInfo.ratioWidth)),
+                                      zoomRectangleAction.getHeight() * (0.5f * (1 - _widgetSizeInfo.ratioHeight)) * -1.f);
+
+    const auto originBounds = QPointF(zoomRectangleAction.getLeft(), zoomRectangleAction.getTop());
+
+    // translate mouse point in widget to mouse point in bounds coordinates
+    const auto atTransformed = QPointF(at.x() / _widgetSizeInfo.width * zoomRectangleAction.getWidth() * _widgetSizeInfo.ratioWidth,
+                                       at.y() / _widgetSizeInfo.height * zoomRectangleAction.getHeight() * _widgetSizeInfo.ratioHeight * -1.f);
+
+    const auto atInBounds = originBounds + offsetBounds + atTransformed;
+
+    // ensure mouse position is the same after zooming
+    const auto currentBoundCenter = zoomRectangleAction.getCenter();
+
+    float moveMouseX = (atInBounds.x() - currentBoundCenter.first) * factor;
+    float moveMouseY = (atInBounds.y() - currentBoundCenter.second) * factor;
+
+    // zoom and move view
+    zoomRectangleAction.translateBy({ moveMouseX, moveMouseY });
+    zoomRectangleAction.expandBy(-1.f * factor);
+
+    update();
 }
 
 bool ScatterplotWidget::isInitialized() const
@@ -179,11 +360,8 @@ void ScatterplotWidget::setData(const std::vector<Vector2f>* points)
     dataBounds.makeSquare();
     dataBounds.expand(0.1f);
 
-    _dataBounds = dataBounds;
-
-    // Pass bounds and data to renderers
-    _pointRenderer.setBounds(_dataBounds);
-    _densityRenderer.setBounds(_dataBounds);
+    _dataRectangleAction.setBounds(dataBounds);
+    _navigationAction.getZoomRectangleAction().setBounds(dataBounds);
 
     _pointRenderer.setData(*points);
     _densityRenderer.setData(points);
@@ -516,17 +694,20 @@ void ScatterplotWidget::initializeGL()
 
 void ScatterplotWidget::resizeGL(int w, int h)
 {
+    _widgetSizeInfo.width       = static_cast<float>(w);
+    _widgetSizeInfo.height      = static_cast<float>(h);
+    _widgetSizeInfo.minWH       = _widgetSizeInfo.width < _widgetSizeInfo.height ? _widgetSizeInfo.width : _widgetSizeInfo.height;
+    _widgetSizeInfo.ratioWidth  = _widgetSizeInfo.width / _widgetSizeInfo.minWH;
+    _widgetSizeInfo.ratioHeight = _widgetSizeInfo.height / _widgetSizeInfo.minWH;
+
     // we need this here as we do not have the screen yet to get the actual devicePixelRatio when the view is created
     _pixelRatio = devicePixelRatio();
-    
-    // Pixelration tells us how many pixels map to a point
+
+    // Pixel ratio tells us how many pixels map to a point
     // That is needed as macOS calculates in points and we do in pixels
     // On macOS high dpi displays pixel ration is 2
     w *= _pixelRatio;
     h *= _pixelRatio;
-    
-    _windowSize.setWidth(w);
-    _windowSize.setHeight(h);
 
     _pointRenderer.resize(QSize(w, h));
     _densityRenderer.resize(QSize(w, h));

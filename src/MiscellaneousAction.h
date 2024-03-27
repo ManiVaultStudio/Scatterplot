@@ -1,7 +1,7 @@
 #pragma once
 
-#include <actions/VerticalGroupAction.h>
 #include <actions/ColorAction.h>
+#include <actions/VerticalGroupAction.h>
 
 using namespace mv::gui;
 
@@ -68,7 +68,7 @@ public: // Action getters
 
 private:
     ScatterplotPlugin*  _scatterplotPlugin;         /** Pointer to scatter plot plugin */
-    ColorAction         _backgroundColorAction;     /** Color action for settings the background color action */
+    ColorAction         _backgroundColorAction;     /** Color action for setting the background color action */
 
     static const QColor DEFAULT_BACKGROUND_COLOR;
 
