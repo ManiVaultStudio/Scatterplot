@@ -53,14 +53,8 @@ ClusteringAction::ClusteringAction(QObject* parent, const QString& title) :
     _clusterDatasetWizardAction.addAction(&_clusterDatasetNameAction);
     _clusterDatasetWizardAction.addAction(&_createClusterDatasetAction);
 
-    _clusterDatasetPickerAction.setDatasetsFilterFunction([this](const mv::Datasets& datasets) ->mv::Datasets {
-        Datasets clusterDatasets;
-
-        for (auto dataset : datasets)
-            if (dataset->getDataType() == ClusterType)
-                clusterDatasets << dataset;
-
-        return clusterDatasets;
+    _clusterDatasetPickerAction.setFilterFunction([this](Dataset<DatasetImpl> dataset) -> bool {
+        return dataset->getDataType() == ClusterType;
     });
 
     connect(& _clusterDatasetNameAction, & StringAction::stringChanged, this, [this](const QString& string) -> void {
