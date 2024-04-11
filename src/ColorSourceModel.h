@@ -129,6 +129,8 @@ signals:
      */
     void showFullPathNameChanged(bool showFullPathName);
 
+    void dataChanged(const Dataset<DatasetImpl>& dataset);
+
 protected:
     bool        _showFullPathName;      /** Whether to show the full path name in the GUI */
 
