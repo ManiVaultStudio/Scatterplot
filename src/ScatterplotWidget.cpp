@@ -354,9 +354,6 @@ void ScatterplotWidget::computeDensity()
 // by reference then we can upload the data to the GPU, but not store it in the widget.
 void ScatterplotWidget::setData(const std::vector<Vector2f>* points)
 {
-    _pointRenderer.setData(*points);
-    _densityRenderer.setData(points);
-
     auto dataBounds = getDataBounds(*points);
 
     // pass un-adjusted data bounds to renderer for 2D colormapping
@@ -372,6 +369,9 @@ void ScatterplotWidget::setData(const std::vector<Vector2f>* points)
 
     _dataRectangleAction.setBounds(dataBounds);
     _navigationAction.getZoomRectangleAction().setBounds(dataBounds);
+
+    _pointRenderer.setData(*points);
+    _densityRenderer.setData(points);
 
     switch (_renderMode)
     {
