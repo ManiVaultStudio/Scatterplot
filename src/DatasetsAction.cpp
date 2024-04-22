@@ -24,25 +24,14 @@ DatasetsAction::DatasetsAction(QObject* parent, const QString& title) :
     addAction(&_positionDatasetPickerAction);
     addAction(&_colorDatasetPickerAction);
 
-    _positionDatasetPickerAction.setDatasetsFilterFunction([](const mv::Datasets& datasets) -> Datasets {
-        Datasets pointDatasets;
+    _positionDatasetPickerAction.setFilterFunction([this](mv::Dataset<DatasetImpl> dataset) -> bool {
+        return dataset->getDataType() == PointType;
+        });
 
-        for (auto dataset : datasets)
-            if (dataset->getDataType() == PointType)
-                pointDatasets << dataset;
+    _colorDatasetPickerAction.setFilterFunction([this](mv::Dataset<DatasetImpl> dataset) -> bool {
+        return (dataset->getDataType() == PointType || dataset->getDataType() == ColorType || dataset->getDataType() == ClusterType);
+        });
 
-        return pointDatasets;
-    });
-
-    _colorDatasetPickerAction.setDatasetsFilterFunction([](const mv::Datasets& datasets) -> Datasets {
-        Datasets colorDatasets;
-
-        for (auto dataset : datasets)
-            if (dataset->getDataType() == PointType || dataset->getDataType() == ColorType || dataset->getDataType() == ClusterType)
-                colorDatasets << dataset;
-
-        return colorDatasets;
-    });
 
     auto scatterplotPlugin = dynamic_cast<ScatterplotPlugin*>(parent->parent());
 
