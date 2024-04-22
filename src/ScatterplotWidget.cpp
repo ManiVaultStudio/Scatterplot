@@ -121,7 +121,7 @@ ScatterplotWidget::ScatterplotWidget() :
 
         const auto zoomBounds = zoomRectangleAction.getBounds();
 
-        _pointRenderer.setBoundsView(zoomBounds);
+        _pointRenderer.setViewBounds(zoomBounds);
         _densityRenderer.setBounds(zoomBounds);
 
         _navigationAction.getZoomDataExtentsAction().setEnabled(zoomBounds != _dataRectangleAction.getBounds());
@@ -357,14 +357,14 @@ void ScatterplotWidget::setData(const std::vector<Vector2f>* points)
     auto dataBounds = getDataBounds(*points);
 
     // pass un-adjusted data bounds to renderer for 2D colormapping
-    _pointRenderer.setBoundsData(dataBounds);
+    _pointRenderer.setDataBounds(dataBounds);
 
     // Adjust data points for projection matrix creation (add a little white space around data)
     dataBounds.ensureMinimumSize(1e-07f, 1e-07f);
     dataBounds.makeSquare();
     dataBounds.expand(0.1f);
 
-    _pointRenderer.setBoundsView(dataBounds);
+    _pointRenderer.setViewBounds(dataBounds);
     _densityRenderer.setBounds(dataBounds);
 
     _dataRectangleAction.setBounds(dataBounds);
