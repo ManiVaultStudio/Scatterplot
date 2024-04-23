@@ -262,7 +262,7 @@ void PointPlotAction::updateScatterPlotWidgetPointSizeScalars()
 
         positionDataset->selectedLocalIndices(positionDataset->getSelection<Points>()->indices, selected);
 
-        for (int i = 0; i < selected.size(); i++) {
+        for (size_t i = 0; i < selected.size(); i++) {
             if (!selected[i])
                 continue;
 
