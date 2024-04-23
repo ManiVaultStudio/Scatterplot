@@ -466,6 +466,18 @@ void ScatterplotWidget::setSigma(const float sigma)
     update();
 }
 
+void ScatterplotWidget::setWeightDensity(bool useWeights) 
+{ 
+    _weightDensity = useWeights; 
+
+    const std::vector<float>* weights = nullptr;
+
+    if (_weightDensity)
+        weights = &_pointRenderer.getGpuPoints().getSizeScalars();
+
+    _densityRenderer.setWeights(weights);
+}
+
 mv::Vector3f ScatterplotWidget::getColorMapRange() const
 {
     switch (_renderMode) {
