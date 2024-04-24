@@ -130,6 +130,9 @@ public:
     mv::Vector3f getColorMapRange() const;
     void setColorMapRange(const float& min, const float& max);
 
+    void setWeightDensity(bool useWeights);
+    float getWeightDensity() const { return _weightDensity; }
+
     /**
      * Create screenshot
      * @param width Width of the screen shot (in pixels)
@@ -291,6 +294,7 @@ private:
     float                   _pixelRatio;                /** Current pixel ratio */
     QVector<QPoint>         _mousePositions;            /** Recorded mouse positions */
     bool                    _isNavigating;              /** Boolean determining whether view navigation is currently taking place or not */
+    bool                    _weightDensity;             /** Use point scalar sizes to weight density */
 
     friend class NavigationAction;
 };

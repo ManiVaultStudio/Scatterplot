@@ -121,7 +121,7 @@ ScatterplotWidget::ScatterplotWidget() :
 
         const auto zoomBounds = zoomRectangleAction.getBounds();
 
-        _pointRenderer.setBounds(zoomBounds);
+        _pointRenderer.setViewBounds(zoomBounds);
         _densityRenderer.setBounds(zoomBounds);
 
         _navigationAction.getZoomDataExtentsAction().setEnabled(zoomBounds != _dataRectangleAction.getBounds());
@@ -356,9 +356,16 @@ void ScatterplotWidget::setData(const std::vector<Vector2f>* points)
 {
     auto dataBounds = getDataBounds(*points);
 
+    // pass un-adjusted data bounds to renderer for 2D colormapping
+    _pointRenderer.setDataBounds(dataBounds);
+
+    // Adjust data points for projection matrix creation (add a little white space around data)
     dataBounds.ensureMinimumSize(1e-07f, 1e-07f);
     dataBounds.makeSquare();
     dataBounds.expand(0.1f);
+
+    _pointRenderer.setViewBounds(dataBounds);
+    _densityRenderer.setBounds(dataBounds);
 
     _dataRectangleAction.setBounds(dataBounds);
     _navigationAction.getZoomRectangleAction().setBounds(dataBounds);
@@ -457,6 +464,18 @@ void ScatterplotWidget::setSigma(const float sigma)
     _densityRenderer.setSigma(sigma);
 
     update();
+}
+
+void ScatterplotWidget::setWeightDensity(bool useWeights) 
+{ 
+    _weightDensity = useWeights; 
+
+    const std::vector<float>* weights = nullptr;
+
+    if (_weightDensity)
+        weights = &_pointRenderer.getGpuPoints().getSizeScalars();
+
+    _densityRenderer.setWeights(weights);
 }
 
 mv::Vector3f ScatterplotWidget::getColorMapRange() const

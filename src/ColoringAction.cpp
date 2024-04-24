@@ -91,6 +91,16 @@ ColoringAction::ColoringAction(QObject* parent, const QString& title) :
         updateColorMapActionsReadOnly();
     });
 
+    connect(&_colorByModel, &ColorSourceModel::dataChanged, this, [this](const Dataset<DatasetImpl>& dataset) {
+        const auto currentColorDataset = getCurrentColorDataset();
+
+        if (!(currentColorDataset.isValid() && dataset.isValid()))
+            return;
+
+        if (currentColorDataset == dataset)
+            updateScatterPlotWidgetColors();
+        });
+
     connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::childAdded, this, &ColoringAction::updateColorByActionOptions);
     connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::childRemoved, this, &ColoringAction::updateColorByActionOptions);
 
@@ -143,24 +153,13 @@ QMenu* ColoringAction::getContextMenu(QWidget* parent /*= nullptr*/)
 
 void ColoringAction::addColorDataset(const Dataset<DatasetImpl>& colorDataset)
 {
+    if (!colorDataset.isValid())
+        return;
+
     if (hasColorDataset(colorDataset))
         return;
 
     _colorByModel.addDataset(colorDataset);
-
-    auto& addedDataset = _colorByModel.getDatasets().last();
-
-    for (const auto& dataset : _colorByModel.getDatasets()) {
-        connect(&dataset, &Dataset<DatasetImpl>::dataChanged, this, [this, dataset]() {
-            const auto currentColorDataset = getCurrentColorDataset();
-
-            if (!currentColorDataset.isValid())
-                return;
-
-            if (currentColorDataset == dataset)
-                updateScatterPlotWidgetColors();
-        });
-    }
 }
 
 bool ColoringAction::hasColorDataset(const Dataset<DatasetImpl>& colorDataset) const

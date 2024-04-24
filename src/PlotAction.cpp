@@ -20,6 +20,7 @@ PlotAction::PlotAction(QObject* parent, const QString& title) :
     
     addAction(&_densityPlotAction.getSigmaAction());
     addAction(&_densityPlotAction.getContinuousUpdatesAction());
+    addAction(&_densityPlotAction.getWeightWithPointSizeAction());
 }
 
 void PlotAction::initialize(ScatterplotPlugin* scatterplotPlugin)

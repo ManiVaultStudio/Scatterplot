@@ -6,8 +6,10 @@ using namespace mv::gui;
 
 DensityPlotAction::DensityPlotAction(QObject* parent, const QString& title) :
     VerticalGroupAction(parent, title),
+    _scatterplotPlugin(nullptr),
     _sigmaAction(this, "Sigma", 0.01f, 0.5f, DEFAULT_SIGMA, 3),
-    _continuousUpdatesAction(this, "Live Updates", DEFAULT_CONTINUOUS_UPDATES)
+    _continuousUpdatesAction(this, "Live Updates", DEFAULT_CONTINUOUS_UPDATES),
+    _weightWithPointSizeAction(this, "Weight by size", false)
 {
     setToolTip("Density plot settings");
     setConfigurationFlag(WidgetAction::ConfigurationFlag::NoLabelInGroup);
@@ -15,6 +17,7 @@ DensityPlotAction::DensityPlotAction(QObject* parent, const QString& title) :
 
     addAction(&_sigmaAction);
     addAction(&_continuousUpdatesAction);
+    addAction(&_weightWithPointSizeAction);
 }
 
 void DensityPlotAction::initialize(ScatterplotPlugin* scatterplotPlugin)
@@ -43,6 +46,11 @@ void DensityPlotAction::initialize(ScatterplotPlugin* scatterplotPlugin)
     const auto updateSigmaAction = [this]() {
         _sigmaAction.setUpdateDuringDrag(_continuousUpdatesAction.isChecked());
     };
+
+    connect(&_weightWithPointSizeAction, &ToggleAction::toggled, [this, computeDensity]() {
+        _scatterplotPlugin->getScatterplotWidget().setWeightDensity(_weightWithPointSizeAction.isChecked());
+        computeDensity();
+    });
 
     connect(&_continuousUpdatesAction, &ToggleAction::toggled, updateSigmaAction);
 
@@ -81,6 +89,7 @@ QMenu* DensityPlotAction::getContextMenu()
 void DensityPlotAction::setVisible(bool visible)
 {
     _sigmaAction.setVisible(visible);
+    _weightWithPointSizeAction.setVisible(visible);
     _continuousUpdatesAction.setVisible(visible);
 }
 
@@ -95,6 +104,7 @@ void DensityPlotAction::connectToPublicAction(WidgetAction* publicAction, bool r
 
     if (recursive) {
         actions().connectPrivateActionToPublicAction(&_sigmaAction, &publicDensityPlotAction->getSigmaAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_weightWithPointSizeAction, &publicDensityPlotAction->getContinuousUpdatesAction(), recursive);
         actions().connectPrivateActionToPublicAction(&_continuousUpdatesAction, &publicDensityPlotAction->getContinuousUpdatesAction(), recursive);
     }
 
@@ -108,6 +118,7 @@ void DensityPlotAction::disconnectFromPublicAction(bool recursive)
 
     if (recursive) {
         actions().disconnectPrivateActionFromPublicAction(&_sigmaAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_weightWithPointSizeAction, recursive);
         actions().disconnectPrivateActionFromPublicAction(&_continuousUpdatesAction, recursive);
     }
 
@@ -119,6 +130,7 @@ void DensityPlotAction::fromVariantMap(const QVariantMap& variantMap)
     GroupAction::fromVariantMap(variantMap);
 
     _sigmaAction.fromParentVariantMap(variantMap);
+    _weightWithPointSizeAction.fromParentVariantMap(variantMap);
     _continuousUpdatesAction.fromParentVariantMap(variantMap);
 }
 
@@ -127,6 +139,7 @@ QVariantMap DensityPlotAction::toVariantMap() const
     auto variantMap = GroupAction::toVariantMap();
 
     _sigmaAction.insertIntoVariantMap(variantMap);
+    _weightWithPointSizeAction.insertIntoVariantMap(variantMap);
     _continuousUpdatesAction.insertIntoVariantMap(variantMap);
 
     return variantMap;

@@ -79,11 +79,13 @@ public: // Action getters
 
     DecimalAction& getSigmaAction() { return _sigmaAction; }
     ToggleAction& getContinuousUpdatesAction() { return _continuousUpdatesAction; }
+    ToggleAction& getWeightWithPointSizeAction() { return _weightWithPointSizeAction; }
 
 private:
     ScatterplotPlugin*  _scatterplotPlugin;         /** Pointer to scatterplot plugin */
     DecimalAction       _sigmaAction;               /** Density sigma action */
     ToggleAction        _continuousUpdatesAction;   /** Live updates action */
+    ToggleAction        _weightWithPointSizeAction; /** Use point sizes to weight the density */
 
     static constexpr double DEFAULT_SIGMA = 0.15f;
     static constexpr bool DEFAULT_CONTINUOUS_UPDATES = true;
