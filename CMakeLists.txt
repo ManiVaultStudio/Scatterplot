@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.17)
 
+option(MV_UNITY_BUILD "Combine target source files into batches for faster compilation" OFF)
+
 # -----------------------------------------------------------------------------
 # Scatterplot Plugin
 # -----------------------------------------------------------------------------
@@ -112,9 +114,6 @@ source_group(Aux FILES ${AUX})
 # -----------------------------------------------------------------------------
 add_library(${PROJECT} SHARED ${SOURCES} ${SHADERS} ${AUX})
 
-qt_wrap_cpp(SCATTERPLOT_MOC ${PLUGIN_MOC_HEADERS} TARGET ${PROJECT})
-target_sources(${PROJECT} PRIVATE ${SCATTERPLOT_MOC})
-
 # -----------------------------------------------------------------------------
 # Target include directories
 # -----------------------------------------------------------------------------
@@ -124,6 +123,10 @@ target_include_directories(${PROJECT} PRIVATE "${MV_INSTALL_DIR}/$<CONFIGURATION
 # Target properties
 # -----------------------------------------------------------------------------
 target_compile_features(${PROJECT} PRIVATE cxx_std_17)
+
+if(MV_UNITY_BUILD)
+    set_target_properties(${PROJECT} PROPERTIES UNITY_BUILD ON)
+endif()
 
 # -----------------------------------------------------------------------------
 # Target library linking

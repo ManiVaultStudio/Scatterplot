@@ -1,6 +1,5 @@
 #include "ColorSourceModel.h"
 
-#include <DataHierarchyItem.h>
 #include <Application.h>
 #include <Set.h>
 
@@ -56,6 +55,10 @@ ColorSourceModel::DatasetItem::DatasetItem(Dataset<DatasetImpl> dataset, ColorSo
 
     connect(_dataset.get(), &DatasetImpl::textChanged, this, [this]() {
         emitDataChanged();
+    });
+
+    connect(&_dataset, &Dataset<DatasetImpl>::dataChanged, this, [this]() {
+        _colorSourceModel->dataChanged(_dataset);
     });
 
     connect(_colorSourceModel, &ColorSourceModel::showFullPathNameChanged, this, [this]() {
