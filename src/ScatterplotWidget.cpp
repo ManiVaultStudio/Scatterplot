@@ -59,7 +59,8 @@ ScatterplotWidget::ScatterplotWidget() :
     _pixelSelectionTool(this),
     _pixelRatio(1.0),
     _mousePositions(),
-    _isNavigating(false)
+    _isNavigating(false),
+    _weightDensity(false)
 {
     setContextMenuPolicy(Qt::CustomContextMenu);
     setAcceptDrops(true);
