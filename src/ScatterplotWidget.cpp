@@ -135,7 +135,6 @@ bool ScatterplotWidget::event(QEvent* event)
 {
     // Interactions when Alt is pressed
     if (isInitialized() && QGuiApplication::keyboardModifiers() == Qt::AltModifier) {
-        _isNavigating = true;
 
         switch (event->type())
         {
@@ -159,6 +158,7 @@ bool ScatterplotWidget::event(QEvent* event)
                     // Navigation
                     if (mouseEvent->buttons() == Qt::LeftButton)
                     {
+                        _isNavigating = true;
                         _pixelSelectionTool.setEnabled(false);
                         setCursor(Qt::ClosedHandCursor);
                         _mousePositions << mouseEvent->pos();
@@ -222,7 +222,10 @@ bool ScatterplotWidget::event(QEvent* event)
                 {
                     // Reset navigation
                     if (keyEvent && keyEvent->key() == Qt::Key_Alt)
+                    {
                         _isNavigating = false;
+                        _pixelSelectionTool.setEnabled(true);
+                    }
 
                 }
                 break;
