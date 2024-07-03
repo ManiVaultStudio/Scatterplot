@@ -682,6 +682,18 @@ void ScatterplotWidget::setSelectionOutlineHaloEnabled(bool selectionOutlineHalo
     update();
 }
 
+void ScatterplotWidget::setRandomizedDepthEnabled(bool randomizedDepth)
+{
+    _pointRenderer.setRandomizedDepthEnabled(randomizedDepth);
+
+    update();
+}
+
+bool ScatterplotWidget::getRandomizedDepthEnabled() const
+{
+    return _pointRenderer.getRandomizedDepthEnabled();
+}
+
 void ScatterplotWidget::initializeGL()
 {
     initializeOpenGLFunctions();
@@ -757,6 +769,10 @@ void ScatterplotWidget::paintGL()
 
             // Reset the blending function
             glEnable(GL_BLEND);
+
+            if (getRandomizedDepthEnabled())
+                glEnable(GL_DEPTH_TEST);
+
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                
             switch (_renderMode)

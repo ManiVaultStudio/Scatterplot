@@ -10,13 +10,15 @@ const QColor MiscellaneousAction::DEFAULT_BACKGROUND_COLOR = qRgb(255, 255, 255)
 MiscellaneousAction::MiscellaneousAction(QObject* parent, const QString& title) :
     VerticalGroupAction(parent, title),
     _scatterplotPlugin(dynamic_cast<ScatterplotPlugin*>(parent->parent())),
-    _backgroundColorAction(this, "Background color")
+    _backgroundColorAction(this, "Background color"),
+    _randomizedDepthAction(this, "Randomized depth", true)
 {
     setIcon(Application::getIconFont("FontAwesome").getIcon("cog"));
     setLabelSizingType(LabelSizingType::Auto);
     setConfigurationFlag(WidgetAction::ConfigurationFlag::ForceCollapsedInGroup);
 
     addAction(&_backgroundColorAction);
+    addAction(&_randomizedDepthAction);
 
     _backgroundColorAction.setColor(DEFAULT_BACKGROUND_COLOR);
 
@@ -29,6 +31,16 @@ MiscellaneousAction::MiscellaneousAction(QObject* parent, const QString& title) 
     });
 
     updateBackgroundColor();
+
+    const auto updateRandomizedDepth = [this]() -> void {
+        _scatterplotPlugin->getScatterplotWidget().setRandomizedDepthEnabled(_randomizedDepthAction.isChecked());
+    };
+
+    connect(&_randomizedDepthAction, &ToggleAction::toggled, this, [this, updateRandomizedDepth](bool toggled) {
+        updateRandomizedDepth();
+    });
+
+    updateRandomizedDepth();
 }
 
 QMenu* MiscellaneousAction::getContextMenu()
@@ -73,6 +85,7 @@ void MiscellaneousAction::fromVariantMap(const QVariantMap& variantMap)
     GroupAction::fromVariantMap(variantMap);
 
     _backgroundColorAction.fromParentVariantMap(variantMap);
+    _randomizedDepthAction.fromParentVariantMap(variantMap);
 }
 
 QVariantMap MiscellaneousAction::toVariantMap() const
@@ -80,6 +93,7 @@ QVariantMap MiscellaneousAction::toVariantMap() const
     auto variantMap = GroupAction::toVariantMap();
 
     _backgroundColorAction.insertIntoVariantMap(variantMap);
+    _randomizedDepthAction.insertIntoVariantMap(variantMap);
 
     return variantMap;
 }
