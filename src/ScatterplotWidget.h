@@ -211,9 +211,21 @@ public: // Selection
 
     /**
      * Set whether the selection outline halo is enabled or not
-     * @param selectionOutlineHaloEnabled Boolean determining whether the selection outline halo is enabled or not
+     * @param randomizedDepth Boolean determining whether the selection outline halo is enabled or not
+     */
+    void setRandomizedDepthEnabled(bool randomizedDepth);
+
+    /**
+     * Set whether the z-order of each point is to be randomized or not
+     * @param selectionOutlineHaloEnabled Boolean determining whether the z-order of each point is to be randomized or not
      */
     void setSelectionOutlineHaloEnabled(bool selectionOutlineHaloEnabled);
+
+    /**
+     * Get whether the z-order of each point is to be randomized or not
+     * @return Boolean determining whether the z-order of each point is to be randomized or not
+     */
+    bool getRandomizedDepthEnabled() const;
 
 protected:
     void initializeGL()         Q_DECL_OVERRIDE;

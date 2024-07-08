@@ -1,7 +1,8 @@
 #pragma once
 
-#include <actions/ColorAction.h>
 #include <actions/VerticalGroupAction.h>
+#include <actions/ColorAction.h>
+#include <actions/ToggleAction.h>
 
 using namespace mv::gui;
 
@@ -65,10 +66,12 @@ public: // Serialization
 public: // Action getters
 
     ColorAction& getBackgroundColorAction() { return _backgroundColorAction; }
+    ToggleAction& getRandomizedDepthAction() { return _randomizedDepthAction; }
 
 private:
     ScatterplotPlugin*  _scatterplotPlugin;         /** Pointer to scatter plot plugin */
     ColorAction         _backgroundColorAction;     /** Color action for setting the background color action */
+    ToggleAction        _randomizedDepthAction;     /** whether the z-order of each point is to be randomized or not */
 
     static const QColor DEFAULT_BACKGROUND_COLOR;
 
