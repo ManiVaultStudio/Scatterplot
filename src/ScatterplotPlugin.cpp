@@ -226,6 +226,13 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
         }
     });
     */
+
+    getToolTipAction().initialize(&getWidget(), [this](ViewPlugin* viewPlugin) -> QString
+    {
+            qDebug() << __FUNCTION__;
+
+            return {};
+    });
 }
 
 ScatterplotPlugin::~ScatterplotPlugin()
