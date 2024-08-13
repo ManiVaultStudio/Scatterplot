@@ -8,6 +8,7 @@
 #include <util/PixelSelectionTool.h>
 
 #include <actions/DecimalRectangleAction.h>
+#include <actions/ViewPluginToolTipAction.h>
 
 #include <graphics/Bounds.h>
 #include <graphics/Vector2f.h>
@@ -16,6 +17,8 @@
 #include <QOpenGLFunctions_3_3_Core>
 #include <QOpenGLWidget>
 #include <QPoint>
+
+class ScatterplotPlugin;
 
 using namespace mv::gui;
 using namespace mv::util;
@@ -48,6 +51,7 @@ public:
 
 public:
     ScatterplotWidget();
+
     ~ScatterplotWidget();
 
     /** Returns true when the widget was initialized and is ready to be used. */
@@ -140,6 +144,13 @@ public:
      * @param backgroundColor Background color of the screen shot
      */
     void createScreenshot(std::int32_t width, std::int32_t height, const QString& fileName, const QColor& backgroundColor);
+
+    /**
+     * Respond to \p target object events
+     * @param target Object of which an event occurred
+     * @param event The event that took place
+     */
+    bool eventFilter(QObject* target, QEvent* event) override;
 
 public: // Selection
 
@@ -255,6 +266,8 @@ public: // Const access to renderers
         return _densityRenderer;
     }
 
+    void setToolTipAction(ViewPluginToolTipAction* toolTipAction);
+
 public:
 
     /** Assign a color map image to the point and density renderers */
@@ -292,21 +305,22 @@ private slots:
     void updatePixelRatio();
 
 private:
-    PointRenderer           _pointRenderer;             /** For rendering point data as points */
-    DensityRenderer         _densityRenderer;           /** For rendering point data as a density plot */
-    bool                    _isInitialized;             /** Boolean determining whether the widget it properly initialized or not */
-    RenderMode              _renderMode;                /** Current render mode */
-    QColor                  _backgroundColor;           /** Background color */
-    ColoringMode            _coloringMode;              /** Type of point/density coloring */
-    widgetSizeInfo          _widgetSizeInfo;            /** Info about size of the scatterplot widget */
-    DecimalRectangleAction  _dataRectangleAction;       /** Rectangle action for the bounds of the loaded data */
-    NavigationAction        _navigationAction;          /** All navigation-related actions are grouped in this action */
-    QImage                  _colorMapImage;             /** 1D/2D color map image */
-    PixelSelectionTool      _pixelSelectionTool;        /** 2D pixel selection tool */
-    float                   _pixelRatio;                /** Current pixel ratio */
-    QVector<QPoint>         _mousePositions;            /** Recorded mouse positions */
-    bool                    _isNavigating;              /** Boolean determining whether view navigation is currently taking place or not */
-    bool                    _weightDensity;             /** Use point scalar sizes to weight density */
+    PointRenderer               _pointRenderer;             /** For rendering point data as points */
+    DensityRenderer             _densityRenderer;           /** For rendering point data as a density plot */
+    bool                        _isInitialized;             /** Boolean determining whether the widget it properly initialized or not */
+    RenderMode                  _renderMode;                /** Current render mode */
+    QColor                      _backgroundColor;           /** Background color */
+    ColoringMode                _coloringMode;              /** Type of point/density coloring */
+    widgetSizeInfo              _widgetSizeInfo;            /** Info about size of the scatterplot widget */
+    DecimalRectangleAction      _dataRectangleAction;       /** Rectangle action for the bounds of the loaded data */
+    NavigationAction            _navigationAction;          /** All navigation-related actions are grouped in this action */
+    QImage                      _colorMapImage;             /** 1D/2D color map image */
+    PixelSelectionTool          _pixelSelectionTool;        /** 2D pixel selection tool */
+    float                       _pixelRatio;                /** Current pixel ratio */
+    QVector<QPoint>             _mousePositions;            /** Recorded mouse positions */
+    bool                        _isNavigating;              /** Boolean determining whether view navigation is currently taking place or not */
+    bool                        _weightDensity;             /** Use point scalar sizes to weight density */
+    ViewPluginToolTipAction*    _toolTipAction;             /** Pointer to view plugin tooltip action from the scatter plot plugin */
 
     friend class NavigationAction;
 };

@@ -16,6 +16,8 @@
 
 #include <math.h>
 
+#include "ScatterplotPlugin.h"
+
 using namespace mv;
 
 namespace
@@ -67,6 +69,8 @@ ScatterplotWidget::ScatterplotWidget() :
     setMouseTracking(true);
     setFocusPolicy(Qt::ClickFocus);
     grabGesture(Qt::PinchGesture);
+
+    this->installEventFilter(this);
 
     _navigationAction.initialize(this);
 
@@ -604,6 +608,27 @@ void ScatterplotWidget::createScreenshot(std::int32_t width, std::int32_t height
     }
 }
 
+bool ScatterplotWidget::eventFilter(QObject* target, QEvent* event)
+{
+    if (target == this) {
+        switch (event->type())
+        {
+            case QEvent::MouseMove:
+            {
+                if (_toolTipAction)
+                    _toolTipAction->requestUpdate();
+
+                break;
+            }
+
+            default:
+                break;
+        }
+    }
+
+    return QOpenGLWidget::eventFilter(target, event);
+}
+
 PointSelectionDisplayMode ScatterplotWidget::getSelectionDisplayMode() const
 {
     return _pointRenderer.getSelectionDisplayMode();
@@ -818,6 +843,11 @@ void ScatterplotWidget::cleanup()
     makeCurrent();
     _pointRenderer.destroy();
     _densityRenderer.destroy();
+}
+
+void ScatterplotWidget::setToolTipAction(ViewPluginToolTipAction* toolTipAction)
+{
+    _toolTipAction = toolTipAction;
 }
 
 void ScatterplotWidget::setColorMap(const QImage& colorMapImage)

@@ -53,6 +53,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     _dropWidget = new DropWidget(_scatterPlotWidget);
 
     _scatterPlotWidget->getNavigationAction().setParent(this);
+    _scatterPlotWidget->setToolTipAction(&getToolTipAction());
 
     getWidget().setFocusPolicy(Qt::ClickFocus);
 
@@ -227,11 +228,13 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     });
     */
 
-    getToolTipAction().initialize(&getWidget(), [this](ViewPlugin* viewPlugin) -> QString
-    {
-            qDebug() << __FUNCTION__;
-
-            return {};
+    getToolTipAction().initialize(this, [this](ViewPlugin* viewPlugin) -> QString {
+        return  "<table> \
+                    <tr> \
+                        <td>Name</td> \
+                        <td>Description</td> \
+                    </tr> \
+                   </table>";
     });
 }
 
