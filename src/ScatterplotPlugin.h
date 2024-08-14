@@ -94,6 +94,13 @@ private:
     void updateData();
     void updateSelection();
 
+    /**
+     * Respond to \p target object events
+     * @param target Object of which an event occurred
+     * @param event The event that took place
+     */
+    bool eventFilter(QObject* target, QEvent* event) override;
+
 public: // Serialization
 
     /**

@@ -53,7 +53,6 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     _dropWidget = new DropWidget(_scatterPlotWidget);
 
     _scatterPlotWidget->getNavigationAction().setParent(this);
-    _scatterPlotWidget->setToolTipAction(&getToolTipAction());
 
     getWidget().setFocusPolicy(Qt::ClickFocus);
 
@@ -228,13 +227,18 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     });
     */
 
-    getToolTipAction().initialize(this, [this](ViewPlugin* viewPlugin) -> QString {
-        return  "<table> \
+    getFocusRegionAction().initialize(this, [this](const ViewPluginFocusRegionAction::SummaryContext& sSummaryContext) -> QString {
+        QStringList pointIndicesInFocusRegion;
+
+        for (const auto& pointIndex : sSummaryContext["pointIndicesInFocusRegion"].toList())
+            pointIndicesInFocusRegion << QString::number(pointIndex.toInt());
+
+        return  QString("<table> \
                     <tr> \
                         <td>Name</td> \
-                        <td>Description</td> \
+                        <td>%1</td> \
                     </tr> \
-                   </table>";
+                   </table>").arg(pointIndicesInFocusRegion.join(", "));
     });
 }
 
@@ -277,6 +281,8 @@ void ScatterplotPlugin::init()
     connect(&_positionDataset, &Dataset<Points>::changed, this, &ScatterplotPlugin::positionDatasetChanged);
     connect(&_positionDataset, &Dataset<Points>::dataChanged, this, &ScatterplotPlugin::updateData);
     connect(&_positionDataset, &Dataset<Points>::dataSelectionChanged, this, &ScatterplotPlugin::updateSelection);
+
+    _scatterPlotWidget->installEventFilter(this);
 }
 
 void ScatterplotPlugin::loadData(const Datasets& datasets)
@@ -579,6 +585,71 @@ void ScatterplotPlugin::updateSelection()
         highlights[i] = selected[i] ? 1 : 0;
 
     _scatterPlotWidget->setHighlights(highlights, static_cast<std::int32_t>(selection->indices.size()));
+}
+
+bool ScatterplotPlugin::eventFilter(QObject* target, QEvent* event)
+{
+    switch (event->type())
+    {
+        case QEvent::MouseMove:
+        {
+            if (target != _scatterPlotWidget)
+                break;
+
+            if (auto* mouseEvent = static_cast<QMouseEvent*>(event))
+            {
+                if (mouseEvent->buttons() != Qt::NoButton)
+                    break;
+
+                const auto mousePosition = mouseEvent->pos();
+
+                QVariantList pointIndicesInFocusRegion;
+
+                pointIndicesInFocusRegion.reserve(_positions.size());
+
+                auto& zoomRectangleAction = _scatterPlotWidget->getNavigationAction().getZoomRectangleAction();
+
+                const auto width    = getWidget().width();
+                const auto height   = getWidget().height();
+                const auto size     = width < height ? width : height;
+                const auto uvOffset = QPoint((width - size) / 2.0f, (height - size) / 2.0f);
+
+                QPointF uvNormalized    = {};
+                QPoint  uv              = {};
+
+                std::vector<char> focusHighlights(_positions.size());
+
+                for (std::uint32_t pointIndex = 0; pointIndex < _positions.size(); pointIndex++) {
+                    uvNormalized    = QPointF((_positions[pointIndex].x - zoomRectangleAction.getLeft()) / zoomRectangleAction.getWidth(), (zoomRectangleAction.getTop() - _positions[pointIndex].y) / zoomRectangleAction.getHeight());
+                    uv              = uvOffset + QPoint(uvNormalized.x() * size, uvNormalized.y() * size);
+
+                    if (uv.x() >= width || uv.x() < 0 ||
+                        uv.y() >= height || uv.y() < 0)
+                        continue;
+
+                    const auto n = QVector2D(mousePosition) - QVector2D(uv);
+
+                    if (n.length() < getFocusRegionAction().getSizeAction().getValue()) {
+                        pointIndicesInFocusRegion << pointIndex;
+
+                        focusHighlights[pointIndex] = 1;
+                    }
+                }
+
+                const_cast<PointRenderer&>(_scatterPlotWidget->getPointRenderer()).setFocusHighlights(focusHighlights, pointIndicesInFocusRegion.size());
+
+                getFocusRegionAction().requestUpdate({
+                    { "pointIndicesInFocusRegion", pointIndicesInFocusRegion }
+                });
+
+                _scatterPlotWidget->update();
+            }
+    
+            break;
+        }
+    }
+
+    return ViewPlugin::eventFilter(target, event);
 }
 
 void ScatterplotPlugin::fromVariantMap(const QVariantMap& variantMap)

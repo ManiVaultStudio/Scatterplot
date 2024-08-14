@@ -208,18 +208,6 @@ bool ScatterplotWidget::event(QEvent* event)
                 break;
             }
 
-            //case QEvent::KeyPress:
-            //{
-            //    if (auto* keyEvent = static_cast<QKeyEvent*>(event))
-            //    {
-            //        // Reset zoom
-            //        if (keyEvent && keyEvent->key() == Qt::Key_O)
-            //            resetView();
-            //    }
-
-            //    break;
-            //}
-
             case QEvent::KeyRelease:
             {
                 if (auto* keyEvent = static_cast<QKeyEvent*>(event))
@@ -234,8 +222,7 @@ bool ScatterplotWidget::event(QEvent* event)
                 }
                 break;
             }
-
-        } // end switch
+        }
     }
 
     return QWidget::event(event);
@@ -244,6 +231,11 @@ bool ScatterplotWidget::event(QEvent* event)
 void ScatterplotWidget::resetView()
 {
     _navigationAction.getZoomRectangleAction().setBounds(_dataRectangleAction.getBounds());
+}
+
+void ScatterplotWidget::moveFocusRegion()
+{
+
 }
 
 void ScatterplotWidget::panBy(const QPointF& to)
@@ -608,27 +600,6 @@ void ScatterplotWidget::createScreenshot(std::int32_t width, std::int32_t height
     }
 }
 
-bool ScatterplotWidget::eventFilter(QObject* target, QEvent* event)
-{
-    if (target == this) {
-        switch (event->type())
-        {
-            case QEvent::MouseMove:
-            {
-                if (_toolTipAction)
-                    _toolTipAction->requestUpdate();
-
-                break;
-            }
-
-            default:
-                break;
-        }
-    }
-
-    return QOpenGLWidget::eventFilter(target, event);
-}
-
 PointSelectionDisplayMode ScatterplotWidget::getSelectionDisplayMode() const
 {
     return _pointRenderer.getSelectionDisplayMode();
@@ -843,11 +814,6 @@ void ScatterplotWidget::cleanup()
     makeCurrent();
     _pointRenderer.destroy();
     _densityRenderer.destroy();
-}
-
-void ScatterplotWidget::setToolTipAction(ViewPluginToolTipAction* toolTipAction)
-{
-    _toolTipAction = toolTipAction;
 }
 
 void ScatterplotWidget::setColorMap(const QImage& colorMapImage)

@@ -8,7 +8,6 @@
 #include <util/PixelSelectionTool.h>
 
 #include <actions/DecimalRectangleAction.h>
-#include <actions/ViewPluginToolTipAction.h>
 
 #include <graphics/Bounds.h>
 #include <graphics/Vector2f.h>
@@ -145,13 +144,6 @@ public:
      */
     void createScreenshot(std::int32_t width, std::int32_t height, const QString& fileName, const QColor& backgroundColor);
 
-    /**
-     * Respond to \p target object events
-     * @param target Object of which an event occurred
-     * @param event The event that took place
-     */
-    bool eventFilter(QObject* target, QEvent* event) override;
-
 public: // Selection
 
     /**
@@ -255,6 +247,7 @@ protected:
     void zoomAround(const QPointF& at, float factor);
     void panBy(const QPointF& to);
     void resetView();
+    void moveFocusRegion();
 
 public: // Const access to renderers
 
@@ -265,8 +258,6 @@ public: // Const access to renderers
     const DensityRenderer& getDensityRenderer() const {
         return _densityRenderer;
     }
-
-    void setToolTipAction(ViewPluginToolTipAction* toolTipAction);
 
 public:
 
@@ -320,7 +311,6 @@ private:
     QVector<QPoint>             _mousePositions;            /** Recorded mouse positions */
     bool                        _isNavigating;              /** Boolean determining whether view navigation is currently taking place or not */
     bool                        _weightDensity;             /** Use point scalar sizes to weight density */
-    ViewPluginToolTipAction*    _toolTipAction;             /** Pointer to view plugin tooltip action from the scatter plot plugin */
 
     friend class NavigationAction;
 };
