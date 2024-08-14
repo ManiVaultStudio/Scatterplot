@@ -227,11 +227,14 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     });
     */
 
-    getFocusRegionAction().initialize(this, [this](const ViewPluginFocusRegionAction::SummaryContext& sSummaryContext) -> QString {
+    getFocusRegionAction().initialize(this, [this](const ViewPluginFocusRegionAction::ToolTipContext& toolTipContext) -> QString {
         QStringList pointIndicesInFocusRegion;
 
-        for (const auto& pointIndex : sSummaryContext["pointIndicesInFocusRegion"].toList())
+        for (const auto& pointIndex : toolTipContext["pointIndicesInFocusRegion"].toList())
             pointIndicesInFocusRegion << QString::number(pointIndex.toInt());
+
+        if (pointIndicesInFocusRegion.isEmpty())
+            return {};
 
         return  QString("<table> \
                     <tr> \
@@ -601,6 +604,9 @@ bool ScatterplotPlugin::eventFilter(QObject* target, QEvent* event)
                 if (mouseEvent->buttons() != Qt::NoButton)
                     break;
 
+                if (!getFocusRegionAction().getEnabledAction().isChecked())
+                    break;
+                
                 const auto mousePosition = mouseEvent->pos();
 
                 QVariantList pointIndicesInFocusRegion;
