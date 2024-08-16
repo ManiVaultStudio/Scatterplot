@@ -276,6 +276,10 @@ void ScatterplotPlugin::init()
         samplePoints();
     });
 
+    connect(&_scatterPlotWidget->getSamplerPixelSelectionTool(), &PixelSelectionTool::ended, [this]() {
+        samplePoints();
+    });
+
     connect(&_positionDataset, &Dataset<Points>::changed, this, &ScatterplotPlugin::positionDatasetChanged);
     connect(&_positionDataset, &Dataset<Points>::dataChanged, this, &ScatterplotPlugin::updateData);
     connect(&_positionDataset, &Dataset<Points>::dataSelectionChanged, this, &ScatterplotPlugin::updateSelection);
