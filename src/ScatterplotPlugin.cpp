@@ -45,8 +45,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     _numPoints(0),
     _settingsAction(this, "Settings"),
     _primaryToolbarAction(this, "Primary Toolbar"),
-    _secondaryToolbarAction(this, "Secondary Toolbar"),
-    _selectPointsTimer()
+    _secondaryToolbarAction(this, "Secondary Toolbar")
 {
     setObjectName("Scatterplot");
 
@@ -214,34 +213,30 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
         return dropRegions;
     });
 
-    /*
-    _selectPointsTimer.setSingleShot(true);
+    auto& selectionAction = _settingsAction.getSelectionAction();
 
-    connect(&_selectPointsTimer, &QTimer::timeout, this, [this]() -> void {
-        if (_selectPointsTimer.isActive())
-            _selectPointsTimer.start(LAZY_UPDATE_INTERVAL);
-        else {
-            _selectPointsTimer.stop();
-            selectPoints();
-        }
-    });
-    */
+    getSamplerAction().initialize(this, &selectionAction.getPixelSelectionAction(), &selectionAction.getSamplerPixelSelectionAction(), [this](const ViewPluginSamplerAction::ToolTipContext& toolTipContext) -> QString {
+        QStringList localPointIndices, globalPointIndices;
 
-    getFocusRegionAction().initialize(this, [this](const ViewPluginFocusRegionAction::ToolTipContext& toolTipContext) -> QString {
-        QStringList pointIndicesInFocusRegion;
+        for (const auto& localPointIndex : toolTipContext["LocalPointIndices"].toList())
+            localPointIndices << QString::number(localPointIndex.toInt());
 
-        for (const auto& pointIndex : toolTipContext["pointIndicesInFocusRegion"].toList())
-            pointIndicesInFocusRegion << QString::number(pointIndex.toInt());
+        for (const auto& globalPointIndex : toolTipContext["GlobalPointIndices"].toList())
+            globalPointIndices << QString::number(globalPointIndex.toInt());
 
-        if (pointIndicesInFocusRegion.isEmpty())
+        if (localPointIndices.isEmpty())
             return {};
 
         return  QString("<table> \
                     <tr> \
-                        <td>Name</td> \
+                        <td>Local point ID's</td> \
                         <td>%1</td> \
                     </tr> \
-                   </table>").arg(pointIndicesInFocusRegion.join(", "));
+                    <tr> \
+                        <td>Global point ID's</td> \
+                        <td>%2</td> \
+                    </tr> \
+                   </table>").arg(localPointIndices.join(", "), globalPointIndices.join(", "));
     });
 }
 
@@ -264,21 +259,21 @@ void ScatterplotPlugin::init()
     // Update the data when the scatter plot widget is initialized
     connect(_scatterPlotWidget, &ScatterplotWidget::initialized, this, &ScatterplotPlugin::updateData);
 
-    // Update the selection when the pixel selection tool selected area changed
     connect(&_scatterPlotWidget->getPixelSelectionTool(), &PixelSelectionTool::areaChanged, [this]() {
         if (_scatterPlotWidget->getPixelSelectionTool().isNotifyDuringSelection()) {
-            //_selectPointsTimer.start(LAZY_UPDATE_INTERVAL);
             selectPoints();
         }
     });
 
-    // Update the selection when the pixel selection process ended
     connect(&_scatterPlotWidget->getPixelSelectionTool(), &PixelSelectionTool::ended, [this]() {
         if (_scatterPlotWidget->getPixelSelectionTool().isNotifyDuringSelection())
             return;
 
-        //_selectPointsTimer.start(LAZY_UPDATE_INTERVAL);
         selectPoints();
+    });
+
+    connect(&_scatterPlotWidget->getSamplerPixelSelectionTool(), &PixelSelectionTool::areaChanged, [this]() {
+        samplePoints();
     });
 
     connect(&_positionDataset, &Dataset<Points>::changed, this, &ScatterplotPlugin::positionDatasetChanged);
@@ -318,28 +313,21 @@ void ScatterplotPlugin::createSubset(const bool& fromSourceData /*= false*/, con
 
 void ScatterplotPlugin::selectPoints()
 {
+    auto& pixelSelectionTool = _scatterPlotWidget->getPixelSelectionTool();
+
     // Only proceed with a valid points position dataset and when the pixel selection tool is active
-    if (!_positionDataset.isValid() || !_scatterPlotWidget->getPixelSelectionTool().isActive() || _scatterPlotWidget->isNavigating())
+    if (!_positionDataset.isValid() || !pixelSelectionTool.isActive() || _scatterPlotWidget->isNavigating())
         return;
 
-    //qDebug() << _positionDataset->getGuiName() << "selectPoints";
+    auto selectionAreaImage = pixelSelectionTool.getAreaPixmap().toImage();
+    auto selectionSet       = _positionDataset->getSelection<Points>();
 
-    // Get binary selection area image from the pixel selection tool
-    auto selectionAreaImage = _scatterPlotWidget->getPixelSelectionTool().getAreaPixmap().toImage();
-
-    // Get smart pointer to the position selection dataset
-    auto selectionSet = _positionDataset->getSelection<Points>();
-
-    // Create vector for target selection indices
     std::vector<std::uint32_t> targetSelectionIndices;
 
-    // Reserve space for the indices
     targetSelectionIndices.reserve(_positionDataset->getNumPoints());
 
-    // Mapping from local to global indices
     std::vector<std::uint32_t> localGlobalIndices;
 
-    // Get global indices from the position dataset
     _positionDataset->getGlobalIndices(localGlobalIndices);
 
     auto& zoomRectangleAction = _scatterPlotWidget->getNavigationAction().getZoomRectangleAction();
@@ -348,26 +336,24 @@ void ScatterplotPlugin::selectPoints()
     const auto height       = selectionAreaImage.height();
     const auto size         = width < height ? width : height;
     const auto uvOffset     = QPoint((selectionAreaImage.width() - size) / 2.0f, (selectionAreaImage.height() - size) / 2.0f);
+    const auto isSampleType = pixelSelectionTool.getType() == PixelSelectionType::Sample;
 
     QPointF uvNormalized    = {};
     QPoint uv               = {};
 
-    // Loop over all points and establish whether they are selected or not
-    for (std::uint32_t i = 0; i < _positions.size(); i++) {
-        uvNormalized = QPointF((_positions[i].x - zoomRectangleAction.getLeft()) / zoomRectangleAction.getWidth(), (zoomRectangleAction.getTop() - _positions[i].y) / zoomRectangleAction.getHeight());
+    for (std::uint32_t localPointIndex = 0; localPointIndex < _positions.size(); localPointIndex++) {
+        uvNormalized = QPointF((_positions[localPointIndex].x - zoomRectangleAction.getLeft()) / zoomRectangleAction.getWidth(), (zoomRectangleAction.getTop() - _positions[localPointIndex].y) / zoomRectangleAction.getHeight());
         uv           = uvOffset + QPoint(uvNormalized.x() * size, uvNormalized.y() * size);
 
-        if (uv.x() >= selectionAreaImage.width()  || uv.x() < 0 ||
-            uv.y() >= selectionAreaImage.height() || uv.y() < 0)
+        if (uv.x() >= selectionAreaImage.width()  || uv.x() < 0 || uv.y() >= selectionAreaImage.height() || uv.y() < 0)
             continue;
 
-        // Add point if the corresponding pixel selection is on
         if (selectionAreaImage.pixelColor(uv).alpha() > 0)
-            targetSelectionIndices.push_back(localGlobalIndices[i]);
+            targetSelectionIndices.push_back(localGlobalIndices[localPointIndex]);
     }
 
     // Selection should be subtracted when the selection process was aborted by the user (e.g. by pressing the escape key)
-    const auto selectionModifier = _scatterPlotWidget->getPixelSelectionTool().isAborted() ? PixelSelectionModifierType::Subtract : _scatterPlotWidget->getPixelSelectionTool().getModifier();
+    const auto selectionModifier = pixelSelectionTool.isAborted() ? PixelSelectionModifierType::Subtract : pixelSelectionTool.getModifier();
 
     switch (selectionModifier)
     {
@@ -422,6 +408,78 @@ void ScatterplotPlugin::selectPoints()
     _positionDataset->setSelectionIndices(targetSelectionIndices);
 
     events().notifyDatasetDataSelectionChanged(_positionDataset->getSourceDataset<Points>());
+}
+
+void ScatterplotPlugin::samplePoints()
+{
+    auto& samplerPixelSelectionTool = _scatterPlotWidget->getSamplerPixelSelectionTool();
+
+    if (!_positionDataset.isValid() || _scatterPlotWidget->isNavigating())
+        return;
+
+    auto selectionAreaImage = samplerPixelSelectionTool.getAreaPixmap().toImage();
+
+    auto selectionSet= _positionDataset->getSelection<Points>();
+
+    std::vector<std::uint32_t> targetSelectionIndices;
+
+    targetSelectionIndices.reserve(_positionDataset->getNumPoints());
+
+    std::vector<std::uint32_t> localGlobalIndices;
+
+    _positionDataset->getGlobalIndices(localGlobalIndices);
+
+    auto& zoomRectangleAction = _scatterPlotWidget->getNavigationAction().getZoomRectangleAction();
+
+    const auto width = selectionAreaImage.width();
+    const auto height = selectionAreaImage.height();
+    const auto size = width < height ? width : height;
+    const auto uvOffset = QPoint((selectionAreaImage.width() - size) / 2.0f, (selectionAreaImage.height() - size) / 2.0f);
+    const auto isSampleType = samplerPixelSelectionTool.getType() == PixelSelectionType::Sample;
+
+    QPointF uvNormalized = {};
+    QPoint uv = {};
+
+    QVariantList localPointIndices, globalPointIndices;
+
+    std::vector<char> focusHighlights;
+
+    localPointIndices.reserve(_positions.size());
+    globalPointIndices.reserve(_positions.size());
+    focusHighlights.resize(_positions.size());
+
+    // Loop over all points and establish whether they are selected or not
+    for (std::uint32_t localPointIndex = 0; localPointIndex < _positions.size(); localPointIndex++) {
+        uvNormalized = QPointF((_positions[localPointIndex].x - zoomRectangleAction.getLeft()) / zoomRectangleAction.getWidth(), (zoomRectangleAction.getTop() - _positions[localPointIndex].y) / zoomRectangleAction.getHeight());
+        uv = uvOffset + QPoint(uvNormalized.x() * size, uvNormalized.y() * size);
+
+        if (uv.x() >= selectionAreaImage.width() || uv.x() < 0 ||
+            uv.y() >= selectionAreaImage.height() || uv.y() < 0)
+            continue;
+
+        const auto globalPointIndex = localGlobalIndices[localPointIndex];
+
+        // Add point if the corresponding pixel selection is on (handle sample type differently)
+        if (selectionAreaImage.pixelColor(uv).alpha() > 0) {
+            if (isSampleType) {
+                localPointIndices << localPointIndex;
+                globalPointIndices << globalPointIndex;
+
+                if (getSamplerAction().getHighlightFocusedElementsAction().isChecked())
+                    focusHighlights[localPointIndex] = 1;
+            }
+            else {
+                targetSelectionIndices.push_back(globalPointIndex);
+            }
+        }
+    }
+
+    const_cast<PointRenderer&>(_scatterPlotWidget->getPointRenderer()).setFocusHighlights(focusHighlights, localPointIndices.size());
+
+    getSamplerAction().requestUpdate({
+        { "LocalPointIndices", localPointIndices },
+        { "GlobalPointIndices", globalPointIndices }
+    });
 }
 
 Dataset<Points>& ScatterplotPlugin::getPositionDataset()
@@ -588,74 +646,6 @@ void ScatterplotPlugin::updateSelection()
         highlights[i] = selected[i] ? 1 : 0;
 
     _scatterPlotWidget->setHighlights(highlights, static_cast<std::int32_t>(selection->indices.size()));
-}
-
-bool ScatterplotPlugin::eventFilter(QObject* target, QEvent* event)
-{
-    switch (event->type())
-    {
-        case QEvent::MouseMove:
-        {
-            if (target != _scatterPlotWidget)
-                break;
-
-            if (auto* mouseEvent = static_cast<QMouseEvent*>(event))
-            {
-                if (mouseEvent->buttons() != Qt::NoButton)
-                    break;
-
-                if (!getFocusRegionAction().getEnabledAction().isChecked())
-                    break;
-                
-                const auto mousePosition = mouseEvent->pos();
-
-                QVariantList pointIndicesInFocusRegion;
-
-                pointIndicesInFocusRegion.reserve(_positions.size());
-
-                auto& zoomRectangleAction = _scatterPlotWidget->getNavigationAction().getZoomRectangleAction();
-
-                const auto width    = getWidget().width();
-                const auto height   = getWidget().height();
-                const auto size     = width < height ? width : height;
-                const auto uvOffset = QPoint((width - size) / 2.0f, (height - size) / 2.0f);
-
-                QPointF uvNormalized    = {};
-                QPoint  uv              = {};
-
-                std::vector<char> focusHighlights(_positions.size());
-
-                for (std::uint32_t pointIndex = 0; pointIndex < _positions.size(); pointIndex++) {
-                    uvNormalized    = QPointF((_positions[pointIndex].x - zoomRectangleAction.getLeft()) / zoomRectangleAction.getWidth(), (zoomRectangleAction.getTop() - _positions[pointIndex].y) / zoomRectangleAction.getHeight());
-                    uv              = uvOffset + QPoint(uvNormalized.x() * size, uvNormalized.y() * size);
-
-                    if (uv.x() >= width || uv.x() < 0 ||
-                        uv.y() >= height || uv.y() < 0)
-                        continue;
-
-                    const auto n = QVector2D(mousePosition) - QVector2D(uv);
-
-                    if (n.length() < getFocusRegionAction().getSizeAction().getValue()) {
-                        pointIndicesInFocusRegion << pointIndex;
-
-                        focusHighlights[pointIndex] = 1;
-                    }
-                }
-
-                const_cast<PointRenderer&>(_scatterPlotWidget->getPointRenderer()).setFocusHighlights(focusHighlights, pointIndicesInFocusRegion.size());
-
-                getFocusRegionAction().requestUpdate({
-                    { "pointIndicesInFocusRegion", pointIndicesInFocusRegion }
-                });
-
-                _scatterPlotWidget->update();
-            }
-    
-            break;
-        }
-    }
-
-    return ViewPlugin::eventFilter(target, event);
 }
 
 void ScatterplotPlugin::fromVariantMap(const QVariantMap& variantMap)

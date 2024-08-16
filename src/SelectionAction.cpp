@@ -12,6 +12,7 @@ using namespace mv::gui;
 SelectionAction::SelectionAction(QObject* parent, const QString& title) :
     GroupAction(parent, title),
     _pixelSelectionAction(this, "Point Selection"),
+    _samplerPixelSelectionAction(this, "Sampler selection"),
     _displayModeAction(this, "Display mode", { "Outline", "Override" }),
     _outlineOverrideColorAction(this, "Custom color", true),
     _outlineScaleAction(this, "Scale", 100.0f, 500.0f, 200.0f, 1),
@@ -72,6 +73,10 @@ void SelectionAction::initialize(ScatterplotPlugin* scatterplotPlugin)
         PixelSelectionType::Polygon
     });
 
+    getSamplerPixelSelectionAction().initialize(&scatterplotWidget, &scatterplotWidget.getSamplerPixelSelectionTool(), {
+        PixelSelectionType::Sample
+    });
+
     _displayModeAction.setCurrentIndex(static_cast<std::int32_t>(scatterplotPlugin->getScatterplotWidget().getSelectionDisplayMode()));
     _outlineScaleAction.setValue(100.0f * scatterplotPlugin->getScatterplotWidget().getSelectionOutlineScale());
     _outlineOpacityAction.setValue(100.0f * scatterplotPlugin->getScatterplotWidget().getSelectionOutlineOpacity());
@@ -126,7 +131,7 @@ void SelectionAction::initialize(ScatterplotPlugin* scatterplotPlugin)
 
     connect(&scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, updateReadOnly);
 
-    addAction(&scatterplotPlugin->getFocusRegionAction());
+    addAction(&scatterplotPlugin->getSamplerAction());
 }
 
 void SelectionAction::connectToPublicAction(WidgetAction* publicAction, bool recursive)
