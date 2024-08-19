@@ -438,54 +438,47 @@ void ScatterplotPlugin::samplePoints()
 
     auto& zoomRectangleAction = _scatterPlotWidget->getNavigationAction().getZoomRectangleAction();
 
-    const auto width = selectionAreaImage.width();
-    const auto height = selectionAreaImage.height();
-    const auto size = width < height ? width : height;
+    const auto width    = selectionAreaImage.width();
+    const auto height   = selectionAreaImage.height();
+    const auto size     = width < height ? width : height;
     const auto uvOffset = QPoint((selectionAreaImage.width() - size) / 2.0f, (selectionAreaImage.height() - size) / 2.0f);
-    const auto isSampleType = samplerPixelSelectionTool.getType() == PixelSelectionType::Sample;
 
-    QPointF uvNormalized = {};
-    QPoint uv = {};
+    QPointF uvNormalized    = {};
+    QPoint  uv              = {};
 
     QVariantList localPointIndices, globalPointIndices, distances;
 
     std::vector<char> focusHighlights;
 
-    localPointIndices.reserve(_positions.size());
-    globalPointIndices.reserve(_positions.size());
-    focusHighlights.resize(_positions.size());
+    localPointIndices.reserve(static_cast<std::int32_t>(_positions.size()));
+    globalPointIndices.reserve(static_cast<std::int32_t>(_positions.size()));
+    focusHighlights.resize(static_cast<std::int32_t>(_positions.size()));
 
-    // Loop over all points and establish whether they are selected or not
     for (std::uint32_t localPointIndex = 0; localPointIndex < _positions.size(); localPointIndex++) {
-        uvNormalized = QPointF((_positions[localPointIndex].x - zoomRectangleAction.getLeft()) / zoomRectangleAction.getWidth(), (zoomRectangleAction.getTop() - _positions[localPointIndex].y) / zoomRectangleAction.getHeight());
-        uv = uvOffset + QPoint(uvNormalized.x() * size, uvNormalized.y() * size);
+        if (localPointIndex >= static_cast<std::uint32_t>(getSamplerAction().getMaximumNumberOfElementsAction().getValue()))
+            break;
+
+        uvNormalized    = QPointF((_positions[localPointIndex].x - zoomRectangleAction.getLeft()) / zoomRectangleAction.getWidth(), (zoomRectangleAction.getTop() - _positions[localPointIndex].y) / zoomRectangleAction.getHeight());
+        uv              = uvOffset + QPoint(uvNormalized.x() * size, uvNormalized.y() * size);
 
         if (uv.x() >= selectionAreaImage.width() || uv.x() < 0 ||
             uv.y() >= selectionAreaImage.height() || uv.y() < 0)
             continue;
 
-        const auto globalPointIndex = localGlobalIndices[localPointIndex];
-
-        // Add point if the corresponding pixel selection is on (handle sample type differently)
         if (selectionAreaImage.pixelColor(uv).alpha() > 0) {
-            if (isSampleType) {
-                localPointIndices << localPointIndex;
-                globalPointIndices << globalPointIndex;
+            localPointIndices << localPointIndex;
+            globalPointIndices << localGlobalIndices[localPointIndex];
 
-                if (getSamplerAction().getHighlightFocusedElementsAction().isChecked())
-                    focusHighlights[localPointIndex] = 1;
-            }
-            else {
-                targetSelectionIndices.push_back(globalPointIndex);
-            }
+            if (getSamplerAction().getHighlightFocusedElementsAction().isChecked())
+                focusHighlights[localPointIndex] = 1;
         }
     }
 
-    const_cast<PointRenderer&>(_scatterPlotWidget->getPointRenderer()).setFocusHighlights(focusHighlights, localPointIndices.size());
+    const_cast<PointRenderer&>(_scatterPlotWidget->getPointRenderer()).setFocusHighlights(focusHighlights, static_cast<std::int32_t>(localPointIndices.size()));
 
     getSamplerAction().requestUpdate({
-        { "PositionDatasetID", _positionDataset->getId() },
-        { "ColorDatasetID", _settingsAction.getColoringAction().getCurrentColorDataset()->getId() },
+        { "PositionDatasetID", _positionDataset.getDatasetId() },
+        { "ColorDatasetID", _settingsAction.getColoringAction().getCurrentColorDataset().getDatasetId() },
         { "LocalPointIndices", localPointIndices },
         { "GlobalPointIndices", globalPointIndices },
         { "Distances", distances }
