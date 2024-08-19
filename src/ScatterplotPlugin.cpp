@@ -454,8 +454,10 @@ void ScatterplotPlugin::samplePoints()
     globalPointIndices.reserve(static_cast<std::int32_t>(_positions.size()));
     focusHighlights.resize(static_cast<std::int32_t>(_positions.size()));
 
+    std::int32_t numberOfFocusedElements = 0;
+
     for (std::uint32_t localPointIndex = 0; localPointIndex < _positions.size(); localPointIndex++) {
-        if (localPointIndex >= static_cast<std::uint32_t>(getSamplerAction().getMaximumNumberOfElementsAction().getValue()))
+        if (numberOfFocusedElements >= getSamplerAction().getMaximumNumberOfElementsAction().getValue())
             break;
 
         uvNormalized    = QPointF((_positions[localPointIndex].x - zoomRectangleAction.getLeft()) / zoomRectangleAction.getWidth(), (zoomRectangleAction.getTop() - _positions[localPointIndex].y) / zoomRectangleAction.getHeight());
@@ -471,10 +473,12 @@ void ScatterplotPlugin::samplePoints()
 
             if (getSamplerAction().getHighlightFocusedElementsAction().isChecked())
                 focusHighlights[localPointIndex] = 1;
+
+            numberOfFocusedElements++;
         }
     }
 
-    const_cast<PointRenderer&>(_scatterPlotWidget->getPointRenderer()).setFocusHighlights(focusHighlights, static_cast<std::int32_t>(localPointIndices.size()));
+    const_cast<PointRenderer&>(_scatterPlotWidget->getPointRenderer()).setFocusHighlights(focusHighlights, static_cast<std::int32_t>(focusHighlights.size()));
 
     getSamplerAction().requestUpdate({
         { "PositionDatasetID", _positionDataset.getDatasetId() },
