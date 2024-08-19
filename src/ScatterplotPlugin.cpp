@@ -228,18 +228,12 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
         if (localPointIndices.isEmpty())
             return {};
 
-        return  QString("<p><b>%1</> points are selected</p>").arg(localPointIndices.size());
-
         return  QString("<table> \
                     <tr> \
-                        <td>Local point ID's</td> \
-                        <td>%1</td> \
-                    </tr> \
-                    <tr> \
-                        <td>Global point ID's</td> \
+                        <td><b>Point ID's: </b></td> \
                         <td>%2</td> \
                     </tr> \
-                   </table>").arg(localPointIndices.join(", "), globalPointIndices.join(", "));
+                   </table>").arg(globalPointIndices.join(", "));
     });
 }
 
@@ -459,8 +453,6 @@ void ScatterplotPlugin::samplePoints()
                 localPointIndex,
                 localGlobalIndices[localPointIndex]
             };
-
-            focusHighlights[localPointIndex] = true;
         }
     }
 
@@ -483,6 +475,8 @@ void ScatterplotPlugin::samplePoints()
         distances << distance;
         localPointIndices << localPointIndex;
         globalPointIndices << globalPointIndex;
+
+        focusHighlights[localPointIndex] = true;
 
         numberOfPoints++;
     }

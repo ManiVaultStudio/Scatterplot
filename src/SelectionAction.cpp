@@ -177,6 +177,7 @@ void SelectionAction::fromVariantMap(const QVariantMap& variantMap)
     GroupAction::fromVariantMap(variantMap);
 
     _pixelSelectionAction.fromParentVariantMap(variantMap);
+    _samplerPixelSelectionAction.fromParentVariantMap(variantMap);
     _displayModeAction.fromParentVariantMap(variantMap);
     _outlineOverrideColorAction.fromParentVariantMap(variantMap);
     _outlineScaleAction.fromParentVariantMap(variantMap);
@@ -189,6 +190,7 @@ QVariantMap SelectionAction::toVariantMap() const
     auto variantMap = GroupAction::toVariantMap();
 
     _pixelSelectionAction.insertIntoVariantMap(variantMap);
+    _samplerPixelSelectionAction.insertIntoVariantMap(variantMap);
     _displayModeAction.insertIntoVariantMap(variantMap);
     _outlineOverrideColorAction.insertIntoVariantMap(variantMap);
     _outlineScaleAction.insertIntoVariantMap(variantMap);
