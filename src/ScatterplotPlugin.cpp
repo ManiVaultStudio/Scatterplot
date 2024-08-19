@@ -439,58 +439,56 @@ void ScatterplotPlugin::samplePoints()
     const auto size     = width < height ? width : height;
     const auto uvOffset = QPoint((selectionAreaImage.width() - size) / 2.0f, (selectionAreaImage.height() - size) / 2.0f);
 
-    QPointF uvNormalized        = {};
+    QPointF pointUvNormalized        = {};
     QPointF mouseUvNormalized   = QPointF(static_cast<float>(getWidget().cursor().pos().x()) / width, static_cast<float>(getWidget().cursor().pos().y()) / height);
-    QPoint  uv                  = {};
+    QPoint  pointUv                  = {};
     
     std::vector<char> focusHighlights(_positions.size());
 
-    std::map<float, std::pair<std::uint32_t, std::uint32_t>> pointIndicesByDistance;
-
-    std::int32_t numberOfFocusedElements = 0;
+    std::map<float, std::pair<std::uint32_t, std::uint32_t>> sampledPointIndicesByDistance;
 
     for (std::uint32_t localPointIndex = 0; localPointIndex < _positions.size(); localPointIndex++) {
-        
+        pointUvNormalized   = QPointF((_positions[localPointIndex].x - zoomRectangleAction.getLeft()) / zoomRectangleAction.getWidth(), (zoomRectangleAction.getTop() - _positions[localPointIndex].y) / zoomRectangleAction.getHeight());
+        pointUv             = uvOffset + QPoint(pointUvNormalized.x() * size, pointUvNormalized.y() * size);
 
-        uvNormalized    = QPointF((_positions[localPointIndex].x - zoomRectangleAction.getLeft()) / zoomRectangleAction.getWidth(), (zoomRectangleAction.getTop() - _positions[localPointIndex].y) / zoomRectangleAction.getHeight());
-        uv              = uvOffset + QPoint(uvNormalized.x() * size, uvNormalized.y() * size);
-
-        if (uv.x() >= selectionAreaImage.width() || uv.x() < 0 || uv.y() >= selectionAreaImage.height() || uv.y() < 0)
+        if (pointUv.x() >= selectionAreaImage.width() || pointUv.x() < 0 || pointUv.y() >= selectionAreaImage.height() || pointUv.y() < 0)
             continue;
 
-        if (selectionAreaImage.pixelColor(uv).alpha() > 0) {
-            pointIndicesByDistance[(mouseUvNormalized - uvNormalized).manhattanLength()] = {
+        if (selectionAreaImage.pixelColor(pointUv).alpha() > 0) {
+            sampledPointIndicesByDistance[(getWidget().cursor().pos() - pointUv).manhattanLength()] = {
                 localPointIndex,
                 localGlobalIndices[localPointIndex]
             };
-
-            if (getSamplerAction().getHighlightFocusedElementsAction().isChecked())
-                focusHighlights[localPointIndex] = 1;
-
-            numberOfFocusedElements++;
         }
     }
 
-    const_cast<PointRenderer&>(_scatterPlotWidget->getPointRenderer()).setFocusHighlights(focusHighlights, static_cast<std::int32_t>(focusHighlights.size()));
-
     QVariantList localPointIndices, globalPointIndices, distances;
 
-    localPointIndices.reserve(static_cast<std::int32_t>(pointIndicesByDistance.size()));
-    globalPointIndices.reserve(static_cast<std::int32_t>(pointIndicesByDistance.size()));
-    distances.reserve(static_cast<std::int32_t>(pointIndicesByDistance.size()));
+    localPointIndices.reserve(static_cast<std::int32_t>(sampledPointIndicesByDistance.size()));
+    globalPointIndices.reserve(static_cast<std::int32_t>(sampledPointIndicesByDistance.size()));
+    distances.reserve(static_cast<std::int32_t>(sampledPointIndicesByDistance.size()));
 
     std::int32_t numberOfPoints = 0;
 
-    for (const auto& pair : pointIndicesByDistance) {
-        if (numberOfPoints >= getSamplerAction().getMaximumNumberOfElementsAction().getValue())
+    for (const auto& pair : sampledPointIndicesByDistance) {
+        if (getSamplerAction().getRestrictNumberOfElements().isChecked() && numberOfPoints  >= getSamplerAction().getMaximumNumberOfElementsAction().getValue())
             break;
 
-        distances << pair.first;
-        localPointIndices << pair.second.first;
-        globalPointIndices << pair.second.first;
+        const auto& distance            = pair.first;
+        const auto& localPointIndex     = pair.second.first;
+        const auto& globalPointIndex    = pair.second.second;
+
+        distances << distance;
+        localPointIndices << localPointIndex;
+        globalPointIndices << globalPointIndex;
+
+        focusHighlights[localPointIndex] = true;
 
         numberOfPoints++;
     }
+
+    if (getSamplerAction().getHighlightFocusedElementsAction().isChecked())
+        const_cast<PointRenderer&>(_scatterPlotWidget->getPointRenderer()).setFocusHighlights(focusHighlights, static_cast<std::int32_t>(focusHighlights.size()));
 
     getSamplerAction().requestUpdate({
         { "PositionDatasetID", _positionDataset.getDatasetId() },
