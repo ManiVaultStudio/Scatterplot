@@ -483,12 +483,19 @@ void ScatterplotPlugin::samplePoints()
     if (getSamplerAction().getHighlightFocusedElementsAction().isChecked())
         const_cast<PointRenderer&>(_scatterPlotWidget->getPointRenderer()).setFocusHighlights(focusHighlights, static_cast<std::int32_t>(focusHighlights.size()));
 
+    auto& coloringAction = _settingsAction.getColoringAction();
+
     getSamplerAction().requestUpdate({
         { "PositionDatasetID", _positionDataset.getDatasetId() },
         { "ColorDatasetID", _settingsAction.getColoringAction().getCurrentColorDataset().getDatasetId() },
         { "LocalPointIndices", localPointIndices },
         { "GlobalPointIndices", globalPointIndices },
-        { "Distances", distances }
+        { "Distances", distances },
+        { "ColorBy", coloringAction.getColorByAction().getCurrentText() },
+        { "ConstantColor", coloringAction.getConstantColorAction().getColor() },
+        { "ColorMap1D", coloringAction.getColorMap1DAction().getColorMapImage() },
+        { "ColorMap2D", coloringAction.getColorMap2DAction().getColorMapImage() },
+        { "ColorDimensionIndex", coloringAction.getDimensionAction().getCurrentDimensionAction().getCurrentIndex() },
     });
 }
 
