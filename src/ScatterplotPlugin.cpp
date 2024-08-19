@@ -216,7 +216,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     auto& selectionAction = _settingsAction.getSelectionAction();
 
     getSamplerAction().initialize(this, &selectionAction.getPixelSelectionAction(), &selectionAction.getSamplerPixelSelectionAction());
-    getSamplerAction().setTooltipGeneratorFunction([this](const ViewPluginSamplerAction::ToolTipContext& toolTipContext) -> QString {
+    getSamplerAction().setTooltipGeneratorFunction([this](const ViewPluginSamplerAction::SampleContext& toolTipContext) -> QString {
         QStringList localPointIndices, globalPointIndices;
 
         for (const auto& localPointIndex : toolTipContext["LocalPointIndices"].toList())
@@ -269,13 +269,7 @@ void ScatterplotPlugin::init()
         selectPoints();
     });
 
-    connect(&_scatterPlotWidget->getSamplerPixelSelectionTool(), &PixelSelectionTool::areaChanged, [this]() {
-        samplePoints();
-    });
-
-    connect(&_scatterPlotWidget->getSamplerPixelSelectionTool(), &PixelSelectionTool::ended, [this]() {
-        samplePoints();
-    });
+    connect(&getSamplerAction(), &ViewPluginSamplerAction::sampleContextRequested, this, &ScatterplotPlugin::samplePoints);
 
     connect(&_positionDataset, &Dataset<Points>::changed, this, &ScatterplotPlugin::positionDatasetChanged);
     connect(&_positionDataset, &Dataset<Points>::dataChanged, this, &ScatterplotPlugin::updateData);
@@ -486,9 +480,11 @@ void ScatterplotPlugin::samplePoints()
     if (getSamplerAction().getHighlightFocusedElementsAction().isChecked())
         const_cast<PointRenderer&>(_scatterPlotWidget->getPointRenderer()).setFocusHighlights(focusHighlights, static_cast<std::int32_t>(focusHighlights.size()));
 
+    _scatterPlotWidget->update();
+
     auto& coloringAction = _settingsAction.getColoringAction();
 
-    getSamplerAction().requestUpdate({
+    getSamplerAction().setSampleContext({
         { "PositionDatasetID", _positionDataset.getDatasetId() },
         { "ColorDatasetID", _settingsAction.getColoringAction().getCurrentColorDataset().getDatasetId() },
         { "LocalPointIndices", localPointIndices },
