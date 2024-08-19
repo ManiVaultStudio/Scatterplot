@@ -369,30 +369,29 @@ void ScatterplotPlugin::selectPoints()
             switch (selectionModifier)
             {
                 // Add points to the current selection
-            case PixelSelectionModifierType::Add:
-            {
-                // Add indices to the set 
-                for (const auto& targetIndex : targetSelectionIndices)
-                    set.insert(targetIndex);
+                case PixelSelectionModifierType::Add:
+                {
+                    // Add indices to the set 
+                    for (const auto& targetIndex : targetSelectionIndices)
+                        set.insert(targetIndex);
 
-                break;
+                    break;
+                }
+
+                // Remove points from the current selection
+                case PixelSelectionModifierType::Subtract:
+                {
+                    // Remove indices from the set 
+                    for (const auto& targetIndex : targetSelectionIndices)
+                        set.remove(targetIndex);
+
+                    break;
+                }
+
+                case PixelSelectionModifierType::Replace:
+                    break;
             }
 
-            // Remove points from the current selection
-            case PixelSelectionModifierType::Subtract:
-            {
-                // Remove indices from the set 
-                for (const auto& targetIndex : targetSelectionIndices)
-                    set.remove(targetIndex);
-
-                break;
-            }
-
-            default:
-                break;
-            }
-
-            // Convert set back to vector
             targetSelectionIndices = std::vector<std::uint32_t>(set.begin(), set.end());
 
             break;
