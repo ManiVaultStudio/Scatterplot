@@ -231,7 +231,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
         return  QString("<table> \
                     <tr> \
                         <td><b>Point ID's: </b></td> \
-                        <td>%2</td> \
+                        <td>%1</td> \
                     </tr> \
                    </table>").arg(globalPointIndices.join(", "));
     });
