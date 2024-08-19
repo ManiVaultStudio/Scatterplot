@@ -459,6 +459,8 @@ void ScatterplotPlugin::samplePoints()
                 localPointIndex,
                 localGlobalIndices[localPointIndex]
             };
+
+            focusHighlights[localPointIndex] = true;
         }
     }
 
@@ -471,7 +473,7 @@ void ScatterplotPlugin::samplePoints()
     std::int32_t numberOfPoints = 0;
 
     for (const auto& pair : sampledPointIndicesByDistance) {
-        if (getSamplerAction().getRestrictNumberOfElementsAction().isChecked() && numberOfPoints  >= getSamplerAction().getMaximumNumberOfElementsAction().getValue())
+        if (getSamplerAction().getRestrictNumberOfElementsAction().isChecked() && numberOfPoints >= getSamplerAction().getMaximumNumberOfElementsAction().getValue())
             break;
 
         const auto& distance            = pair.first;
@@ -481,8 +483,6 @@ void ScatterplotPlugin::samplePoints()
         distances << distance;
         localPointIndices << localPointIndex;
         globalPointIndices << globalPointIndex;
-
-        focusHighlights[localPointIndex] = true;
 
         numberOfPoints++;
     }
