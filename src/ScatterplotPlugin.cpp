@@ -439,9 +439,9 @@ void ScatterplotPlugin::samplePoints()
     const auto size     = width < height ? width : height;
     const auto uvOffset = QPoint((selectionAreaImage.width() - size) / 2.0f, (selectionAreaImage.height() - size) / 2.0f);
 
-    QPointF pointUvNormalized        = {};
-    QPointF mouseUvNormalized   = QPointF(static_cast<float>(getWidget().cursor().pos().x()) / width, static_cast<float>(getWidget().cursor().pos().y()) / height);
-    QPoint  pointUv                  = {};
+    QPointF pointUvNormalized;
+
+    QPoint  pointUv, mouseUv = _scatterPlotWidget->mapFromGlobal(QCursor::pos());
     
     std::vector<char> focusHighlights(_positions.size());
 
@@ -455,7 +455,7 @@ void ScatterplotPlugin::samplePoints()
             continue;
 
         if (selectionAreaImage.pixelColor(pointUv).alpha() > 0) {
-            sampledPointIndicesByDistance[(getWidget().cursor().pos() - pointUv).manhattanLength()] = {
+            sampledPointIndicesByDistance[(QVector2D(mouseUv) - QVector2D(pointUv)).length()] = {
                 localPointIndex,
                 localGlobalIndices[localPointIndex]
             };
@@ -471,7 +471,7 @@ void ScatterplotPlugin::samplePoints()
     std::int32_t numberOfPoints = 0;
 
     for (const auto& pair : sampledPointIndicesByDistance) {
-        if (getSamplerAction().getRestrictNumberOfElements().isChecked() && numberOfPoints  >= getSamplerAction().getMaximumNumberOfElementsAction().getValue())
+        if (getSamplerAction().getRestrictNumberOfElementsAction().isChecked() && numberOfPoints  >= getSamplerAction().getMaximumNumberOfElementsAction().getValue())
             break;
 
         const auto& distance            = pair.first;
