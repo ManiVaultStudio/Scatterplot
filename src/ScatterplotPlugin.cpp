@@ -215,7 +215,8 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
 
     auto& selectionAction = _settingsAction.getSelectionAction();
 
-    getSamplerAction().initialize(this, &selectionAction.getPixelSelectionAction(), &selectionAction.getSamplerPixelSelectionAction(), [this](const ViewPluginSamplerAction::ToolTipContext& toolTipContext) -> QString {
+    getSamplerAction().initialize(this, &selectionAction.getPixelSelectionAction(), &selectionAction.getSamplerPixelSelectionAction());
+    getSamplerAction().setTooltipGeneratorFunction([this](const ViewPluginSamplerAction::ToolTipContext& toolTipContext) -> QString {
         QStringList localPointIndices, globalPointIndices;
 
         for (const auto& localPointIndex : toolTipContext["LocalPointIndices"].toList())
@@ -226,6 +227,8 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
 
         if (localPointIndices.isEmpty())
             return {};
+
+        return  QString("<p><b>%1</> points are selected</p>").arg(localPointIndices.size());
 
         return  QString("<table> \
                     <tr> \
@@ -444,7 +447,7 @@ void ScatterplotPlugin::samplePoints()
     QPointF uvNormalized = {};
     QPoint uv = {};
 
-    QVariantList localPointIndices, globalPointIndices;
+    QVariantList localPointIndices, globalPointIndices, distances;
 
     std::vector<char> focusHighlights;
 
@@ -481,8 +484,11 @@ void ScatterplotPlugin::samplePoints()
     const_cast<PointRenderer&>(_scatterPlotWidget->getPointRenderer()).setFocusHighlights(focusHighlights, localPointIndices.size());
 
     getSamplerAction().requestUpdate({
+        { "PositionDatasetID", _positionDataset->getId() },
+        { "ColorDatasetID", _settingsAction.getColoringAction().getCurrentColorDataset()->getId() },
         { "LocalPointIndices", localPointIndices },
-        { "GlobalPointIndices", globalPointIndices }
+        { "GlobalPointIndices", globalPointIndices },
+        { "Distances", distances }
     });
 }
 
