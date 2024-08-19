@@ -415,7 +415,7 @@ void ScatterplotPlugin::samplePoints()
 
     auto selectionAreaImage = samplerPixelSelectionTool.getAreaPixmap().toImage();
 
-    auto selectionSet= _positionDataset->getSelection<Points>();
+    auto selectionSet = _positionDataset->getSelection<Points>();
 
     std::vector<std::uint32_t> targetSelectionIndices;
 
@@ -438,7 +438,7 @@ void ScatterplotPlugin::samplePoints()
     
     std::vector<char> focusHighlights(_positions.size());
 
-    std::map<float, std::pair<std::uint32_t, std::uint32_t>> sampledPointIndicesByDistance;
+    std::vector<std::pair<float, std::uint32_t>> sampledPoints;
 
     for (std::uint32_t localPointIndex = 0; localPointIndex < _positions.size(); localPointIndex++) {
         pointUvNormalized   = QPointF((_positions[localPointIndex].x - zoomRectangleAction.getLeft()) / zoomRectangleAction.getWidth(), (zoomRectangleAction.getTop() - _positions[localPointIndex].y) / zoomRectangleAction.getHeight());
@@ -448,28 +448,31 @@ void ScatterplotPlugin::samplePoints()
             continue;
 
         if (selectionAreaImage.pixelColor(pointUv).alpha() > 0) {
-            sampledPointIndicesByDistance[(QVector2D(mouseUv) - QVector2D(pointUv)).length()] = {
-                localPointIndex,
-                localGlobalIndices[localPointIndex]
-            };
+            const auto sample = std::pair<float, std::uint32_t>((QVector2D(mouseUv) - QVector2D(pointUv)).length(), localPointIndex);
+
+            sampledPoints.emplace_back(sample);
         }
     }
-
+    
     QVariantList localPointIndices, globalPointIndices, distances;
 
-    localPointIndices.reserve(static_cast<std::int32_t>(sampledPointIndicesByDistance.size()));
-    globalPointIndices.reserve(static_cast<std::int32_t>(sampledPointIndicesByDistance.size()));
-    distances.reserve(static_cast<std::int32_t>(sampledPointIndicesByDistance.size()));
+    localPointIndices.reserve(static_cast<std::int32_t>(sampledPoints.size()));
+    globalPointIndices.reserve(static_cast<std::int32_t>(sampledPoints.size()));
+    distances.reserve(static_cast<std::int32_t>(sampledPoints.size()));
 
     std::int32_t numberOfPoints = 0;
 
-    for (const auto& pair : sampledPointIndicesByDistance) {
+    std::sort(sampledPoints.begin(), sampledPoints.end(), [](const auto& sampleA, const auto& sampleB) -> bool {
+        return sampleB.first > sampleA.first;
+    });
+
+    for (const auto& sampledPoint : sampledPoints) {
         if (getSamplerAction().getRestrictNumberOfElementsAction().isChecked() && numberOfPoints >= getSamplerAction().getMaximumNumberOfElementsAction().getValue())
             break;
 
-        const auto& distance            = pair.first;
-        const auto& localPointIndex     = pair.second.first;
-        const auto& globalPointIndex    = pair.second.second;
+        const auto& distance            = sampledPoint.first;
+        const auto& localPointIndex     = sampledPoint.second;
+        const auto& globalPointIndex    = localGlobalIndices[localPointIndex];
 
         distances << distance;
         localPointIndices << localPointIndex;
