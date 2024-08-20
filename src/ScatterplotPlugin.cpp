@@ -495,6 +495,7 @@ void ScatterplotPlugin::samplePoints()
         { "ColorMap1D", coloringAction.getColorMap1DAction().getColorMapImage() },
         { "ColorMap2D", coloringAction.getColorMap2DAction().getColorMapImage() },
         { "ColorDimensionIndex", coloringAction.getDimensionAction().getCurrentDimensionAction().getCurrentIndex() },
+        { "RenderMode", _settingsAction.getRenderModeAction().getCurrentText() }
     });
 }
 
