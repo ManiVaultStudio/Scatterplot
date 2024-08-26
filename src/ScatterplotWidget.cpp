@@ -368,7 +368,9 @@ void ScatterplotWidget::setData(const std::vector<Vector2f>* points)
     dataBounds.makeSquare();
     dataBounds.expand(0.1f);
 
-    _pointRenderer.setViewBounds(dataBounds);
+    if (!_navigationAction.getFreezeZoomAction().isChecked())
+        _pointRenderer.setViewBounds(dataBounds);
+
     _densityRenderer.setBounds(dataBounds);
 
     _dataRectangleAction.setBounds(dataBounds);
