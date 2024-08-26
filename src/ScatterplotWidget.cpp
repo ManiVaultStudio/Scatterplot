@@ -1,5 +1,7 @@
 #include "ScatterplotWidget.h"
 
+#include <CoreInterface.h>
+
 #include <util/Exception.h>
 
 #include <vector>
@@ -368,14 +370,16 @@ void ScatterplotWidget::setData(const std::vector<Vector2f>* points)
     dataBounds.makeSquare();
     dataBounds.expand(0.1f);
 
-    if (!_navigationAction.getFreezeZoomAction().isChecked())
+    const auto shouldSetBounds = mv::projects().isOpeningProject() || mv::projects().isImportingProject() || !_navigationAction.getFreezeZoomAction().isChecked();
+
+    if (!shouldSetBounds)
         _pointRenderer.setViewBounds(dataBounds);
 
     _densityRenderer.setBounds(dataBounds);
 
     _dataRectangleAction.setBounds(dataBounds);
 
-    if (!_navigationAction.getFreezeZoomAction().isChecked())
+    if (shouldSetBounds)
         _navigationAction.getZoomRectangleAction().setBounds(dataBounds);
 
     _pointRenderer.setData(*points);
