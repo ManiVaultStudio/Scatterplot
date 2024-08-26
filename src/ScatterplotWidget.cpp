@@ -232,7 +232,23 @@ bool ScatterplotWidget::event(QEvent* event)
                 break;
             }
         }
+    } else {
+        switch (event->type())
+        {
+            case QEvent::Enter:
+            {
+                _samplerPixelSelectionTool.setEnabled(true);
+                break;
+            }
+
+            case QEvent::Leave:
+            {
+                _samplerPixelSelectionTool.setEnabled(false);
+                break;
+            }
+        }
     }
+
 
     return QOpenGLWidget::event(event);
 }
