@@ -370,9 +370,9 @@ void ScatterplotWidget::setData(const std::vector<Vector2f>* points)
     dataBounds.makeSquare();
     dataBounds.expand(0.1f);
 
-    const auto shouldSetBounds = mv::projects().isOpeningProject() || mv::projects().isImportingProject() || !_navigationAction.getFreezeZoomAction().isChecked();
+    const auto shouldSetBounds = (mv::projects().isOpeningProject() || mv::projects().isImportingProject()) ? false : !_navigationAction.getFreezeZoomAction().isChecked();
 
-    if (!shouldSetBounds)
+    if (shouldSetBounds)
         _pointRenderer.setViewBounds(dataBounds);
 
     _densityRenderer.setBounds(dataBounds);
