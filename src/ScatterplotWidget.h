@@ -17,6 +17,8 @@
 #include <QOpenGLWidget>
 #include <QPoint>
 
+class ScatterplotPlugin;
+
 using namespace mv::gui;
 using namespace mv::util;
 
@@ -48,6 +50,7 @@ public:
 
 public:
     ScatterplotWidget();
+
     ~ScatterplotWidget();
 
     /** Returns true when the widget was initialized and is ready to be used. */
@@ -65,8 +68,17 @@ public:
     ColoringMode getColoringMode() const;
     void setColoringMode(const ColoringMode& coloringMode);
 
-    /** Get reference to the pixel selection tool */
+    /**
+     * Get the pixel selection tool
+     * @return Reference to the pixel selection tool
+     */
     PixelSelectionTool& getPixelSelectionTool();
+
+    /**
+     * Get the sampler pixel selection tool
+     * @return Reference to the sampler pixel selection tool
+     */
+    PixelSelectionTool& getSamplerPixelSelectionTool();
 
     /**
      * Feed 2-dimensional data to the scatterplot.
@@ -231,6 +243,8 @@ protected:
     void initializeGL()         Q_DECL_OVERRIDE;
     void resizeGL(int w, int h) Q_DECL_OVERRIDE;
     void paintGL()              Q_DECL_OVERRIDE;
+    void paintPixelSelectionToolNative(PixelSelectionTool& pixelSelectionTool, QImage& image, QPainter& painter) const;
+
     void cleanup();
     
     void showEvent(QShowEvent* event) Q_DECL_OVERRIDE
@@ -292,21 +306,22 @@ private slots:
     void updatePixelRatio();
 
 private:
-    PointRenderer           _pointRenderer;             /** For rendering point data as points */
-    DensityRenderer         _densityRenderer;           /** For rendering point data as a density plot */
-    bool                    _isInitialized;             /** Boolean determining whether the widget it properly initialized or not */
-    RenderMode              _renderMode;                /** Current render mode */
-    QColor                  _backgroundColor;           /** Background color */
-    ColoringMode            _coloringMode;              /** Type of point/density coloring */
-    widgetSizeInfo          _widgetSizeInfo;            /** Info about size of the scatterplot widget */
-    DecimalRectangleAction  _dataRectangleAction;       /** Rectangle action for the bounds of the loaded data */
-    NavigationAction        _navigationAction;          /** All navigation-related actions are grouped in this action */
-    QImage                  _colorMapImage;             /** 1D/2D color map image */
-    PixelSelectionTool      _pixelSelectionTool;        /** 2D pixel selection tool */
-    float                   _pixelRatio;                /** Current pixel ratio */
-    QVector<QPoint>         _mousePositions;            /** Recorded mouse positions */
-    bool                    _isNavigating;              /** Boolean determining whether view navigation is currently taking place or not */
-    bool                    _weightDensity;             /** Use point scalar sizes to weight density */
+    PointRenderer               _pointRenderer;                 /** For rendering point data as points */
+    DensityRenderer             _densityRenderer;               /** For rendering point data as a density plot */
+    bool                        _isInitialized;                 /** Boolean determining whether the widget it properly initialized or not */
+    RenderMode                  _renderMode;                    /** Current render mode */
+    QColor                      _backgroundColor;               /** Background color */
+    ColoringMode                _coloringMode;                  /** Type of point/density coloring */
+    widgetSizeInfo              _widgetSizeInfo;                /** Info about size of the scatterplot widget */
+    DecimalRectangleAction      _dataRectangleAction;           /** Rectangle action for the bounds of the loaded data */
+    NavigationAction            _navigationAction;              /** All navigation-related actions are grouped in this action */
+    QImage                      _colorMapImage;                 /** 1D/2D color map image */
+    PixelSelectionTool          _pixelSelectionTool;            /** 2D pixel selection tool */
+    PixelSelectionTool          _samplerPixelSelectionTool;     /** 2D pixel selection tool */
+    float                       _pixelRatio;                    /** Current pixel ratio */
+    QVector<QPoint>             _mousePositions;                /** Recorded mouse positions */
+    bool                        _isNavigating;                  /** Boolean determining whether view navigation is currently taking place or not */
+    bool                        _weightDensity;                 /** Use point scalar sizes to weight density */
 
     friend class NavigationAction;
 };
