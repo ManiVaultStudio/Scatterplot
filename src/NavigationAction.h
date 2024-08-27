@@ -3,6 +3,7 @@
 #include <actions/HorizontalGroupAction.h>
 #include <actions/DecimalRectangleAction.h>
 #include <actions/TriggerAction.h>
+#include <actions/ToggleAction.h>
 
 using namespace mv::gui;
 
@@ -66,11 +67,13 @@ public: // Action getters
 
     DecimalRectangleAction& getZoomRectangleAction() { return _zoomRectangleAction; }
     TriggerAction& getZoomDataExtentsAction() { return _zoomDataExtentsAction; }
+    ToggleAction& getFreezeZoomAction() { return _freezeZoomAction; }
 
 private:
     ScatterplotWidget*      _scatterplotWidget;         /** Pointer to owning scatterplot widget */
     DecimalRectangleAction  _zoomRectangleAction;       /** Rectangle action for setting the current zoom bounds */
     TriggerAction           _zoomDataExtentsAction;     /** Trigger action to zoom to data extents */
+    ToggleAction            _freezeZoomAction;          /** Action for toggling the zoom rectangle freeze */
 
     friend class mv::AbstractActionsManager;
 };
