@@ -50,6 +50,20 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
 {
     setObjectName("Scatterplot");
 
+    addShortcut({ QKeySequence(Qt::Key_R), "Selection", "Rectangle (default)" });
+    addShortcut({ QKeySequence(Qt::Key_L), "Selection", "Lasso" });
+    addShortcut({ QKeySequence(Qt::Key_B), "Selection", "Circular brush (mouse wheel adjusts the radius)" });
+    addShortcut({ QKeySequence(Qt::SHIFT), "Selection", "Add to selection" });
+    addShortcut({ QKeySequence(Qt::CTRL), "Selection", "Remove from selection" });
+
+    addShortcut({ QKeySequence(Qt::Key_S), "Render", "Scatter mode (default)" });
+    addShortcut({ QKeySequence(Qt::Key_D), "Render", "Density mode" });
+    addShortcut({ QKeySequence(Qt::Key_C), "Render", "Contour mode" });
+
+    addShortcut({ QKeySequence(Qt::ALT), "Navigation", "Pan (LMB down)" });
+    addShortcut({ QKeySequence(Qt::ALT), "Navigation", "Zoom (mouse wheel)" });
+    addShortcut({ QKeySequence(Qt::Key_O), "Navigation", "Original view" });
+
     _dropWidget = new DropWidget(_scatterPlotWidget);
 
     _scatterPlotWidget->getNavigationAction().setParent(this);
