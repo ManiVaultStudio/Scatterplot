@@ -1,5 +1,7 @@
 #include "ScatterplotWidget.h"
 
+#include <CoreInterface.h>
+
 #include <util/Exception.h>
 
 #include <vector>
@@ -15,6 +17,8 @@
 #include <QRectF>
 
 #include <math.h>
+
+#include "ScatterplotPlugin.h"
 
 using namespace mv;
 
@@ -57,6 +61,7 @@ ScatterplotWidget::ScatterplotWidget() :
     _navigationAction(this, "Navigation"),
     _colorMapImage(),
     _pixelSelectionTool(this),
+    _samplerPixelSelectionTool(this),
     _pixelRatio(1.0),
     _mousePositions(),
     _isNavigating(false),
@@ -67,14 +72,24 @@ ScatterplotWidget::ScatterplotWidget() :
     setMouseTracking(true);
     setFocusPolicy(Qt::ClickFocus);
     grabGesture(Qt::PinchGesture);
+    //setAttribute(Qt::WA_TranslucentBackground);
+
+    this->installEventFilter(this);
 
     _navigationAction.initialize(this);
 
-    // Configure pixel selection tool
     _pixelSelectionTool.setEnabled(true);
     _pixelSelectionTool.setMainColor(QColor(Qt::black));
+
+    _samplerPixelSelectionTool.setEnabled(true);
+    _samplerPixelSelectionTool.setMainColor(QColor(Qt::black));
     
-    QObject::connect(&_pixelSelectionTool, &PixelSelectionTool::shapeChanged, [this]() {
+    connect(&_pixelSelectionTool, &PixelSelectionTool::shapeChanged, [this]() {
+        if (isInitialized())
+            update();
+    });
+
+    connect(&_samplerPixelSelectionTool, &PixelSelectionTool::shapeChanged, [this]() {
         if (isInitialized())
             update();
     });
@@ -204,18 +219,6 @@ bool ScatterplotWidget::event(QEvent* event)
                 break;
             }
 
-            //case QEvent::KeyPress:
-            //{
-            //    if (auto* keyEvent = static_cast<QKeyEvent*>(event))
-            //    {
-            //        // Reset zoom
-            //        if (keyEvent && keyEvent->key() == Qt::Key_O)
-            //            resetView();
-            //    }
-
-            //    break;
-            //}
-
             case QEvent::KeyRelease:
             {
                 if (auto* keyEvent = static_cast<QKeyEvent*>(event))
@@ -230,11 +233,26 @@ bool ScatterplotWidget::event(QEvent* event)
                 }
                 break;
             }
+        }
+    } else {
+        switch (event->type())
+        {
+            case QEvent::Enter:
+            {
+                _samplerPixelSelectionTool.setEnabled(true);
+                break;
+            }
 
-        } // end switch
+            case QEvent::Leave:
+            {
+                _samplerPixelSelectionTool.setEnabled(false);
+                break;
+            }
+        }
     }
 
-    return QWidget::event(event);
+
+    return QOpenGLWidget::event(event);
 }
 
 void ScatterplotWidget::resetView()
@@ -342,6 +360,11 @@ PixelSelectionTool& ScatterplotWidget::getPixelSelectionTool()
     return _pixelSelectionTool;
 }
 
+PixelSelectionTool& ScatterplotWidget::getSamplerPixelSelectionTool()
+{
+    return _samplerPixelSelectionTool;
+}
+
 void ScatterplotWidget::computeDensity()
 {
     emit densityComputationStarted();
@@ -368,11 +391,17 @@ void ScatterplotWidget::setData(const std::vector<Vector2f>* points)
     dataBounds.makeSquare();
     dataBounds.expand(0.1f);
 
-    _pointRenderer.setViewBounds(dataBounds);
+    const auto shouldSetBounds = (mv::projects().isOpeningProject() || mv::projects().isImportingProject()) ? false : !_navigationAction.getFreezeZoomAction().isChecked();
+
+    if (shouldSetBounds)
+        _pointRenderer.setViewBounds(dataBounds);
+
     _densityRenderer.setBounds(dataBounds);
 
     _dataRectangleAction.setBounds(dataBounds);
-    _navigationAction.getZoomRectangleAction().setBounds(dataBounds);
+
+    if (shouldSetBounds)
+        _navigationAction.getZoomRectangleAction().setBounds(dataBounds);
 
     _pointRenderer.setData(*points);
     _densityRenderer.setData(points);
@@ -790,15 +819,18 @@ void ScatterplotWidget::paintGL()
                 
         }
         painter.endNativePainting();
-        
-        // Draw the pixel selection tool overlays if the pixel selection tool is enabled
-        if (_pixelSelectionTool.isEnabled()) {
-            const auto areaPixmap   = _pixelSelectionTool.getAreaPixmap();
-            const auto shapePixmap  = _pixelSelectionTool.getShapePixmap();
-            painter.drawPixmap(rect(), areaPixmap);
-            painter.drawPixmap(rect(), shapePixmap);
-        }
-        
+
+        painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+
+        QImage pixelSelectionToolsImage(size(), QImage::Format_ARGB32);
+
+        pixelSelectionToolsImage.fill(Qt::transparent);
+
+        paintPixelSelectionToolNative(_pixelSelectionTool, pixelSelectionToolsImage, painter);
+        paintPixelSelectionToolNative(_samplerPixelSelectionTool, pixelSelectionToolsImage, painter);
+
+        painter.drawImage(0, 0, pixelSelectionToolsImage);
+
         painter.end();
     }
     catch (std::exception& e)
@@ -808,6 +840,19 @@ void ScatterplotWidget::paintGL()
     catch (...) {
         exceptionMessageBox("Rendering failed");
     }
+}
+
+void ScatterplotWidget::paintPixelSelectionToolNative(PixelSelectionTool& pixelSelectionTool, QImage& image, QPainter& painter) const
+{
+    if (!pixelSelectionTool.isEnabled())
+        return;
+
+    QPainter pixelSelectionToolImagePainter(&image);
+
+    pixelSelectionToolImagePainter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+
+    pixelSelectionToolImagePainter.drawPixmap(rect(), pixelSelectionTool.getShapePixmap());
+    pixelSelectionToolImagePainter.drawPixmap(rect(), pixelSelectionTool.getAreaPixmap());
 }
 
 void ScatterplotWidget::cleanup()
