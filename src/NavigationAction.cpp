@@ -13,13 +13,15 @@ NavigationAction::NavigationAction(QObject* parent, const QString& title) :
     HorizontalGroupAction(parent, title),
     _scatterplotWidget(nullptr),
     _zoomRectangleAction(this, "Zoom Rectangle"),
-    _zoomDataExtentsAction(this, "Zoom to data extents")
+    _zoomDataExtentsAction(this, "Zoom to data extents"),
+    _freezeZoomAction(this, "Freeze zoom")
 {
     setIcon(mv::Application::getIconFont("FontAwesome").getIcon("image"));
     setShowLabels(false);
 
     addAction(&_zoomRectangleAction);
     addAction(&_zoomDataExtentsAction);
+    addAction(&_freezeZoomAction);
 
     auto& fontAwesome = Application::getIconFont("FontAwesome");
 
@@ -34,6 +36,9 @@ NavigationAction::NavigationAction(QObject* parent, const QString& title) :
     _zoomDataExtentsAction.setConnectionPermissionsToForceNone(true);
     _zoomDataExtentsAction.setShortcutContext(Qt::WidgetWithChildrenShortcut);
     _zoomDataExtentsAction.setShortcut(QKeySequence("Alt+O"));
+
+    _freezeZoomAction.setToolTip("Freeze the zoom extents");
+    _freezeZoomAction.setConnectionPermissionsToForceNone(true);
 }
 
 void NavigationAction::initialize(ScatterplotWidget* scatterplotWidget)
@@ -84,6 +89,7 @@ void NavigationAction::fromVariantMap(const QVariantMap& variantMap)
 
     _zoomRectangleAction.fromParentVariantMap(variantMap);
     _zoomDataExtentsAction.fromParentVariantMap(variantMap);
+    _freezeZoomAction.fromParentVariantMap(variantMap);
 }
 
 QVariantMap NavigationAction::toVariantMap() const
@@ -92,6 +98,7 @@ QVariantMap NavigationAction::toVariantMap() const
 
     _zoomRectangleAction.insertIntoVariantMap(variantMap);
     _zoomDataExtentsAction.insertIntoVariantMap(variantMap);
+    _freezeZoomAction.insertIntoVariantMap(variantMap);
 
     return variantMap;
 }

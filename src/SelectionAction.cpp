@@ -12,6 +12,7 @@ using namespace mv::gui;
 SelectionAction::SelectionAction(QObject* parent, const QString& title) :
     GroupAction(parent, title),
     _pixelSelectionAction(this, "Point Selection"),
+    _samplerPixelSelectionAction(this, "Sampler selection"),
     _displayModeAction(this, "Display mode", { "Outline", "Override" }),
     _outlineOverrideColorAction(this, "Custom color", true),
     _outlineScaleAction(this, "Scale", 100.0f, 500.0f, 200.0f, 1),
@@ -72,6 +73,10 @@ void SelectionAction::initialize(ScatterplotPlugin* scatterplotPlugin)
         PixelSelectionType::Polygon
     });
 
+    getSamplerPixelSelectionAction().initialize(&scatterplotWidget, &scatterplotWidget.getSamplerPixelSelectionTool(), {
+        PixelSelectionType::Sample
+    });
+
     _displayModeAction.setCurrentIndex(static_cast<std::int32_t>(scatterplotPlugin->getScatterplotWidget().getSelectionDisplayMode()));
     _outlineScaleAction.setValue(100.0f * scatterplotPlugin->getScatterplotWidget().getSelectionOutlineScale());
     _outlineOpacityAction.setValue(100.0f * scatterplotPlugin->getScatterplotWidget().getSelectionOutlineOpacity());
@@ -125,6 +130,8 @@ void SelectionAction::initialize(ScatterplotPlugin* scatterplotPlugin)
     updateReadOnly();
 
     connect(&scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, updateReadOnly);
+
+    addAction(&scatterplotPlugin->getSamplerAction());
 }
 
 void SelectionAction::connectToPublicAction(WidgetAction* publicAction, bool recursive)
@@ -170,6 +177,7 @@ void SelectionAction::fromVariantMap(const QVariantMap& variantMap)
     GroupAction::fromVariantMap(variantMap);
 
     _pixelSelectionAction.fromParentVariantMap(variantMap);
+    _samplerPixelSelectionAction.fromParentVariantMap(variantMap);
     _displayModeAction.fromParentVariantMap(variantMap);
     _outlineOverrideColorAction.fromParentVariantMap(variantMap);
     _outlineScaleAction.fromParentVariantMap(variantMap);
@@ -182,6 +190,7 @@ QVariantMap SelectionAction::toVariantMap() const
     auto variantMap = GroupAction::toVariantMap();
 
     _pixelSelectionAction.insertIntoVariantMap(variantMap);
+    _samplerPixelSelectionAction.insertIntoVariantMap(variantMap);
     _displayModeAction.insertIntoVariantMap(variantMap);
     _outlineOverrideColorAction.insertIntoVariantMap(variantMap);
     _outlineScaleAction.insertIntoVariantMap(variantMap);
