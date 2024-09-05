@@ -250,6 +250,11 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                     </tr> \
                    </table>").arg(globalPointIndices.join(", "));
     });
+
+    getLearningCenterAction().setShortDescription("Scatterplot view plugin");
+    getLearningCenterAction().setLongDescription("<p>High-performance scatterplot for the <b>ManiVault</b> framework, capable of handling millions of data points.</p>");
+
+    getLearningCenterAction().addVideos(QStringList({ "Practitioner", "Developer" }));
 }
 
 ScatterplotPlugin::~ScatterplotPlugin()
