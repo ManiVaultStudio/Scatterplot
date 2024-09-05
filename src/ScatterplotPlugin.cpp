@@ -39,9 +39,6 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     ViewPlugin(factory),
     _dropWidget(nullptr),
     _scatterPlotWidget(new ScatterplotWidget()),
-    _positionDataset(),
-    _positionSourceDataset(),
-    _positions(),
     _numPoints(0),
     _settingsAction(this, "Settings"),
     _primaryToolbarAction(this, "Primary Toolbar"),
@@ -49,20 +46,24 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
 {
     setObjectName("Scatterplot");
 
-    addShortcut({ QKeySequence(Qt::Key_R), "Selection", "Rectangle (default)" });
-    addShortcut({ QKeySequence(Qt::Key_L), "Selection", "Lasso" });
-    addShortcut({ QKeySequence(Qt::Key_B), "Selection", "Circular brush (mouse wheel adjusts the radius)" });
-    addShortcut({ QKeySequence(Qt::SHIFT), "Selection", "Add to selection" });
-    addShortcut({ QKeySequence(Qt::CTRL), "Selection", "Remove from selection" });
+    auto& shortcuts = getShortcuts();
 
-    addShortcut({ QKeySequence(Qt::Key_S), "Render", "Scatter mode (default)" });
-    addShortcut({ QKeySequence(Qt::Key_D), "Render", "Density mode" });
-    addShortcut({ QKeySequence(Qt::Key_C), "Render", "Contour mode" });
+    shortcuts.add({ QKeySequence(Qt::Key_R), "Selection", "Rectangle (default)" });
+    shortcuts.add({ QKeySequence(Qt::Key_L), "Selection", "Lasso" });
+    shortcuts.add({ QKeySequence(Qt::Key_B), "Selection", "Circular brush (mouse wheel adjusts the radius)" });
+    shortcuts.add({ QKeySequence(Qt::SHIFT), "Selection", "Add to selection" });
+    shortcuts.add({ QKeySequence(Qt::CTRL), "Selection", "Remove from selection" });
 
-    addShortcut({ QKeySequence(Qt::ALT), "Navigation", "Pan (LMB down)" });
-    addShortcut({ QKeySequence(Qt::ALT), "Navigation", "Zoom (mouse wheel)" });
-    addShortcut({ QKeySequence(Qt::Key_O), "Navigation", "Original view" });
+    shortcuts.add({ QKeySequence(Qt::Key_S), "Render", "Scatter mode (default)" });
+    shortcuts.add({ QKeySequence(Qt::Key_D), "Render", "Density mode" });
+    shortcuts.add({ QKeySequence(Qt::Key_C), "Render", "Contour mode" });
 
+    shortcuts.add({ QKeySequence(Qt::ALT), "Navigation", "Pan (LMB down)" });
+    shortcuts.add({ QKeySequence(Qt::ALT), "Navigation", "Zoom (mouse wheel)" });
+    shortcuts.add({ QKeySequence(Qt::Key_O), "Navigation", "Original view" });
+
+    getLearningCenterOverlayWidget().setTargetWidget(_scatterPlotWidget);
+    getLearningCenterOverlayWidget().hide();
     _dropWidget = new DropWidget(_scatterPlotWidget);
 
     _scatterPlotWidget->getNavigationAction().setParent(this);
