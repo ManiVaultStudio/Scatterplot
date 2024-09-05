@@ -13,7 +13,9 @@
 #include <PointData/PointData.h>
 
 #include <graphics/Vector3f.h>
+
 #include <widgets/DropWidget.h>
+#include <widgets/ViewPluginLearningCenterOverlayWidget.h>
 
 #include <actions/PluginTriggerAction.h>
 
@@ -62,7 +64,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     shortcuts.add({ QKeySequence(Qt::ALT), "Navigation", "Zoom (mouse wheel)" });
     shortcuts.add({ QKeySequence(Qt::Key_O), "Navigation", "Original view" });
 
-    getLearningCenterOverlayWidget().setTargetWidget(_scatterPlotWidget);
+    getLearningCenterAction().getViewPluginOverlayWidget()->setTargetWidget(_scatterPlotWidget);
     
     _dropWidget = new DropWidget(_scatterPlotWidget);
 
