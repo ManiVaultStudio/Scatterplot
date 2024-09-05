@@ -227,30 +227,13 @@ bool ScatterplotWidget::event(QEvent* event)
                     if (keyEvent && keyEvent->key() == Qt::Key_Alt)
                     {
                         _isNavigating = false;
-                        _pixelSelectionTool.setEnabled(true);
                     }
 
                 }
                 break;
             }
         }
-    } else {
-        switch (event->type())
-        {
-            case QEvent::Enter:
-            {
-                _samplerPixelSelectionTool.setEnabled(true);
-                break;
-            }
-
-            case QEvent::Leave:
-            {
-                _samplerPixelSelectionTool.setEnabled(false);
-                break;
-            }
-        }
     }
-
 
     return QOpenGLWidget::event(event);
 }
