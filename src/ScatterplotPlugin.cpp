@@ -63,8 +63,6 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     shortcuts.add({ QKeySequence(Qt::ALT), "Navigation", "Pan (LMB down)" });
     shortcuts.add({ QKeySequence(Qt::ALT), "Navigation", "Zoom (mouse wheel)" });
     shortcuts.add({ QKeySequence(Qt::Key_O), "Navigation", "Original view" });
-
-    getLearningCenterAction().getViewPluginOverlayWidget()->setTargetWidget(_scatterPlotWidget);
     
     _dropWidget = new DropWidget(_scatterPlotWidget);
 
@@ -298,6 +296,8 @@ void ScatterplotPlugin::init()
     connect(&_positionDataset, &Dataset<Points>::dataSelectionChanged, this, &ScatterplotPlugin::updateSelection);
 
     _scatterPlotWidget->installEventFilter(this);
+
+    getLearningCenterAction().getViewPluginOverlayWidget()->setTargetWidget(_scatterPlotWidget);
 }
 
 void ScatterplotPlugin::loadData(const Datasets& datasets)
