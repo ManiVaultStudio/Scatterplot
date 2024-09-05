@@ -158,4 +158,10 @@ public:
      * @return Vector of plugin trigger actions
      */
     PluginTriggerActions getPluginTriggerActions(const mv::Datasets& datasets) const override;
+
+    /**
+     * Get the URL of the GitHub repository
+     * @return URL of the GitHub repository (or readme markdown URL if set)
+     */
+    QUrl getRepositoryUrl() const override;
 };

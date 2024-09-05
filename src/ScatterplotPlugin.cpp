@@ -791,3 +791,8 @@ PluginTriggerActions ScatterplotPluginFactory::getPluginTriggerActions(const mv:
 
     return pluginTriggerActions;
 }
+
+QUrl ScatterplotPluginFactory::getRepositoryUrl() const
+{
+    return QUrl("https://github.com/ManiVaultStudio/Scatterplot");
+}
