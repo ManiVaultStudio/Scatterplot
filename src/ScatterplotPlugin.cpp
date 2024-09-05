@@ -63,7 +63,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     shortcuts.add({ QKeySequence(Qt::Key_O), "Navigation", "Original view" });
 
     getLearningCenterOverlayWidget().setTargetWidget(_scatterPlotWidget);
-    getLearningCenterOverlayWidget().hide();
+    
     _dropWidget = new DropWidget(_scatterPlotWidget);
 
     _scatterPlotWidget->getNavigationAction().setParent(this);
