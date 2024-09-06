@@ -251,6 +251,8 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                    </table>").arg(globalPointIndices.join(", "));
     });
 
+    getLearningCenterAction().setPluginTitle("Scatterplot view");
+
     getLearningCenterAction().setShortDescription("Scatterplot view plugin");
     getLearningCenterAction().setLongDescription("<p>High-performance scatterplot for the <b>ManiVault</b> framework, capable of handling millions of data points.</p>");
 
