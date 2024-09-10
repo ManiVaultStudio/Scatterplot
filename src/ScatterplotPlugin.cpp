@@ -231,7 +231,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     auto& selectionAction = _settingsAction.getSelectionAction();
 
     getSamplerAction().initialize(this, &selectionAction.getPixelSelectionAction(), &selectionAction.getSamplerPixelSelectionAction());
-    getSamplerAction().setTooltipGeneratorFunction([this](const ViewPluginSamplerAction::SampleContext& toolTipContext) -> QString {
+    getSamplerAction().setViewGeneratorFunction([this](const ViewPluginSamplerAction::SampleContext& toolTipContext) -> QString {
         QStringList localPointIndices, globalPointIndices;
 
         for (const auto& localPointIndex : toolTipContext["LocalPointIndices"].toList())
