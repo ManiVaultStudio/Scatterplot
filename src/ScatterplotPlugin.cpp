@@ -79,6 +79,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     _primaryToolbarAction.addAction(&_settingsAction.getSubsetAction());
     _primaryToolbarAction.addAction(&_settingsAction.getClusteringAction());
     _primaryToolbarAction.addAction(&_settingsAction.getSelectionAction());
+    _primaryToolbarAction.addAction(&getSamplerAction());
 
     _secondaryToolbarAction.addAction(&_settingsAction.getColoringAction().getColorMap1DAction(), 1);
 
