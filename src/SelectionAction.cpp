@@ -130,8 +130,6 @@ void SelectionAction::initialize(ScatterplotPlugin* scatterplotPlugin)
     updateReadOnly();
 
     connect(&scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, updateReadOnly);
-
-    addAction(&scatterplotPlugin->getSamplerAction());
 }
 
 void SelectionAction::connectToPublicAction(WidgetAction* publicAction, bool recursive)
