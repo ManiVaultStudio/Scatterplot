@@ -13,7 +13,9 @@
 #include <PointData/PointData.h>
 
 #include <graphics/Vector3f.h>
+
 #include <widgets/DropWidget.h>
+#include <widgets/ViewPluginLearningCenterOverlayWidget.h>
 
 #include <actions/PluginTriggerAction.h>
 
@@ -29,6 +31,7 @@
 #include <algorithm>
 #include <functional>
 #include <vector>
+#include <actions/ViewPluginSamplerAction.h>
 
 Q_PLUGIN_METADATA(IID "nl.tudelft.ScatterplotPlugin")
 
@@ -39,9 +42,6 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     ViewPlugin(factory),
     _dropWidget(nullptr),
     _scatterPlotWidget(new ScatterplotWidget()),
-    _positionDataset(),
-    _positionSourceDataset(),
-    _positions(),
     _numPoints(0),
     _settingsAction(this, "Settings"),
     _primaryToolbarAction(this, "Primary Toolbar"),
@@ -49,6 +49,22 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
 {
     setObjectName("Scatterplot");
 
+    auto& shortcuts = getShortcuts();
+
+    shortcuts.add({ QKeySequence(Qt::Key_R), "Selection", "Rectangle (default)" });
+    shortcuts.add({ QKeySequence(Qt::Key_L), "Selection", "Lasso" });
+    shortcuts.add({ QKeySequence(Qt::Key_B), "Selection", "Circular brush (mouse wheel adjusts the radius)" });
+    shortcuts.add({ QKeySequence(Qt::SHIFT), "Selection", "Add to selection" });
+    shortcuts.add({ QKeySequence(Qt::CTRL), "Selection", "Remove from selection" });
+
+    shortcuts.add({ QKeySequence(Qt::Key_S), "Render", "Scatter mode (default)" });
+    shortcuts.add({ QKeySequence(Qt::Key_D), "Render", "Density mode" });
+    shortcuts.add({ QKeySequence(Qt::Key_C), "Render", "Contour mode" });
+
+    shortcuts.add({ QKeySequence(Qt::ALT), "Navigation", "Pan (LMB down)" });
+    shortcuts.add({ QKeySequence(Qt::ALT), "Navigation", "Zoom (mouse wheel)" });
+    shortcuts.add({ QKeySequence(Qt::Key_O), "Navigation", "Original view" });
+    
     _dropWidget = new DropWidget(_scatterPlotWidget);
 
     _scatterPlotWidget->getNavigationAction().setParent(this);
@@ -63,6 +79,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     _primaryToolbarAction.addAction(&_settingsAction.getSubsetAction());
     _primaryToolbarAction.addAction(&_settingsAction.getClusteringAction());
     _primaryToolbarAction.addAction(&_settingsAction.getSelectionAction());
+    _primaryToolbarAction.addAction(&getSamplerAction());
 
     _secondaryToolbarAction.addAction(&_settingsAction.getColoringAction().getColorMap1DAction(), 1);
 
@@ -216,7 +233,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     auto& selectionAction = _settingsAction.getSelectionAction();
 
     getSamplerAction().initialize(this, &selectionAction.getPixelSelectionAction(), &selectionAction.getSamplerPixelSelectionAction());
-    getSamplerAction().setTooltipGeneratorFunction([this](const ViewPluginSamplerAction::SampleContext& toolTipContext) -> QString {
+    getSamplerAction().setViewGeneratorFunction([this](const ViewPluginSamplerAction::SampleContext& toolTipContext) -> QString {
         QStringList localPointIndices, globalPointIndices;
 
         for (const auto& localPointIndex : toolTipContext["LocalPointIndices"].toList())
@@ -235,6 +252,16 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                     </tr> \
                    </table>").arg(globalPointIndices.join(", "));
     });
+
+    //getSamplerAction().setViewingMode(ViewPluginSamplerAction::ViewingMode::Tooltip);
+    getSamplerAction().getEnabledAction().setChecked(false);
+    
+    getLearningCenterAction().setPluginTitle("Scatterplot view");
+
+    getLearningCenterAction().setShortDescription("Scatterplot view plugin");
+    getLearningCenterAction().setLongDescription("<p>High-performance scatterplot for the <b>ManiVault</b> framework, capable of handling millions of data points.</p>");
+
+    getLearningCenterAction().addVideos(QStringList({ "Practitioner", "Developer" }));
 }
 
 ScatterplotPlugin::~ScatterplotPlugin()
@@ -276,6 +303,8 @@ void ScatterplotPlugin::init()
     connect(&_positionDataset, &Dataset<Points>::dataSelectionChanged, this, &ScatterplotPlugin::updateSelection);
 
     _scatterPlotWidget->installEventFilter(this);
+
+    getLearningCenterAction().getViewPluginOverlayWidget()->setTargetWidget(_scatterPlotWidget);
 }
 
 void ScatterplotPlugin::loadData(const Datasets& datasets)
@@ -343,7 +372,7 @@ void ScatterplotPlugin::selectPoints()
             continue;
 
         if (selectionAreaImage.pixelColor(uv).alpha() > 0)
-            targetSelectionIndices.push_back(localGlobalIndices[localPointIndex]);
+	        targetSelectionIndices.push_back(localGlobalIndices[localPointIndex]);
     }
 
     switch (const auto selectionModifier = pixelSelectionTool.isAborted() ? PixelSelectionModifierType::Subtract : pixelSelectionTool.getModifier())
@@ -390,9 +419,6 @@ void ScatterplotPlugin::selectPoints()
 
             break;
         }
-
-        default:
-            break;
     }
 
     _positionDataset->setSelectionIndices(targetSelectionIndices);
@@ -663,6 +689,59 @@ void ScatterplotPlugin::updateSelection()
         highlights[i] = selected[i] ? 1 : 0;
 
     _scatterPlotWidget->setHighlights(highlights, static_cast<std::int32_t>(selection->indices.size()));
+
+    if (getSamplerAction().getSamplingMode() == ViewPluginSamplerAction::SamplingMode::Selection) {
+        std::vector<std::uint32_t> localGlobalIndices;
+
+        _positionDataset->getGlobalIndices(localGlobalIndices);
+
+        std::vector<std::uint32_t> sampledPoints;
+
+        sampledPoints.reserve(_positions.size());
+
+        for (auto selectionIndex : selection->indices)
+            sampledPoints.push_back(selectionIndex);
+
+        std::int32_t numberOfPoints = 0;
+
+        QVariantList localPointIndices, globalPointIndices;
+
+        const auto numberOfSelectedPoints = selection->indices.size();
+
+        localPointIndices.reserve(static_cast<std::int32_t>(numberOfSelectedPoints));
+        globalPointIndices.reserve(static_cast<std::int32_t>(numberOfSelectedPoints));
+
+        for (const auto& sampledPoint : sampledPoints) {
+            if (getSamplerAction().getRestrictNumberOfElementsAction().isChecked() && numberOfPoints >= getSamplerAction().getMaximumNumberOfElementsAction().getValue())
+                break;
+
+            const auto& localPointIndex = sampledPoint;
+            const auto& globalPointIndex = localGlobalIndices[localPointIndex];
+
+            localPointIndices << localPointIndex;
+            globalPointIndices << globalPointIndex;
+
+            numberOfPoints++;
+        }
+
+        _scatterPlotWidget->update();
+
+        auto& coloringAction = _settingsAction.getColoringAction();
+
+        getSamplerAction().setSampleContext({
+            { "PositionDatasetID", _positionDataset.getDatasetId() },
+            { "ColorDatasetID", _settingsAction.getColoringAction().getCurrentColorDataset().getDatasetId() },
+            { "LocalPointIndices", localPointIndices },
+            { "GlobalPointIndices", globalPointIndices },
+            { "Distances", QVariantList()},
+            { "ColorBy", coloringAction.getColorByAction().getCurrentText() },
+            { "ConstantColor", coloringAction.getConstantColorAction().getColor() },
+            { "ColorMap1D", coloringAction.getColorMap1DAction().getColorMapImage() },
+            { "ColorMap2D", coloringAction.getColorMap2DAction().getColorMapImage() },
+            { "ColorDimensionIndex", coloringAction.getDimensionAction().getCurrentDimensionAction().getCurrentIndex() },
+            { "RenderMode", _settingsAction.getRenderModeAction().getCurrentText() }
+		});
+    }
 }
 
 void ScatterplotPlugin::fromVariantMap(const QVariantMap& variantMap)
@@ -768,4 +847,9 @@ PluginTriggerActions ScatterplotPluginFactory::getPluginTriggerActions(const mv:
     */
 
     return pluginTriggerActions;
+}
+
+QUrl ScatterplotPluginFactory::getRepositoryUrl() const
+{
+    return QUrl("https://github.com/ManiVaultStudio/Scatterplot");
 }

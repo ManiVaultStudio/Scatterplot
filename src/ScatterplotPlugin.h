@@ -101,7 +101,7 @@ public: // Serialization
 
     /**
      * Load plugin from variant map
-     * @param Variant map representation of the plugin
+     * @param variantMap Variant map representation of the plugin
      */
     void fromVariantMap(const QVariantMap& variantMap) override;
 
@@ -158,4 +158,10 @@ public:
      * @return Vector of plugin trigger actions
      */
     PluginTriggerActions getPluginTriggerActions(const mv::Datasets& datasets) const override;
+
+    /**
+     * Get the URL of the GitHub repository
+     * @return URL of the GitHub repository (or readme markdown URL if set)
+     */
+    QUrl getRepositoryUrl() const override;
 };

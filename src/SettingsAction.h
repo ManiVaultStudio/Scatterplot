@@ -45,7 +45,7 @@ public: // Serialization
 
     /**
      * Load plugin from variant map
-     * @param Variant map representation of the plugin
+     * @param variantMap Variant map representation of the plugin
      */
     void fromVariantMap(const QVariantMap& variantMap) override;
 
@@ -69,15 +69,15 @@ public: // Action getters
     DatasetsAction& getDatasetsAction() { return _datasetsAction; }
 
 protected:
-    ScatterplotPlugin*      _scatterplotPlugin;         /** Pointer to scatter plot plugin */
-    RenderModeAction        _renderModeAction;          /** Action for configuring render mode */
-    PositionAction          _positionAction;            /** Action for configuring point positions */
-    PlotAction              _plotAction;                /** Action for configuring plot settings */
-    ColoringAction          _coloringAction;            /** Action for configuring point coloring */
-    SubsetAction            _subsetAction;              /** Action for creating subset(s) */
-    ClusteringAction        _clusteringAction;          /** Action for creating clusters */
-    SelectionAction         _selectionAction;           /** Action for selecting points */
-    ExportAction            _exportAction;              /** Action for exporting */
-    MiscellaneousAction     _miscellaneousAction;       /** Action for miscellaneous settings */
-    DatasetsAction          _datasetsAction;            /** Action for picking dataset(s) */
+    ScatterplotPlugin*          _scatterplotPlugin;         /** Pointer to scatter plot plugin */
+    RenderModeAction            _renderModeAction;          /** Action for configuring render mode */
+    PositionAction              _positionAction;            /** Action for configuring point positions */
+    PlotAction                  _plotAction;                /** Action for configuring plot settings */
+    ColoringAction              _coloringAction;            /** Action for configuring point coloring */
+    SubsetAction                _subsetAction;              /** Action for creating subset(s) */
+    ClusteringAction            _clusteringAction;          /** Action for creating clusters */
+    SelectionAction             _selectionAction;           /** Action for selecting points */
+    ExportAction                _exportAction;              /** Action for exporting */
+    MiscellaneousAction         _miscellaneousAction;       /** Action for miscellaneous settings */
+    DatasetsAction              _datasetsAction;            /** Action for picking dataset(s) */
 };
