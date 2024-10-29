@@ -605,15 +605,33 @@ void ScatterplotPlugin::loadColors(const Dataset<Clusters>& clusters)
     std::vector<Vector3f> globalColors(totalNumPoints);
     std::vector<Vector3f> localColors(_positions.size());
 
-    // Loop over all clusters and populate global colors
-    for (const auto& cluster : clusters->getClusters())
-        for (const auto& index : cluster.getIndices())
-            globalColors[index] = Vector3f(cluster.getColor().redF(), cluster.getColor().greenF(), cluster.getColor().blueF());
-    std::int32_t localColorIndex = 0;
+    const auto& clusterVec = clusters->getClusters();
 
-    // Loop over all global indices and find the corresponding local color
-    for (const auto& globalIndex : globalIndices)
-        localColors[localColorIndex++] = globalColors[globalIndex];
+    if (totalNumPoints == _positions.size() && clusterVec.size() == totalNumPoints)
+    {
+        for (size_t i = 0; i < static_cast<size_t>(clusterVec.size()); i++)
+        {
+            const auto color = clusterVec[i].getColor();
+            localColors[i] = Vector3f(color.redF(), color.greenF(), color.blueF());
+        }
+
+    }
+    else
+    {
+        // Loop over all clusters and populate global colors
+        for (const auto& cluster : clusterVec)
+        {
+            const auto color = cluster.getColor();
+            for (const auto& index : cluster.getIndices())
+                globalColors[index] = Vector3f(color.redF(), color.greenF(), color.blueF());
+
+        }
+
+        // Loop over all global indices and find the corresponding local color
+        std::int32_t localColorIndex = 0;
+        for (const auto& globalIndex : globalIndices)
+            localColors[localColorIndex++] = globalColors[globalIndex];
+    }
 
     // Apply colors to scatter plot widget without modification
     _scatterPlotWidget->setColors(localColors);
