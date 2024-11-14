@@ -28,7 +28,7 @@ endif(MSVC)
 # -----------------------------------------------------------------------------
 find_package(Qt6 COMPONENTS Widgets WebEngineWidgets OpenGL OpenGLWidgets REQUIRED)
 
-find_package(ManiVault COMPONENTS Core PointData ClusterData ImageData CONFIG)
+find_package(ManiVault COMPONENTS Core PointData ClusterData ColorData ImageData CONFIG)
 
 # -----------------------------------------------------------------------------
 # Source files
@@ -132,6 +132,7 @@ target_link_libraries(${PROJECT} PRIVATE ManiVault::Core)
 target_link_libraries(${PROJECT} PRIVATE ManiVault::PointData)
 target_link_libraries(${PROJECT} PRIVATE ManiVault::ClusterData)
 target_link_libraries(${PROJECT} PRIVATE ManiVault::ImageData)
+target_link_libraries(${PROJECT} PRIVATE ManiVault::ColorData)
 
 # -----------------------------------------------------------------------------
 # Target installation
