@@ -33,7 +33,7 @@
 #include <vector>
 #include <actions/ViewPluginSamplerAction.h>
 
-Q_PLUGIN_METADATA(IID "nl.tudelft.ScatterplotPlugin")
+Q_PLUGIN_METADATA(IID "studio.manivault.ScatterplotPlugin")
 
 using namespace mv;
 using namespace mv::util;
