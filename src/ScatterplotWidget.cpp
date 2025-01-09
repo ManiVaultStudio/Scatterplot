@@ -80,10 +80,12 @@ ScatterplotWidget::ScatterplotWidget() :
 
     _pixelSelectionTool.setEnabled(true);
     _pixelSelectionTool.setMainColor(QColor(Qt::black));
+    _pixelSelectionTool.setFixedBrushRadiusModifier(Qt::AltModifier);
 
     _samplerPixelSelectionTool.setEnabled(true);
     _samplerPixelSelectionTool.setMainColor(QColor(Qt::black));
-    
+    _samplerPixelSelectionTool.setFixedBrushRadiusModifier(Qt::AltModifier);
+
     connect(&_pixelSelectionTool, &PixelSelectionTool::shapeChanged, [this]() {
         if (isInitialized())
             update();
