@@ -149,6 +149,25 @@ ScatterplotWidget::ScatterplotWidget() :
 
 bool ScatterplotWidget::event(QEvent* event)
 {
+    if (!event)
+        return QOpenGLWidget::event(event);
+
+    // Set navigation flag on Alt press/release
+    if (event->type() == QEvent::KeyRelease)
+    {
+        if (const auto* keyEvent = static_cast<QKeyEvent*>(event))
+            if (keyEvent->key() == Qt::Key_Alt)
+                _isNavigating = false;
+
+    }
+    else if (event->type() == QEvent::KeyPress)
+    {
+        if (const auto* keyEvent = static_cast<QKeyEvent*>(event))
+            if (keyEvent->key() == Qt::Key_Alt)
+                _isNavigating = true;
+
+    }
+
     // Interactions when Alt is pressed
     if (isInitialized() && QGuiApplication::keyboardModifiers() == Qt::AltModifier) {
 
@@ -165,8 +184,7 @@ bool ScatterplotWidget::event(QEvent* event)
 
             case QEvent::MouseButtonPress:
             {
-
-                if (auto* mouseEvent = static_cast<QMouseEvent*>(event))
+                if (const auto* mouseEvent = static_cast<QMouseEvent*>(event))
                 {
                     if(mouseEvent->button() == Qt::MiddleButton)
                         resetView();
@@ -174,7 +192,6 @@ bool ScatterplotWidget::event(QEvent* event)
                     // Navigation
                     if (mouseEvent->buttons() == Qt::LeftButton)
                     {
-                        _isNavigating = true;
                         _pixelSelectionTool.setEnabled(false);
                         setCursor(Qt::ClosedHandCursor);
                         _mousePositions << mouseEvent->pos();
@@ -187,53 +204,35 @@ bool ScatterplotWidget::event(QEvent* event)
 
             case QEvent::MouseButtonRelease:
             {
-                if (_isNavigating)
-                {
-                    _isNavigating = false;
-                    _pixelSelectionTool.setEnabled(true);
-                    setCursor(Qt::ArrowCursor);
-                    _mousePositions.clear();
-                    update();
-                }
+                _pixelSelectionTool.setEnabled(true);
+                setCursor(Qt::ArrowCursor);
+                _mousePositions.clear();
+                update();
 
                 break;
             }
 
             case QEvent::MouseMove:
             {
-                if (auto* mouseEvent = static_cast<QMouseEvent*>(event))
+                if (const auto* mouseEvent = static_cast<QMouseEvent*>(event))
                 {
-                    if (_isNavigating)
+                    _mousePositions << mouseEvent->pos();
+
+                    if (mouseEvent->buttons() == Qt::LeftButton && _mousePositions.size() >= 2) 
                     {
-                        _mousePositions << mouseEvent->pos();
+                        const auto& previousMousePosition   = _mousePositions[_mousePositions.size() - 2];
+                        const auto& currentMousePosition    = _mousePositions[_mousePositions.size() - 1];
+                        const auto panVector                = currentMousePosition - previousMousePosition;
 
-                        if (mouseEvent->buttons() & Qt::LeftButton && _mousePositions.size() >= 2) {
-                            const auto& previousMousePosition = _mousePositions[_mousePositions.size() - 2];
-                            const auto& currentMousePosition = _mousePositions[_mousePositions.size() - 1];
-                            const auto panVector = currentMousePosition - previousMousePosition;
-
-                            panBy(panVector);
-                        }
+                        panBy(panVector);
                     }
                 }
 
                 break;
             }
 
-            case QEvent::KeyRelease:
-            {
-                if (auto* keyEvent = static_cast<QKeyEvent*>(event))
-                {
-                    // Reset navigation
-                    if (keyEvent && keyEvent->key() == Qt::Key_Alt)
-                    {
-                        _isNavigating = false;
-                    }
-
-                }
-                break;
-            }
         }
+    
     }
 
     return QOpenGLWidget::event(event);
