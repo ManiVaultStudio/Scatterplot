@@ -81,8 +81,6 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     _primaryToolbarAction.addAction(&_settingsAction.getSelectionAction());
     _primaryToolbarAction.addAction(&getSamplerAction());
 
-    _secondaryToolbarAction.addAction(&_settingsAction.getColoringAction().getColorMap1DAction(), 1);
-
     auto focusSelectionAction = new ToggleAction(this, "Focus selection");
 
     focusSelectionAction->setIcon(Application::getIconFont("FontAwesome").getIcon("mouse-pointer"));
@@ -104,6 +102,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     connect(_scatterPlotWidget, &ScatterplotWidget::renderModeChanged, this, updateReadOnly);
     connect(&_positionDataset, &Dataset<Points>::changed, this, updateReadOnly);
 
+    _secondaryToolbarAction.addAction(&_settingsAction.getColoringAction().getColorMap1DAction(), 1);
     _secondaryToolbarAction.addAction(focusSelectionAction, 2);
     //_secondaryToolbarAction.addAction(&_settingsAction.getExportAction());
     _secondaryToolbarAction.addAction(&_settingsAction.getMiscellaneousAction());
@@ -134,7 +133,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
         if (datasetsMimeData->getDatasets().count() > 1)
             return dropRegions;
 
-        const auto dataset          = datasetsMimeData->getDatasets().first();
+        const auto& dataset         = datasetsMimeData->getDatasets().first();
         const auto datasetGuiName   = dataset->text();
         const auto datasetId        = dataset->getId();
         const auto dataType         = dataset->getDataType();
@@ -831,7 +830,7 @@ PluginTriggerActions ScatterplotPluginFactory::getPluginTriggerActions(const mv:
 
         if (numberOfDatasets >= 1) {
             auto pluginTriggerAction = new PluginTriggerAction(const_cast<ScatterplotPluginFactory*>(this), this, "Scatterplot", "View selected datasets side-by-side in separate scatter plot viewers", fontAwesome.getIcon("braille"), [this, getInstance, datasets](PluginTriggerAction& pluginTriggerAction) -> void {
-                for (auto dataset : datasets)
+                for (const auto& dataset : datasets)
                     getInstance()->loadData(Datasets({ dataset }));
             });
 

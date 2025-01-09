@@ -3,6 +3,7 @@
 #include <ViewPlugin.h>
 
 #include <actions/HorizontalToolbarAction.h>
+#include <graphics/Vector2f.h>
 
 #include "SettingsAction.h"
 
@@ -13,14 +14,10 @@ using namespace mv::util;
 using namespace mv::gui;
 
 class Points;
-
 class ScatterplotWidget;
 
 namespace mv
 {
-    class CoreInterface;
-    class Vector2f;
-
     namespace gui {
         class DropWidget;
     }

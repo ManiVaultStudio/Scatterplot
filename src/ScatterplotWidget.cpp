@@ -73,8 +73,7 @@ ScatterplotWidget::ScatterplotWidget() :
     setFocusPolicy(Qt::ClickFocus);
     grabGesture(Qt::PinchGesture);
     //setAttribute(Qt::WA_TranslucentBackground);
-
-    this->installEventFilter(this);
+    installEventFilter(this);
 
     _navigationAction.initialize(this);
 
