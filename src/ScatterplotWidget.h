@@ -111,7 +111,7 @@ public:
     void showHighlights(bool show);
 
     /**
-     * Set sigma value for kernel density esitimation.
+     * Set sigma value for kernel density estimation.
      * @param sigma kernel width as a fraction of the output square width. Typical values are [0.01 .. 0.5]
      */
     void setSigma(const float sigma);

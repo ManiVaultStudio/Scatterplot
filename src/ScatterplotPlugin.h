@@ -3,6 +3,7 @@
 #include <ViewPlugin.h>
 
 #include <actions/HorizontalToolbarAction.h>
+#include <graphics/Vector2f.h>
 
 #include "SettingsAction.h"
 
@@ -13,14 +14,10 @@ using namespace mv::util;
 using namespace mv::gui;
 
 class Points;
-
 class ScatterplotWidget;
 
 namespace mv
 {
-    class CoreInterface;
-    class Vector2f;
-
     namespace gui {
         class DropWidget;
     }
@@ -135,9 +132,9 @@ private:
 class ScatterplotPluginFactory : public ViewPluginFactory
 {
     Q_INTERFACES(mv::plugin::ViewPluginFactory mv::plugin::PluginFactory)
-        Q_OBJECT
-        Q_PLUGIN_METADATA(IID   "nl.tudelft.ScatterplotPlugin"
-            FILE  "ScatterplotPlugin.json")
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID   "studio.manivault.ScatterplotPlugin"
+                      FILE  "ScatterplotPlugin.json")
 
 public:
     ScatterplotPluginFactory(void) {}
