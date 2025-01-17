@@ -137,8 +137,7 @@ class ScatterplotPluginFactory : public ViewPluginFactory
                       FILE  "ScatterplotPlugin.json")
 
 public:
-    ScatterplotPluginFactory(void) {}
-    ~ScatterplotPluginFactory(void) override {}
+    ScatterplotPluginFactory();
 
     /**
      * Get plugin icon
