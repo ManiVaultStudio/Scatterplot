@@ -68,6 +68,7 @@ void SelectionAction::initialize(ScatterplotPlugin* scatterplotPlugin)
 
     getPixelSelectionAction().initialize(&scatterplotWidget, &scatterplotWidget.getPixelSelectionTool(), {
         PixelSelectionType::Rectangle,
+        PixelSelectionType::Line,
         PixelSelectionType::Brush,
         PixelSelectionType::Lasso,
         PixelSelectionType::Polygon
