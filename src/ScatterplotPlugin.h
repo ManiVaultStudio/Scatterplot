@@ -110,7 +110,7 @@ public: // Serialization
 
 private:
     mv::gui::DropWidget*            _dropWidget;                /** Widget for dropping datasets */
-    ScatterplotWidget*              _scatterPlotWidget;         /** THe visualization widget */
+    ScatterplotWidget*              _scatterPlotWidget;         /** The visualization widget */
 
     Dataset<Points>                 _positionDataset;           /** Smart pointer to points dataset for point position */
     Dataset<Points>                 _positionSourceDataset;     /** Smart pointer to source of the points dataset for point position (if any) */
