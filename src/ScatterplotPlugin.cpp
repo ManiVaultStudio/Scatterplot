@@ -41,7 +41,7 @@ using namespace mv::util;
 ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     ViewPlugin(factory),
     _dropWidget(nullptr),
-    _scatterPlotWidget(new ScatterplotWidget()),
+    _scatterPlotWidget(new ScatterplotWidget(this)),
     _numPoints(0),
     _settingsAction(this, "Settings"),
     _primaryToolbarAction(this, "Primary Toolbar"),
