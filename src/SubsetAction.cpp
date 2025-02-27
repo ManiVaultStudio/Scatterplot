@@ -19,7 +19,7 @@ SubsetAction::SubsetAction(QObject* parent, const QString& title) :
     _sourceDataAction(this, "Source data"),
     _createSubsetAction(this, "Create subset")
 {
-    setIcon(mv::Application::getIconFont("FontAwesome").getIcon("crop"));
+    setIconByName("crop");
     setConnectionPermissionsToForceNone(true);
     setConfigurationFlag(WidgetAction::ConfigurationFlag::ForceCollapsedInGroup);
     setLabelSizingType(LabelSizingType::Auto);

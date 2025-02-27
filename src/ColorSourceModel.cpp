@@ -4,13 +4,14 @@
 #include <Set.h>
 
 using namespace mv;
+using namespace mv::util;
 
 QVariant ColorSourceModel::ConstantColorItem::data(int role /*= Qt::UserRole + 1*/) const
 {
     switch (role)
     {
         case Qt::DecorationRole:
-            return Application::getIconFont("FontAwesome").getIcon("palette");
+            return StyledIcon("palette");
 
         case Qt::DisplayRole:
             return "Constant";
@@ -27,7 +28,7 @@ QVariant ColorSourceModel::ScatterLayoutItem::data(int role /*= Qt::UserRole + 1
     switch (role)
     {
         case Qt::DecorationRole:
-            return Application::getIconFont("FontAwesome").getIcon("palette");
+            return StyledIcon("palette");
 
         case Qt::DisplayRole:
             return "Scatter layout";
@@ -71,7 +72,7 @@ QVariant ColorSourceModel::DatasetItem::data(int role /*= Qt::UserRole + 1*/) co
     switch (role)
     {
         case Qt::DecorationRole:
-            return _dataset->getIcon();
+            return _dataset->icon();
 
         case Qt::DisplayRole:
             return row() == 2 ? _dataset->text() : (_colorSourceModel->getShowFullPathName() ? _dataset->getLocation() : _dataset->text());

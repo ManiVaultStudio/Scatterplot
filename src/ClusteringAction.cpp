@@ -21,7 +21,7 @@ ClusteringAction::ClusteringAction(QObject* parent, const QString& title) :
     _clusterDatasetWizardAction(this, "Create cluster dataset"),
     _clusterDatasetAction(this, "Target clusters dataset")
 {
-    setIcon(Application::getIconFont("FontAwesome").getIcon("th-large"));
+    setIconByName("th-large");
     setConnectionPermissionsToForceNone();
     setConfigurationFlag(WidgetAction::ConfigurationFlag::ForceCollapsedInGroup);
     setLabelSizingType(LabelSizingType::Auto);
@@ -46,7 +46,7 @@ ClusteringAction::ClusteringAction(QObject* parent, const QString& title) :
     _createClusterDatasetAction.setToolTip("Create new cluster dataset");
     _createClusterDatasetAction.setEnabled(false);
 
-    _clusterDatasetWizardAction.setIcon(Application::getIconFont("FontAwesome").getIcon("magic"));
+    _clusterDatasetWizardAction.setIconByName("magic");
     _clusterDatasetWizardAction.setToolTip("Create a new cluster dataset");
     _clusterDatasetWizardAction.setConfigurationFlag(WidgetAction::ConfigurationFlag::ForceCollapsedInGroup);
     _clusterDatasetWizardAction.setLabelSizingType(LabelSizingType::Auto);

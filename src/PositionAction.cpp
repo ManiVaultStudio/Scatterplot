@@ -11,7 +11,7 @@ PositionAction::PositionAction(QObject* parent, const QString& title) :
     _yDimensionPickerAction(this, "Y"),
     _dontUpdateScatterplot(false)
 {
-    setIcon(mv::Application::getIconFont("FontAwesome").getIcon("ruler-combined"));
+    setIconByName("ruler-combined");
     setLabelSizingType(LabelSizingType::Auto);
 
     addAction(&_xDimensionPickerAction);
