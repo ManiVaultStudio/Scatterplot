@@ -11,7 +11,7 @@ RenderModeAction::RenderModeAction(QObject* parent, const QString& title) :
     _densityPlotAction(this, "Density"),
     _contourPlotAction(this, "Contour")
 {
-    setIcon(mv::Application::getIconFont("FontAwesome").getIcon("image"));
+    setIconByName("image");
     setDefaultWidgetFlags(OptionAction::HorizontalButtons);
     setEnabled(false);
 

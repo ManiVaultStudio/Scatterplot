@@ -13,7 +13,7 @@ MiscellaneousAction::MiscellaneousAction(QObject* parent, const QString& title) 
     _backgroundColorAction(this, "Background color"),
     _randomizedDepthAction(this, "Randomized depth", true)
 {
-    setIcon(Application::getIconFont("FontAwesome").getIcon("cog"));
+    setIconByName("cog");
     setLabelSizingType(LabelSizingType::Auto);
     setConfigurationFlag(WidgetAction::ConfigurationFlag::ForceCollapsedInGroup);
 
