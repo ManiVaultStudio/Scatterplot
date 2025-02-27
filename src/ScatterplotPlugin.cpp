@@ -800,6 +800,8 @@ void ScatterplotPlugin::setYDimension(const std::int32_t& dimensionIndex)
 
 ScatterplotPluginFactory::ScatterplotPluginFactory()
 {
+    setIconByName("braille");
+
     getPluginMetadata().setDescription("Scatterplot view");
     getPluginMetadata().setSummary("High-performance scatterplot plugin for ManiVault Studio, capable of handling millions of data points.");
     getPluginMetadata().setCopyrightHolder({ "BioVault (Biomedical Visual Analytics Unit LUMC - TU Delft)" });
