@@ -83,7 +83,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
 
     auto focusSelectionAction = new ToggleAction(this, "Focus selection");
 
-    focusSelectionAction->setIcon(Application::getIconFont("FontAwesome").getIcon("mouse-pointer"));
+    focusSelectionAction->setIconByName("mouse-pointer");
 
     connect(focusSelectionAction, &ToggleAction::toggled, this, [this](bool toggled) -> void {
         _settingsAction.getPlotAction().getPointPlotAction().getFocusSelection().setChecked(toggled);
@@ -831,10 +831,8 @@ PluginTriggerActions ScatterplotPluginFactory::getPluginTriggerActions(const mv:
     const auto numberOfDatasets = datasets.count();
 
     if (PluginFactory::areAllDatasetsOfTheSameType(datasets, PointType)) {
-        auto& fontAwesome = Application::getIconFont("FontAwesome");
-
         if (numberOfDatasets >= 1) {
-            auto pluginTriggerAction = new PluginTriggerAction(const_cast<ScatterplotPluginFactory*>(this), this, "Scatterplot", "View selected datasets side-by-side in separate scatter plot viewers", fontAwesome.getIcon("braille"), [this, getInstance, datasets](PluginTriggerAction& pluginTriggerAction) -> void {
+            auto pluginTriggerAction = new PluginTriggerAction(const_cast<ScatterplotPluginFactory*>(this), this, "Scatterplot", "View selected datasets side-by-side in separate scatter plot viewers", StyledIcon("braille"), [this, getInstance, datasets](PluginTriggerAction& pluginTriggerAction) -> void {
                 for (const auto& dataset : datasets)
                     getInstance()->loadData(Datasets({ dataset }));
             });
