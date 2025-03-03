@@ -603,8 +603,10 @@ void ScatterplotPlugin::loadColors(const Dataset<Clusters>& clusters)
     {
         for (size_t i = 0; i < static_cast<size_t>(clusterVec.size()); i++)
         {
-            const auto color = clusterVec[i].getColor();
-            localColors[i] = Vector3f(color.redF(), color.greenF(), color.blueF());
+            const auto& cluster = clusterVec[i];
+            const auto color    = cluster.getColor();
+
+            localColors[cluster.getIndices()[0]] = Vector3f(color.redF(), color.greenF(), color.blueF());
         }
 
     }
