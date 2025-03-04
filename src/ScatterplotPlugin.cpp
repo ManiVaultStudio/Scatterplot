@@ -27,6 +27,7 @@
 #include <QMenu>
 #include <QMetaType>
 #include <QtCore>
+#include <QPushbutton>
 
 #include <algorithm>
 #include <functional>
@@ -232,24 +233,30 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     auto& selectionAction = _settingsAction.getSelectionAction();
 
     getSamplerAction().initialize(this, &selectionAction.getPixelSelectionAction(), &selectionAction.getSamplerPixelSelectionAction());
-    getSamplerAction().setViewGeneratorFunction([this](const ViewPluginSamplerAction::SampleContext& toolTipContext) -> QString {
-        QStringList localPointIndices, globalPointIndices;
+    //getSamplerAction().setViewGeneratorFunction([this](const ViewPluginSamplerAction::SampleContext& toolTipContext) -> QString {
+    //    QStringList localPointIndices, globalPointIndices;
 
-        for (const auto& localPointIndex : toolTipContext["LocalPointIndices"].toList())
-            localPointIndices << QString::number(localPointIndex.toInt());
+    //    for (const auto& localPointIndex : toolTipContext["LocalPointIndices"].toList())
+    //        localPointIndices << QString::number(localPointIndex.toInt());
 
-        for (const auto& globalPointIndex : toolTipContext["GlobalPointIndices"].toList())
-            globalPointIndices << QString::number(globalPointIndex.toInt());
+    //    for (const auto& globalPointIndex : toolTipContext["GlobalPointIndices"].toList())
+    //        globalPointIndices << QString::number(globalPointIndex.toInt());
 
-        if (localPointIndices.isEmpty())
-            return {};
+    //    if (localPointIndices.isEmpty())
+    //        return {};
 
-        return  QString("<table> \
-                    <tr> \
-                        <td><b>Point ID's: </b></td> \
-                        <td>%1</td> \
-                    </tr> \
-                   </table>").arg(globalPointIndices.join(", "));
+    //    return  QString("<table> \
+    //                <tr> \
+    //                    <td><b>Point ID's: </b></td> \
+    //                    <td>%1</td> \
+    //                </tr> \
+    //               </table>").arg(globalPointIndices.join(", "));
+    //});
+
+    auto widget = new QPushButton();
+
+    getSamplerAction().setWidgetViewGeneratorFunction([this, widget](const ViewPluginSamplerAction::SampleContext& toolTipContext) -> QWidget* {
+        return widget;
     });
 
     //getSamplerAction().setViewingMode(ViewPluginSamplerAction::ViewingMode::Tooltip);
