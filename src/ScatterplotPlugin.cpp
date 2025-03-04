@@ -233,7 +233,8 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     auto& selectionAction = _settingsAction.getSelectionAction();
 
     getSamplerAction().initialize(this, &selectionAction.getPixelSelectionAction(), &selectionAction.getSamplerPixelSelectionAction());
-    //getSamplerAction().setViewGeneratorFunction([this](const ViewPluginSamplerAction::SampleContext& toolTipContext) -> QString {
+    //getSamplerAction().setHtmlViewGeneratorFunction([this](const ViewPluginSamplerAction::SampleContext& toolTipContext) -> QString {
+    //    qDebug() << __FUNCTION__;
     //    QStringList localPointIndices, globalPointIndices;
 
     //    for (const auto& localPointIndex : toolTipContext["LocalPointIndices"].toList())
@@ -256,11 +257,24 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     auto widget = new QPushButton();
 
     getSamplerAction().setWidgetViewGeneratorFunction([this, widget](const ViewPluginSamplerAction::SampleContext& toolTipContext) -> QWidget* {
+		QStringList localPointIndices, globalPointIndices;
+
+        for (const auto& localPointIndex : toolTipContext["LocalPointIndices"].toList())
+            localPointIndices << QString::number(localPointIndex.toInt());
+
+        for (const auto& globalPointIndex : toolTipContext["GlobalPointIndices"].toList())
+            globalPointIndices << QString::number(globalPointIndex.toInt());
+
+        if (localPointIndices.isEmpty())
+            return {};
+
+        widget->setText(QString("Point ID's: %1").arg(globalPointIndices.join(", ")));
+
         return widget;
     });
 
     //getSamplerAction().setViewingMode(ViewPluginSamplerAction::ViewingMode::Tooltip);
-    getSamplerAction().getEnabledAction().setChecked(false);
+    //getSamplerAction().getEnabledAction().setChecked(false);
 
     getLearningCenterAction().addVideos(QStringList({ "Practitioner", "Developer" }));
 }
@@ -429,10 +443,16 @@ void ScatterplotPlugin::selectPoints()
 
 void ScatterplotPlugin::samplePoints()
 {
+    
+
     auto& samplerPixelSelectionTool = _scatterPlotWidget->getSamplerPixelSelectionTool();
 
-    if (!_positionDataset.isValid() || !samplerPixelSelectionTool.isActive() || _scatterPlotWidget->isNavigating() || !samplerPixelSelectionTool.isEnabled())
+    qDebug() << __FUNCTION__ << samplerPixelSelectionTool.isActive() << _scatterPlotWidget->isNavigating() << samplerPixelSelectionTool.isEnabled();
+
+    if (!_positionDataset.isValid() || _scatterPlotWidget->isNavigating() || !samplerPixelSelectionTool.isEnabled())
         return;
+
+    
 
     auto selectionAreaImage = samplerPixelSelectionTool.getAreaPixmap().toImage();
 
