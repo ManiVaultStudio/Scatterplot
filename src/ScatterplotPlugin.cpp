@@ -83,7 +83,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
 
     auto focusSelectionAction = new ToggleAction(this, "Focus selection");
 
-    focusSelectionAction->setIcon(Application::getIconFont("FontAwesome").getIcon("mouse-pointer"));
+    focusSelectionAction->setIconByName("mouse-pointer");
 
     connect(focusSelectionAction, &ToggleAction::toggled, this, [this](bool toggled) -> void {
         _settingsAction.getPlotAction().getPointPlotAction().getFocusSelection().setChecked(toggled);
@@ -802,6 +802,8 @@ void ScatterplotPlugin::setYDimension(const std::int32_t& dimensionIndex)
 
 ScatterplotPluginFactory::ScatterplotPluginFactory()
 {
+    setIconByName("braille");
+
     getPluginMetadata().setDescription("Scatterplot view");
     getPluginMetadata().setSummary("High-performance scatterplot plugin for ManiVault Studio, capable of handling millions of data points.");
     getPluginMetadata().setCopyrightHolder({ "BioVault (Biomedical Visual Analytics Unit LUMC - TU Delft)" });
@@ -815,11 +817,6 @@ ScatterplotPluginFactory::ScatterplotPluginFactory()
         { "TU Delft", "Delft university of technology", "https://www.tudelft.nl/" }
 	});
     getPluginMetadata().setLicenseText("This plugin is distributed under the [LGPL v3.0](https://www.gnu.org/licenses/lgpl-3.0.en.html) license.");
-}
-
-QIcon ScatterplotPluginFactory::getIcon(const QColor& color /*= Qt::black*/) const
-{
-    return Application::getIconFont("FontAwesome").getIcon("braille", color);
 }
 
 ViewPlugin* ScatterplotPluginFactory::produce()
@@ -838,10 +835,8 @@ PluginTriggerActions ScatterplotPluginFactory::getPluginTriggerActions(const mv:
     const auto numberOfDatasets = datasets.count();
 
     if (PluginFactory::areAllDatasetsOfTheSameType(datasets, PointType)) {
-        auto& fontAwesome = Application::getIconFont("FontAwesome");
-
         if (numberOfDatasets >= 1) {
-            auto pluginTriggerAction = new PluginTriggerAction(const_cast<ScatterplotPluginFactory*>(this), this, "Scatterplot", "View selected datasets side-by-side in separate scatter plot viewers", fontAwesome.getIcon("braille"), [this, getInstance, datasets](PluginTriggerAction& pluginTriggerAction) -> void {
+            auto pluginTriggerAction = new PluginTriggerAction(const_cast<ScatterplotPluginFactory*>(this), this, "Scatterplot", "View selected datasets side-by-side in separate scatter plot viewers", StyledIcon("braille"), [this, getInstance, datasets](PluginTriggerAction& pluginTriggerAction) -> void {
                 for (const auto& dataset : datasets)
                     getInstance()->loadData(Datasets({ dataset }));
             });

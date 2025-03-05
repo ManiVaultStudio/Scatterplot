@@ -16,7 +16,7 @@ DatasetsAction::DatasetsAction(QObject* parent, const QString& title) :
     _positionDatasetPickerAction(this, "Position"),
     _colorDatasetPickerAction(this, "Color")
 {
-    setIcon(mv::Application::getIconFont("FontAwesome").getIcon("database"));
+    setIconByName("database");
     setToolTip("Manage loaded datasets for position and color");
     setConfigurationFlag(WidgetAction::ConfigurationFlag::ForceCollapsedInGroup);
     setLabelSizingType(LabelSizingType::Auto);
