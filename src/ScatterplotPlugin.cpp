@@ -33,6 +33,9 @@
 #include <vector>
 #include <actions/ViewPluginSamplerAction.h>
 
+#define VIEW_SAMPLING_HTML
+//#define VIEW_SAMPLING_WIDGET
+
 Q_PLUGIN_METADATA(IID "studio.manivault.ScatterplotPlugin")
 
 using namespace mv;
@@ -232,27 +235,6 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     auto& selectionAction = _settingsAction.getSelectionAction();
 
     getSamplerAction().initialize(this, &selectionAction.getPixelSelectionAction(), &selectionAction.getSamplerPixelSelectionAction());
-    getSamplerAction().setViewGeneratorFunction([this](const ViewPluginSamplerAction::SampleContext& toolTipContext) -> QString {
-        QStringList localPointIndices, globalPointIndices;
-
-        for (const auto& localPointIndex : toolTipContext["LocalPointIndices"].toList())
-            localPointIndices << QString::number(localPointIndex.toInt());
-
-        for (const auto& globalPointIndex : toolTipContext["GlobalPointIndices"].toList())
-            globalPointIndices << QString::number(globalPointIndex.toInt());
-
-        if (localPointIndices.isEmpty())
-            return {};
-
-        return  QString("<table> \
-                    <tr> \
-                        <td><b>Point ID's: </b></td> \
-                        <td>%1</td> \
-                    </tr> \
-                   </table>").arg(globalPointIndices.join(", "));
-    });
-
-    //getSamplerAction().setViewingMode(ViewPluginSamplerAction::ViewingMode::Tooltip);
     getSamplerAction().getEnabledAction().setChecked(false);
 
     getLearningCenterAction().addVideos(QStringList({ "Practitioner", "Developer" }));
@@ -299,6 +281,50 @@ void ScatterplotPlugin::init()
     _scatterPlotWidget->installEventFilter(this);
 
     getLearningCenterAction().getViewPluginOverlayWidget()->setTargetWidget(_scatterPlotWidget);
+
+#ifdef VIEW_SAMPLING_HTML
+    getSamplerAction().setHtmlViewGeneratorFunction([this](const ViewPluginSamplerAction::SampleContext& toolTipContext) -> QString {
+        QStringList localPointIndices, globalPointIndices;
+
+        for (const auto& localPointIndex : toolTipContext["LocalPointIndices"].toList())
+            localPointIndices << QString::number(localPointIndex.toInt());
+
+        for (const auto& globalPointIndex : toolTipContext["GlobalPointIndices"].toList())
+            globalPointIndices << QString::number(globalPointIndex.toInt());
+
+        if (localPointIndices.isEmpty())
+            return {};
+
+        return  QString("<table> \
+                    <tr> \
+                        <td><b>Point ID's: </b></td> \
+                        <td>%1</td> \
+                    </tr> \
+                   </table>").arg(globalPointIndices.join(", "));
+        });
+#endif
+
+#ifdef VIEW_SAMPLING_WIDGET
+    auto pointIndicesTableWidget = new QTableWidget(5, 2);
+
+    pointIndicesTableWidget->setHorizontalHeaderLabels({ "Local point index", "Global point index" });
+
+    getSamplerAction().setWidgetViewGeneratorFunction([this, pointIndicesTableWidget](const ViewPluginSamplerAction::SampleContext& sampleContext) -> QWidget* {
+        const auto localPointIndices = sampleContext["LocalPointIndices"].toList();
+        const auto globalPointIndices = sampleContext["GlobalPointIndices"].toList();
+
+        pointIndicesTableWidget->setRowCount(localPointIndices.count());
+
+        for (int i = 0; i < localPointIndices.count(); ++i) {
+            pointIndicesTableWidget->setItem(i, 0, new QTableWidgetItem(QString::number(localPointIndices[i].toInt())));
+            pointIndicesTableWidget->setItem(i, 1, new QTableWidgetItem(QString::number(globalPointIndices[i].toInt())));
+        }
+
+        pointIndicesTableWidget->resizeColumnsToContents();
+
+        return pointIndicesTableWidget;
+        });
+#endif
 }
 
 void ScatterplotPlugin::loadData(const Datasets& datasets)
