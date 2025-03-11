@@ -378,7 +378,7 @@ void ScatterplotPlugin::selectPoints()
 
     const auto width        = selectionAreaImage.width();
     const auto height       = selectionAreaImage.height();
-    const auto size         = width < height ? width : height;
+    const auto size         = std::max(width, height);//width < height ? width : height;
     const auto uvOffset     = QPoint((selectionAreaImage.width() - size) / 2.0f, (selectionAreaImage.height() - size) / 2.0f);
 
     QPointF uvNormalized    = {};
