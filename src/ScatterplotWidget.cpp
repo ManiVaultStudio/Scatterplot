@@ -756,10 +756,8 @@ void ScatterplotWidget::initializeGL()
 
 void ScatterplotWidget::resizeGL(int w, int h)
 {
-    const auto size = std::max(w, h);
-
-    _widgetSizeInfo.width       = size;
-    _widgetSizeInfo.height      = size;
+    _widgetSizeInfo.width       = static_cast<float>(w);
+    _widgetSizeInfo.height      = static_cast<float>(h);
     _widgetSizeInfo.minWH       = _widgetSizeInfo.width < _widgetSizeInfo.height ? _widgetSizeInfo.width : _widgetSizeInfo.height;
     _widgetSizeInfo.ratioWidth  = _widgetSizeInfo.width / _widgetSizeInfo.minWH;
     _widgetSizeInfo.ratioHeight = _widgetSizeInfo.height / _widgetSizeInfo.minWH;
@@ -770,8 +768,8 @@ void ScatterplotWidget::resizeGL(int w, int h)
     // Pixel ratio tells us how many pixels map to a point
     // That is needed as macOS calculates in points and we do in pixels
     // On macOS high dpi displays pixel ration is 2
-    //w *= _pixelRatio;
-    //h *= _pixelRatio;
+    w *= _pixelRatio;
+    h *= _pixelRatio;
 
     _pointRenderer.resize(QSize(w, h));
     _densityRenderer.resize(QSize(w, h));
