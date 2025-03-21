@@ -49,8 +49,6 @@ void NavigationAction::initialize(ScatterplotWidget* scatterplotWidget)
     _scatterplotWidget = scatterplotWidget;
 
     _scatterplotWidget->addAction(&_zoomDataExtentsAction);
-
-    connect(&_zoomDataExtentsAction, &TriggerAction::triggered, _scatterplotWidget, &ScatterplotWidget::resetView);
 }
 
 void NavigationAction::connectToPublicAction(WidgetAction* publicAction, bool recursive)

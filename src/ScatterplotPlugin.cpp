@@ -360,7 +360,7 @@ void ScatterplotPlugin::selectPoints()
     auto& pixelSelectionTool = _scatterPlotWidget->getPixelSelectionTool();
 
     // Only proceed with a valid points position dataset and when the pixel selection tool is active
-    if (!_positionDataset.isValid() || !pixelSelectionTool.isActive() || _scatterPlotWidget->isNavigating() || !pixelSelectionTool.isEnabled())
+    if (!_positionDataset.isValid() || !pixelSelectionTool.isActive() || _scatterPlotWidget->_pointRenderer.getNavigator().isNavigating() || !pixelSelectionTool.isEnabled())
         return;
 
     auto selectionAreaImage = pixelSelectionTool.getAreaPixmap().toImage();
@@ -450,7 +450,7 @@ void ScatterplotPlugin::samplePoints()
 {
     auto& samplerPixelSelectionTool = _scatterPlotWidget->getSamplerPixelSelectionTool();
 
-    if (!_positionDataset.isValid() || !samplerPixelSelectionTool.isActive() || _scatterPlotWidget->isNavigating() || !samplerPixelSelectionTool.isEnabled())
+    if (!_positionDataset.isValid() || !samplerPixelSelectionTool.isActive() || _scatterPlotWidget->_pointRenderer.getNavigator().isNavigating() || !samplerPixelSelectionTool.isEnabled())
         return;
 
     auto selectionAreaImage = samplerPixelSelectionTool.getAreaPixmap().toImage();

@@ -123,24 +123,7 @@ public:
         return _dataRectangleAction.getBounds();
     }
 
-    /*
-    mv::Bounds getZoomBounds() const {
-        return _zoomBounds;
-    }
-
-    void setZoomBounds(const mv::Bounds& newBounds) {
-        _zoomBounds = newBounds;
-        _pointRenderer.setBounds(_zoomBounds);
-        emit zoomBoundsChanged(_zoomBounds);
-        update();
-    }
-    */
-
     NavigationAction& getNavigationAction() { return _navigationAction; }
-
-    bool isNavigating() const {
-        return _isNavigating;
-    }
 
     mv::Vector3f getColorMapRange() const;
     void setColorMapRange(const float& min, const float& max);
@@ -258,10 +241,6 @@ protected:
 
     bool event(QEvent* event) override;
 
-    void zoomAround(const QPointF& at, float factor);
-    void panBy(const QPointF& to);
-    void resetView();
-
 public: // Const access to renderers
 
     const PointRenderer& getPointRenderer() const {
@@ -308,9 +287,11 @@ public slots:
 private slots:
     void updatePixelRatio();
 
-private:
+protected:
     PointRenderer               _pointRenderer;                 /** For rendering point data as points */
     DensityRenderer             _densityRenderer;               /** For rendering point data as a density plot */
+
+private:
     bool                        _isInitialized;                 /** Boolean determining whether the widget it properly initialized or not */
     RenderMode                  _renderMode;                    /** Current render mode */
     QColor                      _backgroundColor;               /** Background color */
@@ -322,11 +303,10 @@ private:
     PixelSelectionTool          _pixelSelectionTool;            /** 2D pixel selection tool */
     PixelSelectionTool          _samplerPixelSelectionTool;     /** 2D pixel selection tool */
     float                       _pixelRatio;                    /** Current pixel ratio */
-    QVector<QPoint>             _mousePositions;                /** Recorded mouse positions */
-    bool                        _isNavigating;                  /** Boolean determining whether view navigation is currently taking place or not */
     bool                        _weightDensity;                 /** Use point scalar sizes to weight density */
 
     mv::plugin::ViewPlugin*     _parentPlugin = nullptr;
 
+    friend class ScatterplotPlugin;
     friend class NavigationAction;
 };
