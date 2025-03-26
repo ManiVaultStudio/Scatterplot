@@ -384,8 +384,21 @@ void ScatterplotPlugin::selectPoints()
     QPointF uvNormalized    = {};
     QPoint uv               = {};
 
+    auto& navigator = _scatterPlotWidget->_pointRenderer.getNavigator();
+
+    auto zoomRectangleWorld = navigator.getZoomRectangleWorld();
+
+    const auto margin = _scatterPlotWidget->_pointRenderer.getNavigator().getZoomRectangleMargin();
+
+    //zoomRectangleWorld.setSize(zoomRectangleWorld.size() - QSize(2 * margin, 2 * margin));
+
+    qDebug() << zoomRectangleWorld;
+
     for (std::uint32_t localPointIndex = 0; localPointIndex < _positions.size(); localPointIndex++) {
-        uvNormalized = QPointF((_positions[localPointIndex].x - zoomRectangleAction.getLeft()) / zoomRectangleAction.getWidth(), (zoomRectangleAction.getTop() - _positions[localPointIndex].y) / zoomRectangleAction.getHeight());
+        //const auto screenPoint = _scatterPlotWidget->getPointRenderer().getWorldPositionToScreenPoint(QVector3D(_positions[localPointIndex].x, _positions[localPointIndex].y, 0.f));
+
+        uvNormalized = QPointF((_positions[localPointIndex].x - zoomRectangleWorld.left()) / zoomRectangleWorld.width(), (zoomRectangleWorld.bottom() - _positions[localPointIndex].y) / zoomRectangleWorld.height());
+        //uvNormalized = QPointF(static_cast<float>(screenPoint.x()) / static_cast<float>(_scatterPlotWidget->width()), static_cast<float>(screenPoint.y()) / static_cast<float>(_scatterPlotWidget->height()));
         uv           = uvOffset + QPoint(uvNormalized.x() * size, uvNormalized.y() * size);
 
         if (uv.x() >= selectionAreaImage.width()  || uv.x() < 0 || uv.y() >= selectionAreaImage.height() || uv.y() < 0)
