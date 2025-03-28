@@ -456,7 +456,7 @@ void ScatterplotPlugin::samplePoints()
 {
     auto& samplerPixelSelectionTool = _scatterPlotWidget->getSamplerPixelSelectionTool();
 
-    if (!_positionDataset.isValid() || !samplerPixelSelectionTool.isActive() || _scatterPlotWidget->_pointRenderer.getNavigator().isNavigating() || !samplerPixelSelectionTool.isEnabled())
+    if (!_positionDataset.isValid() || _scatterPlotWidget->_pointRenderer.getNavigator().isNavigating() || !samplerPixelSelectionTool.isActive())
         return;
 
     auto selectionAreaImage = samplerPixelSelectionTool.getAreaPixmap().toImage();

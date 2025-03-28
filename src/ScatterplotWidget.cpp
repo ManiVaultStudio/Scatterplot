@@ -4,11 +4,9 @@
 
 #include <util/Exception.h>
 
-#include <vector>
+#include <ViewPlugin.h>
 
 #include <QDebug>
-#include <QGuiApplication>
-#include <QMatrix4x4>
 #include <QOpenGLFramebufferObject>
 #include <QPainter>
 #include <QSize>
@@ -16,9 +14,7 @@
 #include <QWindow>
 #include <QRectF>
 
-#include <math.h>
-
-#include <ViewPlugin.h>
+#include <vector>
 
 using namespace mv;
 
@@ -75,10 +71,6 @@ ScatterplotWidget::ScatterplotWidget(mv::plugin::ViewPlugin* parentPlugin) :
     _pixelSelectionTool.setEnabled(true);
     _pixelSelectionTool.setMainColor(QColor(Qt::black));
     _pixelSelectionTool.setFixedBrushRadiusModifier(Qt::AltModifier);
-
-    _samplerPixelSelectionTool.setEnabled(true);
-    _samplerPixelSelectionTool.setMainColor(QColor(Qt::black));
-    _samplerPixelSelectionTool.setFixedBrushRadiusModifier(Qt::AltModifier);
 
     connect(&_pixelSelectionTool, &PixelSelectionTool::shapeChanged, [this]() {
         if (isInitialized())
@@ -169,6 +161,10 @@ ScatterplotWidget::ScatterplotWidget(mv::plugin::ViewPlugin* parentPlugin) :
 
     _pointRenderer.getNavigator().initialize(this);
     _densityRenderer.getNavigator().initialize(this);
+
+    _samplerPixelSelectionTool.setEnabled(true);
+    _samplerPixelSelectionTool.setMainColor(QColor(Qt::black));
+    _samplerPixelSelectionTool.setFixedBrushRadiusModifier(Qt::AltModifier);
 }
 
 bool ScatterplotWidget::event(QEvent* event)
@@ -432,7 +428,7 @@ mv::Vector3f ScatterplotWidget::getColorMapRange() const
             break;
     }
     
-    return Vector3f();
+    return {};
 }
 
 void ScatterplotWidget::setColorMapRange(const float& min, const float& max)
