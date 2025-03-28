@@ -374,37 +374,30 @@ void ScatterplotPlugin::selectPoints()
 
     _positionDataset->getGlobalIndices(localGlobalIndices);
 
-    auto& zoomRectangleAction = _scatterPlotWidget->getNavigationAction().getZoomRectangleAction();
+    auto& pointRenderer = _scatterPlotWidget->_pointRenderer;
+    auto& navigator     = pointRenderer.getNavigator();
 
-    const auto width        = selectionAreaImage.width();
-    const auto height       = selectionAreaImage.height();
-    const auto size         = width < height ? width : height;
-    const auto uvOffset     = QPoint((selectionAreaImage.width() - size) / 2.0f, (selectionAreaImage.height() - size) / 2.0f);
+    const auto zoomRectangleWorld   = navigator.getZoomRectangleWorld();
+    const auto screenRectangle      = QRect(QPoint(), pointRenderer.getRenderSize());
 
-    QPointF uvNormalized    = {};
-    QPoint uv               = {};
-
-    auto& navigator = _scatterPlotWidget->_pointRenderer.getNavigator();
-
-    auto zoomRectangleWorld = navigator.getZoomRectangleWorld();
-
-    const auto margin = _scatterPlotWidget->_pointRenderer.getNavigator().getZoomRectangleMargin();
-
-    //zoomRectangleWorld.setSize(zoomRectangleWorld.size() - QSize(2 * margin, 2 * margin));
-
-    qDebug() << zoomRectangleWorld;
-
+    // Go over all points in the dataset to see if they are selected
     for (std::uint32_t localPointIndex = 0; localPointIndex < _positions.size(); localPointIndex++) {
-        //const auto screenPoint = _scatterPlotWidget->getPointRenderer().getWorldPositionToScreenPoint(QVector3D(_positions[localPointIndex].x, _positions[localPointIndex].y, 0.f));
+        
+        // Compute the offset of the point in the world space
+    	const auto pointOffsetWorld = QPointF(_positions[localPointIndex].x - zoomRectangleWorld.left(), _positions[localPointIndex].y - zoomRectangleWorld.top());
 
-        uvNormalized = QPointF((_positions[localPointIndex].x - zoomRectangleWorld.left()) / zoomRectangleWorld.width(), (zoomRectangleWorld.bottom() - _positions[localPointIndex].y) / zoomRectangleWorld.height());
-        //uvNormalized = QPointF(static_cast<float>(screenPoint.x()) / static_cast<float>(_scatterPlotWidget->width()), static_cast<float>(screenPoint.y()) / static_cast<float>(_scatterPlotWidget->height()));
-        uv           = uvOffset + QPoint(uvNormalized.x() * size, uvNormalized.y() * size);
+        // Normalize it 
+        const auto pointOffsetWorldNormalized = QPointF(pointOffsetWorld.x() / zoomRectangleWorld.width(), pointOffsetWorld.y() / zoomRectangleWorld.height());
 
-        if (uv.x() >= selectionAreaImage.width()  || uv.x() < 0 || uv.y() >= selectionAreaImage.height() || uv.y() < 0)
+        // Convert it to screen space
+        const auto pointOffsetScreen = QPoint(pointOffsetWorldNormalized.x() * screenRectangle.width(), screenRectangle.height() - pointOffsetWorldNormalized.y() * screenRectangle.height());
+
+        // Continue to next point if the point is outside the screen
+        if (!screenRectangle.contains(pointOffsetScreen))
             continue;
 
-        if (selectionAreaImage.pixelColor(uv).alpha() > 0)
+        // If the corresponding pixel is not transparent, add the point to the selection
+        if (selectionAreaImage.pixelColor(pointOffsetScreen).alpha() > 0)
 	        targetSelectionIndices.push_back(localGlobalIndices[localPointIndex]);
     }
 

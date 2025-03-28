@@ -167,18 +167,6 @@ ScatterplotWidget::ScatterplotWidget(mv::plugin::ViewPlugin* parentPlugin) :
 	    update();
     });
 
-    //auto setIsNavigating = [this](bool isNavigating) -> void {
-    //    _isNavigating = isNavigating;
-    //    _pixelSelectionTool.setEnabled(!isNavigating);
-    //    if (isNavigating) {
-    //        _samplerPixelSelectionTool.setEnabled(false);
-    //    }
-    //    else if (_parentPlugin) { // reset to UI-setting
-    //        _samplerPixelSelectionTool.setEnabled(_parentPlugin->getSamplerAction().getEnabledAction().isChecked());
-    //    }
-
-    //    };
-
     _pointRenderer.getNavigator().initialize(this);
     _densityRenderer.getNavigator().initialize(this);
 }
@@ -194,6 +182,37 @@ bool ScatterplotWidget::event(QEvent* event)
 
         if (keyEvent->key() == Qt::Key_Alt) {
             event->accept();
+
+            return QOpenGLWidget::event(event);
+        }
+    }
+
+    auto setIsNavigating = [this](bool isNavigating) -> void {
+        _pixelSelectionTool.setEnabled(getRenderMode() == RenderMode::SCATTERPLOT && !isNavigating);
+
+        if (isNavigating) {
+            _samplerPixelSelectionTool.setEnabled(false);
+        }
+        else if (_parentPlugin) {
+            _samplerPixelSelectionTool.setEnabled(_parentPlugin->getSamplerAction().getEnabledAction().isChecked());
+        }
+	};
+
+    if (event->type() == QEvent::KeyPress) {
+        const auto keyEvent = dynamic_cast<QKeyEvent*>(event);
+
+        if (keyEvent->key() == Qt::Key_Alt) {
+            setIsNavigating(true);
+
+            return QOpenGLWidget::event(event);
+        }
+    }
+
+    if (event->type() == QEvent::KeyRelease) {
+        const auto keyEvent = dynamic_cast<QKeyEvent*>(event);
+
+        if (keyEvent->key() == Qt::Key_Alt) {
+            setIsNavigating(false);
 
             return QOpenGLWidget::event(event);
         }
@@ -285,18 +304,13 @@ void ScatterplotWidget::computeDensity()
 // by reference then we can upload the data to the GPU, but not store it in the widget.
 void ScatterplotWidget::setData(const std::vector<Vector2f>* points)
 {
-    auto dataBounds = getDataBounds(*points);
+    auto bounds = getDataBounds(*points);
 
-    // pass un-adjusted data bounds to renderer for 2D colormapping
-    _pointRenderer.setDataBounds(QRectF(dataBounds.getLeft(), dataBounds.getTop(), dataBounds.getWidth(), dataBounds.getHeight()));
+    const auto dataBounds = QRectF(bounds.getLeft(), bounds.getTop(), bounds.getWidth(), bounds.getHeight());
 
-    const auto shouldSetBounds = (mv::projects().isOpeningProject() || mv::projects().isImportingProject()) ? false : !_navigationAction.getFreezeZoomAction().isChecked();
-
-    //if (shouldSetBounds)
-    //    _pointRenderer.setViewBounds(dataBounds);
-
-    _densityRenderer.setBounds(dataBounds);
-    _dataRectangleAction.setBounds(dataBounds);
+    _pointRenderer.setDataBounds(dataBounds);
+    _densityRenderer.setDataBounds(dataBounds);
+    _dataRectangleAction.setBounds(bounds);
 
     _pointRenderer.setData(*points);
     _densityRenderer.setData(points);
@@ -316,7 +330,6 @@ void ScatterplotWidget::setData(const std::vector<Vector2f>* points)
             break;
         }
     }
-   // _pointRenderer.setSelectionOutlineColor(Vector3f(1, 0, 0));
 
     update();
 }
