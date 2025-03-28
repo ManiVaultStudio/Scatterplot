@@ -468,31 +468,37 @@ void ScatterplotPlugin::samplePoints()
     std::vector<std::uint32_t> localGlobalIndices;
 
     _positionDataset->getGlobalIndices(localGlobalIndices);
-
-    auto& zoomRectangleAction = _scatterPlotWidget->getNavigationAction().getZoomRectangleAction();
-
-    const auto width    = selectionAreaImage.width();
-    const auto height   = selectionAreaImage.height();
-    const auto size     = width < height ? width : height;
-    const auto uvOffset = QPoint((selectionAreaImage.width() - size) / 2.0f, (selectionAreaImage.height() - size) / 2.0f);
-
-    QPointF pointUvNormalized;
-
-    QPoint  pointUv, mouseUv = _scatterPlotWidget->mapFromGlobal(QCursor::pos());
     
     std::vector<char> focusHighlights(_positions.size());
 
     std::vector<std::pair<float, std::uint32_t>> sampledPoints;
 
-    for (std::uint32_t localPointIndex = 0; localPointIndex < _positions.size(); localPointIndex++) {
-        pointUvNormalized   = QPointF((_positions[localPointIndex].x - zoomRectangleAction.getLeft()) / zoomRectangleAction.getWidth(), (zoomRectangleAction.getTop() - _positions[localPointIndex].y) / zoomRectangleAction.getHeight());
-        pointUv             = uvOffset + QPoint(pointUvNormalized.x() * size, pointUvNormalized.y() * size);
+    auto& pointRenderer = _scatterPlotWidget->_pointRenderer;
+    auto& navigator     = pointRenderer.getNavigator();
 
-        if (pointUv.x() >= selectionAreaImage.width() || pointUv.x() < 0 || pointUv.y() >= selectionAreaImage.height() || pointUv.y() < 0)
+    const auto zoomRectangleWorld   = navigator.getZoomRectangleWorld();
+    const auto screenRectangle      = QRect(QPoint(), pointRenderer.getRenderSize());
+    const auto mousePositionWorld   = pointRenderer.getScreenPointToWorldPosition(pointRenderer.getNavigator().getViewMatrix(), _scatterPlotWidget->mapFromGlobal(QCursor::pos()));
+
+    // Go over all points in the dataset to see if they should be sampled
+    for (std::uint32_t localPointIndex = 0; localPointIndex < _positions.size(); localPointIndex++) {
+
+        // Compute the offset of the point in the world space
+        const auto pointOffsetWorld = QPointF(_positions[localPointIndex].x - zoomRectangleWorld.left(), _positions[localPointIndex].y - zoomRectangleWorld.top());
+
+        // Normalize it 
+        const auto pointOffsetWorldNormalized = QPointF(pointOffsetWorld.x() / zoomRectangleWorld.width(), pointOffsetWorld.y() / zoomRectangleWorld.height());
+
+        // Convert it to screen space
+        const auto pointOffsetScreen = QPoint(pointOffsetWorldNormalized.x() * screenRectangle.width(), screenRectangle.height() - pointOffsetWorldNormalized.y() * screenRectangle.height());
+
+        // Continue to next point if the point is outside the screen
+        if (!screenRectangle.contains(pointOffsetScreen))
             continue;
 
-        if (selectionAreaImage.pixelColor(pointUv).alpha() > 0) {
-            const auto sample = std::pair<float, std::uint32_t>((QVector2D(mouseUv) - QVector2D(pointUv)).length(), localPointIndex);
+        // If the corresponding pixel is not transparent, add the point to the selection
+        if (selectionAreaImage.pixelColor(pointOffsetScreen).alpha() > 0) {
+            const auto sample = std::pair((QVector2D(_positions[localPointIndex].x, _positions[localPointIndex].y) - mousePositionWorld.toVector2D()).length(), localPointIndex);
 
             sampledPoints.emplace_back(sample);
         }
