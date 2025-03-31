@@ -25,14 +25,6 @@ namespace mv::plugin
     class ViewPlugin;
 }
 
-struct widgetSizeInfo {
-    float width;
-    float height;
-    float minWH;
-    float ratioWidth;
-    float ratioHeight;
-};
-
 class ScatterplotWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
 {
     Q_OBJECT
@@ -296,7 +288,6 @@ private:
     RenderMode                  _renderMode;                    /** Current render mode */
     QColor                      _backgroundColor;               /** Background color */
     ColoringMode                _coloringMode;                  /** Type of point/density coloring */
-    widgetSizeInfo              _widgetSizeInfo;                /** Info about size of the scatterplot widget */
     DecimalRectangleAction      _dataRectangleAction;           /** Rectangle action for the bounds of the loaded data */
     NavigationAction            _navigationAction;              /** All navigation-related actions are grouped in this action */
     QImage                      _colorMapImage;                 /** 1D/2D color map image */

@@ -17,7 +17,8 @@ SelectionAction::SelectionAction(QObject* parent, const QString& title) :
     _outlineOverrideColorAction(this, "Custom color", true),
     _outlineScaleAction(this, "Scale", 100.0f, 500.0f, 200.0f, 1),
     _outlineOpacityAction(this, "Opacity", 0.0f, 100.0f, 100.0f, 1),
-    _outlineHaloEnabledAction(this, "Halo")
+    _outlineHaloEnabledAction(this, "Halo"),
+    _freezeSelectionAction(this, "Freeze selection")
 {
     setIconByName("mouse-pointer");
     
@@ -35,6 +36,7 @@ SelectionAction::SelectionAction(QObject* parent, const QString& title) :
     addAction(&getOutlineScaleAction());
     addAction(&getOutlineOpacityAction());
     addAction(&getOutlineHaloEnabledAction());
+    addAction(&getFreezeSelectionAction());
 
     _pixelSelectionAction.getOverlayColorAction().setText("Color");
 
@@ -148,6 +150,7 @@ void SelectionAction::connectToPublicAction(WidgetAction* publicAction, bool rec
         actions().connectPrivateActionToPublicAction(&_outlineScaleAction, &publicSelectionAction->getOutlineScaleAction(), recursive);
         actions().connectPrivateActionToPublicAction(&_outlineOpacityAction, &publicSelectionAction->getOutlineOpacityAction(), recursive);
         actions().connectPrivateActionToPublicAction(&_outlineHaloEnabledAction, &publicSelectionAction->getOutlineHaloEnabledAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_freezeSelectionAction, &publicSelectionAction->getFreezeSelectionAction(), recursive);
     }
 
     GroupAction::connectToPublicAction(publicAction, recursive);
@@ -165,6 +168,7 @@ void SelectionAction::disconnectFromPublicAction(bool recursive)
         actions().disconnectPrivateActionFromPublicAction(&_outlineScaleAction, recursive);
         actions().disconnectPrivateActionFromPublicAction(&_outlineOpacityAction, recursive);
         actions().disconnectPrivateActionFromPublicAction(&_outlineHaloEnabledAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_freezeSelectionAction, recursive);
     }
 
     GroupAction::disconnectFromPublicAction(recursive);
@@ -181,6 +185,7 @@ void SelectionAction::fromVariantMap(const QVariantMap& variantMap)
     _outlineScaleAction.fromParentVariantMap(variantMap);
     _outlineOpacityAction.fromParentVariantMap(variantMap);
     _outlineHaloEnabledAction.fromParentVariantMap(variantMap);
+    _freezeSelectionAction.fromParentVariantMap(variantMap);
 }
 
 QVariantMap SelectionAction::toVariantMap() const
@@ -194,6 +199,7 @@ QVariantMap SelectionAction::toVariantMap() const
     _outlineScaleAction.insertIntoVariantMap(variantMap);
     _outlineOpacityAction.insertIntoVariantMap(variantMap);
     _outlineHaloEnabledAction.insertIntoVariantMap(variantMap);
+    _freezeSelectionAction.insertIntoVariantMap(variantMap);
 
     return variantMap;
 }

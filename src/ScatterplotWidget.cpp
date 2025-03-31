@@ -34,14 +34,6 @@ namespace
 
         return bounds;
     }
-
-    void translateBounds(Bounds& b, float x, float y)
-    {
-        b.setLeft(b.getLeft() + x);
-        b.setRight(b.getRight() + x);
-        b.setBottom(b.getBottom() + y);
-        b.setTop(b.getTop() + y);
-    }
 }
 
 ScatterplotWidget::ScatterplotWidget(mv::plugin::ViewPlugin* parentPlugin) :
@@ -50,7 +42,6 @@ ScatterplotWidget::ScatterplotWidget(mv::plugin::ViewPlugin* parentPlugin) :
     _renderMode(SCATTERPLOT),
     _backgroundColor(255, 255, 255, 255),
     _coloringMode(ColoringMode::Constant),
-    _widgetSizeInfo(),
     _dataRectangleAction(this, "Data rectangle"),
     _navigationAction(this, "Navigation"),
     _pixelSelectionTool(this),
@@ -137,6 +128,8 @@ ScatterplotWidget::ScatterplotWidget(mv::plugin::ViewPlugin* parentPlugin) :
 
     const auto zoomRectangleChanged = [this]() -> void {
         _pointRenderer.getNavigator().setZoomRectangleWorld(_navigationAction.getZoomRectangleAction().toRectF());
+        _densityRenderer.getNavigator().setZoomRectangleWorld(_navigationAction.getZoomRectangleAction().toRectF());
+
         update();
 	};
 
@@ -158,6 +151,21 @@ ScatterplotWidget::ScatterplotWidget(mv::plugin::ViewPlugin* parentPlugin) :
         
 	    update();
     });
+
+    connect(&_densityRenderer.getNavigator(), &Navigator2D::zoomRectangleWorldChanged, this, [this, zoomRectangleChanged](const QRectF& previousZoomRectangleWorld, const QRectF& currentZoomRectangleWorld) -> void {
+        disconnect(&_navigationAction.getZoomRectangleAction(), &DecimalRectangleAction::rectangleChanged, this, nullptr);
+        {
+            _navigationAction.getZoomDataExtentsAction().setEnabled(_pointRenderer.getNavigator().hasUserNavigated());
+
+            _navigationAction.getZoomRectangleAction().setLeft(currentZoomRectangleWorld.left());
+            _navigationAction.getZoomRectangleAction().setRight(currentZoomRectangleWorld.right());
+            _navigationAction.getZoomRectangleAction().setTop(currentZoomRectangleWorld.bottom());
+            _navigationAction.getZoomRectangleAction().setBottom(currentZoomRectangleWorld.top());
+        }
+        connect(&_navigationAction.getZoomRectangleAction(), &DecimalRectangleAction::rectangleChanged, this, zoomRectangleChanged);
+
+        update();
+	});
 
     _pointRenderer.getNavigator().initialize(this);
     _densityRenderer.getNavigator().initialize(this);
@@ -286,10 +294,12 @@ PixelSelectionTool& ScatterplotWidget::getSamplerPixelSelectionTool()
 
 void ScatterplotWidget::computeDensity()
 {
+    qDebug() << "ScatterplotWidget::computeDensity()";
+
     emit densityComputationStarted();
-
-    _densityRenderer.computeDensity();
-
+    {
+	    _densityRenderer.computeDensity();
+    }
     emit densityComputationEnded();
 
     update();
@@ -300,13 +310,17 @@ void ScatterplotWidget::computeDensity()
 // by reference then we can upload the data to the GPU, but not store it in the widget.
 void ScatterplotWidget::setData(const std::vector<Vector2f>* points)
 {
-    auto bounds = getDataBounds(*points);
+    auto dataBounds = getDataBounds(*points);
 
-    const auto dataBounds = QRectF(bounds.getLeft(), bounds.getTop(), bounds.getWidth(), bounds.getHeight());
+    _pointRenderer.setDataBounds(QRectF(QPointF(dataBounds.getLeft(), dataBounds.getBottom()), QSizeF(dataBounds.getWidth(), dataBounds.getHeight())));
+    
+    _dataRectangleAction.setBounds(dataBounds);
 
-    _pointRenderer.setDataBounds(dataBounds);
-    _densityRenderer.setDataBounds(dataBounds);
-    _dataRectangleAction.setBounds(bounds);
+    dataBounds.ensureMinimumSize(1e-07f, 1e-07f);
+    dataBounds.makeSquare();
+    dataBounds.expand(0.1f);
+
+    _densityRenderer.setDataBounds(QRectF(QPointF(dataBounds.getLeft(), dataBounds.getBottom()), QSizeF(dataBounds.getWidth(), dataBounds.getHeight())));
 
     _pointRenderer.setData(*points);
     _densityRenderer.setData(points);
@@ -322,6 +336,7 @@ void ScatterplotWidget::setData(const std::vector<Vector2f>* points)
         case ScatterplotWidget::DENSITY:
         case ScatterplotWidget::LANDSCAPE:
         {
+            _densityRenderer.getNavigator().resetView();
             _densityRenderer.computeDensity();
             break;
         }
@@ -662,21 +677,6 @@ void ScatterplotWidget::initializeGL()
 
 void ScatterplotWidget::resizeGL(int w, int h)
 {
-    _widgetSizeInfo.width       = static_cast<float>(w);
-    _widgetSizeInfo.height      = static_cast<float>(h);
-    _widgetSizeInfo.minWH       = _widgetSizeInfo.width < _widgetSizeInfo.height ? _widgetSizeInfo.width : _widgetSizeInfo.height;
-    _widgetSizeInfo.ratioWidth  = _widgetSizeInfo.width / _widgetSizeInfo.minWH;
-    _widgetSizeInfo.ratioHeight = _widgetSizeInfo.height / _widgetSizeInfo.minWH;
-
-    // we need this here as we do not have the screen yet to get the actual devicePixelRatio when the view is created
-    _pixelRatio = devicePixelRatio();
-
-    // Pixel ratio tells us how many pixels map to a point
-    // That is needed as macOS calculates in points and we do in pixels
-    // On macOS high dpi displays pixel ration is 2
-    //w *= _pixelRatio;
-    //h *= _pixelRatio;
-
     _pointRenderer.resize(QSize(w, h));
     _densityRenderer.resize(QSize(w, h));
 }

@@ -64,6 +64,7 @@ public: // Action getters
     DecimalAction& getOutlineScaleAction() { return _outlineScaleAction; }
     DecimalAction& getOutlineOpacityAction() { return _outlineOpacityAction; }
     ToggleAction& getOutlineHaloEnabledAction() { return _outlineHaloEnabledAction; }
+    ToggleAction& getFreezeSelectionAction() { return _freezeSelectionAction; }
 
 private:
     PixelSelectionAction    _pixelSelectionAction;          /** Pixel selection action */
@@ -73,6 +74,7 @@ private:
     DecimalAction           _outlineScaleAction;            /** Selection outline scale action */
     DecimalAction           _outlineOpacityAction;          /** Selection outline opacity action */
     ToggleAction            _outlineHaloEnabledAction;      /** Selection outline halo enabled action */
+    ToggleAction            _freezeSelectionAction;         /** Freeze selection action */
 
     friend class mv::AbstractActionsManager;
 };

@@ -357,6 +357,9 @@ void ScatterplotPlugin::createSubset(const bool& fromSourceData /*= false*/, con
 
 void ScatterplotPlugin::selectPoints()
 {
+    if (getSettingsAction().getSelectionAction().getFreezeSelectionAction().isChecked())
+        return;
+
     auto& pixelSelectionTool = _scatterPlotWidget->getPixelSelectionTool();
 
     // Only proceed with a valid points position dataset and when the pixel selection tool is active
