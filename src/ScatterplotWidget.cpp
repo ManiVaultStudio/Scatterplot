@@ -122,49 +122,6 @@ ScatterplotWidget::ScatterplotWidget(mv::plugin::ViewPlugin* parentPlugin) :
     connect(&getPointRendererNavigator(), &Navigator2D::zoomRectangleWorldChanged, this, [this]() -> void { update(); });
     connect(&getDensityRendererNavigator(), &Navigator2D::zoomRectangleWorldChanged, this, [this]() -> void { update(); });
 
-    /*
-    const auto zoomRectangleChanged = [this]() -> void {
-        _pointRenderer.getPointRendererNavigator().setZoomRectangleWorld(_navigationAction.getZoomRectangleAction().toRectF());
-        _densityRenderer.getPointRendererNavigator().setZoomRectangleWorld(_navigationAction.getZoomRectangleAction().toRectF());
-
-        update();
-	};
-
-    zoomRectangleChanged();
-
-    connect(&_navigationAction.getZoomRectangleAction(), &DecimalRectangleAction::rectangleChanged, this, zoomRectangleChanged);
-
-    connect(&_pointRenderer.getPointRendererNavigator(), &Navigator2D::zoomRectangleWorldChanged, this, [this, zoomRectangleChanged](const QRectF& previousZoomRectangleWorld, const QRectF& currentZoomRectangleWorld) -> void {
-        disconnect(&_navigationAction.getZoomRectangleAction(), &DecimalRectangleAction::rectangleChanged, this, nullptr);
-        {
-            _navigationAction.getZoomDataExtentsAction().setEnabled(_pointRenderer.getPointRendererNavigator().hasUserNavigated());
-
-        	_navigationAction.getZoomRectangleAction().setLeft(currentZoomRectangleWorld.left());
-            _navigationAction.getZoomRectangleAction().setRight(currentZoomRectangleWorld.right());
-            _navigationAction.getZoomRectangleAction().setTop(currentZoomRectangleWorld.bottom());
-            _navigationAction.getZoomRectangleAction().setBottom(currentZoomRectangleWorld.top());
-        }
-        connect(&_navigationAction.getZoomRectangleAction(), &DecimalRectangleAction::rectangleChanged, this, zoomRectangleChanged);
-        
-	    update();
-    });
-
-    connect(&_densityRenderer.getPointRendererNavigator(), &Navigator2D::zoomRectangleWorldChanged, this, [this, zoomRectangleChanged](const QRectF& previousZoomRectangleWorld, const QRectF& currentZoomRectangleWorld) -> void {
-        disconnect(&_navigationAction.getZoomRectangleAction(), &DecimalRectangleAction::rectangleChanged, this, nullptr);
-        {
-            _navigationAction.getZoomDataExtentsAction().setEnabled(_pointRenderer.getPointRendererNavigator().hasUserNavigated());
-
-            _navigationAction.getZoomRectangleAction().setLeft(currentZoomRectangleWorld.left());
-            _navigationAction.getZoomRectangleAction().setRight(currentZoomRectangleWorld.right());
-            _navigationAction.getZoomRectangleAction().setTop(currentZoomRectangleWorld.bottom());
-            _navigationAction.getZoomRectangleAction().setBottom(currentZoomRectangleWorld.top());
-        }
-        connect(&_navigationAction.getZoomRectangleAction(), &DecimalRectangleAction::rectangleChanged, this, zoomRectangleChanged);
-
-        update();
-	});
-    */
-
     _pointRenderer.getNavigator().initialize(this);
     _densityRenderer.getNavigator().initialize(this);
 
