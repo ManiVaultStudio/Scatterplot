@@ -69,8 +69,6 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     
     _dropWidget = new DropWidget(_scatterPlotWidget);
 
-    _scatterPlotWidget->getNavigationAction().setParent(this);
-
     getWidget().setFocusPolicy(Qt::ClickFocus);
 
     _primaryToolbarAction.addAction(&_settingsAction.getDatasetsAction());
@@ -820,8 +818,6 @@ void ScatterplotPlugin::fromVariantMap(const QVariantMap& variantMap)
 
     _primaryToolbarAction.fromParentVariantMap(variantMap);
     _settingsAction.fromParentVariantMap(variantMap);
-    
-    _scatterPlotWidget->getNavigationAction().fromParentVariantMap(variantMap);
 }
 
 QVariantMap ScatterplotPlugin::toVariantMap() const
@@ -830,8 +826,6 @@ QVariantMap ScatterplotPlugin::toVariantMap() const
 
     _primaryToolbarAction.insertIntoVariantMap(variantMap);
     _settingsAction.insertIntoVariantMap(variantMap);
-
-    _scatterPlotWidget->getNavigationAction().insertIntoVariantMap(variantMap);
 
     return variantMap;
 }

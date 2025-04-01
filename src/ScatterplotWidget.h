@@ -113,8 +113,6 @@ public:
         return _dataRectangleAction.getBounds();
     }
 
-    NavigationAction& getNavigationAction() { return _navigationAction; }
-
     mv::Vector3f getColorMapRange() const;
     void setColorMapRange(const float& min, const float& max);
 
@@ -249,6 +247,20 @@ public:
     /** Assign a color map image to the point and density renderers */
     void setColorMap(const QImage& colorMapImage);
 
+public: // Navigators
+
+    /**
+     * Get the navigator for the point renderer
+     * @return Reference to the navigator
+     */
+    mv::Navigator2D& getPointRendererNavigator() { return _pointRenderer.getNavigator(); }
+
+    /**
+     * Get the navigator for the density renderer
+     * @return Reference to the navigator
+     */
+    mv::Navigator2D& getDensityRendererNavigator() { return _densityRenderer.getNavigator(); }
+
 signals:
     void initialized();
     void created();
@@ -290,7 +302,6 @@ private:
     QColor                      _backgroundColor;               /** Background color */
     ColoringMode                _coloringMode;                  /** Type of point/density coloring */
     DecimalRectangleAction      _dataRectangleAction;           /** Rectangle action for the bounds of the loaded data */
-    NavigationAction            _navigationAction;              /** All navigation-related actions are grouped in this action */
     QImage                      _colorMapImage;                 /** 1D/2D color map image */
     PixelSelectionTool          _pixelSelectionTool;            /** 2D pixel selection tool */
     PixelSelectionTool          _samplerPixelSelectionTool;     /** 2D pixel selection tool */

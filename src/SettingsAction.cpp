@@ -6,6 +6,8 @@
 
 #include <QMenu>
 
+#include "ScatterplotWidget.h"
+
 using namespace mv::gui;
 
 SettingsAction::SettingsAction(QObject* parent, const QString& title) :
@@ -71,6 +73,12 @@ void SettingsAction::fromVariantMap(const QVariantMap& variantMap)
     _renderModeAction.fromParentVariantMap(variantMap);
     _selectionAction.fromParentVariantMap(variantMap);
     _miscellaneousAction.fromParentVariantMap(variantMap);
+
+    if (variantMap.contains("PointRendererNavigation"))
+		_scatterplotPlugin->getScatterplotWidget().getPointRendererNavigator().getNavigationAction().fromVariantMap(variantMap["PointRendererNavigation"].toMap());
+
+    if (variantMap.contains("DensityRendererNavigation"))
+        _scatterplotPlugin->getScatterplotWidget().getDensityRendererNavigator().getNavigationAction().fromVariantMap(variantMap["DensityRendererNavigation"].toMap());
 }
 
 QVariantMap SettingsAction::toVariantMap() const
@@ -84,6 +92,9 @@ QVariantMap SettingsAction::toVariantMap() const
     _coloringAction.insertIntoVariantMap(variantMap);
     _selectionAction.insertIntoVariantMap(variantMap);
     _miscellaneousAction.insertIntoVariantMap(variantMap);
+
+    variantMap["PointRendererNavigation"]   = _scatterplotPlugin->getScatterplotWidget().getPointRendererNavigator().getNavigationAction().toVariantMap();
+    variantMap["DensityRendererNavigation"] = _scatterplotPlugin->getScatterplotWidget().getDensityRendererNavigator().getNavigationAction().toVariantMap();
 
     return variantMap;
 }

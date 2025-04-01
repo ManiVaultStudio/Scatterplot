@@ -43,7 +43,6 @@ ScatterplotWidget::ScatterplotWidget(mv::plugin::ViewPlugin* parentPlugin) :
     _backgroundColor(255, 255, 255, 255),
     _coloringMode(ColoringMode::Constant),
     _dataRectangleAction(this, "Data rectangle"),
-    _navigationAction(this, "Navigation"),
     _pixelSelectionTool(this),
     _samplerPixelSelectionTool(this),
     _pixelRatio(1.0),
@@ -120,10 +119,13 @@ ScatterplotWidget::ScatterplotWidget(mv::plugin::ViewPlugin* parentPlugin) :
         }
 	});
 
+    connect(&getPointRendererNavigator(), &Navigator2D::zoomRectangleWorldChanged, this, [this]() -> void { update(); });
+    connect(&getDensityRendererNavigator(), &Navigator2D::zoomRectangleWorldChanged, this, [this]() -> void { update(); });
+
     /*
     const auto zoomRectangleChanged = [this]() -> void {
-        _pointRenderer.getNavigator().setZoomRectangleWorld(_navigationAction.getZoomRectangleAction().toRectF());
-        _densityRenderer.getNavigator().setZoomRectangleWorld(_navigationAction.getZoomRectangleAction().toRectF());
+        _pointRenderer.getPointRendererNavigator().setZoomRectangleWorld(_navigationAction.getZoomRectangleAction().toRectF());
+        _densityRenderer.getPointRendererNavigator().setZoomRectangleWorld(_navigationAction.getZoomRectangleAction().toRectF());
 
         update();
 	};
@@ -132,10 +134,10 @@ ScatterplotWidget::ScatterplotWidget(mv::plugin::ViewPlugin* parentPlugin) :
 
     connect(&_navigationAction.getZoomRectangleAction(), &DecimalRectangleAction::rectangleChanged, this, zoomRectangleChanged);
 
-    connect(&_pointRenderer.getNavigator(), &Navigator2D::zoomRectangleWorldChanged, this, [this, zoomRectangleChanged](const QRectF& previousZoomRectangleWorld, const QRectF& currentZoomRectangleWorld) -> void {
+    connect(&_pointRenderer.getPointRendererNavigator(), &Navigator2D::zoomRectangleWorldChanged, this, [this, zoomRectangleChanged](const QRectF& previousZoomRectangleWorld, const QRectF& currentZoomRectangleWorld) -> void {
         disconnect(&_navigationAction.getZoomRectangleAction(), &DecimalRectangleAction::rectangleChanged, this, nullptr);
         {
-            _navigationAction.getZoomDataExtentsAction().setEnabled(_pointRenderer.getNavigator().hasUserNavigated());
+            _navigationAction.getZoomDataExtentsAction().setEnabled(_pointRenderer.getPointRendererNavigator().hasUserNavigated());
 
         	_navigationAction.getZoomRectangleAction().setLeft(currentZoomRectangleWorld.left());
             _navigationAction.getZoomRectangleAction().setRight(currentZoomRectangleWorld.right());
@@ -147,10 +149,10 @@ ScatterplotWidget::ScatterplotWidget(mv::plugin::ViewPlugin* parentPlugin) :
 	    update();
     });
 
-    connect(&_densityRenderer.getNavigator(), &Navigator2D::zoomRectangleWorldChanged, this, [this, zoomRectangleChanged](const QRectF& previousZoomRectangleWorld, const QRectF& currentZoomRectangleWorld) -> void {
+    connect(&_densityRenderer.getPointRendererNavigator(), &Navigator2D::zoomRectangleWorldChanged, this, [this, zoomRectangleChanged](const QRectF& previousZoomRectangleWorld, const QRectF& currentZoomRectangleWorld) -> void {
         disconnect(&_navigationAction.getZoomRectangleAction(), &DecimalRectangleAction::rectangleChanged, this, nullptr);
         {
-            _navigationAction.getZoomDataExtentsAction().setEnabled(_pointRenderer.getNavigator().hasUserNavigated());
+            _navigationAction.getZoomDataExtentsAction().setEnabled(_pointRenderer.getPointRendererNavigator().hasUserNavigated());
 
             _navigationAction.getZoomRectangleAction().setLeft(currentZoomRectangleWorld.left());
             _navigationAction.getZoomRectangleAction().setRight(currentZoomRectangleWorld.right());
