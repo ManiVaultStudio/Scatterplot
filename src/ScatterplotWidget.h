@@ -1,7 +1,5 @@
 #pragma once
 
-#include "NavigationAction.h"
-
 #include <renderers/DensityRenderer.h>
 #include <renderers/PointRenderer.h>
 
@@ -216,6 +214,9 @@ public: // Selection
      * @return Boolean determining whether the z-order of each point is to be randomized or not
      */
     bool getRandomizedDepthEnabled() const;
+
+    /** Toggles the point vs density and landscape renderer visibility based on the current render mode */
+    void updateNavigationActionVisibility();
 
 protected:
     void initializeGL()         Q_DECL_OVERRIDE;

@@ -47,8 +47,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     _scatterPlotWidget(new ScatterplotWidget(this)),
     _numPoints(0),
     _settingsAction(this, "Settings"),
-    _primaryToolbarAction(this, "Primary Toolbar"),
-    _secondaryToolbarAction(this, "Secondary Toolbar")
+    _primaryToolbarAction(this, "Primary Toolbar")
 {
     setObjectName("Scatterplot");
 
@@ -105,11 +104,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     connect(_scatterPlotWidget, &ScatterplotWidget::renderModeChanged, this, updateReadOnly);
     connect(&_positionDataset, &Dataset<Points>::changed, this, updateReadOnly);
 
-    _secondaryToolbarAction.addAction(&_settingsAction.getColoringAction().getColorMap1DAction(), 1);
-    _secondaryToolbarAction.addAction(focusSelectionAction, 2);
-    //_secondaryToolbarAction.addAction(&_settingsAction.getExportAction());
-    _secondaryToolbarAction.addAction(&_settingsAction.getMiscellaneousAction());
-    _secondaryToolbarAction.addAction(&_scatterPlotWidget->getNavigationAction());
+    //_secondaryToolbarAction.addAction(&_settingsAction.getMiscellaneousAction());
 
     connect(_scatterPlotWidget, &ScatterplotWidget::customContextMenuRequested, this, [this](const QPoint& point) {
         if (!_positionDataset.isValid())
@@ -252,7 +247,23 @@ void ScatterplotPlugin::init()
     layout->setSpacing(0);
     layout->addWidget(_primaryToolbarAction.createWidget(&getWidget()));
     layout->addWidget(_scatterPlotWidget, 100);
-    layout->addWidget(_secondaryToolbarAction.createWidget(&getWidget()));
+
+    auto navigationLayout = new QHBoxLayout();
+
+    navigationLayout->addStretch(1);
+    {
+        auto renderersNavigationGroupAction = new HorizontalGroupAction(this, "Renderers Navigation");
+
+        renderersNavigationGroupAction->setShowLabels(false);
+
+        renderersNavigationGroupAction->addAction(const_cast<NavigationAction*>(&_scatterPlotWidget->getPointRenderer().getNavigator().getNavigationAction()));
+        renderersNavigationGroupAction->addAction(const_cast<NavigationAction*>(&_scatterPlotWidget->getDensityRenderer().getNavigator().getNavigationAction()));
+
+        navigationLayout->addWidget(renderersNavigationGroupAction->createWidget(&getWidget()));
+    }
+    navigationLayout->addStretch(1);
+
+    layout->addLayout(navigationLayout);
 
     getWidget().setLayout(layout);
 
@@ -325,6 +336,10 @@ void ScatterplotPlugin::init()
         return pointIndicesTableWidget;
         });
 #endif
+
+    _scatterPlotWidget->updateNavigationActionVisibility();
+
+    connect(&_settingsAction.getRenderModeAction(), &OptionAction::currentIndexChanged, _scatterPlotWidget, &ScatterplotWidget::updateNavigationActionVisibility);
 }
 
 void ScatterplotPlugin::loadData(const Datasets& datasets)
@@ -804,7 +819,6 @@ void ScatterplotPlugin::fromVariantMap(const QVariantMap& variantMap)
     variantMapMustContain(variantMap, "Settings");
 
     _primaryToolbarAction.fromParentVariantMap(variantMap);
-    _secondaryToolbarAction.fromParentVariantMap(variantMap);
     _settingsAction.fromParentVariantMap(variantMap);
     
     _scatterPlotWidget->getNavigationAction().fromParentVariantMap(variantMap);
@@ -815,7 +829,6 @@ QVariantMap ScatterplotPlugin::toVariantMap() const
     QVariantMap variantMap = ViewPlugin::toVariantMap();
 
     _primaryToolbarAction.insertIntoVariantMap(variantMap);
-    _secondaryToolbarAction.insertIntoVariantMap(variantMap);
     _settingsAction.insertIntoVariantMap(variantMap);
 
     _scatterPlotWidget->getNavigationAction().insertIntoVariantMap(variantMap);
@@ -916,5 +929,5 @@ PluginTriggerActions ScatterplotPluginFactory::getPluginTriggerActions(const mv:
 
 QUrl ScatterplotPluginFactory::getRepositoryUrl() const
 {
-    return QUrl("https://github.com/ManiVaultStudio/Scatterplot");
+    return { "https://github.com/ManiVaultStudio/Scatterplot" };
 }

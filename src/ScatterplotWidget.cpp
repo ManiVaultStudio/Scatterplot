@@ -57,8 +57,6 @@ ScatterplotWidget::ScatterplotWidget(mv::plugin::ViewPlugin* parentPlugin) :
     grabGesture(Qt::PinchGesture);
     installEventFilter(this);
 
-    _navigationAction.initialize(this);
-
     _pixelSelectionTool.setEnabled(true);
     _pixelSelectionTool.setMainColor(QColor(Qt::black));
     _pixelSelectionTool.setFixedBrushRadiusModifier(Qt::AltModifier);
@@ -111,10 +109,6 @@ ScatterplotWidget::ScatterplotWidget(mv::plugin::ViewPlugin* parentPlugin) :
         QObject::connect(winHandle, &QWindow::screenChanged, this, &ScatterplotWidget::updatePixelRatio, Qt::UniqueConnection);
     });
 
-    connect(&_navigationAction.getZoomDataExtentsAction(), &TriggerAction::triggered, this, [this]() -> void {
-        _pointRenderer.getNavigator().resetView();
-    });
-
     connect(&_pointRenderer.getNavigator(), &Navigator2D::isNavigatingChanged, this, [this](bool isNavigating) -> void {
         _pixelSelectionTool.setEnabled(!isNavigating);
 
@@ -126,6 +120,7 @@ ScatterplotWidget::ScatterplotWidget(mv::plugin::ViewPlugin* parentPlugin) :
         }
 	});
 
+    /*
     const auto zoomRectangleChanged = [this]() -> void {
         _pointRenderer.getNavigator().setZoomRectangleWorld(_navigationAction.getZoomRectangleAction().toRectF());
         _densityRenderer.getNavigator().setZoomRectangleWorld(_navigationAction.getZoomRectangleAction().toRectF());
@@ -166,6 +161,7 @@ ScatterplotWidget::ScatterplotWidget(mv::plugin::ViewPlugin* parentPlugin) :
 
         update();
 	});
+    */
 
     _pointRenderer.getNavigator().initialize(this);
     _densityRenderer.getNavigator().initialize(this);
@@ -640,6 +636,12 @@ void ScatterplotWidget::setRandomizedDepthEnabled(bool randomizedDepth)
 bool ScatterplotWidget::getRandomizedDepthEnabled() const
 {
     return _pointRenderer.getRandomizedDepthEnabled();
+}
+
+void ScatterplotWidget::updateNavigationActionVisibility()
+{
+    _pointRenderer.getNavigator().getNavigationAction().setVisible(getRenderMode() == ScatterplotWidget::SCATTERPLOT);
+    _densityRenderer.getNavigator().getNavigationAction().setVisible(getRenderMode() == ScatterplotWidget::DENSITY || getRenderMode() == ScatterplotWidget::LANDSCAPE);
 }
 
 void ScatterplotWidget::initializeGL()

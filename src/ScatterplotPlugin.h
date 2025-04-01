@@ -119,7 +119,6 @@ private:
 
     SettingsAction                  _settingsAction;            /** Group action for all settings */
     HorizontalToolbarAction         _primaryToolbarAction;      /** Horizontal toolbar for primary content */
-    HorizontalToolbarAction         _secondaryToolbarAction;    /** Secondary toolbar for secondary content */
 
     static const std::int32_t LAZY_UPDATE_INTERVAL = 2;
 
