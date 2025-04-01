@@ -246,7 +246,10 @@ void ScatterplotPlugin::init()
     layout->addWidget(_primaryToolbarAction.createWidget(&getWidget()));
     layout->addWidget(_scatterPlotWidget, 100);
 
+    auto navigationWidget = new QWidget();
     auto navigationLayout = new QHBoxLayout();
+
+    navigationLayout->setContentsMargins(4, 4, 4, 4);
 
     navigationLayout->addStretch(1);
     {
@@ -261,11 +264,12 @@ void ScatterplotPlugin::init()
     }
     navigationLayout->addStretch(1);
 
-    layout->addLayout(navigationLayout);
+    navigationWidget->setLayout(navigationLayout);
+
+    layout->addWidget(navigationWidget);
 
     getWidget().setLayout(layout);
 
-    // Update the data when the scatter plot widget is initialized
     connect(_scatterPlotWidget, &ScatterplotWidget::initialized, this, &ScatterplotPlugin::updateData);
 
     connect(&_scatterPlotWidget->getPixelSelectionTool(), &PixelSelectionTool::areaChanged, [this]() {
@@ -463,6 +467,8 @@ void ScatterplotPlugin::selectPoints()
         }
     }
 
+    _scatterPlotWidget->getPointRendererNavigator().getNavigationAction().getZoomSelectionAction().setEnabled(!targetSelectionIndices.empty());
+
     _positionDataset->setSelectionIndices(targetSelectionIndices);
 
     events().notifyDatasetDataSelectionChanged(_positionDataset->getSourceDataset<Points>());
@@ -597,7 +603,10 @@ void ScatterplotPlugin::positionDatasetChanged()
     _positionSourceDataset = _positionDataset->getSourceDataset<Points>();
 
     _numPoints = _positionDataset->getNumPoints();
-    
+
+    _scatterPlotWidget->getPointRendererNavigator().resetView(true);
+    _scatterPlotWidget->getDensityRendererNavigator().resetView(true);
+
     updateData();
 }
 

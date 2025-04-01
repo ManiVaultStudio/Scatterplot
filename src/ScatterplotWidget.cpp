@@ -249,8 +249,6 @@ PixelSelectionTool& ScatterplotWidget::getSamplerPixelSelectionTool()
 
 void ScatterplotWidget::computeDensity()
 {
-    qDebug() << "ScatterplotWidget::computeDensity()";
-
     emit densityComputationStarted();
     {
 	    _densityRenderer.computeDensity();
