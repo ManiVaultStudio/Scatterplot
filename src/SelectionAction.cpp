@@ -4,9 +4,6 @@
 
 #include <util/PixelSelectionTool.h>
 
-#include <QHBoxLayout>
-#include <QPushButton>
-
 using namespace mv::gui;
 
 SelectionAction::SelectionAction(QObject* parent, const QString& title) :
@@ -78,6 +75,8 @@ void SelectionAction::initialize(ScatterplotPlugin* scatterplotPlugin)
     getSamplerPixelSelectionAction().initialize(&scatterplotWidget, &scatterplotWidget.getSamplerPixelSelectionTool(), {
         PixelSelectionType::Sample
     });
+
+    _samplerPixelSelectionAction.setShortcutsEnabled(false);
 
     _displayModeAction.setCurrentIndex(static_cast<std::int32_t>(scatterplotPlugin->getScatterplotWidget().getSelectionDisplayMode()));
     _outlineScaleAction.setValue(100.0f * scatterplotPlugin->getScatterplotWidget().getSelectionOutlineScale());

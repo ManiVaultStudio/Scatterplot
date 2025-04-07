@@ -55,17 +55,24 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
 
     shortcuts.add({ QKeySequence(Qt::Key_R), "Selection", "Rectangle (default)" });
     shortcuts.add({ QKeySequence(Qt::Key_L), "Selection", "Lasso" });
+    shortcuts.add({ QKeySequence(Qt::Key_P), "Selection", "Polygon" });
     shortcuts.add({ QKeySequence(Qt::Key_B), "Selection", "Circular brush (mouse wheel adjusts the radius)" });
     shortcuts.add({ QKeySequence(Qt::SHIFT), "Selection", "Add to selection" });
     shortcuts.add({ QKeySequence(Qt::CTRL), "Selection", "Remove from selection" });
+    shortcuts.add({ QKeySequence(Qt::Key_A), "Selection", "Select all" });
+    shortcuts.add({ QKeySequence(Qt::Key_E), "Selection", "Clear selection" });
+    shortcuts.add({ QKeySequence(Qt::Key_I), "Selection", "Invert selection" });
 
     shortcuts.add({ QKeySequence(Qt::Key_S), "Render", "Scatter mode (default)" });
     shortcuts.add({ QKeySequence(Qt::Key_D), "Render", "Density mode" });
     shortcuts.add({ QKeySequence(Qt::Key_C), "Render", "Contour mode" });
 
+    shortcuts.add({ QKeySequence(Qt::Key_Plus), "Navigation", "Zoom in by 10%" });
+    shortcuts.add({ QKeySequence(Qt::Key_Minus), "Navigation", "Zoom out by 10%" });
     shortcuts.add({ QKeySequence(Qt::ALT), "Navigation", "Pan (LMB down)" });
     shortcuts.add({ QKeySequence(Qt::ALT), "Navigation", "Zoom (mouse wheel)" });
     shortcuts.add({ QKeySequence(Qt::Key_O), "Navigation", "Original view" });
+    shortcuts.add({ QKeySequence(Qt::Key_B), "Navigation", "Zoom to selection" });
     
     _dropWidget = new DropWidget(_scatterPlotWidget);
 
@@ -257,8 +264,11 @@ void ScatterplotPlugin::init()
 
         renderersNavigationGroupAction->setShowLabels(false);
 
-        renderersNavigationGroupAction->addAction(const_cast<NavigationAction*>(&_scatterPlotWidget->getPointRenderer().getNavigator().getNavigationAction()));
-        renderersNavigationGroupAction->addAction(const_cast<NavigationAction*>(&_scatterPlotWidget->getDensityRenderer().getNavigator().getNavigationAction()));
+        renderersNavigationGroupAction->addAction(const_cast<NavigationAction*>(&_scatterPlotWidget->getPointRendererNavigator().getNavigationAction()));
+        renderersNavigationGroupAction->addAction(const_cast<NavigationAction*>(&_scatterPlotWidget->getDensityRendererNavigator().getNavigationAction()));
+
+        _scatterPlotWidget->getPointRendererNavigator().getNavigationAction().setParent(&_settingsAction);
+        _scatterPlotWidget->getDensityRendererNavigator().getNavigationAction().setParent(&_settingsAction);
 
         navigationLayout->addWidget(renderersNavigationGroupAction->createWidget(&getWidget()));
     }
@@ -294,6 +304,11 @@ void ScatterplotPlugin::init()
     _scatterPlotWidget->installEventFilter(this);
 
     getLearningCenterAction().getViewPluginOverlayWidget()->setTargetWidget(_scatterPlotWidget);
+
+    connect(&getScatterplotWidget().getPointRendererNavigator().getNavigationAction().getZoomSelectionAction(), &TriggerAction::triggered, this, [this]() -> void {
+        if (_selectionBoundaries.isValid())
+            _scatterPlotWidget->getPointRendererNavigator().setZoomRectangleWorld(_selectionBoundaries);
+	});
 
 #ifdef VIEW_SAMPLING_HTML
     getSamplerAction().setHtmlViewGeneratorFunction([this](const ViewPluginSamplerAction::SampleContext& toolTipContext) -> QString {
@@ -400,26 +415,42 @@ void ScatterplotPlugin::selectPoints()
     const auto zoomRectangleWorld   = navigator.getZoomRectangleWorld();
     const auto screenRectangle      = QRect(QPoint(), pointRenderer.getRenderSize());
 
+    float boundaries[4]{
+        std::numeric_limits<float>::max(),
+        std::numeric_limits<float>::lowest(),
+        std::numeric_limits<float>::max(),
+        std::numeric_limits<float>::lowest()
+    };
+
     // Go over all points in the dataset to see if they are selected
     for (std::uint32_t localPointIndex = 0; localPointIndex < _positions.size(); localPointIndex++) {
-        
-        // Compute the offset of the point in the world space
-    	const auto pointOffsetWorld = QPointF(_positions[localPointIndex].x - zoomRectangleWorld.left(), _positions[localPointIndex].y - zoomRectangleWorld.top());
+	    const auto& point = _positions[localPointIndex];
 
-        // Normalize it 
-        const auto pointOffsetWorldNormalized = QPointF(pointOffsetWorld.x() / zoomRectangleWorld.width(), pointOffsetWorld.y() / zoomRectangleWorld.height());
+    	// Compute the offset of the point in the world space
+    	const auto pointOffsetWorld = QPointF(point.x - zoomRectangleWorld.left(), point.y - zoomRectangleWorld.top());
 
-        // Convert it to screen space
-        const auto pointOffsetScreen = QPoint(pointOffsetWorldNormalized.x() * screenRectangle.width(), screenRectangle.height() - pointOffsetWorldNormalized.y() * screenRectangle.height());
+    	// Normalize it 
+    	const auto pointOffsetWorldNormalized = QPointF(pointOffsetWorld.x() / zoomRectangleWorld.width(), pointOffsetWorld.y() / zoomRectangleWorld.height());
 
-        // Continue to next point if the point is outside the screen
-        if (!screenRectangle.contains(pointOffsetScreen))
-            continue;
+    	// Convert it to screen space
+    	const auto pointOffsetScreen = QPoint(pointOffsetWorldNormalized.x() * screenRectangle.width(), screenRectangle.height() - pointOffsetWorldNormalized.y() * screenRectangle.height());
 
-        // If the corresponding pixel is not transparent, add the point to the selection
-        if (selectionAreaImage.pixelColor(pointOffsetScreen).alpha() > 0)
-	        targetSelectionIndices.push_back(localGlobalIndices[localPointIndex]);
+    	// Continue to next point if the point is outside the screen
+    	if (!screenRectangle.contains(pointOffsetScreen))
+    		continue;
+
+    	// If the corresponding pixel is not transparent, add the point to the selection
+    	if (selectionAreaImage.pixelColor(pointOffsetScreen).alpha() > 0) {
+    		targetSelectionIndices.push_back(localGlobalIndices[localPointIndex]);
+
+            boundaries[0] = std::min(boundaries[0], point.x);
+            boundaries[1] = std::max(boundaries[1], point.x);
+            boundaries[2] = std::min(boundaries[2], point.y);
+            boundaries[3] = std::max(boundaries[3], point.y);
+	    }
     }
+
+    _selectionBoundaries = QRectF(boundaries[0], boundaries[2], boundaries[1] - boundaries[0], boundaries[3] - boundaries[2]);
 
     switch (const auto selectionModifier = pixelSelectionTool.isAborted() ? PixelSelectionModifierType::Subtract : pixelSelectionTool.getModifier())
     {
@@ -467,7 +498,9 @@ void ScatterplotPlugin::selectPoints()
         }
     }
 
-    _scatterPlotWidget->getPointRendererNavigator().getNavigationAction().getZoomSelectionAction().setEnabled(!targetSelectionIndices.empty());
+    auto& navigationAction = _scatterPlotWidget->getPointRendererNavigator().getNavigationAction();
+
+    navigationAction.getZoomSelectionAction().setEnabled(!targetSelectionIndices.empty() && !navigationAction.getFreezeNavigation().isChecked());
 
     _positionDataset->setSelectionIndices(targetSelectionIndices);
 

@@ -205,18 +205,24 @@ void ScatterplotWidget::setRenderMode(const RenderMode& renderMode)
     switch (_renderMode)
     {
         case ScatterplotWidget::SCATTERPLOT:
-            break;
+        {
+            getPointRendererNavigator().setEnabled(true);
+            getDensityRendererNavigator().setEnabled(false);
+
+        	break;
+        }
         
         case ScatterplotWidget::DENSITY:
-            computeDensity();
-            break;
-
         case ScatterplotWidget::LANDSCAPE:
-            computeDensity();
-            break;
+        {
+            getPointRendererNavigator().setEnabled(false);
+            getDensityRendererNavigator().setEnabled(true);
 
-        default:
-            break;
+	        computeDensity();
+            _densityRenderer.getNavigator().resetView();
+
+        	break;
+        }
     }
 
     update();
