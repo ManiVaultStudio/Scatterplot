@@ -72,7 +72,8 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     shortcuts.add({ QKeySequence(Qt::ALT), "Navigation", "Pan (LMB down)" });
     shortcuts.add({ QKeySequence(Qt::ALT), "Navigation", "Zoom (mouse wheel)" });
     shortcuts.add({ QKeySequence(Qt::Key_O), "Navigation", "Original view" });
-    shortcuts.add({ QKeySequence(Qt::Key_B), "Navigation", "Zoom to selection" });
+    shortcuts.add({ QKeySequence(Qt::Key_H), "Navigation", "Zoom to selection" });
+    shortcuts.add({ QKeySequence(Qt::Key_F), "Navigation", "Zoom to window" });
     
     _dropWidget = new DropWidget(_scatterPlotWidget);
 
@@ -260,15 +261,13 @@ void ScatterplotPlugin::init()
 
     navigationLayout->addStretch(1);
     {
-        auto renderersNavigationGroupAction = new HorizontalGroupAction(this, "Renderers Navigation");
+        auto renderersNavigationGroupAction = new HorizontalGroupAction(this, "Navigation");
 
         renderersNavigationGroupAction->setShowLabels(false);
 
         renderersNavigationGroupAction->addAction(const_cast<NavigationAction*>(&_scatterPlotWidget->getPointRendererNavigator().getNavigationAction()));
-        renderersNavigationGroupAction->addAction(const_cast<NavigationAction*>(&_scatterPlotWidget->getDensityRendererNavigator().getNavigationAction()));
 
         _scatterPlotWidget->getPointRendererNavigator().getNavigationAction().setParent(&_settingsAction);
-        _scatterPlotWidget->getDensityRendererNavigator().getNavigationAction().setParent(&_settingsAction);
 
         navigationLayout->addWidget(renderersNavigationGroupAction->createWidget(&getWidget()));
     }
@@ -353,10 +352,6 @@ void ScatterplotPlugin::init()
         return pointIndicesTableWidget;
         });
 #endif
-
-    _scatterPlotWidget->updateNavigationActionVisibility();
-
-    connect(&_settingsAction.getRenderModeAction(), &OptionAction::currentIndexChanged, _scatterPlotWidget, &ScatterplotWidget::updateNavigationActionVisibility);
 }
 
 void ScatterplotPlugin::loadData(const Datasets& datasets)

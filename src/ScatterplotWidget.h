@@ -213,9 +213,6 @@ public: // Selection
      */
     bool getRandomizedDepthEnabled() const;
 
-    /** Toggles the point vs density and landscape renderer visibility based on the current render mode */
-    void updateNavigationActionVisibility();
-
 protected:
     void initializeGL()         Q_DECL_OVERRIDE;
     void resizeGL(int w, int h) Q_DECL_OVERRIDE;

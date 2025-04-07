@@ -128,6 +128,10 @@ ScatterplotWidget::ScatterplotWidget(mv::plugin::ViewPlugin* parentPlugin) :
     _samplerPixelSelectionTool.setEnabled(true);
     _samplerPixelSelectionTool.setMainColor(QColor(Qt::black));
     _samplerPixelSelectionTool.setFixedBrushRadiusModifier(Qt::AltModifier);
+
+    getPointRendererNavigator().setEnabled(true);
+
+    _densityRenderer.setCustomNavigator(&getPointRendererNavigator());
 }
 
 bool ScatterplotWidget::event(QEvent* event)
@@ -199,27 +203,17 @@ void ScatterplotWidget::setRenderMode(const RenderMode& renderMode)
 
     emit renderModeChanged(_renderMode);
 
-    _pointRenderer.getNavigator().setEnabled(_renderMode == SCATTERPLOT);
-    _densityRenderer.getNavigator().setEnabled(_renderMode == DENSITY || _renderMode == LANDSCAPE);
-
     switch (_renderMode)
     {
         case ScatterplotWidget::SCATTERPLOT:
         {
-            getPointRendererNavigator().setEnabled(true);
-            getDensityRendererNavigator().setEnabled(false);
-
         	break;
         }
         
         case ScatterplotWidget::DENSITY:
         case ScatterplotWidget::LANDSCAPE:
         {
-            getPointRendererNavigator().setEnabled(false);
-            getDensityRendererNavigator().setEnabled(true);
-
 	        computeDensity();
-            _densityRenderer.getNavigator().resetView();
 
         	break;
         }
@@ -272,15 +266,18 @@ void ScatterplotWidget::setData(const std::vector<Vector2f>* points)
     auto dataBounds = getDataBounds(*points);
 
     _pointRenderer.setDataBounds(QRectF(QPointF(dataBounds.getLeft(), dataBounds.getBottom()), QSizeF(dataBounds.getWidth(), dataBounds.getHeight())));
-    
-    _dataRectangleAction.setBounds(dataBounds);
-
-    dataBounds.ensureMinimumSize(1e-07f, 1e-07f);
-    dataBounds.makeSquare();
-    dataBounds.expand(0.1f);
-
     _densityRenderer.setDataBounds(QRectF(QPointF(dataBounds.getLeft(), dataBounds.getBottom()), QSizeF(dataBounds.getWidth(), dataBounds.getHeight())));
 
+    _dataRectangleAction.setBounds(dataBounds);
+
+    auto densityDataBounds = dataBounds;
+
+    //densityDataBounds.ensureMinimumSize(1e-07f, 1e-07f);
+    //densityDataBounds.makeSquare();
+    //densityDataBounds.expand(0.1f);
+
+    _densityRenderer.setDensityComputationDataBounds(QRectF(QPointF(densityDataBounds.getLeft(), densityDataBounds.getBottom()), QSizeF(densityDataBounds.getWidth(), densityDataBounds.getHeight())));
+    
     _pointRenderer.setData(*points);
     _densityRenderer.setData(points);
 
@@ -599,12 +596,6 @@ void ScatterplotWidget::setRandomizedDepthEnabled(bool randomizedDepth)
 bool ScatterplotWidget::getRandomizedDepthEnabled() const
 {
     return _pointRenderer.getRandomizedDepthEnabled();
-}
-
-void ScatterplotWidget::updateNavigationActionVisibility()
-{
-    _pointRenderer.getNavigator().getNavigationAction().setVisible(getRenderMode() == ScatterplotWidget::SCATTERPLOT);
-    _densityRenderer.getNavigator().getNavigationAction().setVisible(getRenderMode() == ScatterplotWidget::DENSITY || getRenderMode() == ScatterplotWidget::LANDSCAPE);
 }
 
 void ScatterplotWidget::initializeGL()
