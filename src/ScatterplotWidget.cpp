@@ -37,7 +37,8 @@ namespace
 }
 
 ScatterplotWidget::ScatterplotWidget(mv::plugin::ViewPlugin* parentPlugin) :
-    _densityRenderer(DensityRenderer::RenderMode::DENSITY),
+    _densityRenderer(DensityRenderer::RenderMode::DENSITY, this),
+    _pointRenderer(this),
     _isInitialized(false),
     _renderMode(SCATTERPLOT),
     _backgroundColor(255, 255, 255, 255),
@@ -121,9 +122,6 @@ ScatterplotWidget::ScatterplotWidget(mv::plugin::ViewPlugin* parentPlugin) :
 
     connect(&getPointRendererNavigator(), &Navigator2D::zoomRectangleWorldChanged, this, [this]() -> void { update(); });
     connect(&getDensityRendererNavigator(), &Navigator2D::zoomRectangleWorldChanged, this, [this]() -> void { update(); });
-
-    _pointRenderer.getNavigator().initialize(this);
-    _densityRenderer.getNavigator().initialize(this);
 
     _samplerPixelSelectionTool.setEnabled(true);
     _samplerPixelSelectionTool.setMainColor(QColor(Qt::black));
