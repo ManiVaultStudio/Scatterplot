@@ -784,6 +784,12 @@ void ScatterplotPlugin::updateSelection()
 
 void ScatterplotPlugin::fromVariantMap(const QVariantMap& variantMap)
 {
+    // Wait for widget to be initialized before trying to put stuff into it from the variant map.
+    // If not, it may try to render stuff when it's not possible and result in undefined behaviour.
+    while (!getScatterplotWidget().isInitialized())
+    {
+        QCoreApplication::processEvents(); // Keeps the UI responsive
+    }
     ViewPlugin::fromVariantMap(variantMap);
 
     variantMapMustContain(variantMap, "Settings");
