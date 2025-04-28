@@ -263,8 +263,10 @@ void ScatterplotWidget::setData(const std::vector<Vector2f>* points)
 {
     auto dataBounds = getDataBounds(*points);
 
-    _pointRenderer.setDataBounds(QRectF(QPointF(dataBounds.getLeft(), dataBounds.getBottom()), QSizeF(dataBounds.getWidth(), dataBounds.getHeight())));
-    _densityRenderer.setDataBounds(QRectF(QPointF(dataBounds.getLeft(), dataBounds.getBottom()), QSizeF(dataBounds.getWidth(), dataBounds.getHeight())));
+    const auto dataBoundsRect = QRectF(QPointF(dataBounds.getLeft(), dataBounds.getBottom()), QSizeF(dataBounds.getWidth(), dataBounds.getHeight()));
+
+    _pointRenderer.setDataBounds(dataBoundsRect);
+    _densityRenderer.setDataBounds(dataBoundsRect);
 
     _dataRectangleAction.setBounds(dataBounds);
 

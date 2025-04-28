@@ -855,6 +855,15 @@ void ScatterplotPlugin::fromVariantMap(const QVariantMap& variantMap)
 
     _primaryToolbarAction.fromParentVariantMap(variantMap);
     _settingsAction.fromParentVariantMap(variantMap);
+
+    auto& pointRenderer = const_cast<PointRenderer&>(_scatterPlotWidget->getPointRenderer());
+
+    if (pointRenderer.getNavigator().getNavigationAction().getSerializationCountFrom() == 0) {
+        qDebug() << "Resetting view";
+        pointRenderer.getNavigator().resetView(true);
+
+        _scatterPlotWidget->update();
+    }
 }
 
 QVariantMap ScatterplotPlugin::toVariantMap() const
