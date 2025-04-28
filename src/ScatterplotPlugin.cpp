@@ -47,8 +47,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     _scatterPlotWidget(new ScatterplotWidget(this)),
     _numPoints(0),
     _settingsAction(this, "Settings"),
-    _primaryToolbarAction(this, "Primary Toolbar"),
-    _secondaryToolbarAction(this, "Secondary Toolbar")
+    _primaryToolbarAction(this, "Primary Toolbar")
 {
     setObjectName("Scatterplot");
 
@@ -56,21 +55,27 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
 
     shortcuts.add({ QKeySequence(Qt::Key_R), "Selection", "Rectangle (default)" });
     shortcuts.add({ QKeySequence(Qt::Key_L), "Selection", "Lasso" });
+    shortcuts.add({ QKeySequence(Qt::Key_P), "Selection", "Polygon" });
     shortcuts.add({ QKeySequence(Qt::Key_B), "Selection", "Circular brush (mouse wheel adjusts the radius)" });
     shortcuts.add({ QKeySequence(Qt::SHIFT), "Selection", "Add to selection" });
     shortcuts.add({ QKeySequence(Qt::CTRL), "Selection", "Remove from selection" });
+    shortcuts.add({ QKeySequence(Qt::Key_A), "Selection", "Select all" });
+    shortcuts.add({ QKeySequence(Qt::Key_E), "Selection", "Clear selection" });
+    shortcuts.add({ QKeySequence(Qt::Key_I), "Selection", "Invert selection" });
 
     shortcuts.add({ QKeySequence(Qt::Key_S), "Render", "Scatter mode (default)" });
     shortcuts.add({ QKeySequence(Qt::Key_D), "Render", "Density mode" });
     shortcuts.add({ QKeySequence(Qt::Key_C), "Render", "Contour mode" });
 
+    shortcuts.add({ QKeySequence(Qt::Key_Plus), "Navigation", "Zoom in by 10%" });
+    shortcuts.add({ QKeySequence(Qt::Key_Minus), "Navigation", "Zoom out by 10%" });
     shortcuts.add({ QKeySequence(Qt::ALT), "Navigation", "Pan (LMB down)" });
     shortcuts.add({ QKeySequence(Qt::ALT), "Navigation", "Zoom (mouse wheel)" });
     shortcuts.add({ QKeySequence(Qt::Key_O), "Navigation", "Original view" });
+    shortcuts.add({ QKeySequence(Qt::Key_H), "Navigation", "Zoom to selection" });
+    shortcuts.add({ QKeySequence(Qt::Key_F), "Navigation", "Zoom to window" });
     
     _dropWidget = new DropWidget(_scatterPlotWidget);
-
-    _scatterPlotWidget->getNavigationAction().setParent(this);
 
     getWidget().setFocusPolicy(Qt::ClickFocus);
 
@@ -105,11 +110,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     connect(_scatterPlotWidget, &ScatterplotWidget::renderModeChanged, this, updateReadOnly);
     connect(&_positionDataset, &Dataset<Points>::changed, this, updateReadOnly);
 
-    _secondaryToolbarAction.addAction(&_settingsAction.getColoringAction().getColorMap1DAction(), 1);
-    _secondaryToolbarAction.addAction(focusSelectionAction, 2);
-    //_secondaryToolbarAction.addAction(&_settingsAction.getExportAction());
-    _secondaryToolbarAction.addAction(&_settingsAction.getMiscellaneousAction());
-    _secondaryToolbarAction.addAction(&_scatterPlotWidget->getNavigationAction());
+    //_secondaryToolbarAction.addAction(&_settingsAction.getMiscellaneousAction());
 
     connect(_scatterPlotWidget, &ScatterplotWidget::customContextMenuRequested, this, [this](const QPoint& point) {
         if (!_positionDataset.isValid())
@@ -252,11 +253,32 @@ void ScatterplotPlugin::init()
     layout->setSpacing(0);
     layout->addWidget(_primaryToolbarAction.createWidget(&getWidget()));
     layout->addWidget(_scatterPlotWidget, 100);
-    layout->addWidget(_secondaryToolbarAction.createWidget(&getWidget()));
+
+    auto navigationWidget = new QWidget();
+    auto navigationLayout = new QHBoxLayout();
+
+    navigationLayout->setContentsMargins(4, 4, 4, 4);
+
+    navigationLayout->addStretch(1);
+    {
+        auto renderersNavigationGroupAction = new HorizontalGroupAction(this, "Navigation");
+
+        renderersNavigationGroupAction->setShowLabels(false);
+
+        renderersNavigationGroupAction->addAction(const_cast<NavigationAction*>(&_scatterPlotWidget->getPointRendererNavigator().getNavigationAction()));
+
+        _scatterPlotWidget->getPointRendererNavigator().getNavigationAction().setParent(&_settingsAction);
+
+        navigationLayout->addWidget(renderersNavigationGroupAction->createWidget(&getWidget()));
+    }
+    navigationLayout->addStretch(1);
+
+    navigationWidget->setLayout(navigationLayout);
+
+    layout->addWidget(navigationWidget);
 
     getWidget().setLayout(layout);
 
-    // Update the data when the scatter plot widget is initialized
     connect(_scatterPlotWidget, &ScatterplotWidget::initialized, this, &ScatterplotPlugin::updateData);
 
     connect(&_scatterPlotWidget->getPixelSelectionTool(), &PixelSelectionTool::areaChanged, [this]() {
@@ -281,6 +303,11 @@ void ScatterplotPlugin::init()
     _scatterPlotWidget->installEventFilter(this);
 
     getLearningCenterAction().getViewPluginOverlayWidget()->setTargetWidget(_scatterPlotWidget);
+
+    connect(&getScatterplotWidget().getPointRendererNavigator().getNavigationAction().getZoomSelectionAction(), &TriggerAction::triggered, this, [this]() -> void {
+        if (_selectionBoundaries.isValid())
+            _scatterPlotWidget->getPointRendererNavigator().setZoomRectangleWorld(_selectionBoundaries);
+	});
 
 #ifdef VIEW_SAMPLING_HTML
     getSamplerAction().setHtmlViewGeneratorFunction([this](const ViewPluginSamplerAction::SampleContext& toolTipContext) -> QString {
@@ -357,10 +384,13 @@ void ScatterplotPlugin::createSubset(const bool& fromSourceData /*= false*/, con
 
 void ScatterplotPlugin::selectPoints()
 {
+    if (getSettingsAction().getSelectionAction().getFreezeSelectionAction().isChecked())
+        return;
+
     auto& pixelSelectionTool = _scatterPlotWidget->getPixelSelectionTool();
 
     // Only proceed with a valid points position dataset and when the pixel selection tool is active
-    if (!_positionDataset.isValid() || !pixelSelectionTool.isActive() || _scatterPlotWidget->isNavigating() || !pixelSelectionTool.isEnabled())
+    if (!_positionDataset.isValid() || !pixelSelectionTool.isActive() || _scatterPlotWidget->_pointRenderer.getNavigator().isNavigating() || !pixelSelectionTool.isEnabled())
         return;
 
     auto selectionAreaImage = pixelSelectionTool.getAreaPixmap().toImage();
@@ -374,26 +404,48 @@ void ScatterplotPlugin::selectPoints()
 
     _positionDataset->getGlobalIndices(localGlobalIndices);
 
-    auto& zoomRectangleAction = _scatterPlotWidget->getNavigationAction().getZoomRectangleAction();
+    auto& pointRenderer = _scatterPlotWidget->_pointRenderer;
+    auto& navigator     = pointRenderer.getNavigator();
 
-    const auto width        = selectionAreaImage.width();
-    const auto height       = selectionAreaImage.height();
-    const auto size         = width < height ? width : height;
-    const auto uvOffset     = QPoint((selectionAreaImage.width() - size) / 2.0f, (selectionAreaImage.height() - size) / 2.0f);
+    const auto zoomRectangleWorld   = navigator.getZoomRectangleWorld();
+    const auto screenRectangle      = QRect(QPoint(), pointRenderer.getRenderSize());
 
-    QPointF uvNormalized    = {};
-    QPoint uv               = {};
+    float boundaries[4]{
+        std::numeric_limits<float>::max(),
+        std::numeric_limits<float>::lowest(),
+        std::numeric_limits<float>::max(),
+        std::numeric_limits<float>::lowest()
+    };
 
+    // Go over all points in the dataset to see if they are selected
     for (std::uint32_t localPointIndex = 0; localPointIndex < _positions.size(); localPointIndex++) {
-        uvNormalized = QPointF((_positions[localPointIndex].x - zoomRectangleAction.getLeft()) / zoomRectangleAction.getWidth(), (zoomRectangleAction.getTop() - _positions[localPointIndex].y) / zoomRectangleAction.getHeight());
-        uv           = uvOffset + QPoint(uvNormalized.x() * size, uvNormalized.y() * size);
+	    const auto& point = _positions[localPointIndex];
 
-        if (uv.x() >= selectionAreaImage.width()  || uv.x() < 0 || uv.y() >= selectionAreaImage.height() || uv.y() < 0)
-            continue;
+    	// Compute the offset of the point in the world space
+    	const auto pointOffsetWorld = QPointF(point.x - zoomRectangleWorld.left(), point.y - zoomRectangleWorld.top());
 
-        if (selectionAreaImage.pixelColor(uv).alpha() > 0)
-	        targetSelectionIndices.push_back(localGlobalIndices[localPointIndex]);
+    	// Normalize it 
+    	const auto pointOffsetWorldNormalized = QPointF(pointOffsetWorld.x() / zoomRectangleWorld.width(), pointOffsetWorld.y() / zoomRectangleWorld.height());
+
+    	// Convert it to screen space
+    	const auto pointOffsetScreen = QPoint(pointOffsetWorldNormalized.x() * screenRectangle.width(), screenRectangle.height() - pointOffsetWorldNormalized.y() * screenRectangle.height());
+
+    	// Continue to next point if the point is outside the screen
+    	if (!screenRectangle.contains(pointOffsetScreen))
+    		continue;
+
+    	// If the corresponding pixel is not transparent, add the point to the selection
+    	if (selectionAreaImage.pixelColor(pointOffsetScreen).alpha() > 0) {
+    		targetSelectionIndices.push_back(localGlobalIndices[localPointIndex]);
+
+            boundaries[0] = std::min(boundaries[0], point.x);
+            boundaries[1] = std::max(boundaries[1], point.x);
+            boundaries[2] = std::min(boundaries[2], point.y);
+            boundaries[3] = std::max(boundaries[3], point.y);
+	    }
     }
+
+    _selectionBoundaries = QRectF(boundaries[0], boundaries[2], boundaries[1] - boundaries[0], boundaries[3] - boundaries[2]);
 
     switch (const auto selectionModifier = pixelSelectionTool.isAborted() ? PixelSelectionModifierType::Subtract : pixelSelectionTool.getModifier())
     {
@@ -441,6 +493,10 @@ void ScatterplotPlugin::selectPoints()
         }
     }
 
+    auto& navigationAction = _scatterPlotWidget->getPointRendererNavigator().getNavigationAction();
+
+    navigationAction.getZoomSelectionAction().setEnabled(!targetSelectionIndices.empty() && !navigationAction.getFreezeNavigation().isChecked());
+
     _positionDataset->setSelectionIndices(targetSelectionIndices);
 
     events().notifyDatasetDataSelectionChanged(_positionDataset->getSourceDataset<Points>());
@@ -450,7 +506,7 @@ void ScatterplotPlugin::samplePoints()
 {
     auto& samplerPixelSelectionTool = _scatterPlotWidget->getSamplerPixelSelectionTool();
 
-    if (!_positionDataset.isValid() || !samplerPixelSelectionTool.isActive() || _scatterPlotWidget->isNavigating() || !samplerPixelSelectionTool.isEnabled())
+    if (!_positionDataset.isValid() || _scatterPlotWidget->_pointRenderer.getNavigator().isNavigating() || !samplerPixelSelectionTool.isActive())
         return;
 
     auto selectionAreaImage = samplerPixelSelectionTool.getAreaPixmap().toImage();
@@ -462,31 +518,37 @@ void ScatterplotPlugin::samplePoints()
     std::vector<std::uint32_t> localGlobalIndices;
 
     _positionDataset->getGlobalIndices(localGlobalIndices);
-
-    auto& zoomRectangleAction = _scatterPlotWidget->getNavigationAction().getZoomRectangleAction();
-
-    const auto width    = selectionAreaImage.width();
-    const auto height   = selectionAreaImage.height();
-    const auto size     = width < height ? width : height;
-    const auto uvOffset = QPoint((selectionAreaImage.width() - size) / 2.0f, (selectionAreaImage.height() - size) / 2.0f);
-
-    QPointF pointUvNormalized;
-
-    QPoint  pointUv, mouseUv = _scatterPlotWidget->mapFromGlobal(QCursor::pos());
     
     std::vector<char> focusHighlights(_positions.size());
 
     std::vector<std::pair<float, std::uint32_t>> sampledPoints;
 
-    for (std::uint32_t localPointIndex = 0; localPointIndex < _positions.size(); localPointIndex++) {
-        pointUvNormalized   = QPointF((_positions[localPointIndex].x - zoomRectangleAction.getLeft()) / zoomRectangleAction.getWidth(), (zoomRectangleAction.getTop() - _positions[localPointIndex].y) / zoomRectangleAction.getHeight());
-        pointUv             = uvOffset + QPoint(pointUvNormalized.x() * size, pointUvNormalized.y() * size);
+    auto& pointRenderer = _scatterPlotWidget->_pointRenderer;
+    auto& navigator     = pointRenderer.getNavigator();
 
-        if (pointUv.x() >= selectionAreaImage.width() || pointUv.x() < 0 || pointUv.y() >= selectionAreaImage.height() || pointUv.y() < 0)
+    const auto zoomRectangleWorld   = navigator.getZoomRectangleWorld();
+    const auto screenRectangle      = QRect(QPoint(), pointRenderer.getRenderSize());
+    const auto mousePositionWorld   = pointRenderer.getScreenPointToWorldPosition(pointRenderer.getNavigator().getViewMatrix(), _scatterPlotWidget->mapFromGlobal(QCursor::pos()));
+
+    // Go over all points in the dataset to see if they should be sampled
+    for (std::uint32_t localPointIndex = 0; localPointIndex < _positions.size(); localPointIndex++) {
+
+        // Compute the offset of the point in the world space
+        const auto pointOffsetWorld = QPointF(_positions[localPointIndex].x - zoomRectangleWorld.left(), _positions[localPointIndex].y - zoomRectangleWorld.top());
+
+        // Normalize it 
+        const auto pointOffsetWorldNormalized = QPointF(pointOffsetWorld.x() / zoomRectangleWorld.width(), pointOffsetWorld.y() / zoomRectangleWorld.height());
+
+        // Convert it to screen space
+        const auto pointOffsetScreen = QPoint(pointOffsetWorldNormalized.x() * screenRectangle.width(), screenRectangle.height() - pointOffsetWorldNormalized.y() * screenRectangle.height());
+
+        // Continue to next point if the point is outside the screen
+        if (!screenRectangle.contains(pointOffsetScreen))
             continue;
 
-        if (selectionAreaImage.pixelColor(pointUv).alpha() > 0) {
-            const auto sample = std::pair<float, std::uint32_t>((QVector2D(mouseUv) - QVector2D(pointUv)).length(), localPointIndex);
+        // If the corresponding pixel is not transparent, add the point to the selection
+        if (selectionAreaImage.pixelColor(pointOffsetScreen).alpha() > 0) {
+            const auto sample = std::pair((QVector2D(_positions[localPointIndex].x, _positions[localPointIndex].y) - mousePositionWorld.toVector2D()).length(), localPointIndex);
 
             sampledPoints.emplace_back(sample);
         }
@@ -569,7 +631,10 @@ void ScatterplotPlugin::positionDatasetChanged()
     _positionSourceDataset = _positionDataset->getSourceDataset<Points>();
 
     _numPoints = _positionDataset->getNumPoints();
-    
+
+    _scatterPlotWidget->getPointRendererNavigator().resetView(true);
+    _scatterPlotWidget->getDensityRendererNavigator().resetView(true);
+
     updateData();
 }
 
@@ -789,10 +854,16 @@ void ScatterplotPlugin::fromVariantMap(const QVariantMap& variantMap)
     variantMapMustContain(variantMap, "Settings");
 
     _primaryToolbarAction.fromParentVariantMap(variantMap);
-    _secondaryToolbarAction.fromParentVariantMap(variantMap);
     _settingsAction.fromParentVariantMap(variantMap);
-    
-    _scatterPlotWidget->getNavigationAction().fromParentVariantMap(variantMap);
+
+    auto& pointRenderer = const_cast<PointRenderer&>(_scatterPlotWidget->getPointRenderer());
+
+    if (pointRenderer.getNavigator().getNavigationAction().getSerializationCountFrom() == 0) {
+        qDebug() << "Resetting view";
+        pointRenderer.getNavigator().resetView(true);
+
+        _scatterPlotWidget->update();
+    }
 }
 
 QVariantMap ScatterplotPlugin::toVariantMap() const
@@ -800,10 +871,7 @@ QVariantMap ScatterplotPlugin::toVariantMap() const
     QVariantMap variantMap = ViewPlugin::toVariantMap();
 
     _primaryToolbarAction.insertIntoVariantMap(variantMap);
-    _secondaryToolbarAction.insertIntoVariantMap(variantMap);
     _settingsAction.insertIntoVariantMap(variantMap);
-
-    _scatterPlotWidget->getNavigationAction().insertIntoVariantMap(variantMap);
 
     return variantMap;
 }
@@ -901,5 +969,5 @@ PluginTriggerActions ScatterplotPluginFactory::getPluginTriggerActions(const mv:
 
 QUrl ScatterplotPluginFactory::getRepositoryUrl() const
 {
-    return QUrl("https://github.com/ManiVaultStudio/Scatterplot");
+    return { "https://github.com/ManiVaultStudio/Scatterplot" };
 }

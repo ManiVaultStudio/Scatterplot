@@ -1,7 +1,5 @@
 #pragma once
 
-#include "NavigationAction.h"
-
 #include <renderers/DensityRenderer.h>
 #include <renderers/PointRenderer.h>
 
@@ -24,14 +22,6 @@ namespace mv::plugin
 {
     class ViewPlugin;
 }
-
-struct widgetSizeInfo {
-    float width;
-    float height;
-    float minWH;
-    float ratioWidth;
-    float ratioHeight;
-};
 
 class ScatterplotWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
 {
@@ -121,25 +111,6 @@ public:
 
     mv::Bounds getBounds() const {
         return _dataRectangleAction.getBounds();
-    }
-
-    /*
-    mv::Bounds getZoomBounds() const {
-        return _zoomBounds;
-    }
-
-    void setZoomBounds(const mv::Bounds& newBounds) {
-        _zoomBounds = newBounds;
-        _pointRenderer.setBounds(_zoomBounds);
-        emit zoomBoundsChanged(_zoomBounds);
-        update();
-    }
-    */
-
-    NavigationAction& getNavigationAction() { return _navigationAction; }
-
-    bool isNavigating() const {
-        return _isNavigating;
     }
 
     mv::Vector3f getColorMapRange() const;
@@ -258,10 +229,6 @@ protected:
 
     bool event(QEvent* event) override;
 
-    void zoomAround(const QPointF& at, float factor);
-    void panBy(const QPointF& to);
-    void resetView();
-
 public: // Const access to renderers
 
     const PointRenderer& getPointRenderer() const {
@@ -276,6 +243,20 @@ public:
 
     /** Assign a color map image to the point and density renderers */
     void setColorMap(const QImage& colorMapImage);
+
+public: // Navigators
+
+    /**
+     * Get the navigator for the point renderer
+     * @return Reference to the navigator
+     */
+    mv::Navigator2D& getPointRendererNavigator() { return _pointRenderer.getNavigator(); }
+
+    /**
+     * Get the navigator for the density renderer
+     * @return Reference to the navigator
+     */
+    mv::Navigator2D& getDensityRendererNavigator() { return _densityRenderer.getNavigator(); }
 
 signals:
     void initialized();
@@ -308,25 +289,24 @@ public slots:
 private slots:
     void updatePixelRatio();
 
-private:
+protected:
     PointRenderer               _pointRenderer;                 /** For rendering point data as points */
     DensityRenderer             _densityRenderer;               /** For rendering point data as a density plot */
+
+private:
     bool                        _isInitialized;                 /** Boolean determining whether the widget it properly initialized or not */
     RenderMode                  _renderMode;                    /** Current render mode */
     QColor                      _backgroundColor;               /** Background color */
     ColoringMode                _coloringMode;                  /** Type of point/density coloring */
-    widgetSizeInfo              _widgetSizeInfo;                /** Info about size of the scatterplot widget */
     DecimalRectangleAction      _dataRectangleAction;           /** Rectangle action for the bounds of the loaded data */
-    NavigationAction            _navigationAction;              /** All navigation-related actions are grouped in this action */
     QImage                      _colorMapImage;                 /** 1D/2D color map image */
     PixelSelectionTool          _pixelSelectionTool;            /** 2D pixel selection tool */
     PixelSelectionTool          _samplerPixelSelectionTool;     /** 2D pixel selection tool */
     float                       _pixelRatio;                    /** Current pixel ratio */
-    QVector<QPoint>             _mousePositions;                /** Recorded mouse positions */
-    bool                        _isNavigating;                  /** Boolean determining whether view navigation is currently taking place or not */
     bool                        _weightDensity;                 /** Use point scalar sizes to weight density */
 
     mv::plugin::ViewPlugin*     _parentPlugin = nullptr;
 
+    friend class ScatterplotPlugin;
     friend class NavigationAction;
 };
