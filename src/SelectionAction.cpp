@@ -25,6 +25,7 @@ SelectionAction::SelectionAction(QObject* parent, const QString& title) :
     addAction(&_pixelSelectionAction.getTypeAction());
     addAction(&_pixelSelectionAction.getBrushRadiusAction());
     addAction(&_pixelSelectionAction.getLineWidthAction());
+    addAction(&_pixelSelectionAction.getLineAngleAction());
     addAction(&_pixelSelectionAction.getModifierAction(), OptionAction::HorizontalButtons);
     addAction(&_pixelSelectionAction.getSelectAction());
     addAction(&_pixelSelectionAction.getNotifyDuringSelectionAction());
