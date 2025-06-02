@@ -158,9 +158,9 @@ add_custom_command(TARGET ${PROJECT} POST_BUILD
         --prefix ${ManiVault_INSTALL_DIR}/$<CONFIGURATION>
 )
 
-set_target_properties(${PROJECT}
-    PROPERTIES
+set_target_properties(${PROJECT} PROPERTIES
     FOLDER ViewPlugins
+    OUTPUT_NAME  "${PROJECT}_${PLUGIN_VERSION}_${ManiVault_VERSION}"
 )
 
 # -----------------------------------------------------------------------------
