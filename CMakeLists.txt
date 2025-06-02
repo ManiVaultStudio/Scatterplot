@@ -17,7 +17,11 @@ file(READ ${PLUGIN_CONFIG_FILE} PLUGIN_INFO_JSON)
 string(JSON PLUGIN_VERSION GET "${PLUGIN_INFO_JSON}" version)
 message(STATUS "PLUGIN_VERSION: ${PLUGIN_VERSION}")
 
-PROJECT(${PROJECT})
+PROJECT(${PROJECT}
+        VERSION ${PLUGIN_VERSION}
+        DESCRIPTION "A scatterplot viewer plugin for ManiVault"
+        LANGUAGES CXX
+)
 
 # -----------------------------------------------------------------------------
 # CMake Options
