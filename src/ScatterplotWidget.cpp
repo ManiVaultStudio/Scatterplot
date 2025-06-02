@@ -60,6 +60,8 @@ ScatterplotWidget::ScatterplotWidget(mv::plugin::ViewPlugin* parentPlugin) :
     _pixelSelectionTool.setEnabled(true);
     _pixelSelectionTool.setMainColor(QColor(Qt::black));
     _pixelSelectionTool.setFixedBrushRadiusModifier(Qt::AltModifier);
+    _pixelSelectionTool.setFixedLineWidthModifier(Qt::AltModifier);
+    _pixelSelectionTool.setFixedLineAngleModifier(Qt::AltModifier);
 
     connect(&_pixelSelectionTool, &PixelSelectionTool::shapeChanged, [this]() {
         if (isInitialized())
@@ -126,6 +128,8 @@ ScatterplotWidget::ScatterplotWidget(mv::plugin::ViewPlugin* parentPlugin) :
     _samplerPixelSelectionTool.setEnabled(true);
     _samplerPixelSelectionTool.setMainColor(QColor(Qt::black));
     _samplerPixelSelectionTool.setFixedBrushRadiusModifier(Qt::AltModifier);
+    _samplerPixelSelectionTool.setFixedLineWidthModifier(Qt::AltModifier);
+    _samplerPixelSelectionTool.setFixedLineAngleModifier(Qt::AltModifier);
 
     getPointRendererNavigator().setEnabled(true);
 
