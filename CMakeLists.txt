@@ -88,7 +88,7 @@ set(Models
 )
 
 set(AUX
-    src/ScatterplotPlugin.json
+    PluginInfo.json
 )
 
 set(SOURCES ${PLUGIN} ${UI} ${Actions} ${Models})
