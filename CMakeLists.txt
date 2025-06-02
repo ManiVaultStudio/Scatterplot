@@ -38,10 +38,6 @@ set(PLUGIN
     src/ScatterplotPlugin.cpp
 )
 
-set(PLUGIN_MOC_HEADERS
-    src/ScatterplotPlugin.h
-)
-
 set(UI
     src/ScatterplotWidget.h
     src/ScatterplotWidget.cpp
