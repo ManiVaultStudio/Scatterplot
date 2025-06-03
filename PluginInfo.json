@@ -1,6 +1,9 @@
 {
     "name" : "Scatterplot View",
-    "version" : "1.0.0",
+    "version" :  {
+        "plugin" : "1.0.0",
+        "core" : ["1.3"]
+    },
     "dependencies" : ["Points"],
     "core" : ["1.3"]
 }
