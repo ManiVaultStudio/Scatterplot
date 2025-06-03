@@ -160,7 +160,7 @@ add_custom_command(TARGET ${PROJECT} POST_BUILD
 
 set_target_properties(${PROJECT} PROPERTIES
     FOLDER ViewPlugins
-    OUTPUT_NAME  "${PROJECT}_${PLUGIN_VERSION}_${ManiVault_VERSION}"
+    OUTPUT_NAME  "${PROJECT}_p${PLUGIN_VERSION}_c${ManiVault_VERSION}"
 )
 
 # -----------------------------------------------------------------------------
