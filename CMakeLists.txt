@@ -7,18 +7,7 @@ option(MV_UNITY_BUILD "Combine target source files into batches for faster compi
 # -----------------------------------------------------------------------------
 set(PROJECT "ScatterplotPlugin")
 
-set(PLUGIN_CONFIG_FILE "${CMAKE_CURRENT_SOURCE_DIR}/PluginInfo.json")
-
-if(NOT EXISTS "${PLUGIN_CONFIG_FILE}")
-    message(FATAL_ERROR "JSON file not found: ${PLUGIN_CONFIG_FILE}")
-endif()
-
-file(READ ${PLUGIN_CONFIG_FILE} PLUGIN_INFO_JSON)
-string(JSON PLUGIN_VERSION GET "${PLUGIN_INFO_JSON}" version plugin)
-message(STATUS "PLUGIN_VERSION: ${PLUGIN_VERSION}")
-
 PROJECT(${PROJECT}
-        VERSION ${PLUGIN_VERSION}
         DESCRIPTION "A scatterplot viewer plugin for ManiVault"
         LANGUAGES CXX
 )
@@ -158,10 +147,43 @@ add_custom_command(TARGET ${PROJECT} POST_BUILD
         --prefix ${ManiVault_INSTALL_DIR}/$<CONFIGURATION>
 )
 
+# Read config file
+set(PLUGIN_CONFIG_FILE "${CMAKE_CURRENT_SOURCE_DIR}/PluginInfo.json")
+
+if(NOT EXISTS "${PLUGIN_CONFIG_FILE}")
+    message(FATAL_ERROR "JSON file not found: ${PLUGIN_CONFIG_FILE}")
+endif()
+
+file(READ ${PLUGIN_CONFIG_FILE} PLUGIN_INFO_JSON)
+
+# Check if config file contains certain entries
+set(HAS_PLUGIN_TYPE 0)
+
+# Get the number of top-level keys
+string(JSON TOP_LEVEL_COUNT LENGTH "${PLUGIN_INFO_JSON}")
+
+math(EXPR LAST_INDEX "${TOP_LEVEL_COUNT} - 1")
+foreach(I RANGE 0 ${LAST_INDEX})
+    string(JSON KEY_NAME MEMBER "${PLUGIN_INFO_JSON}" ${I})
+    if("${KEY_NAME}" STREQUAL "type")
+        set(HAS_PLUGIN_TYPE 1)
+    endif()
+endforeach()
+
+# Extract plugin version
+string(JSON PLUGIN_VERSION GET "${PLUGIN_INFO_JSON}" version plugin)
+message(STATUS "PLUGIN_VERSION: ${PLUGIN_VERSION}")
 set_target_properties(${PROJECT} PROPERTIES
-    FOLDER ViewPlugins
     OUTPUT_NAME  "${PROJECT}_p${PLUGIN_VERSION}_c${ManiVault_VERSION}"
 )
+
+# Extract plugin type
+if(HAS_PLUGIN_TYPE)
+    string(JSON PLUGIN_TYPE GET "${PLUGIN_INFO_JSON}" type)
+    set_target_properties(${PROJECT} PROPERTIES
+        FOLDER "${PLUGIN_TYPE}Plugins"
+    )
+endif()
 
 # -----------------------------------------------------------------------------
 # Miscellaneous
