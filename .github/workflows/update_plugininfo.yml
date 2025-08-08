@@ -1,0 +1,43 @@
+name: Auto-update plugin card on website
+
+on:
+  workflow_dispatch:
+
+jobs:
+  update-card:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout this repo (plugin source)
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install Python dependencies
+        run: pip install requests pyyaml
+
+      - name: Get repo name and run script
+        run: |
+          REPO_NAME=$(basename "${{ github.repository }}")
+          echo "Running from repo: $REPO_NAME"
+          python scripts/update_plugininfo.py "$REPO_NAME"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Clone manivaultstudio.github.io (feature branch)
+        run: |
+          git clone --branch ft/test-plugin-push https://x-access-token:${{ secrets.GH_PAGES_DEPLOY_TOKEN }}@github.com/ManiVaultStudio/manivaultstudio.github.io.git target-repo
+          REPO_NAME=$(basename "${{ github.repository }}")
+          cp "$REPO_NAME.md" target-repo/_plugins/
+
+      - name: Commit and push
+        run: |
+          cd target-repo
+          git config user.name "ManiVault Bot"
+          git config user.email "bot@manivault.studio"
+          git add _plugins/
+          git commit -m "🔄 Auto-update plugin card from $REPO_NAME"
+          git push origin ft/test-plugin-push
