@@ -18,6 +18,7 @@
 #include <widgets/ViewPluginLearningCenterOverlayWidget.h>
 
 #include <actions/PluginTriggerAction.h>
+#include <actions/ViewPluginSamplerAction.h>
 
 #include <DatasetsMimeData.h>
 
@@ -29,9 +30,8 @@
 #include <QtCore>
 
 #include <algorithm>
-#include <functional>
+#include <cassert>
 #include <vector>
-#include <actions/ViewPluginSamplerAction.h>
 
 #define VIEW_SAMPLING_HTML
 //#define VIEW_SAMPLING_WIDGET
@@ -172,7 +172,17 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                         });
                 }
 
-                if (candidateDataset->getNumPoints() == _positionDataset->getNumPoints()) {
+                //const auto numPointsCand = candidateDataset->getNumPoints();
+                //const auto numPointsPos = _positionDataset->getNumPoints();
+                //const bool sameNumPoints = numPointsCand == numPointsPos;
+                //bool sameNumPointsAsFull = false;
+
+                //if (_positionDataset->isDerivedData()) {
+                //    const auto numPointsSor = _positionDataset->getSourceDataset<Points>()->getNumPoints();
+                //    sameNumPointsAsFull = numPointsCand == numPointsSor;
+                //}
+
+                //if (sameNumPoints || sameNumPointsAsFull) {
 
                     // The number of points is equal, so offer the option to use the points dataset as source for points colors
                     dropRegions << new DropWidget::DropRegion(this, "Point color", QString("Colorize %1 points with %2").arg(_positionDataset->text(), candidateDataset->text()), "palette", true, [this, candidateDataset]() {
@@ -191,7 +201,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                         _settingsAction.getPlotAction().getPointPlotAction().addPointOpacityDataset(candidateDataset);
                         _settingsAction.getPlotAction().getPointPlotAction().getOpacityAction().setCurrentDataset(candidateDataset);
                         });
-                }
+                //}
             }
         }
 
@@ -647,14 +657,28 @@ void ScatterplotPlugin::loadColors(const Dataset<Points>& points, const std::uin
     // Generate point scalars for color mapping
     std::vector<float> scalars;
 
-    if (_positionDataset->getNumPoints() != _numPoints)
-    {
-        qWarning("Number of points used for coloring does not match number of points in data, aborting attempt to color plot");
-        return;
-    }
-
-    // Populate point scalars
     points->extractDataForDimension(scalars, dimensionIndex);
+
+    //if (_positionSourceDataset->getNumPoints() == points->getNumPoints())
+    //{
+        std::vector<std::uint32_t> globalIndices;
+        _positionDataset->getGlobalIndices(globalIndices);
+
+        std::vector<float> localScalars(_numPoints, 0);
+        std::int32_t localColorIndex = 0;
+
+        for (const auto& globalIndex : globalIndices)
+            localScalars[localColorIndex++] = scalars[globalIndex];
+
+        std::swap(localScalars, scalars);
+
+    //}
+    //else if (points->getNumPoints() != _numPoints) {
+    //    qWarning("Number of points used for coloring does not match number of points in data, aborting attempt to color plot");
+    //    return;
+    //}
+
+    assert(scalars.size() == _numPoints);
 
     // Assign scalars and scalar effect
     _scatterPlotWidget->setScalars(scalars);
