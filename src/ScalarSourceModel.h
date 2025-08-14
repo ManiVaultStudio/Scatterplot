@@ -66,6 +66,13 @@ public:
     void addDataset(const Dataset<DatasetImpl>& dataset);
 
     /**
+     * Determines whether a given dataset is already loaded
+     * @param dataset Smart pointer to dataset
+     * @return whether the dataset is already loaded
+     */
+    bool hasDataset(const Dataset<DatasetImpl>& dataset) const;
+
+    /**
      * Remove a dataset
      * @param dataset Smart pointer to dataset
      */

@@ -38,6 +38,9 @@ void ScalarAction::addDataset(const Dataset<DatasetImpl>& dataset)
 {
     auto& sourceModel = _sourceAction.getModel();
 
+    if (sourceModel.hasDataset(dataset))
+        return;
+
     sourceModel.addDataset(dataset);
 
     connect(&sourceModel.getDatasets().last(), &Dataset<DatasetImpl>::dataChanged, this, [this, dataset]() {
