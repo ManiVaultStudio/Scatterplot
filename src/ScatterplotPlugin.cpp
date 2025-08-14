@@ -579,9 +579,9 @@ void ScatterplotPlugin::samplePoints()
         if (getSamplerAction().getRestrictNumberOfElementsAction().isChecked() && numberOfPoints >= getSamplerAction().getMaximumNumberOfElementsAction().getValue())
             break;
 
-        const auto& distance = sampledPoint.first;
-        const auto& localPointIndex = sampledPoint.second;
-        const auto& globalPointIndex = localGlobalIndices[localPointIndex];
+        const auto& distance            = sampledPoint.first;
+        const auto& localPointIndex     = sampledPoint.second;
+        const auto& globalPointIndex    = localGlobalIndices[localPointIndex];
 
         distances << distance;
         localPointIndices << localPointIndex;
