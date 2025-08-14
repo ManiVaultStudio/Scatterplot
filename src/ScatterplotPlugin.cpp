@@ -184,22 +184,19 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
 
                 if (sameNumPoints || sameNumPointsAsFull) {
 
-                    // The number of points is equal, so offer the option to use the points dataset as source for points colors
+                    // Offer the option to use the points dataset as source for points colors
                     dropRegions << new DropWidget::DropRegion(this, "Point color", QString("Colorize %1 points with %2").arg(_positionDataset->text(), candidateDataset->text()), "palette", true, [this, candidateDataset]() {
-                        _settingsAction.getColoringAction().addColorDataset(candidateDataset);
-                        _settingsAction.getColoringAction().setCurrentColorDataset(candidateDataset);
+                        _settingsAction.getColoringAction().setCurrentColorDataset(candidateDataset);   // calls addColorDataset internally
                         });
 
-                    // The number of points is equal, so offer the option to use the points dataset as source for points size
+                    // Offer the option to use the points dataset as source for points size
                     dropRegions << new DropWidget::DropRegion(this, "Point size", QString("Size %1 points with %2").arg(_positionDataset->text(), candidateDataset->text()), "ruler-horizontal", true, [this, candidateDataset]() {
-                        _settingsAction.getPlotAction().getPointPlotAction().addPointSizeDataset(candidateDataset);
-                        _settingsAction.getPlotAction().getPointPlotAction().getSizeAction().setCurrentDataset(candidateDataset);
+                        _settingsAction.getPlotAction().getPointPlotAction().setCurrentPointSizeDataset(candidateDataset);
                         });
 
-                    // The number of points is equal, so offer the option to use the points dataset as source for points opacity
+                    // Offer the option to use the points dataset as source for points opacity
                     dropRegions << new DropWidget::DropRegion(this, "Point opacity", QString("Set %1 points opacity with %2").arg(_positionDataset->text(), candidateDataset->text()), "brush", true, [this, candidateDataset]() {
-                        _settingsAction.getPlotAction().getPointPlotAction().addPointOpacityDataset(candidateDataset);
-                        _settingsAction.getPlotAction().getPointPlotAction().getOpacityAction().setCurrentDataset(candidateDataset);
+                        _settingsAction.getPlotAction().getPointPlotAction().setCurrentPointOpacityDataset(candidateDataset);
                         });
                 }
             }

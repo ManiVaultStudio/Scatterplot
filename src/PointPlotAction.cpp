@@ -210,6 +210,24 @@ void PointPlotAction::addPointOpacityDataset(const Dataset<DatasetImpl>& pointOp
     _opacityAction.addDataset(pointOpacityDataset);
 }
 
+void PointPlotAction::setCurrentPointSizeDataset(const Dataset<DatasetImpl>& pointSizeDataset)
+{
+    if (!pointSizeDataset.isValid())
+        return;
+
+    addPointSizeDataset(pointSizeDataset);
+    _sizeAction.setCurrentDataset(pointSizeDataset);
+}
+
+void PointPlotAction::setCurrentPointOpacityDataset(const Dataset<DatasetImpl>& pointOpacityDataset)
+{
+    if (!pointOpacityDataset.isValid())
+        return;
+
+    addPointOpacityDataset(pointOpacityDataset);
+    _opacityAction.setCurrentDataset(pointOpacityDataset);
+}
+
 void PointPlotAction::updateDefaultDatasets()
 {
     if (_scatterplotPlugin == nullptr)

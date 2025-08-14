@@ -179,6 +179,9 @@ Dataset<DatasetImpl> ColoringAction::getCurrentColorDataset() const
 
 void ColoringAction::setCurrentColorDataset(const Dataset<DatasetImpl>& colorDataset)
 {
+    if (!colorDataset.isValid())
+        return;
+
     addColorDataset(colorDataset);
 
     const auto colorDatasetRowIndex = _colorByModel.rowIndex(colorDataset);
