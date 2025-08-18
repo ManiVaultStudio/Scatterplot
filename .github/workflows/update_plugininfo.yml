@@ -2,6 +2,11 @@ name: Auto-update plugin card on website
 
 on:
   workflow_dispatch:
+  push:
+    branches: [feature/auto_plugininfo_on_website]
+    paths:
+      - '.github/workflows/update_plugininfo.yml'
+      - 'scripts/update_plugininfo.py'
 
 jobs:
   update-card:
