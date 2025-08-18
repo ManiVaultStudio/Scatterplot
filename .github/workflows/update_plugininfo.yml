@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout this repo (plugin source)
+      - name: Checkout this repo (plugin source picked automatically)
         uses: actions/checkout@v4
 
       - name: Set up Python
