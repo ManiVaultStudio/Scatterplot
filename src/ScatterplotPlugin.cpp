@@ -31,6 +31,9 @@
 
 #include <algorithm>
 #include <cassert>
+#include <map>
+#include <optional>
+#include <ranges>
 #include <vector>
 
 #define VIEW_SAMPLING_HTML
@@ -40,6 +43,75 @@ Q_PLUGIN_METADATA(IID "studio.manivault.ScatterplotPlugin")
 
 using namespace mv;
 using namespace mv::util;
+
+static std::optional<const mv::LinkedData*> getSelectionMapping(const mv::Dataset<Points>& source, const mv::Dataset<Points>& target) {
+    const std::vector<mv::LinkedData>& linkedDatas = source->getLinkedData();
+
+    qDebug() << "Source: " << source->getGuiName();
+
+    for (const auto& linkedData : linkedDatas) {
+        qDebug() << linkedData.getSourceDataSet()->getGuiName();
+        qDebug() << linkedData.getTargetDataset()->getGuiName();
+    }
+
+    const auto it = std::ranges::find_if(linkedDatas, [&target](const mv::LinkedData& obj) {
+
+        // TODO: This should be recursive
+        auto isParentOf = [&target](const mv::Dataset<Points>& linkedTarget) -> bool {
+            if (target->isDerivedData()) {
+                const auto parent = target->getParent();
+                if (parent->getDataType() == PointType) {
+                    const auto parentPoints = mv::Dataset<Points>(parent);
+
+                    qDebug() << parentPoints->getGuiName();
+                    qDebug() << target->getGuiName();
+
+                    return parentPoints->getNumPoints() == target->getNumPoints();
+                }
+            }
+            return false;
+            };
+
+        return obj.getTargetDataset() == target || isParentOf(obj.getTargetDataset());
+        });
+
+    if (it != linkedDatas.end()) {
+        return &(*it);  // return pointer to the found object
+    }
+
+    return std::nullopt; // nothing found
+}
+
+static bool checkSelectionMapping(const mv::Dataset<Points>& source, const mv::Dataset<Points>& target) {
+    const std::vector<mv::LinkedData>& linkedDatas = source->getLinkedData();
+
+    // First, check if there is a mapping
+    const auto it = getSelectionMapping(source, target);
+
+    if (!it.has_value())
+        return false;
+
+    // Second, check if the mapping is surjective, i.e. hits all elements in the target
+    const std::map<std::uint32_t, std::vector<std::uint32_t>>& linkedMap = it.value()->getMapping().getMap();
+    const std::uint32_t numPointsInTarget = target->getNumPoints();
+
+    std::vector<bool> found(numPointsInTarget, false);
+    std::uint32_t count = 0;
+
+    for (const auto& [key, vec] : linkedMap) {
+        for (std::uint32_t val : vec) {
+            if (val >= numPointsInTarget) continue; // Skip values that are too large
+
+            if (!found[val]) {
+                found[val] = true;
+                if (++count == numPointsInTarget) 
+                    return true;
+            }
+        }
+    }
+
+    return false;   // The previous loop would have returned early if the entire taget set was covered
+}
 
 ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     ViewPlugin(factory),
@@ -181,8 +253,9 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                     /*if*/   _positionDataset->isDerivedData() ?
                     /*then*/ _positionDataset->getSourceDataset<Points>()->getFullDataset<Points>()->getNumPoints() == numPointsCandidate :
                     /*else*/ false;
+                const bool hasSelectionMapping = checkSelectionMapping(candidateDataset, _positionDataset);
 
-                if (sameNumPoints || sameNumPointsAsFull) {
+                if (sameNumPoints || sameNumPointsAsFull || hasSelectionMapping) {
                     // Offer the option to use the points dataset as source for points colors
                     dropRegions << new DropWidget::DropRegion(this, "Point color", QString("Colorize %1 points with %2").arg(_positionDataset->text(), candidateDataset->text()), "palette", true, [this, candidateDataset]() {
                         _settingsAction.getColoringAction().setCurrentColorDataset(candidateDataset);   // calls addColorDataset internally
@@ -647,19 +720,18 @@ void ScatterplotPlugin::positionDatasetChanged()
     updateData();
 }
 
-void ScatterplotPlugin::loadColors(const Dataset<Points>& points, const std::uint32_t& dimensionIndex)
+void ScatterplotPlugin::loadColors(const Dataset<Points>& pointsColor, const std::uint32_t& dimensionIndex)
 {
     // Only proceed with valid points dataset
-    if (!points.isValid())
+    if (!pointsColor.isValid())
         return;
 
     // Generate point scalars for color mapping
     std::vector<float> scalars;
 
-    points->extractDataForDimension(scalars, dimensionIndex);
+    pointsColor->extractDataForDimension(scalars, dimensionIndex);
 
-    const auto numColorPoints = points->getNumPoints();
-
+    const auto numColorPoints = pointsColor->getNumPoints();
 
     if (numColorPoints != _numPoints) {
 
@@ -667,6 +739,8 @@ void ScatterplotPlugin::loadColors(const Dataset<Points>& points, const std::uin
             /*if*/   _positionDataset->isDerivedData() ?
             /*then*/ _positionSourceDataset->getFullDataset<Points>()->getNumPoints() == numColorPoints :
             /*else*/ false;
+
+        const auto validSelectionMapping = getSelectionMapping(pointsColor, _positionDataset);
 
         if (sameNumPointsAsFull) {
             std::vector<std::uint32_t> globalIndices;
@@ -680,6 +754,21 @@ void ScatterplotPlugin::loadColors(const Dataset<Points>& points, const std::uin
 
             std::swap(localScalars, scalars);
            }
+        else if (validSelectionMapping.has_value() && validSelectionMapping.value() != nullptr) {
+            std::vector<float> localScalars(_numPoints, 0);
+
+            // Map values like selection
+            const mv::SelectionMap::Map& linkedMap  = validSelectionMapping.value()->getMapping().getMap();
+            const std::uint32_t numPointsInTarget   = _positionDataset->getNumPoints();
+
+            for (const auto& [fromID, vecOfIDs] : linkedMap) {
+                for (std::uint32_t toID : vecOfIDs) {
+                    localScalars[toID] = scalars[fromID];
+                }
+            }
+
+            std::swap(localScalars, scalars);
+        }
         else {
             qWarning("Number of points used for coloring does not match number of points in data, aborting attempt to color plot");
             return;
