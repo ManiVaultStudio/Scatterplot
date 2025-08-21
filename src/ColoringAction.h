@@ -134,6 +134,7 @@ private:
     DimensionPickerAction   _dimensionAction;       /** Dimension picker action */
     ColorMap1DAction        _colorMap1DAction;      /** One-dimensional color map action */
     ColorMap2DAction        _colorMap2DAction;      /** Two-dimensional color map action */
+    Dataset<Points>    _currentColorPointsDataset;      /** Current color dataset */
 
     /** Default constant color */
     static const QColor DEFAULT_CONSTANT_COLOR;
