@@ -83,11 +83,18 @@ ColoringAction::ColoringAction(QObject* parent, const QString& title) :
                 _currentColorPointsDataset = currentColorDataset.get<Points>();
                 if (_currentColorPointsDataset.isValid()) {
                     connect(&_currentColorPointsDataset, &Dataset<Points>::dataDimensionsChanged, this, [this]() {
-                        _dimensionAction.setPointsDataset(_currentColorPointsDataset);
-                        updateScatterPlotWidgetColors();
+                        if (_currentColorPointsDataset.isValid())
+                        {
+                            _dimensionAction.setPointsDataset(_currentColorPointsDataset);
+                            updateScatterPlotWidgetColors();
+                        }
                         });
+                    _dimensionAction.setPointsDataset(_currentColorPointsDataset);
                 }
-                _dimensionAction.setPointsDataset(_currentColorPointsDataset);
+                else {
+                    _dimensionAction.setPointsDataset(Dataset<Points>());
+                }
+                
             }
             else {
                 _dimensionAction.setPointsDataset(Dataset<Points>());
