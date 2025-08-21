@@ -743,8 +743,6 @@ void ScatterplotPlugin::loadColors(const Dataset<Points>& pointsColor, const std
             /*then*/ _positionSourceDataset->getFullDataset<Points>()->getNumPoints() == numColorPoints :
             /*else*/ false;
 
-        const auto validSelectionMapping = getSelectionMapping(pointsColor, _positionDataset);
-
         if (hasSameNumPointsAsFull) {
             std::vector<std::uint32_t> globalIndices;
             _positionDataset->getGlobalIndices(globalIndices);
@@ -756,12 +754,16 @@ void ScatterplotPlugin::loadColors(const Dataset<Points>& pointsColor, const std
                 localScalars[localColorIndex++] = scalars[globalIndex];
 
             std::swap(localScalars, scalars);
-           }
-        else if (validSelectionMapping.has_value() && validSelectionMapping.value() != nullptr) {
+        }
+        else if ( // only get map if derived check failed
+            const auto selectionMapping = getSelectionMapping(pointsColor, _positionDataset);
+            /* check if valid */ selectionMapping.has_value() && selectionMapping.value() != nullptr
+            )
+        {
             std::vector<float> localScalars(_numPoints, 0);
 
             // Map values like selection
-            const mv::SelectionMap::Map& linkedMap  = validSelectionMapping.value()->getMapping().getMap();
+            const mv::SelectionMap::Map& linkedMap  = selectionMapping.value()->getMapping().getMap();
             const std::uint32_t numPointsInTarget   = _positionDataset->getNumPoints();
 
             for (const auto& [fromID, vecOfIDs] : linkedMap) {
