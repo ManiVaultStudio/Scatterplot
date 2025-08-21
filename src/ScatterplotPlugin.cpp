@@ -31,6 +31,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <exception>
 #include <map>
 #include <optional>
 #include <ranges>
@@ -738,44 +739,56 @@ void ScatterplotPlugin::loadColors(const Dataset<Points>& pointsColor, const std
     // If number of points do not match, prefer checking for derived data over selection mapping
     if (numColorPoints != _numPoints) {
 
-        const bool hasSameNumPointsAsFull =
-            /*if*/   _positionDataset->isDerivedData() ?
-            /*then*/ _positionSourceDataset->getFullDataset<Points>()->getNumPoints() == numColorPoints :
-            /*else*/ false;
+        try {
 
-        if (hasSameNumPointsAsFull) {
-            std::vector<std::uint32_t> globalIndices;
-            _positionDataset->getGlobalIndices(globalIndices);
+            const bool hasSameNumPointsAsFull =
+                /*if*/   _positionDataset->isDerivedData() ?
+                /*then*/ _positionSourceDataset->getFullDataset<Points>()->getNumPoints() == numColorPoints :
+                /*else*/ false;
 
-            std::vector<float> localScalars(_numPoints, 0);
-            std::int32_t localColorIndex = 0;
+            if (hasSameNumPointsAsFull) {
+                std::vector<std::uint32_t> globalIndices;
+                _positionDataset->getGlobalIndices(globalIndices);
 
-            for (const auto& globalIndex : globalIndices)
-                localScalars[localColorIndex++] = scalars[globalIndex];
+                std::vector<float> localScalars(_numPoints, 0);
+                std::int32_t localColorIndex = 0;
 
-            std::swap(localScalars, scalars);
-        }
-        else if ( // only get map if derived check failed
-            const auto selectionMapping = getSelectionMapping(pointsColor, _positionDataset);
-            /* check if valid */ selectionMapping.has_value() && selectionMapping.value() != nullptr
-            )
-        {
-            std::vector<float> localScalars(_numPoints, 0);
+                for (const auto& globalIndex : globalIndices)
+                    localScalars[localColorIndex++] = scalars[globalIndex];
 
-            // Map values like selection
-            const mv::SelectionMap::Map& linkedMap  = selectionMapping.value()->getMapping().getMap();
-            const std::uint32_t numPointsInTarget   = _positionDataset->getNumPoints();
+                std::swap(localScalars, scalars);
+            }
+            else if ( // only get map if derived check failed
+                const auto selectionMapping = getSelectionMapping(pointsColor, _positionDataset);
+                /* check if valid */ selectionMapping.has_value() && selectionMapping.value() != nullptr
+                )
+            {
+                std::vector<float> localScalars(_numPoints, 0);
 
-            for (const auto& [fromID, vecOfIDs] : linkedMap) {
-                for (std::uint32_t toID : vecOfIDs) {
-                    localScalars[toID] = scalars[fromID];
+                // Map values like selection
+                const mv::SelectionMap::Map& linkedMap  = selectionMapping.value()->getMapping().getMap();
+                const std::uint32_t numPointsInTarget   = _positionDataset->getNumPoints();
+
+                for (const auto& [fromID, vecOfIDs] : linkedMap) {
+                    for (std::uint32_t toID : vecOfIDs) {
+                        localScalars[toID] = scalars[fromID];
+                    }
                 }
+
+                std::swap(localScalars, scalars);
+            }
+            else {
+                qWarning("Number of points used for coloring does not match number of points in data, aborting attempt to color plot");
+                return;
             }
 
-            std::swap(localScalars, scalars);
         }
-        else {
-            qWarning("Number of points used for coloring does not match number of points in data, aborting attempt to color plot");
+        catch (const std::exception& e) {
+           qDebug() << "ScatterplotPlugin::loadColors: mapping failed -> " << e.what();
+            return;
+        }
+        catch (...) {
+            qDebug() << "ScatterplotPlugin::loadColors: mapping failed for an unknown reason.";
             return;
         }
     }
