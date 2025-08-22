@@ -74,6 +74,8 @@ QVariant ScalarSourceModel::data(const QModelIndex& index, int role) const
                 if (row == DefaultRow::Selection)
                     return "Selection";
             }
+
+            break;
         }
 
         default:
@@ -86,7 +88,7 @@ QVariant ScalarSourceModel::data(const QModelIndex& index, int role) const
 void ScalarSourceModel::addDataset(const Dataset<DatasetImpl>& dataset)
 {
     // Avoid duplicates
-    if (rowIndex(dataset) >= DefaultRow::DatasetStart)
+    if (hasDataset(dataset))
         return;
 
     // Insert row into model
@@ -125,6 +127,11 @@ void ScalarSourceModel::addDataset(const Dataset<DatasetImpl>& dataset)
         // Notify others that the data changed
         emit dataChanged(modelIndex, modelIndex);
     });
+}
+
+bool ScalarSourceModel::hasDataset(const Dataset<DatasetImpl>& dataset) const
+{
+    return rowIndex(dataset) >= DefaultRow::DatasetStart;
 }
 
 void ScalarSourceModel::removeDataset(const Dataset<DatasetImpl>& dataset)

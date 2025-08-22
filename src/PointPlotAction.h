@@ -58,6 +58,18 @@ public:
      */
     void addPointOpacityDataset(const Dataset<DatasetImpl>& pointOpacityDataset);
 
+    /**
+     * Set the current point size dataset
+     * @param pointSizeDataset Smart pointer to point size dataset
+     */
+    void setCurrentPointSizeDataset(const Dataset<DatasetImpl>& pointSizeDataset);
+
+    /**
+     * Set the current opacity size dataset
+     * @param pointOpacityDataset Smart pointer to opacity size dataset
+     */
+    void setCurrentPointOpacityDataset(const Dataset<DatasetImpl>& pointOpacityDataset);
+
 protected:
 
     /** Update default datasets (candidates are children of points type and with matching number of points) */
