@@ -72,10 +72,33 @@ ColoringAction::ColoringAction(QObject* parent, const QString& title) :
 
         const auto currentColorDataset = getCurrentColorDataset();
 
-        if (currentColorDataset.isValid()) {
-            const auto currentColorDatasetTypeIsPointType = currentColorDataset->getDataType() == PointType;
+        if (_currentColorPointsDataset.isValid()) {
+            disconnect(&_currentColorPointsDataset, &Dataset<Points>::dataDimensionsChanged, this, nullptr);
+        }
 
-            _dimensionAction.setPointsDataset(currentColorDatasetTypeIsPointType ? Dataset<Points>(currentColorDataset) : Dataset<Points>());
+        _currentColorPointsDataset = Dataset<Points>();
+
+        if (currentColorDataset.isValid()) {
+            if (currentColorDataset->getDataType() == PointType) {
+                _currentColorPointsDataset = currentColorDataset.get<Points>();
+
+                if (_currentColorPointsDataset.isValid()) {
+                    connect(&_currentColorPointsDataset, &Dataset<Points>::dataDimensionsChanged, this, [this]() {
+                        if (_currentColorPointsDataset.isValid()) {
+                            _dimensionAction.setPointsDataset(_currentColorPointsDataset);
+                            updateScatterPlotWidgetColors();
+                        }
+					});
+
+                    _dimensionAction.setPointsDataset(_currentColorPointsDataset);
+                }
+                else {
+                    _dimensionAction.setPointsDataset(Dataset<Points>());
+                }
+            }
+            else {
+                _dimensionAction.setPointsDataset(Dataset<Points>());
+            }
             //_dimensionAction.setVisible(currentColorDatasetTypeIsPointType);
 
             emit currentColorDatasetChanged(currentColorDataset);

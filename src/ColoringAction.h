@@ -127,13 +127,14 @@ signals:
     void currentColorDatasetChanged(Dataset<DatasetImpl> currentColorDataset);
 
 private:
-    ScatterplotPlugin*      _scatterplotPlugin;     /** Pointer to scatter plot plugin */
-    ColorSourceModel        _colorByModel;          /** Color by model (model input for the color by action) */
-    OptionAction            _colorByAction;         /** Action for picking the coloring type */
-    ColorAction             _constantColorAction;   /** Action for picking the constant color */
-    DimensionPickerAction   _dimensionAction;       /** Dimension picker action */
-    ColorMap1DAction        _colorMap1DAction;      /** One-dimensional color map action */
-    ColorMap2DAction        _colorMap2DAction;      /** Two-dimensional color map action */
+    ScatterplotPlugin*      _scatterplotPlugin;             /** Pointer to scatter plot plugin */
+    ColorSourceModel        _colorByModel;                  /** Color by model (model input for the color by action) */
+    OptionAction            _colorByAction;                 /** Action for picking the coloring type */
+    ColorAction             _constantColorAction;           /** Action for picking the constant color */
+    DimensionPickerAction   _dimensionAction;               /** Dimension picker action */
+    ColorMap1DAction        _colorMap1DAction;              /** One-dimensional color map action */
+    ColorMap2DAction        _colorMap2DAction;              /** Two-dimensional color map action */
+    Dataset<Points>         _currentColorPointsDataset;     /** Current color dataset */
 
     /** Default constant color */
     static const QColor DEFAULT_CONSTANT_COLOR;
