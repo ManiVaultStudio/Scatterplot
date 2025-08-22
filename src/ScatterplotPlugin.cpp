@@ -32,6 +32,7 @@
 #include <algorithm>
 #include <cassert>
 #include <exception>
+#include <functional>
 #include <map>
 #include <optional>
 #include <ranges>
@@ -45,27 +46,30 @@ Q_PLUGIN_METADATA(IID "studio.manivault.ScatterplotPlugin")
 using namespace mv;
 using namespace mv::util;
 
-// returns a selection map between source and target
-static std::optional<const mv::LinkedData*> getSelectionMapping(const mv::Dataset<Points>& source, const mv::Dataset<Points>& target) {
+// This only checks the immedeate parent and is deliberately not recursive
+// We might consider the latter in the future, but might need to cover edge cases
+static bool parentHasSameNumPoints(const mv::Dataset<DatasetImpl> data, const mv::Dataset<Points>& other) {
+    if (data->isDerivedData()) {
+        const auto parent = data->getParent();
+        if (parent->getDataType() == PointType) {
+            const auto parentPoints = mv::Dataset<Points>(parent);
+            return parentPoints->getNumPoints() == other->getNumPoints();
+        }
+    }
+    return false;
+}
+
+using CheckFunc = std::function<bool(const mv::LinkedData& linkedData, const mv::Dataset<Points>& target)>;
+
+static std::optional<const mv::LinkedData*> getSelectionMapping(const mv::Dataset<Points>& source, const mv::Dataset<Points>& target, CheckFunc checkMapping) {
     const std::vector<mv::LinkedData>& linkedDatas = source->getLinkedData();
 
+    if (linkedDatas.empty())
+        return std::nullopt;
+
     // find linked data between source and target OR source and target's parent, if target is derived and they have the same number of points
-    const auto it = std::ranges::find_if(linkedDatas, [&target](const mv::LinkedData& obj) {
-
-        // This only checks the immedeate parent and is deliberately not recursive
-        // We might consider the latter in the future, but would need to cover more edge cases
-        auto isParentOf = [&target](const mv::Dataset<Points>& linkedTarget) -> bool {
-            if (target->isDerivedData()) {
-                const auto parent = target->getParent();
-                if (parent->getDataType() == PointType) {
-                    const auto parentPoints = mv::Dataset<Points>(parent);
-                    return parentPoints->getNumPoints() == target->getNumPoints();
-                }
-            }
-            return false;
-            };
-
-        return obj.getTargetDataset() == target || isParentOf(obj.getTargetDataset());
+    const auto it = std::ranges::find_if(linkedDatas, [&target, &checkMapping](const mv::LinkedData& linkedData) -> bool {
+        return checkMapping(linkedData, target);
         });
 
     if (it != linkedDatas.end()) {
@@ -73,20 +77,36 @@ static std::optional<const mv::LinkedData*> getSelectionMapping(const mv::Datase
     }
 
     return std::nullopt; // nothing found
+
 }
 
-// returns whether there is a selection map from source to target that covers all elements in the target
-static bool checkSelectionMapping(const mv::Dataset<Points>& source, const mv::Dataset<Points>& target) {
+static std::optional<const mv::LinkedData*> getSelectionMappingColorsToPositions(const mv::Dataset<Points>& colors, const mv::Dataset<Points>& positions) {
+    auto testTargetAndParent = [](const mv::LinkedData& linkedData, const mv::Dataset<Points>& positions) -> bool {
+        const Dataset<DatasetImpl> mapTargetData = linkedData.getTargetDataset();
+        return mapTargetData == positions || parentHasSameNumPoints(mapTargetData, positions);
+    };
+    
+    return getSelectionMapping(colors, positions, testTargetAndParent);
+}
 
-    // Check if there is a mapping
-    const auto it = getSelectionMapping(source, target);
+static std::optional<const mv::LinkedData*> getSelectionMappingPositionsToColors(const mv::Dataset<Points>& positions, const mv::Dataset<Points>& colors) {
+    
+    auto testTarget = [](const mv::LinkedData& linkedData, const mv::Dataset<Points>& colors) -> bool {
+        return linkedData.getTargetDataset() == colors;
+        };
 
-    if (!it.has_value() || it.value() == nullptr)
-        return false;
+    auto mapping = getSelectionMapping(positions, colors, testTarget);
 
+    if (!mapping.has_value() && parentHasSameNumPoints(positions, colors)) {
+        mapping = getSelectionMapping(positions->getParent<Points>(), colors, testTarget);
+    }
+
+    return mapping;
+}
+
+static bool checkSurjectiveMapping(const mv::LinkedData& linkedData, const std::uint32_t numPointsInTarget) {
     // Check if the mapping is surjective, i.e. hits all elements in the target
-    const std::map<std::uint32_t, std::vector<std::uint32_t>>& linkedMap = it.value()->getMapping().getMap();
-    const std::uint32_t numPointsInTarget = target->getNumPoints();
+    const std::map<std::uint32_t, std::vector<std::uint32_t>>& linkedMap = linkedData.getMapping().getMap();
 
     std::vector<bool> found(numPointsInTarget, false);
     std::uint32_t count = 0;
@@ -97,13 +117,34 @@ static bool checkSelectionMapping(const mv::Dataset<Points>& source, const mv::D
 
             if (!found[val]) {
                 found[val] = true;
-                if (++count == numPointsInTarget) 
+                if (++count == numPointsInTarget)
                     return true;
             }
         }
     }
 
-    return false;   // The previous loop would have returned early if the entire taget set was covered
+    return false; // The previous loop would have returned early if the entire taget set was covered
+}
+
+// returns whether there is a selection map from source to target that covers all elements in the target
+static bool checkSelectionMapping(const mv::Dataset<Points>& colors, const mv::Dataset<Points>& positions) {
+
+    // Check if there is a mapping
+    auto mapping = getSelectionMappingColorsToPositions(colors, positions);
+    auto numTargetPoints = positions->getNumPoints();
+
+    if (!mapping.has_value() || mapping.value() == nullptr) {
+
+        mapping = getSelectionMappingPositionsToColors(positions, colors);
+        numTargetPoints = colors->getNumPoints();
+
+        if (!mapping.has_value() || mapping.value() == nullptr)
+            return false;
+    }
+
+    const bool mappingCoversData = checkSurjectiveMapping(*(mapping.value()), numTargetPoints);
+
+    return mappingCoversData;
 }
 
 ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
@@ -240,7 +281,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                 // Accept for recoloring:
                 //  1. data with the same number of points
                 //  2. data which is derived from a parent that has the same number of points (e.g. for HSNE embeddings), where we can use global indices for mapping
-                //  3. data which has a fully-covering selection mapping, that we can use for setting colors
+                //  3. data which has a fully-covering selection mapping to the position data (or it's parent), that we can use for setting colors
 
                 // [1. Same number of points]
                 const auto numPointsCandidate   = candidateDataset->getNumPoints();
@@ -252,6 +293,9 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                     /*if*/   _positionDataset->isDerivedData() ?
                     /*then*/ _positionDataset->getSourceDataset<Points>()->getFullDataset<Points>()->getNumPoints() == numPointsCandidate :
                     /*else*/ false;
+
+                const auto& l1 = candidateDataset->getLinkedData();
+                const auto& l2 = _positionDataset->getLinkedData();
 
                 // [3. Full selection mapping]
                 const bool hasSelectionMapping  = checkSelectionMapping(candidateDataset, _positionDataset);
@@ -729,18 +773,17 @@ void ScatterplotPlugin::loadColors(const Dataset<Points>& pointsColor, const std
     if (!pointsColor.isValid())
         return;
 
-    // Generate point scalars for color mapping
-    std::vector<float> scalars;
-
-    pointsColor->extractDataForDimension(scalars, dimensionIndex);
-
     const auto numColorPoints = pointsColor->getNumPoints();
 
-    // If number of points do not match, prefer checking for derived data over selection mapping
+    // Generate point scalars for color mapping
+    std::vector<float> scalars;
+    pointsColor->extractDataForDimension(scalars, dimensionIndex);
+
+    // If number of points do not match, use a mapping
+    // prefer global IDs (for derived data) over selection mapping
     if (numColorPoints != _numPoints) {
 
         try {
-
             const bool hasSameNumPointsAsFull =
                 /*if*/   _positionDataset->isDerivedData() ?
                 /*then*/ _positionSourceDataset->getFullDataset<Points>()->getNumPoints() == numColorPoints :
@@ -758,24 +801,43 @@ void ScatterplotPlugin::loadColors(const Dataset<Points>& pointsColor, const std
 
                 std::swap(localScalars, scalars);
             }
-            else if ( // only get map if derived check failed
-                const auto selectionMapping = getSelectionMapping(pointsColor, _positionDataset);
+            else if ( // mapping from color data set to position data set
+                const auto selectionMapping = getSelectionMappingColorsToPositions(pointsColor, _positionDataset);
                 /* check if valid */ selectionMapping.has_value() && selectionMapping.value() != nullptr
                 )
             {
-                std::vector<float> localScalars(_numPoints, 0);
+                std::vector<float> mappedScalars(_numPoints, 0);
 
                 // Map values like selection
-                const mv::SelectionMap::Map& linkedMap  = selectionMapping.value()->getMapping().getMap();
-                const std::uint32_t numPointsInTarget   = _positionDataset->getNumPoints();
+                const mv::SelectionMap::Map& linkedMap = selectionMapping.value()->getMapping().getMap();
 
-                for (const auto& [fromID, vecOfIDs] : linkedMap) {
-                    for (std::uint32_t toID : vecOfIDs) {
-                        localScalars[toID] = scalars[fromID];
+                for (const auto& [fromColorID, vecOfPositionIDs] : linkedMap) {
+                    for (std::uint32_t toPositionID : vecOfPositionIDs) {
+                        mappedScalars[toPositionID] = scalars[fromColorID];
                     }
                 }
 
-                std::swap(localScalars, scalars);
+                std::swap(mappedScalars, scalars);
+            }
+            else if ( // mapping from position data set to color data set 
+                const auto selectionMapping = getSelectionMappingPositionsToColors(_positionDataset, pointsColor);
+                /* check if valid */ selectionMapping.has_value() && selectionMapping.value() != nullptr
+                )
+            {
+                std::vector<float> mappedScalars(_numPoints, std::numeric_limits<float>::lowest());
+
+                // Map values like selection (in reverse, use first value that occurs)
+                const mv::SelectionMap::Map& linkedMap = selectionMapping.value()->getMapping().getMap();
+
+                for (const auto& [fromPositionID, vecOfColorIDs] : linkedMap) {
+                    if (mappedScalars[fromPositionID] != std::numeric_limits<float>::lowest())
+                        continue;
+                    for (std::uint32_t toColorID : vecOfColorIDs) {
+                        mappedScalars[fromPositionID] = scalars[toColorID];
+                    }
+                }
+
+                std::swap(mappedScalars, scalars);
             }
             else {
                 qWarning("Number of points used for coloring does not match number of points in data, aborting attempt to color plot");
