@@ -77,7 +77,6 @@ static std::optional<const mv::LinkedData*> getSelectionMapping(const mv::Datase
     }
 
     return std::nullopt; // nothing found
-
 }
 
 static std::optional<const mv::LinkedData*> getSelectionMappingColorsToPositions(const mv::Dataset<Points>& colors, const mv::Dataset<Points>& positions) {
@@ -90,22 +89,22 @@ static std::optional<const mv::LinkedData*> getSelectionMappingColorsToPositions
 }
 
 static std::optional<const mv::LinkedData*> getSelectionMappingPositionsToColors(const mv::Dataset<Points>& positions, const mv::Dataset<Points>& colors) {
-    
     auto testTarget = [](const mv::LinkedData& linkedData, const mv::Dataset<Points>& colors) -> bool {
         return linkedData.getTargetDataset() == colors;
         };
 
     auto mapping = getSelectionMapping(positions, colors, testTarget);
 
-    if (!mapping.has_value() && parentHasSameNumPoints(positions, colors)) {
-        mapping = getSelectionMapping(positions->getParent<Points>(), colors, testTarget);
+    if (!mapping.has_value() && parentHasSameNumPoints(positions, positions)) {
+        const auto positionsParent = positions->getParent<Points>();
+        mapping = getSelectionMapping(positionsParent, colors, testTarget);
     }
 
     return mapping;
 }
 
+// Check if the mapping is surjective, i.e. hits all elements in the target
 static bool checkSurjectiveMapping(const mv::LinkedData& linkedData, const std::uint32_t numPointsInTarget) {
-    // Check if the mapping is surjective, i.e. hits all elements in the target
     const std::map<std::uint32_t, std::vector<std::uint32_t>>& linkedMap = linkedData.getMapping().getMap();
 
     std::vector<bool> found(numPointsInTarget, false);
@@ -126,7 +125,8 @@ static bool checkSurjectiveMapping(const mv::LinkedData& linkedData, const std::
     return false; // The previous loop would have returned early if the entire taget set was covered
 }
 
-// returns whether there is a selection map from source to target that covers all elements in the target
+// returns whether there is a selection map from colors to positions or positions to colors (or respective parents)
+// checks whether the mapping covers all elements in the target
 static bool checkSelectionMapping(const mv::Dataset<Points>& colors, const mv::Dataset<Points>& positions) {
 
     // Check if there is a mapping
@@ -293,9 +293,6 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                     /*if*/   _positionDataset->isDerivedData() ?
                     /*then*/ _positionDataset->getSourceDataset<Points>()->getFullDataset<Points>()->getNumPoints() == numPointsCandidate :
                     /*else*/ false;
-
-                const auto& l1 = candidateDataset->getLinkedData();
-                const auto& l2 = _positionDataset->getLinkedData();
 
                 // [3. Full selection mapping]
                 const bool hasSelectionMapping  = checkSelectionMapping(candidateDataset, _positionDataset);
