@@ -1,0 +1,29 @@
+#pragma once
+
+#include <Dataset.h>
+#include <LinkedData.h>
+#include <PointData/PointData.h>
+#include <Set.h>
+
+#include <cstdint>
+#include <functional>
+#include <optional>
+
+// This only checks the immedeate parent and is deliberately not recursive
+// We might consider the latter in the future, but might need to cover edge cases
+bool parentHasSameNumPoints(const mv::Dataset<mv::DatasetImpl> data, const mv::Dataset<Points>& other);
+
+using CheckFunc = std::function<bool(const mv::LinkedData& linkedData, const mv::Dataset<Points>& target)>;
+
+std::optional<const mv::LinkedData*> getSelectionMapping(const mv::Dataset<Points>& source, const mv::Dataset<Points>& target, CheckFunc checkMapping);
+
+std::optional<const mv::LinkedData*> getSelectionMappingColorsToPositions(const mv::Dataset<Points>& colors, const mv::Dataset<Points>& positions);
+
+std::optional<const mv::LinkedData*> getSelectionMappingPositionsToColors(const mv::Dataset<Points>& positions, const mv::Dataset<Points>& colors);
+
+// Check if the mapping is surjective, i.e. hits all elements in the target
+bool checkSurjectiveMapping(const mv::LinkedData& linkedData, const std::uint32_t numPointsInTarget);
+
+// returns whether there is a selection map from colors to positions or positions to colors (or respective parents)
+// checks whether the mapping covers all elements in the target
+bool checkSelectionMapping(const mv::Dataset<Points>& colors, const mv::Dataset<Points>& positions);
