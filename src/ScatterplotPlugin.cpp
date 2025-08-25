@@ -179,7 +179,10 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                 // Accept for recoloring:
                 //  1. data with the same number of points
                 //  2. data which is derived from a parent that has the same number of points (e.g. for HSNE embeddings), where we can use global indices for mapping
-                //  3. data which has a fully-covering selection mapping to the position data (or it's parent), that we can use for setting colors
+                //  3. data which has a fully-covering selection mapping, that we can use for setting colors. Mapping in order of preference:
+                //      a) from color (or it's parent) to position
+                //      b) from color to position (or it's parent)
+                //      c) from source of position to color
 
                 // [1. Same number of points]
                 const auto numPointsCandidate   = candidateDataset->getNumPoints();
@@ -201,7 +204,6 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                 }
 
                 // Accept for resizing and opacity: Only data with the same number of points
-
                 if (hasSameNumPoints) {
                     // Offer the option to use the points dataset as source for points size
                     dropRegions << new DropWidget::DropRegion(this, "Point size", QString("Size %1 points with %2").arg(_positionDataset->text(), candidateDataset->text()), "ruler-horizontal", true, [this, candidateDataset]() {
@@ -673,6 +675,7 @@ void ScatterplotPlugin::loadColors(const Dataset<Points>& pointsColor, const std
 
     // If number of points do not match, use a mapping
     // prefer global IDs (for derived data) over selection mapping
+    // prefer color to position over position to color over source of position to color
     if (numColorPoints != _numPoints) {
 
         std::vector<float> mappedColorScalars(_numPoints, std::numeric_limits<float>::lowest());
