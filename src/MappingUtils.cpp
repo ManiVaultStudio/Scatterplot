@@ -9,8 +9,9 @@
 #include <cstdint>
 #include <functional>
 #include <map>
-#include <optional>
+#include <tuple>
 #include <ranges>
+#include <utility>
 #include <vector>
 
 using CheckFunc = std::function<bool(const mv::LinkedData& linkedData, const mv::Dataset<Points>& target)>;
@@ -24,27 +25,27 @@ static void printLinkedDataNames(const mv::Dataset<Points>& data) {
     }
 }
 
-using CheckFunc = std::function<bool(const mv::LinkedData& linkedData, const mv::Dataset<Points>& target)>;
-
-std::optional<const mv::LinkedData*> getSelectionMapping(const mv::Dataset<Points>& source, const mv::Dataset<Points>& target, CheckFunc checkMapping) {
+std::pair<const mv::LinkedData*, unsigned int> getSelectionMapping(const mv::Dataset<Points>& source, const mv::Dataset<Points>& target, CheckFunc checkMapping) {
     const std::vector<mv::LinkedData>& linkedDatas = source->getLinkedData();
 
     if (linkedDatas.empty())
-        return std::nullopt;
+        return { nullptr, 0 } ;
 
     // find linked data between source and target OR source and target's parent, if target is derived and they have the same number of points
-    const auto it = std::ranges::find_if(linkedDatas, [&target, &checkMapping](const mv::LinkedData& linkedData) -> bool {
-        return checkMapping(linkedData, target);
-        });
-
-    if (it != linkedDatas.end()) {
-        return &(*it);  // return pointer to the found object
+    if (const auto result = std::ranges::find_if(
+            linkedDatas, 
+            [&target, &checkMapping](const mv::LinkedData& linkedData) -> bool {
+                return checkMapping(linkedData, target);
+            });
+        result != linkedDatas.end()) 
+    {
+        return {&(*result), target->getNumPoints() };
     }
 
-    return std::nullopt; // nothing found
+    return { nullptr, 0 };
 }
 
-std::optional<const mv::LinkedData*> getSelectionMappingColorsToPositions(const mv::Dataset<Points>& colors, const mv::Dataset<Points>& positions) {
+std::pair<const mv::LinkedData*, unsigned int> getSelectionMappingColorsToPositions(const mv::Dataset<Points>& colors, const mv::Dataset<Points>& positions) {
     auto testTargetAndParent = [](const mv::LinkedData& linkedData, const mv::Dataset<Points>& positions) -> bool {
         const mv::Dataset<mv::DatasetImpl> mapTargetData = linkedData.getTargetDataset();
         return mapTargetData == positions || parentHasSameNumPoints(mapTargetData, positions);
@@ -53,19 +54,20 @@ std::optional<const mv::LinkedData*> getSelectionMappingColorsToPositions(const 
     return getSelectionMapping(colors, positions, testTargetAndParent);
 }
 
-std::optional<const mv::LinkedData*> getSelectionMappingPositionsToColors(const mv::Dataset<Points>& positions, const mv::Dataset<Points>& colors) {
+std::pair<const mv::LinkedData*, unsigned int> getSelectionMappingPositionsToColors(const mv::Dataset<Points>& positions, const mv::Dataset<Points>& colors) {
     auto testTarget = [](const mv::LinkedData& linkedData, const mv::Dataset<Points>& colors) -> bool {
         return linkedData.getTargetDataset() == colors;
         };
 
-    auto mapping = getSelectionMapping(positions, colors, testTarget);
+    auto [mapping, numTargetPoints] = getSelectionMapping(positions, colors, testTarget);
 
-    if (!mapping.has_value() && parentHasSameNumPoints(positions, positions)) {
+    if (mapping && parentHasSameNumPoints(positions, positions)) {
         const auto positionsParent = positions->getParent<Points>();
-        mapping = getSelectionMapping(positionsParent, colors, testTarget);
+        std::tie(mapping, numTargetPoints) = getSelectionMapping(positionsParent, colors, testTarget);
     }
 
-    return mapping;
+    return { mapping, numTargetPoints };
+}
 }
 
 bool checkSurjectiveMapping(const mv::LinkedData& linkedData, const std::uint32_t numPointsInTarget) {
@@ -95,16 +97,15 @@ bool checkSelectionMapping(const mv::Dataset<Points>& colors, const mv::Dataset<
     auto mapping = getSelectionMappingColorsToPositions(colors, positions);
     auto numTargetPoints = positions->getNumPoints();
 
-    if (!mapping.has_value() || mapping.value() == nullptr) {
+    // Check if there is a mapping
+    auto [mapping, numTargetPoints] = getSelectionMappingColorsToPositions(colors, positions);
 
-        mapping = getSelectionMappingPositionsToColors(positions, colors);
-        numTargetPoints = colors->getNumPoints();
+    if (!mapping)
+        std::tie(mapping, numTargetPoints) = getSelectionMappingPositionsToColors(positions, colors);
 
-        if (!mapping.has_value() || mapping.value() == nullptr)
-            return false;
-    }
 
-    const bool mappingCoversData = checkSurjectiveMapping(*(mapping.value()), numTargetPoints);
+    if (!mapping)
+        return false;
 
-    return mappingCoversData;
+    return checkSurjectiveMapping(*mapping, numTargetPoints);
 }

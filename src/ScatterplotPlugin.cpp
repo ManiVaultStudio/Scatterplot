@@ -693,14 +693,14 @@ void ScatterplotPlugin::loadColors(const Dataset<Points>& pointsColor, const std
                 std::swap(localScalars, scalars);
             }
             else if ( // mapping from color data set to position data set
-                const auto selectionMapping = getSelectionMappingColorsToPositions(pointsColor, _positionDataset);
-                /* check if valid */ selectionMapping.has_value() && selectionMapping.value() != nullptr
+                const auto [selectionMapping, numPointsTarget] = getSelectionMappingColorsToPositions(pointsColor, _positionDataset);
+                /* check if valid */ selectionMapping != nullptr // && numPointsTarget == _numPoints
                 )
             {
                 std::vector<float> mappedScalars(_numPoints, 0);
 
                 // Map values like selection
-                const mv::SelectionMap::Map& linkedMap = selectionMapping.value()->getMapping().getMap();
+                const mv::SelectionMap::Map& linkedMap = selectionMapping->getMapping().getMap();
 
                 for (const auto& [fromColorID, vecOfPositionIDs] : linkedMap) {
                     for (std::uint32_t toPositionID : vecOfPositionIDs) {
@@ -711,14 +711,14 @@ void ScatterplotPlugin::loadColors(const Dataset<Points>& pointsColor, const std
                 std::swap(mappedScalars, scalars);
             }
             else if ( // mapping from position data set to color data set 
-                const auto selectionMapping = getSelectionMappingPositionsToColors(_positionDataset, pointsColor);
-                /* check if valid */ selectionMapping.has_value() && selectionMapping.value() != nullptr
+                const auto [selectionMapping, numPointsTarget] = getSelectionMappingPositionsToColors(_positionDataset, pointsColor);
+                /* check if valid */ selectionMapping != nullptr // && numPointsTarget == _numPoints
                 )
             {
                 std::vector<float> mappedScalars(_numPoints, std::numeric_limits<float>::lowest());
 
                 // Map values like selection (in reverse, use first value that occurs)
-                const mv::SelectionMap::Map& linkedMap = selectionMapping.value()->getMapping().getMap();
+                const mv::SelectionMap::Map& linkedMap = selectionMapping->getMapping().getMap();
 
                 for (const auto& [fromPositionID, vecOfColorIDs] : linkedMap) {
                     if (mappedScalars[fromPositionID] != std::numeric_limits<float>::lowest())
