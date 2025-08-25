@@ -16,15 +16,6 @@
 
 using CheckFunc = std::function<bool(const mv::LinkedData& linkedData, const mv::Dataset<Points>& target)>;
 
-static void printLinkedDataNames(const mv::Dataset<Points>& data) {
-    const std::vector<mv::LinkedData>& linkedFromColors = data->getLinkedData();
-    if (!linkedFromColors.empty()) {
-        qDebug() << data->getGuiName();
-        qDebug() << linkedFromColors[0].getSourceDataSet()->getGuiName();
-        qDebug() << linkedFromColors[0].getTargetDataset()->getGuiName();
-    }
-}
-
 std::pair<const mv::LinkedData*, unsigned int> getSelectionMapping(const mv::Dataset<Points>& source, const mv::Dataset<Points>& target, CheckFunc checkMapping) {
     const std::vector<mv::LinkedData>& linkedDatas = source->getLinkedData();
 
@@ -103,9 +94,6 @@ bool checkSurjectiveMapping(const mv::LinkedData& linkedData, const std::uint32_
 }
 
 bool checkSelectionMapping(const mv::Dataset<Points>& colors, const mv::Dataset<Points>& positions) {
-
-    printLinkedDataNames(colors);
-    printLinkedDataNames(positions);
 
     // Check if there is a mapping
     auto [mapping, numTargetPoints] = getSelectionMappingColorsToPositions(colors, positions);
