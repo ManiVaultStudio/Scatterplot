@@ -14,9 +14,7 @@
 #include <utility>
 #include <vector>
 
-using CheckFunc = std::function<bool(const mv::LinkedData& linkedData, const mv::Dataset<Points>& target)>;
-
-std::pair<const mv::LinkedData*, unsigned int> getSelectionMapping(const mv::Dataset<Points>& source, const mv::Dataset<Points>& target, CheckFunc checkMapping) {
+std::pair<const mv::LinkedData*, unsigned int> getSelectionMapping(const mv::Dataset<Points>& source, const mv::Dataset<Points>& target, LinkedDataCondition checkMapping) {
     const std::vector<mv::LinkedData>& linkedDatas = source->getLinkedData();
 
     if (linkedDatas.empty())

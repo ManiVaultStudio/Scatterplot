@@ -31,14 +31,24 @@ inline bool fullSourceHasSameNumPoints(const mv::Dataset<mv::DatasetImpl> data, 
     return data->getSourceDataset<Points>()->getFullDataset<Points>()->getNumPoints() == other->getNumPoints();
 }
 
-using CheckFunc = std::function<bool(const mv::LinkedData& linkedData, const mv::Dataset<Points>& target)>;
+using LinkedDataCondition = std::function<bool(const mv::LinkedData& linkedData, const mv::Dataset<Points>& target)>;
 
-std::pair<const mv::LinkedData*, unsigned int> getSelectionMapping(const mv::Dataset<Points>& source, const mv::Dataset<Points>& target, CheckFunc checkMapping);
+/*  Returns a mapping (linked data) from source that fulfils a given condition based on target, e.g.
+    auto checkMapping = [](const mv::LinkedData& linkedData, const mv::Dataset<Points>& target) -> bool {
+        return linkedData.getTargetDataset() == target;
+        };
+    This function will return the first match of the condition
+*/
+std::pair<const mv::LinkedData*, unsigned int> getSelectionMapping(const mv::Dataset<Points>& source, const mv::Dataset<Points>& target, LinkedDataCondition checkMapping);
 
+// Returns a mapping (linked data) from colors whose target is positions or whose target's parent has the same number of points as positions
 std::pair<const mv::LinkedData*, unsigned int> getSelectionMappingColorsToPositions(const mv::Dataset<Points>& colors, const mv::Dataset<Points>& positions);
 
+// Returns a mapping (linked data) from positions whose target is colors or 
+//  a mapping from positions' parent whose target is colors if the number of data points match 
 std::pair<const mv::LinkedData*, unsigned int> getSelectionMappingPositionsToColors(const mv::Dataset<Points>& positions, const mv::Dataset<Points>& colors);
 
+// Returns a mapping (linked data) from positions' source data whose target is colors 
 std::pair<const mv::LinkedData*, unsigned int> getSelectionMappingPositionSourceToColors(const mv::Dataset<Points>& positions, const mv::Dataset<Points>& colors);
 
 // Check if the mapping is surjective, i.e. hits all elements in the target
