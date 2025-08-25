@@ -724,6 +724,33 @@ void ScatterplotPlugin::loadColors(const Dataset<Points>& pointsColor, const std
                 }
 
             }
+            else if ( // mapping from position data set to color data set 
+                const auto [selectionMapping, numPointsTarget] = getSelectionMappingPositionSourceToColors(_positionDataset, pointsColor);
+                /* check if valid */ selectionMapping != nullptr // && numPointsTarget == _numPoints
+                )
+            {   // THIS DOES NOT WORK YET
+
+                // selectionMapping is from full source data (scVI) to pointsColor (means)
+                // we need to use both the global indices and linked data mapping
+
+                const mv::SelectionMap::Map& linkedMap = selectionMapping->getMapping().getMap();
+
+                std::vector<std::uint32_t> globalIndices;
+                _positionDataset->getGlobalIndices(globalIndices);
+
+                for (std::int32_t localColorIndex = 0; localColorIndex < globalIndices.size(); localColorIndex++) {
+
+                    const auto& mappedIndices = linkedMap.at(globalIndices[localColorIndex]);   // from full source (parent) to means
+
+                    for (const auto& mappedIndex : mappedIndices) {
+                        if (mappedScalars[mappedIndex] != std::numeric_limits<float>::lowest())
+                            continue;
+
+                        mappedScalars[localColorIndex] = scalars[mappedIndex];
+                    }
+                }
+
+            }
             else {
                 qWarning("Number of points used for coloring does not match number of points in data, aborting attempt to color plot");
                 return;

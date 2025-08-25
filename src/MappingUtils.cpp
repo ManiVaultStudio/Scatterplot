@@ -68,6 +68,17 @@ std::pair<const mv::LinkedData*, unsigned int> getSelectionMappingPositionsToCol
 
     return { mapping, numTargetPoints };
 }
+
+std::pair<const mv::LinkedData*, unsigned int> getSelectionMappingPositionSourceToColors(const mv::Dataset<Points>& positions, const mv::Dataset<Points>& colors) {
+    if (!positions->isDerivedData())
+        return { nullptr, 0 };
+
+    const auto fullSourceData = positions->getSourceDataset<Points>()->getFullDataset<Points>();
+
+    if(!fullSourceData.isValid())
+        return { nullptr, 0 };
+
+    return getSelectionMappingPositionsToColors(fullSourceData, colors);
 }
 
 bool checkSurjectiveMapping(const mv::LinkedData& linkedData, const std::uint32_t numPointsInTarget) {
@@ -93,9 +104,8 @@ bool checkSurjectiveMapping(const mv::LinkedData& linkedData, const std::uint32_
 
 bool checkSelectionMapping(const mv::Dataset<Points>& colors, const mv::Dataset<Points>& positions) {
 
-    // Check if there is a mapping
-    auto mapping = getSelectionMappingColorsToPositions(colors, positions);
-    auto numTargetPoints = positions->getNumPoints();
+    printLinkedDataNames(colors);
+    printLinkedDataNames(positions);
 
     // Check if there is a mapping
     auto [mapping, numTargetPoints] = getSelectionMappingColorsToPositions(colors, positions);
@@ -103,6 +113,8 @@ bool checkSelectionMapping(const mv::Dataset<Points>& colors, const mv::Dataset<
     if (!mapping)
         std::tie(mapping, numTargetPoints) = getSelectionMappingPositionsToColors(positions, colors);
 
+    if (!mapping)
+        std::tie(mapping, numTargetPoints) = getSelectionMappingPositionSourceToColors(positions, colors);
 
     if (!mapping)
         return false;

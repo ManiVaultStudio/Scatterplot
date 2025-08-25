@@ -39,6 +39,8 @@ std::pair<const mv::LinkedData*, unsigned int> getSelectionMappingColorsToPositi
 
 std::pair<const mv::LinkedData*, unsigned int> getSelectionMappingPositionsToColors(const mv::Dataset<Points>& positions, const mv::Dataset<Points>& colors);
 
+std::pair<const mv::LinkedData*, unsigned int> getSelectionMappingPositionSourceToColors(const mv::Dataset<Points>& positions, const mv::Dataset<Points>& colors);
+
 // Check if the mapping is surjective, i.e. hits all elements in the target
 bool checkSurjectiveMapping(const mv::LinkedData& linkedData, const std::uint32_t numPointsInTarget);
 
