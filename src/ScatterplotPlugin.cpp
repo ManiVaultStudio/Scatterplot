@@ -33,10 +33,8 @@
 #include <algorithm>
 #include <cassert>
 #include <exception>
-#include <functional>
 #include <map>
-#include <optional>
-#include <ranges>
+#include <stdexcept>
 #include <vector>
 
 #define VIEW_SAMPLING_HTML
@@ -669,109 +667,108 @@ void ScatterplotPlugin::loadColors(const Dataset<Points>& pointsColor, const std
 
     const auto numColorPoints = pointsColor->getNumPoints();
 
-    // Generate point scalars for color mapping
-    std::vector<float> scalars;
-    pointsColor->extractDataForDimension(scalars, dimensionIndex);
+    // Generate point colorScalars for color mapping
+    std::vector<float> colorScalars = {};
+    pointsColor->extractDataForDimension(colorScalars, dimensionIndex);
 
     // If number of points do not match, use a mapping
     // prefer global IDs (for derived data) over selection mapping
     if (numColorPoints != _numPoints) {
 
-        std::vector<float> mappedScalars(_numPoints, std::numeric_limits<float>::lowest());
+        std::vector<float> mappedColorScalars(_numPoints, std::numeric_limits<float>::lowest());
 
         try {
             const bool hasSameNumPointsAsFull = fullSourceHasSameNumPoints(_positionDataset, pointsColor);
 
             if (hasSameNumPointsAsFull) {
-                std::vector<std::uint32_t> globalIndices;
+                std::vector<std::uint32_t> globalIndices = {};
                 _positionDataset->getGlobalIndices(globalIndices);
 
-                for (std::int32_t localColorIndex = 0; localColorIndex < globalIndices.size(); localColorIndex++) {
-                    mappedScalars[localColorIndex] = scalars[globalIndices[localColorIndex]];
+                for (std::int32_t localIndex = 0; localIndex < globalIndices.size(); localIndex++) {
+                    mappedColorScalars[localIndex] = colorScalars[globalIndices[localIndex]];
                 }
 
             }
             else if ( // mapping from color data set to position data set
                 const auto [selectionMapping, numPointsTarget] = getSelectionMappingColorsToPositions(pointsColor, _positionDataset);
-                /* check if valid */ selectionMapping != nullptr // && numPointsTarget == _numPoints
+                /* check if valid */ selectionMapping != nullptr && numPointsTarget == _numPoints
                 )
             {
                 // Map values like selection
-                const mv::SelectionMap::Map& linkedMap = selectionMapping->getMapping().getMap();
+                const mv::SelectionMap::Map& mapColorsToPositions = selectionMapping->getMapping().getMap();
 
-                for (const auto& [fromColorID, vecOfPositionIDs] : linkedMap) {
+                for (const auto& [fromColorID, vecOfPositionIDs] : mapColorsToPositions) {
                     for (std::uint32_t toPositionID : vecOfPositionIDs) {
-                        mappedScalars[toPositionID] = scalars[fromColorID];
+                        mappedColorScalars[toPositionID] = colorScalars[fromColorID];
                     }
                 }
 
             }
             else if ( // mapping from position data set to color data set 
                 const auto [selectionMapping, numPointsTarget] = getSelectionMappingPositionsToColors(_positionDataset, pointsColor);
-                /* check if valid */ selectionMapping != nullptr // && numPointsTarget == _numPoints
+                /* check if valid */ selectionMapping != nullptr && numPointsTarget == numColorPoints
                 )
             {
                 
                 // Map values like selection (in reverse, use first value that occurs)
-                const mv::SelectionMap::Map& linkedMap = selectionMapping->getMapping().getMap();
+                const mv::SelectionMap::Map& mapPositionsToColors = selectionMapping->getMapping().getMap();
 
-                for (const auto& [fromPositionID, vecOfColorIDs] : linkedMap) {
-                    if (mappedScalars[fromPositionID] != std::numeric_limits<float>::lowest())
+                for (const auto& [fromPositionID, vecOfColorIDs] : mapPositionsToColors) {
+                    if (mappedColorScalars[fromPositionID] != std::numeric_limits<float>::lowest())
                         continue;
                     for (std::uint32_t toColorID : vecOfColorIDs) {
-                        mappedScalars[fromPositionID] = scalars[toColorID];
+                        mappedColorScalars[fromPositionID] = colorScalars[toColorID];
                     }
                 }
 
             }
-            else if ( // mapping from position data set to color data set 
+            else if ( // mapping from source of position data set to color data set 
                 const auto [selectionMapping, numPointsTarget] = getSelectionMappingPositionSourceToColors(_positionDataset, pointsColor);
-                /* check if valid */ selectionMapping != nullptr // && numPointsTarget == _numPoints
+                /* check if valid */ selectionMapping != nullptr && numPointsTarget == numColorPoints
                 )
-            {   // THIS DOES NOT WORK YET
-
-                // selectionMapping is from full source data (scVI) to pointsColor (means)
-                // we need to use both the global indices and linked data mapping
-
-                const mv::SelectionMap::Map& linkedMap = selectionMapping->getMapping().getMap();
-
-                std::vector<std::uint32_t> globalIndices;
+            {
+                // the selection map is from full source data of positions data to pointsColor
+                // we need to use both the global indices of the positions (i.e. in the source) and the linked data mapping
+                const mv::SelectionMap::Map& mapGlobalToColors = selectionMapping->getMapping().getMap();
+                std::vector<std::uint32_t> globalIndices = {};
                 _positionDataset->getGlobalIndices(globalIndices);
 
-                for (std::int32_t localColorIndex = 0; localColorIndex < globalIndices.size(); localColorIndex++) {
+                for (std::int32_t localIndex = 0; localIndex < globalIndices.size(); localIndex++) {
 
-                    const auto& mappedIndices = linkedMap.at(globalIndices[localColorIndex]);   // from full source (parent) to means
+                    if (mappedColorScalars[localIndex] != std::numeric_limits<float>::lowest())
+                        continue;
 
-                    for (const auto& mappedIndex : mappedIndices) {
-                        if (mappedScalars[mappedIndex] != std::numeric_limits<float>::lowest())
-                            continue;
+                    const auto& indxColors = mapGlobalToColors.at(globalIndices[localIndex]);   // from full source (parent) to colorDataset
 
-                        mappedScalars[localColorIndex] = scalars[mappedIndex];
+                    for (const auto& indColors : indxColors) {
+                        mappedColorScalars[localIndex] = colorScalars[indColors];
                     }
                 }
 
             }
             else {
-                qWarning("Number of points used for coloring does not match number of points in data, aborting attempt to color plot");
-                return;
+                throw std::runtime_error("Coloring data set does not match position data set in a known way, aborting attempt to color plot");
             }
 
-            std::swap(mappedScalars, scalars);
         }
         catch (const std::exception& e) {
-           qDebug() << "ScatterplotPlugin::loadColors: mapping failed -> " << e.what();
+            qDebug() << "ScatterplotPlugin::loadColors: mapping failed -> " << e.what();
+            _settingsAction.getColoringAction().getColorByAction().setCurrentIndex(0);  // reset to color by constant
             return;
         }
         catch (...) {
             qDebug() << "ScatterplotPlugin::loadColors: mapping failed for an unknown reason.";
+            _settingsAction.getColoringAction().getColorByAction().setCurrentIndex(0);  // reset to color by constant
             return;
         }
+
+        std::swap(mappedColorScalars, colorScalars);
     }
 
-    assert(scalars.size() == _numPoints);
+    assert(colorScalars.size() == _numPoints);
 
-    // Assign scalars and scalar effect
-    _scatterPlotWidget->setScalars(scalars);
+    // Assign colorScalars and scalar effect
+    _scatterPlotWidget->setScalars(colorScalars);
     _scatterPlotWidget->setScalarEffect(PointEffect::Color);
 
     _settingsAction.getColoringAction().updateColorMapActionScalarRange();
