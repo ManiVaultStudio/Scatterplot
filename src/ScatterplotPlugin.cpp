@@ -691,7 +691,10 @@ void ScatterplotPlugin::loadColors(const Dataset<Points>& pointsColor, const std
             }
             else if ( // mapping from color data set to position data set
                 const auto [selectionMapping, numPointsTarget] = getSelectionMappingColorsToPositions(pointsColor, _positionDataset);
-                /* check if valid */ selectionMapping != nullptr && numPointsTarget == _numPoints
+                /* check if valid */ 
+                selectionMapping != nullptr && 
+                numPointsTarget == _numPoints &&
+                checkSurjectiveMapping(*selectionMapping, numPointsTarget)
                 )
             {
                 // Map values like selection
@@ -706,10 +709,12 @@ void ScatterplotPlugin::loadColors(const Dataset<Points>& pointsColor, const std
             }
             else if ( // mapping from position data set to color data set 
                 const auto [selectionMapping, numPointsTarget] = getSelectionMappingPositionsToColors(_positionDataset, pointsColor);
-                /* check if valid */ selectionMapping != nullptr && numPointsTarget == numColorPoints
+                /* check if valid */ 
+                selectionMapping != nullptr &&
+                numPointsTarget == numColorPoints &&
+                checkSurjectiveMapping(*selectionMapping, numPointsTarget)
                 )
             {
-                
                 // Map values like selection (in reverse, use first value that occurs)
                 const mv::SelectionMap::Map& mapPositionsToColors = selectionMapping->getMapping().getMap();
 
@@ -724,7 +729,10 @@ void ScatterplotPlugin::loadColors(const Dataset<Points>& pointsColor, const std
             }
             else if ( // mapping from source of position data set to color data set 
                 const auto [selectionMapping, numPointsTarget] = getSelectionMappingPositionSourceToColors(_positionDataset, pointsColor);
-                /* check if valid */ selectionMapping != nullptr && numPointsTarget == numColorPoints
+                /* check if valid */ 
+                selectionMapping != nullptr && 
+                numPointsTarget == numColorPoints &&
+                checkSurjectiveMapping(*selectionMapping, numPointsTarget)
                 )
             {
                 // the selection map is from full source data of positions data to pointsColor

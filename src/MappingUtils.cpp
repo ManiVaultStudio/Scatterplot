@@ -107,5 +107,5 @@ bool checkSelectionMapping(const mv::Dataset<Points>& colors, const mv::Dataset<
     if (!mapping)
         return false;
 
-    return checkSurjectiveMapping(*mapping, numTargetPoints);
+    return true;
 }
