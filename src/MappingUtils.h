@@ -11,7 +11,25 @@
 
 // This only checks the immedeate parent and is deliberately not recursive
 // We might consider the latter in the future, but might need to cover edge cases
-bool parentHasSameNumPoints(const mv::Dataset<mv::DatasetImpl> data, const mv::Dataset<Points>& other);
+inline bool parentHasSameNumPoints(const mv::Dataset<mv::DatasetImpl> data, const mv::Dataset<Points>& other) {
+    if (!data->isDerivedData())
+        return false;
+
+    const auto parent = data->getParent();
+    if (parent->getDataType() != PointType)
+        return false;
+
+    const auto parentPoints = mv::Dataset<Points>(parent);
+    return parentPoints->getNumPoints() == other->getNumPoints();
+}
+
+// Is the data derived and does it's full source data have same number of points as the other data
+inline bool fullSourceHasSameNumPoints(const mv::Dataset<mv::DatasetImpl> data, const mv::Dataset<Points>& other) {
+    if (!data->isDerivedData())
+        return false;
+
+    return data->getSourceDataset<Points>()->getFullDataset<Points>()->getNumPoints() == other->getNumPoints();
+}
 
 using CheckFunc = std::function<bool(const mv::LinkedData& linkedData, const mv::Dataset<Points>& target)>;
 

@@ -189,10 +189,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                 const bool hasSameNumPoints     = numPointsPosition == numPointsCandidate;
 
                 // [2. Derived from a parent]
-                const bool hasSameNumPointsAsFull = 
-                    /*if*/   _positionDataset->isDerivedData() ?
-                    /*then*/ _positionDataset->getSourceDataset<Points>()->getFullDataset<Points>()->getNumPoints() == numPointsCandidate :
-                    /*else*/ false;
+                const bool hasSameNumPointsAsFull = fullSourceHasSameNumPoints(_positionDataset, candidateDataset);
 
                 // [3. Full selection mapping]
                 const bool hasSelectionMapping  = checkSelectionMapping(candidateDataset, _positionDataset);
@@ -681,10 +678,7 @@ void ScatterplotPlugin::loadColors(const Dataset<Points>& pointsColor, const std
     if (numColorPoints != _numPoints) {
 
         try {
-            const bool hasSameNumPointsAsFull =
-                /*if*/   _positionDataset->isDerivedData() ?
-                /*then*/ _positionSourceDataset->getFullDataset<Points>()->getNumPoints() == numColorPoints :
-                /*else*/ false;
+            const bool hasSameNumPointsAsFull = fullSourceHasSameNumPoints(_positionDataset, pointsColor);
 
             if (hasSameNumPointsAsFull) {
                 std::vector<std::uint32_t> globalIndices;

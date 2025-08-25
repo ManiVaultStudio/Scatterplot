@@ -13,15 +13,15 @@
 #include <ranges>
 #include <vector>
 
-bool parentHasSameNumPoints(const mv::Dataset<mv::DatasetImpl> data, const mv::Dataset<Points>& other) {
-    if (data->isDerivedData()) {
-        const auto parent = data->getParent();
-        if (parent->getDataType() == PointType) {
-            const auto parentPoints = mv::Dataset<Points>(parent);
-            return parentPoints->getNumPoints() == other->getNumPoints();
-        }
+using CheckFunc = std::function<bool(const mv::LinkedData& linkedData, const mv::Dataset<Points>& target)>;
+
+static void printLinkedDataNames(const mv::Dataset<Points>& data) {
+    const std::vector<mv::LinkedData>& linkedFromColors = data->getLinkedData();
+    if (!linkedFromColors.empty()) {
+        qDebug() << data->getGuiName();
+        qDebug() << linkedFromColors[0].getSourceDataSet()->getGuiName();
+        qDebug() << linkedFromColors[0].getTargetDataset()->getGuiName();
     }
-    return false;
 }
 
 using CheckFunc = std::function<bool(const mv::LinkedData& linkedData, const mv::Dataset<Points>& target)>;
