@@ -677,6 +677,8 @@ void ScatterplotPlugin::loadColors(const Dataset<Points>& pointsColor, const std
     // prefer global IDs (for derived data) over selection mapping
     if (numColorPoints != _numPoints) {
 
+        std::vector<float> mappedScalars(_numPoints, std::numeric_limits<float>::lowest());
+
         try {
             const bool hasSameNumPointsAsFull = fullSourceHasSameNumPoints(_positionDataset, pointsColor);
 
@@ -684,21 +686,16 @@ void ScatterplotPlugin::loadColors(const Dataset<Points>& pointsColor, const std
                 std::vector<std::uint32_t> globalIndices;
                 _positionDataset->getGlobalIndices(globalIndices);
 
-                std::vector<float> localScalars(_numPoints, 0);
-                std::int32_t localColorIndex = 0;
+                for (std::int32_t localColorIndex = 0; localColorIndex < globalIndices.size(); localColorIndex++) {
+                    mappedScalars[localColorIndex] = scalars[globalIndices[localColorIndex]];
+                }
 
-                for (const auto& globalIndex : globalIndices)
-                    localScalars[localColorIndex++] = scalars[globalIndex];
-
-                std::swap(localScalars, scalars);
             }
             else if ( // mapping from color data set to position data set
                 const auto [selectionMapping, numPointsTarget] = getSelectionMappingColorsToPositions(pointsColor, _positionDataset);
                 /* check if valid */ selectionMapping != nullptr // && numPointsTarget == _numPoints
                 )
             {
-                std::vector<float> mappedScalars(_numPoints, 0);
-
                 // Map values like selection
                 const mv::SelectionMap::Map& linkedMap = selectionMapping->getMapping().getMap();
 
@@ -708,15 +705,13 @@ void ScatterplotPlugin::loadColors(const Dataset<Points>& pointsColor, const std
                     }
                 }
 
-                std::swap(mappedScalars, scalars);
             }
             else if ( // mapping from position data set to color data set 
                 const auto [selectionMapping, numPointsTarget] = getSelectionMappingPositionsToColors(_positionDataset, pointsColor);
                 /* check if valid */ selectionMapping != nullptr // && numPointsTarget == _numPoints
                 )
             {
-                std::vector<float> mappedScalars(_numPoints, std::numeric_limits<float>::lowest());
-
+                
                 // Map values like selection (in reverse, use first value that occurs)
                 const mv::SelectionMap::Map& linkedMap = selectionMapping->getMapping().getMap();
 
@@ -728,13 +723,13 @@ void ScatterplotPlugin::loadColors(const Dataset<Points>& pointsColor, const std
                     }
                 }
 
-                std::swap(mappedScalars, scalars);
             }
             else {
                 qWarning("Number of points used for coloring does not match number of points in data, aborting attempt to color plot");
                 return;
             }
 
+            std::swap(mappedScalars, scalars);
         }
         catch (const std::exception& e) {
            qDebug() << "ScatterplotPlugin::loadColors: mapping failed -> " << e.what();
