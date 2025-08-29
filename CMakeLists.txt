@@ -40,6 +40,8 @@ find_package(ManiVault COMPONENTS Core PointData ClusterData ColorData ImageData
 set(PLUGIN
     src/ScatterplotPlugin.h
     src/ScatterplotPlugin.cpp
+    src/MappingUtils.h
+    src/MappingUtils.cpp
 )
 
 set(UI
