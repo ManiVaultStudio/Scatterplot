@@ -24,25 +24,35 @@ jobs:
       - name: Install Python dependencies
         run: pip install requests pyyaml
 
-      - name: Get repo name and run script
+      - name: Get repo name (lowercase) and run script
         run: |
-          REPO_NAME=$(basename "${{ github.repository }}")
+          REPO_NAME=$(basename "${{ github.repository }}")          # e.g., Scatterplot
+          REPO_NAME_LC="${REPO_NAME,,}"                             # scatterplot
           echo "Running from repo: $REPO_NAME"
+          echo "REPO_NAME=$REPO_NAME"       >> $GITHUB_ENV          # export for later steps
+          echo "REPO_NAME_LC=$REPO_NAME_LC" >> $GITHUB_ENV
           python scripts/update_plugininfo.py "$REPO_NAME"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Clone manivaultstudio.github.io (feature branch)
         run: |
-          git clone --branch ft/test-plugin-push https://x-access-token:${{ secrets.TEST_GH_PAGES_DEPLOY_TOKEN }}@github.com/ManiVaultStudio/manivaultstudio.github.io.git target-repo
-          REPO_NAME=$(basename "${{ github.repository }}")
-          cp "$REPO_NAME.md" target-repo/_plugins/
+          git clone --branch ft/test-plugin-push \
+            https://x-access-token:${{ secrets.TEST_GH_PAGES_DEPLOY_TOKEN }}@github.com/ManiVaultStudio/manivaultstudio.github.io.git \
+            target-repo
+          cp "${REPO_NAME_LC}.md" target-repo/_plugins/
+          if [ -f "target-repo/_plugins/${REPO_NAME_LC}.md" ]; then
+            echo "Target file ${REPO_NAME_LC}.md found in _plugins/"
+          else
+            echo "Target file ${REPO_NAME_LC}.md not found in _plugins/"
+            exit 1
+          fi             # quick sanity
 
       - name: Commit and push
         run: |
           cd target-repo
           git config user.name "ManiVault Bot"
           git config user.email "bot@manivault.studio"
-          git add _plugins/
-          git commit -m "🔄 Auto-update plugin card from $REPO_NAME"
+          git add "_plugins/${REPO_NAME_LC}.md"
+          git commit -m "🔄 Auto-update plugin card from ${REPO_NAME}"
           git push origin ft/test-plugin-push
