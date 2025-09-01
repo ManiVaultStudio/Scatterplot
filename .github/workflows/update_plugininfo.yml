@@ -34,7 +34,7 @@ jobs:
 
       - name: Clone manivaultstudio.github.io (feature branch)
         run: |
-          git clone --branch ft/test-plugin-push https://x-access-token:${{ secrets.GH_PAGES_DEPLOY_TOKEN }}@github.com/ManiVaultStudio/manivaultstudio.github.io.git target-repo
+          git clone --branch ft/test-plugin-push https://x-access-token:${{ secrets.TEST_GH_PAGES_DEPLOY_TOKEN }}@github.com/ManiVaultStudio/manivaultstudio.github.io.git target-repo
           REPO_NAME=$(basename "${{ github.repository }}")
           cp "$REPO_NAME.md" target-repo/_plugins/
 
