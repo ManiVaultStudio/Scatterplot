@@ -277,28 +277,10 @@ void ScatterplotPlugin::init()
     layout->addWidget(_primaryToolbarAction.createWidget(&getWidget()));
     layout->addWidget(_scatterPlotWidget, 100);
 
-    auto navigationWidget = new QWidget();
-    auto navigationLayout = new QHBoxLayout();
-
-    navigationLayout->setContentsMargins(4, 4, 4, 4);
-
-    navigationLayout->addStretch(1);
-    {
-        auto renderersNavigationGroupAction = new HorizontalGroupAction(this, "Navigation");
-
-        renderersNavigationGroupAction->setShowLabels(false);
-
-        renderersNavigationGroupAction->addAction(const_cast<NavigationAction*>(&_scatterPlotWidget->getPointRendererNavigator().getNavigationAction()));
-
-        _scatterPlotWidget->getPointRendererNavigator().getNavigationAction().setParent(&_settingsAction);
-
-        navigationLayout->addWidget(renderersNavigationGroupAction->createWidget(&getWidget()));
+    if (auto navigationWidget = _scatterPlotWidget->getPointRendererNavigator().getNavigationAction().createWidget(&getWidget())) {
+        layout->addWidget(navigationWidget);
+        layout->setAlignment(navigationWidget, Qt::AlignCenter);
     }
-    navigationLayout->addStretch(1);
-
-    navigationWidget->setLayout(navigationLayout);
-
-    layout->addWidget(navigationWidget);
 
     getWidget().setLayout(layout);
 
