@@ -262,6 +262,10 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     getSamplerAction().getEnabledAction().setChecked(false);
 
     getLearningCenterAction().addVideos(QStringList({ "Practitioner", "Developer" }));
+
+    setOverlayActionsTargetWidget(_scatterPlotWidget);
+
+    
 }
 
 ScatterplotPlugin::~ScatterplotPlugin()
@@ -270,6 +274,8 @@ ScatterplotPlugin::~ScatterplotPlugin()
 
 void ScatterplotPlugin::init()
 {
+    getWidget().setMouseTracking(true);
+
     auto layout = new QVBoxLayout();
 
     layout->setContentsMargins(0, 0, 0, 0);
@@ -357,6 +363,13 @@ void ScatterplotPlugin::init()
         return pointIndicesTableWidget;
         });
 #endif
+
+    updateHeadsUpDisplay();
+
+    connect(&_positionDataset, &Dataset<>::changed, this, &ScatterplotPlugin::updateHeadsUpDisplay);
+    connect(&_positionDataset, &Dataset<>::guiNameChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
+    connect(&_settingsAction.getColoringAction(), &ColoringAction::currentColorDatasetChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
+    connect(&_settingsAction.getColoringAction().getColorByAction(), &OptionAction::currentIndexChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
 }
 
 void ScatterplotPlugin::loadData(const Datasets& datasets)
@@ -948,6 +961,22 @@ void ScatterplotPlugin::updateSelection()
             { "ColorDimensionIndex", coloringAction.getDimensionAction().getCurrentDimensionAction().getCurrentIndex() },
             { "RenderMode", _settingsAction.getRenderModeAction().getCurrentText() }
 		});
+    }
+}
+
+void ScatterplotPlugin::updateHeadsUpDisplay()
+{
+    getHeadsUpDisplayAction().removeAllHeadsUpDisplayItems();
+
+    if (_positionDataset.isValid()) {
+        auto datasetsItem = getHeadsUpDisplayAction().addHeadsUpDisplayItem("Datasets", "", "");
+
+        getHeadsUpDisplayAction().addHeadsUpDisplayItem("Position by:", _positionDataset->getGuiName(), "", datasetsItem);
+
+        if (_settingsAction.getColoringAction().getCurrentColorDataset().isValid())
+            getHeadsUpDisplayAction().addHeadsUpDisplayItem("Color by:", _settingsAction.getColoringAction().getCurrentColorDataset()->getGuiName(), "", datasetsItem);
+    } else {
+        getHeadsUpDisplayAction().addHeadsUpDisplayItem("No datasets loaded", "", "");
     }
 }
 
