@@ -374,6 +374,8 @@ void ScatterplotPlugin::init()
     connect(&_positionDataset, &Dataset<>::guiNameChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
     connect(&_settingsAction.getColoringAction(), &ColoringAction::currentColorDatasetChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
     connect(&_settingsAction.getColoringAction().getColorByAction(), &OptionAction::currentIndexChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
+    connect(&_settingsAction.getPlotAction().getPointPlotAction().getSizeAction(), &ScalarAction::sourceDataChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
+    connect(&_settingsAction.getPlotAction().getPointPlotAction().getOpacityAction(), &ScalarAction::sourceDataChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
 }
 
 void ScatterplotPlugin::loadData(const Datasets& datasets)
@@ -973,12 +975,19 @@ void ScatterplotPlugin::updateHeadsUpDisplay()
     getHeadsUpDisplayAction().removeAllHeadsUpDisplayItems();
 
     if (_positionDataset.isValid()) {
-        auto datasetsItem = getHeadsUpDisplayAction().addHeadsUpDisplayItem("Datasets", "", "");
+        const auto datasetsItem = getHeadsUpDisplayAction().addHeadsUpDisplayItem("Datasets", "", "");
 
         getHeadsUpDisplayAction().addHeadsUpDisplayItem("Position by:", _positionDataset->getGuiName(), "", datasetsItem);
 
-        if (_settingsAction.getColoringAction().getCurrentColorDataset().isValid())
-            getHeadsUpDisplayAction().addHeadsUpDisplayItem("Color by:", _settingsAction.getColoringAction().getCurrentColorDataset()->getGuiName(), "", datasetsItem);
+        auto addMetaDataToHeadsUpDisplay = [this](const QString& metaDataName, const Dataset<> data, const util::HeadsUpDisplayItemSharedPtr& itemPtr) {
+            if (data.isValid())
+                getHeadsUpDisplayAction().addHeadsUpDisplayItem(QString("%1 by:").arg(metaDataName), data->getGuiName(), "", itemPtr);
+            };
+
+        addMetaDataToHeadsUpDisplay("Color",   _settingsAction.getColoringAction().getCurrentColorDataset(), datasetsItem);
+        addMetaDataToHeadsUpDisplay("Size",    _settingsAction.getPlotAction().getPointPlotAction().getSizeAction().getCurrentDataset(), datasetsItem);
+        addMetaDataToHeadsUpDisplay("Opacity", _settingsAction.getPlotAction().getPointPlotAction().getOpacityAction().getCurrentDataset(), datasetsItem);
+
     } else {
         getHeadsUpDisplayAction().addHeadsUpDisplayItem("No datasets loaded", "", "");
     }
