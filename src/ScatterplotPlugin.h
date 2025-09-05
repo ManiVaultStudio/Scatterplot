@@ -94,6 +94,8 @@ private:
     void updateData();
     void updateSelection();
 
+    void updateHeadsUpDisplay();
+
 public: // Serialization
 
     /**
