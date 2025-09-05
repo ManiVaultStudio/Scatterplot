@@ -1006,7 +1006,7 @@ void ScatterplotPlugin::fromVariantMap(const QVariantMap& variantMap)
     _primaryToolbarAction.fromParentVariantMap(variantMap);
     _settingsAction.fromParentVariantMap(variantMap);
 
-    
+    updateHeadsUpDisplay();
 
     if (pointRenderer.getNavigator().getNavigationAction().getSerializationCountFrom() == 0) {
         qDebug() << "Resetting view";
