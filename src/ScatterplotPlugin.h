@@ -83,6 +83,9 @@ public: // Miscellaneous
     /** Use the sampler pixel selection tool to sample data points */
     void samplePoints();
 
+    /** Schedule an update of the heads-up display (HUD) **/
+    void scheduleHeadsUpDisplayUpdate();
+
 public:
 
     /** Get reference to the scatter plot widget */
@@ -120,7 +123,7 @@ private:
     SettingsAction                  _settingsAction;            /** Group action for all settings */
     HorizontalToolbarAction         _primaryToolbarAction;      /** Horizontal toolbar for primary content */
     QRectF                          _selectionBoundaries;       /** Boundaries of the selection */
-
+    QTimer*                         _hudUpdateTimer = nullptr;
     static const std::int32_t LAZY_UPDATE_INTERVAL = 2;
 
 };

@@ -368,14 +368,18 @@ void ScatterplotPlugin::init()
         });
 #endif
 
-    updateHeadsUpDisplay();
+    _hudUpdateTimer = new QTimer(this);
+    _hudUpdateTimer->setSingleShot(true);
+    connect(_hudUpdateTimer, &QTimer::timeout, this, &ScatterplotPlugin::updateHeadsUpDisplay);
 
-    connect(&_positionDataset, &Dataset<>::changed, this, &ScatterplotPlugin::updateHeadsUpDisplay);
-    connect(&_positionDataset, &Dataset<>::guiNameChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
-    connect(&_settingsAction.getColoringAction(), &ColoringAction::currentColorDatasetChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
-    connect(&_settingsAction.getColoringAction().getColorByAction(), &OptionAction::currentIndexChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
-    connect(&_settingsAction.getPlotAction().getPointPlotAction().getSizeAction(), &ScalarAction::sourceDataChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
-    connect(&_settingsAction.getPlotAction().getPointPlotAction().getOpacityAction(), &ScalarAction::sourceDataChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
+    connect(&_positionDataset, &Dataset<>::changed, this, &ScatterplotPlugin::scheduleHeadsUpDisplayUpdate);
+    connect(&_positionDataset, &Dataset<>::guiNameChanged, this, &ScatterplotPlugin::scheduleHeadsUpDisplayUpdate);
+    connect(&_settingsAction.getColoringAction(), &ColoringAction::currentColorDatasetChanged, this, &ScatterplotPlugin::scheduleHeadsUpDisplayUpdate);
+    connect(&_settingsAction.getColoringAction().getColorByAction(), &OptionAction::currentIndexChanged, this, &ScatterplotPlugin::scheduleHeadsUpDisplayUpdate);
+    connect(&_settingsAction.getPlotAction().getPointPlotAction().getSizeAction(), &ScalarAction::sourceDataChanged, this, &ScatterplotPlugin::scheduleHeadsUpDisplayUpdate);
+    connect(&_settingsAction.getPlotAction().getPointPlotAction().getOpacityAction(), &ScalarAction::sourceDataChanged, this, &ScatterplotPlugin::scheduleHeadsUpDisplayUpdate);
+
+    scheduleHeadsUpDisplayUpdate();
 }
 
 void ScatterplotPlugin::loadData(const Datasets& datasets)
@@ -970,26 +974,38 @@ void ScatterplotPlugin::updateSelection()
     }
 }
 
+void ScatterplotPlugin::scheduleHeadsUpDisplayUpdate()
+{
+    if (_hudUpdateTimer)
+        _hudUpdateTimer->start(20); 
+}
+
 void ScatterplotPlugin::updateHeadsUpDisplay()
 {
     getHeadsUpDisplayAction().removeAllHeadsUpDisplayItems();
 
     if (_positionDataset.isValid()) {
-        const auto datasetsItem = getHeadsUpDisplayAction().addHeadsUpDisplayItem("Datasets", "", "");
+        const auto datasetsItem = getHeadsUpDisplayAction().addHeadsUpDisplayItem("Datasets", "", nullptr);
 
+        // Defensive: Check both pointer and index validity
+        if (!datasetsItem || !datasetsItem->getIndex().isValid())
+            return;
+
+        // Only add child items if parent is valid and part of the model
         getHeadsUpDisplayAction().addHeadsUpDisplayItem("Position by:", _positionDataset->getGuiName(), "", datasetsItem);
 
         auto addMetaDataToHeadsUpDisplay = [this](const QString& metaDataName, const Dataset<> data, const util::HeadsUpDisplayItemSharedPtr& itemPtr) {
-            if (data.isValid())
+            if (data.isValid() && itemPtr && itemPtr->getIndex().isValid())
                 getHeadsUpDisplayAction().addHeadsUpDisplayItem(QString("%1 by:").arg(metaDataName), data->getGuiName(), "", itemPtr);
             };
 
-        addMetaDataToHeadsUpDisplay("Color",   _settingsAction.getColoringAction().getCurrentColorDataset(), datasetsItem);
-        addMetaDataToHeadsUpDisplay("Size",    _settingsAction.getPlotAction().getPointPlotAction().getSizeAction().getCurrentDataset(), datasetsItem);
+        addMetaDataToHeadsUpDisplay("Color", _settingsAction.getColoringAction().getCurrentColorDataset(), datasetsItem);
+        addMetaDataToHeadsUpDisplay("Size", _settingsAction.getPlotAction().getPointPlotAction().getSizeAction().getCurrentDataset(), datasetsItem);
         addMetaDataToHeadsUpDisplay("Opacity", _settingsAction.getPlotAction().getPointPlotAction().getOpacityAction().getCurrentDataset(), datasetsItem);
 
-    } else {
-        getHeadsUpDisplayAction().addHeadsUpDisplayItem("No datasets loaded", "", "");
+    }
+    else {
+        getHeadsUpDisplayAction().addHeadsUpDisplayItem("No datasets loaded", "", nullptr);
     }
 }
 
@@ -1006,7 +1022,7 @@ void ScatterplotPlugin::fromVariantMap(const QVariantMap& variantMap)
     _primaryToolbarAction.fromParentVariantMap(variantMap);
     _settingsAction.fromParentVariantMap(variantMap);
 
-    updateHeadsUpDisplay();
+    scheduleHeadsUpDisplayUpdate();
 
     if (pointRenderer.getNavigator().getNavigationAction().getSerializationCountFrom() == 0) {
         qDebug() << "Resetting view";
