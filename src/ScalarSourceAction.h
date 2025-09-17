@@ -29,6 +29,9 @@ public:
      */
     Q_INVOKABLE ScalarSourceAction(QObject* parent, const QString& title);
 
+    /** Destructor */
+    ~ScalarSourceAction() override;
+
     /** Get the scalar source model */
     ScalarSourceModel& getModel();
 
@@ -88,6 +91,7 @@ private:
     DimensionPickerAction   _dimensionPickerAction;     /** Dimension picker action */
     DecimalAction           _offsetAction;              /** Scalar source offset action */
     DecimalRangeAction      _rangeAction;               /** Range action */
+    bool                    _destroyed = false;
 
     friend class mv::AbstractActionsManager;
 };
