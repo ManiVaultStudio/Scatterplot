@@ -31,9 +31,6 @@ ScalarSourceAction::ScalarSourceAction(QObject* parent, const QString& title) :
     _offsetAction.setSuffix("px");
 
     const auto scalarSourceChanged = [this]() -> void {
-
-        if (_destroyed) return;
-
         const auto sourceIndex = _pickerAction.getCurrentIndex();
 
         _dimensionPickerAction.setEnabled(sourceIndex >= ScalarSourceModel::DefaultRow::DatasetStart);
@@ -62,11 +59,6 @@ ScalarSourceAction::ScalarSourceAction(QObject* parent, const QString& title) :
     });
 
     scalarSourceChanged();
-}
-
-ScalarSourceAction::~ScalarSourceAction()
-{
-    _destroyed = true;
 }
 
 ScalarSourceModel& ScalarSourceAction::getModel()
