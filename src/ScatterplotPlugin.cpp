@@ -972,6 +972,10 @@ void ScatterplotPlugin::updateSelection()
 
 void ScatterplotPlugin::updateHeadsUpDisplay()
 {
+#ifdef __APPLE__
+    return;
+#endif
+
     getHeadsUpDisplayAction().removeAllHeadsUpDisplayItems();
 
     if (_positionDataset.isValid()) {
