@@ -35,6 +35,11 @@ public:
      * @param title Title
      */
     Q_INVOKABLE ColoringAction(QObject* parent, const QString& title);
+    
+    /**
+     * Destructor - ensures proper cleanup of Qt connections
+     */
+    ~ColoringAction();
 
     /**
      * Get the context menu for the action

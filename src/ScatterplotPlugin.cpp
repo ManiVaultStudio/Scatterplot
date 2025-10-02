@@ -292,6 +292,29 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
 
 ScatterplotPlugin::~ScatterplotPlugin()
 {
+    // Ensure proper cleanup order - disconnect any remaining connections
+    // before member variables are destroyed
+    if (_scatterPlotWidget) {
+        disconnect(_scatterPlotWidget, nullptr, this, nullptr);
+        disconnect(&_scatterPlotWidget->getPixelSelectionTool(), nullptr, this, nullptr);
+    }
+    
+    // Clear any remaining connections from position dataset
+    if (_positionDataset.isValid()) {
+        disconnect(&_positionDataset, nullptr, this, nullptr);
+    }
+    
+    // Disconnect all connections from settings action members to avoid
+    // accessing freed memory during member destruction
+    disconnect(&_settingsAction, nullptr, this, nullptr);
+    disconnect(&_settingsAction.getColoringAction(), nullptr, this, nullptr);
+    disconnect(&_settingsAction.getColoringAction().getColorByAction(), nullptr, this, nullptr);
+    disconnect(&_settingsAction.getPlotAction().getPointPlotAction().getFocusSelection(), nullptr, this, nullptr);
+    disconnect(&_settingsAction.getPlotAction().getPointPlotAction().getSizeAction(), nullptr, this, nullptr);
+    disconnect(&_settingsAction.getPlotAction().getPointPlotAction().getOpacityAction(), nullptr, this, nullptr);
+    
+    // Disconnect from sampler action
+    disconnect(&getSamplerAction(), nullptr, this, nullptr);
 }
 
 void ScatterplotPlugin::init()
@@ -1017,6 +1040,9 @@ void ScatterplotPlugin::updateSelection()
 
 void ScatterplotPlugin::updateHeadsUpDisplay()
 {
+#ifdef __APPLE__
+    return;
+#endif    
     getHeadsUpDisplayAction().removeAllHeadsUpDisplayItems();
 
     if (_positionDataset.isValid()) {

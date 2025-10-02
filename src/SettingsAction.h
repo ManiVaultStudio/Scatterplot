@@ -34,6 +34,11 @@ public:
      * @param title Title
      */
     Q_INVOKABLE SettingsAction(QObject* parent, const QString& title);
+    
+    /**
+     * Destructor - ensures proper cleanup of Qt connections
+     */
+    ~SettingsAction();
 
     /**
      * Get action context menu
