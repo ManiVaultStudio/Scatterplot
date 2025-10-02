@@ -45,6 +45,28 @@ SettingsAction::SettingsAction(QObject* parent, const QString& title) :
     connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, updateEnabled);
 }
 
+SettingsAction::~SettingsAction()
+{
+    // Disconnect all connections to prevent accessing freed memory during destruction
+    if (_scatterplotPlugin) {
+        disconnect(&_scatterplotPlugin->getPositionDataset(), nullptr, this, nullptr);
+        disconnect(&_scatterplotPlugin->getPositionSourceDataset(), nullptr, this, nullptr);
+        disconnect(&_scatterplotPlugin->getScatterplotWidget(), nullptr, this, nullptr);
+    }
+    
+    // Disconnect all child actions to prevent cross-references during destruction
+    disconnect(&_coloringAction, nullptr, this, nullptr);
+    disconnect(&_plotAction, nullptr, this, nullptr);
+    disconnect(&_positionAction, nullptr, this, nullptr);
+    disconnect(&_renderModeAction, nullptr, this, nullptr);
+    disconnect(&_selectionAction, nullptr, this, nullptr);
+    disconnect(&_subsetAction, nullptr, this, nullptr);
+    disconnect(&_clusteringAction, nullptr, this, nullptr);
+    disconnect(&_exportAction, nullptr, this, nullptr);
+    disconnect(&_miscellaneousAction, nullptr, this, nullptr);
+    disconnect(&_datasetsAction, nullptr, this, nullptr);
+}
+
 QMenu* SettingsAction::getContextMenu()
 {
     auto menu = new QMenu();
