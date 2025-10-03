@@ -297,6 +297,10 @@ ScatterplotPlugin::~ScatterplotPlugin()
     if (_scatterPlotWidget) {
         disconnect(_scatterPlotWidget, nullptr, this, nullptr);
         disconnect(&_scatterPlotWidget->getPixelSelectionTool(), nullptr, this, nullptr);
+        // Remove from parent to prevent double-deletion by Qt's cleanup
+        _scatterPlotWidget->setParent(nullptr);
+        delete _scatterPlotWidget;
+        _scatterPlotWidget = nullptr;
     }
     
     // Clear any remaining connections from position dataset
@@ -315,6 +319,13 @@ ScatterplotPlugin::~ScatterplotPlugin()
     
     // Disconnect from sampler action
     disconnect(&getSamplerAction(), nullptr, this, nullptr);
+    
+    // Clean up drop widget after scatterplot widget to maintain proper order
+    if (_dropWidget) {
+        _dropWidget->setParent(nullptr);
+        delete _dropWidget;
+        _dropWidget = nullptr;
+    }
 }
 
 void ScatterplotPlugin::init()
