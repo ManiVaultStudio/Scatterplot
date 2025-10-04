@@ -292,39 +292,8 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
 
 ScatterplotPlugin::~ScatterplotPlugin()
 {
-    // Ensure proper cleanup order - disconnect any remaining connections
-    // before member variables are destroyed
-    if (_scatterPlotWidget) {
-        disconnect(_scatterPlotWidget, nullptr, this, nullptr);
-        disconnect(&_scatterPlotWidget->getPixelSelectionTool(), nullptr, this, nullptr);
-        // Remove from parent to prevent double-deletion by Qt's cleanup
-        _scatterPlotWidget->setParent(nullptr);
-        delete _scatterPlotWidget;
-        _scatterPlotWidget = nullptr;
-    }
-    
-    // Clear any remaining connections from position dataset
     if (_positionDataset.isValid()) {
         disconnect(&_positionDataset, nullptr, this, nullptr);
-    }
-    
-    // Disconnect all connections from settings action members to avoid
-    // accessing freed memory during member destruction
-    disconnect(&_settingsAction, nullptr, this, nullptr);
-    disconnect(&_settingsAction.getColoringAction(), nullptr, this, nullptr);
-    disconnect(&_settingsAction.getColoringAction().getColorByAction(), nullptr, this, nullptr);
-    disconnect(&_settingsAction.getPlotAction().getPointPlotAction().getFocusSelection(), nullptr, this, nullptr);
-    disconnect(&_settingsAction.getPlotAction().getPointPlotAction().getSizeAction(), nullptr, this, nullptr);
-    disconnect(&_settingsAction.getPlotAction().getPointPlotAction().getOpacityAction(), nullptr, this, nullptr);
-    
-    // Disconnect from sampler action
-    disconnect(&getSamplerAction(), nullptr, this, nullptr);
-    
-    // Clean up drop widget after scatterplot widget to maintain proper order
-    if (_dropWidget) {
-        _dropWidget->setParent(nullptr);
-        delete _dropWidget;
-        _dropWidget = nullptr;
     }
 }
 
