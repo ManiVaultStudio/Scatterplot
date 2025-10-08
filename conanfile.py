@@ -1,8 +1,10 @@
 from conans import ConanFile
 from conan.tools.cmake import CMakeDeps, CMake, CMakeToolchain
 from conans.tools import save, load
+from conans import tools
 import os
 import pathlib
+import shutil
 import subprocess
 from rules_support import PluginBranchInfo
 
@@ -98,6 +100,7 @@ class ScatterplotOPluginConan(ConanFile):
         # Use the ManiVault .cmake file to find ManiVault with find_package
         mv_core_root = self.deps_cpp_info["hdps-core"].rootpath
         manivault_dir = pathlib.Path(mv_core_root, "cmake", "mv").as_posix()
+        
         print("ManiVault_DIR: ", manivault_dir)
         tc.variables["ManiVault_DIR"] = manivault_dir
 
@@ -146,6 +149,19 @@ class ScatterplotOPluginConan(ConanFile):
                 release_dir,
             ]
         )
+        
+        
+
+        # Add the pdb files next to the libs for RelWithDebInfo linking
+        if self.settings.os == "Windows":
+            print("Copying PDBs...")
+            pdb_dest = pathlib.Path(package_dir, "RelWithDebInfo", "pdb")
+            pdb_dest.mkdir()
+            pdb_files = pdb_files = [p for p in pathlib.Path(self.build_folder).rglob('*') if p.is_file() and p.suffix.lower() == '.pdb']
+            print("PDB(s): ", pdb_files)
+            for pfile in pdb_files:
+                shutil.copy(pfile, pdb_dest)
+
         self.copy(pattern="*", src=package_dir)
 
     def package_info(self):
