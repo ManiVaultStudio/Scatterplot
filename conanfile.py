@@ -4,6 +4,7 @@ from conans.tools import save, load
 from conans import tools
 import os
 import pathlib
+import shutil
 import subprocess
 from rules_support import PluginBranchInfo
 
