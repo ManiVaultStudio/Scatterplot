@@ -152,7 +152,7 @@ class ScatterplotOPluginConan(ConanFile):
         self.copy(pattern="*", src=package_dir)
 
         # Add the pdb files next to the libs for RelWithDebInfo linking
-        if tools.os_info.is_windows:
+        if self.settings.os == "Windows":
             pdb_dest = pathlib.Path(package_dir, "RelWithDebInfo", "pdb")
             pdb_dest.mkdir()
             pdb_files = pathlib.Path(self.build_folder).glob("*.pdb")
