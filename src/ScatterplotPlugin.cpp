@@ -413,8 +413,11 @@ void ScatterplotPlugin::selectPoints()
 
     auto& pixelSelectionTool = _scatterPlotWidget->getPixelSelectionTool();
 
+    auto  renderer = _settingsAction.getRenderModeAction().getCurrentIndex() > 0 ? dynamic_cast<Renderer2D*>(&_scatterPlotWidget->_densityRenderer) : dynamic_cast<Renderer2D*>(&_scatterPlotWidget->_pointRenderer);
+    auto& navigator = renderer->getNavigator();
+
     // Only proceed with a valid points position dataset and when the pixel selection tool is active
-    if (!_positionDataset.isValid() || !pixelSelectionTool.isActive() || _scatterPlotWidget->_pointRenderer.getNavigator().isNavigating() || !pixelSelectionTool.isEnabled())
+    if (!_positionDataset.isValid() || !pixelSelectionTool.isActive() || navigator.isNavigating() || !pixelSelectionTool.isEnabled())
         return;
 
     auto selectionAreaImage = pixelSelectionTool.getAreaPixmap().toImage();
@@ -428,11 +431,8 @@ void ScatterplotPlugin::selectPoints()
 
     _positionDataset->getGlobalIndices(localGlobalIndices);
 
-    auto& pointRenderer = _scatterPlotWidget->_pointRenderer;
-    auto& navigator     = pointRenderer.getNavigator();
-
     const auto zoomRectangleWorld   = navigator.getZoomRectangleWorld();
-    const auto screenRectangle      = QRect(QPoint(), pointRenderer.getRenderSize());
+    const auto screenRectangle      = QRect(QPoint(), renderer->getRenderSize());
 
     float boundaries[4]{
         std::numeric_limits<float>::max(),
@@ -517,7 +517,7 @@ void ScatterplotPlugin::selectPoints()
         }
     }
 
-    auto& navigationAction = _scatterPlotWidget->getPointRendererNavigator().getNavigationAction();
+    auto& navigationAction = navigator.getNavigationAction();
 
     navigationAction.getZoomSelectionAction().setEnabled(!targetSelectionIndices.empty() && !navigationAction.getFreezeNavigation().isChecked());
 
