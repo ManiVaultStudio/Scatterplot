@@ -264,8 +264,6 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     getLearningCenterAction().addVideos(QStringList({ "Practitioner", "Developer" }));
 
     setOverlayActionsTargetWidget(_scatterPlotWidget);
-
-    
 }
 
 ScatterplotPlugin::~ScatterplotPlugin()
@@ -376,6 +374,10 @@ void ScatterplotPlugin::init()
     connect(&_settingsAction.getColoringAction().getColorByAction(), &OptionAction::currentIndexChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
     connect(&_settingsAction.getPlotAction().getPointPlotAction().getSizeAction(), &ScalarAction::sourceDataChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
     connect(&_settingsAction.getPlotAction().getPointPlotAction().getOpacityAction(), &ScalarAction::sourceDataChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
+
+    updateHeadsUpDisplayTextColor();
+
+    connect(&_settingsAction.getMiscellaneousAction().getBackgroundColorAction(), &ColorAction::colorChanged, this, &ScatterplotPlugin::updateHeadsUpDisplayTextColor);
 }
 
 void ScatterplotPlugin::loadData(const Datasets& datasets)
@@ -993,6 +995,19 @@ void ScatterplotPlugin::updateHeadsUpDisplay()
     }
 }
 
+void ScatterplotPlugin::updateHeadsUpDisplayTextColor()
+{
+    if (auto headsUpDisplayWidget = getWidget().findChild<QWidget*>("HeadsUpDisplayWidget")) {
+        if (auto headsUpDisplayWidgetTreeView = headsUpDisplayWidget->findChild<QTreeView*>("TreeView")) {
+            QPalette palette = headsUpDisplayWidgetTreeView->palette();
+
+            palette.setColor(QPalette::Text, _settingsAction.getMiscellaneousAction().getBackgroundColorAction().getColor().lightnessF() > .5f ? Qt::black : Qt::white);
+
+            headsUpDisplayWidgetTreeView->setPalette(palette);
+        }
+    }
+}
+
 void ScatterplotPlugin::fromVariantMap(const QVariantMap& variantMap)
 {
     ViewPlugin::fromVariantMap(variantMap);
@@ -1014,6 +1029,8 @@ void ScatterplotPlugin::fromVariantMap(const QVariantMap& variantMap)
 
         _scatterPlotWidget->update();
     }
+
+    updateHeadsUpDisplayTextColor();
 }
 
 QVariantMap ScatterplotPlugin::toVariantMap() const
