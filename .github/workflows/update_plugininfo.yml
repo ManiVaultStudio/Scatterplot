@@ -35,10 +35,29 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Create GitHub App installation token (website repo)
+        id: app_token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.MV_REPO_AUTH_APP_ID }}
+          private-key: ${{ secrets.MV_REPO_AUTH_PVT_KEY }}
+          owner: ManiVaultStudio
+          repositories: manivaultstudio.github.io   # ensure the App is installed on this repo with Contents: write
+
+      # quick sanity: token can read the repo
+      - name: Sanity check token can read website repo
+        env:
+          APP_TOKEN: ${{ steps.app_token.outputs.token }}
+        run: |
+          git ls-remote https://x-access-token:${APP_TOKEN}@github.com/ManiVaultStudio/manivaultstudio.github.io.git HEAD
+
+      # clone with the app token (note the x-access-token:<token>@ form)
       - name: Clone manivaultstudio.github.io (feature branch)
+        env:
+          APP_TOKEN: ${{ steps.app_token.outputs.token }}
         run: |
           git clone --branch ft/test-plugin-push \
-            https://x-access-token:${{ secrets.TEST_GH_PAGES_DEPLOY_TOKEN }}@github.com/ManiVaultStudio/manivaultstudio.github.io.git \
+            https://x-access-token:${APP_TOKEN}@github.com/ManiVaultStudio/manivaultstudio.github.io.git \
             target-repo
           cp "${REPO_NAME_LC}.md" target-repo/_plugins/
           if [ -f "target-repo/_plugins/${REPO_NAME_LC}.md" ]; then
@@ -49,10 +68,12 @@ jobs:
           fi             # quick sanity
 
       - name: Commit and push
+        env:
+          APP_TOKEN: ${{ steps.app_token.outputs.token }}
         run: |
           cd target-repo
-          git config user.name "ManiVault Bot"
-          git config user.email "bot@manivault.studio"
+          git config user.name "manivault-bot[app]"
+          git config user.email "manivault-bot@users.noreply.github.com"
           git add "_plugins/${REPO_NAME_LC}.md"
           git commit -m "🔄 Auto-update plugin card from ${REPO_NAME}"
           git push origin ft/test-plugin-push
