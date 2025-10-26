@@ -9,9 +9,7 @@ REPO = sys.argv[1] if len(sys.argv) > 1 else "Scatterplot"
 OUTPUT_PATH = f"{REPO.lower()}.md"
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 
-HEADERS = {
-    "Accept": "application/vnd.github+json",
-}
+HEADERS = {"Accept": "application/vnd.github+json"}
 if GITHUB_TOKEN:
     HEADERS["Authorization"] = f"Bearer {GITHUB_TOKEN}"
 
@@ -28,22 +26,18 @@ def fetch_contributors():
     r.raise_for_status()
     return [user["login"] for user in r.json()]
 
-
 # ---------- Fetch README content ----------
 def fetch_readme_excerpt(lines=5):
-    """Fetch first few lines from README.md"""
+    """Return the first `lines` lines from README.md (preserves empty lines)."""
     url = f"https://raw.githubusercontent.com/{ORG}/{REPO}/master/README.md"
     r = requests.get(url)
     if r.status_code != 200:
         return ""
-    content = r.text.strip().splitlines()
-    snippet = "\n".join(content[:lines])
-    return snippet
+    content = r.text.splitlines()  # no .strip(): keep leading/trailing blanks as they are
+    return "\n".join(content[:lines])
 
 # ---------- Write output markdown ----------
-def write_markdown(info, authors, longdescription=None):
-    readme_snippet = fetch_readme_excerpt(lines=5)
-    
+def write_markdown(info, authors, readme_snippet=""):
     metadata = {
         "layout": "plugin",
         "name": info["name"],
@@ -58,20 +52,17 @@ def write_markdown(info, authors, longdescription=None):
         "shortdescription": f"{info['type']} plugin with dependencies: {', '.join(info.get('dependencies', []))}",
     }
 
-    with open(OUTPUT_PATH, "w") as f:
+    with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
         f.write("---\n")
-        yaml.dump(metadata, f, sort_keys=False)
-        f.write("---\n")
-        
+        yaml.dump(metadata, f, sort_keys=False, allow_unicode=True)
+        f.write("---\n\n")
         if readme_snippet:
             f.write(readme_snippet + "\n")
 
     print(f" Updated {OUTPUT_PATH}")
-    if longdescription:
-        print("Added description content from README.md")
 
 if __name__ == "__main__":
     info = fetch_plugin_info()
     authors = fetch_contributors()
-    readme_excerpt = fetch_readme_excerpt(max_lines=5)
-    write_markdown(info, authors, longdescription=readme_excerpt)
+    readme_excerpt = fetch_readme_excerpt(lines=5)
+    write_markdown(info, authors, readme_snippet=readme_excerpt)
