@@ -56,6 +56,8 @@ def fetch_readme_excerpt(max_lines=5):
 
 # ---------- Write output markdown ----------
 def write_markdown(info, authors, longdescription=None):
+    readme_snippet = fetch_readme_excerpt(max_lines=5)
+    
     metadata = {
         "layout": "plugin",
         "name": info["name"],
@@ -70,17 +72,17 @@ def write_markdown(info, authors, longdescription=None):
         "shortdescription": f"{info['type']} plugin with dependencies: {', '.join(info.get('dependencies', []))}",
     }
 
-    if longdescription:
-        metadata["longdescription"] = longdescription
-
     with open(OUTPUT_PATH, "w") as f:
         f.write("---\n")
         yaml.dump(metadata, f, sort_keys=False)
         f.write("---\n")
+        
+        if readme_snippet:
+            f.write(readme_snippet + "\n")
 
-    print(f"✅ Updated {OUTPUT_PATH}")
+    print(f" Updated {OUTPUT_PATH}")
     if longdescription:
-        print("📝 Added longdescription from README.md")
+        print("Added description content from README.md")
 
 if __name__ == "__main__":
     info = fetch_plugin_info()
