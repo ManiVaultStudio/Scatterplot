@@ -28,13 +28,26 @@ def fetch_contributors():
 
 # ---------- Fetch README content ----------
 def fetch_readme_excerpt(lines=5):
-    """Return the first `lines` lines from README.md (preserves empty lines)."""
+    """Return first `lines` lines from README.md (skipping initial heading)."""
     url = f"https://raw.githubusercontent.com/{ORG}/{REPO}/master/README.md"
     r = requests.get(url)
     if r.status_code != 200:
         return ""
-    content = r.text.splitlines()  # no .strip(): keep leading/trailing blanks as they are
-    return "\n".join(content[:lines])
+
+    all_lines = r.text.splitlines()
+
+    # Skip the first heading line (starts with '#')
+    filtered = []
+    heading_skipped = False
+    for line in all_lines:
+        if not heading_skipped and line.strip().startswith("#"):
+            heading_skipped = True
+            continue
+        filtered.append(line)
+        if len(filtered) >= lines:
+            break
+
+    return "\n".join(filtered)
 
 # ---------- Write output markdown ----------
 def write_markdown(info, authors, readme_snippet=""):
