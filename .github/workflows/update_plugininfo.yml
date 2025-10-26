@@ -44,6 +44,13 @@ jobs:
           owner: ManiVaultStudio
           repositories: manivaultstudio.github.io   # ensure the App is installed on this repo with Contents: write
 
+      - name: List repos accessible to this installation token
+        env:
+          APP_TOKEN: ${{ steps.app_token.outputs.token }}
+        run: |
+          curl -s -H "Authorization: Bearer ${APP_TOKEN}" -H "Accept: application/vnd.github+json" \
+            https://api.github.com/installation/repositories | jq -r '.repositories[].full_name'
+            
       # quick sanity: token can read the repo
       - name: Sanity check token can read website repo
         env:
