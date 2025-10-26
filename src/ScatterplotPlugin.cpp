@@ -262,6 +262,8 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     getSamplerAction().getEnabledAction().setChecked(false);
 
     getLearningCenterAction().addVideos(QStringList({ "Practitioner", "Developer" }));
+
+    setOverlayActionsTargetWidget(_scatterPlotWidget);
 }
 
 ScatterplotPlugin::~ScatterplotPlugin()
@@ -270,6 +272,8 @@ ScatterplotPlugin::~ScatterplotPlugin()
 
 void ScatterplotPlugin::init()
 {
+    getWidget().setMouseTracking(true);
+
     auto layout = new QVBoxLayout();
 
     layout->setContentsMargins(0, 0, 0, 0);
@@ -277,28 +281,14 @@ void ScatterplotPlugin::init()
     layout->addWidget(_primaryToolbarAction.createWidget(&getWidget()));
     layout->addWidget(_scatterPlotWidget, 100);
 
-    auto navigationWidget = new QWidget();
-    auto navigationLayout = new QHBoxLayout();
+    auto& navigationAction = _scatterPlotWidget->getPointRendererNavigator().getNavigationAction();
 
-    navigationLayout->setContentsMargins(4, 4, 4, 4);
+    if (auto navigationWidget = navigationAction.createWidget(&getWidget())) {
+        layout->addWidget(navigationWidget);
+        layout->setAlignment(navigationWidget, Qt::AlignCenter);
 
-    navigationLayout->addStretch(1);
-    {
-        auto renderersNavigationGroupAction = new HorizontalGroupAction(this, "Navigation");
-
-        renderersNavigationGroupAction->setShowLabels(false);
-
-        renderersNavigationGroupAction->addAction(const_cast<NavigationAction*>(&_scatterPlotWidget->getPointRendererNavigator().getNavigationAction()));
-
-        _scatterPlotWidget->getPointRendererNavigator().getNavigationAction().setParent(&_settingsAction);
-
-        navigationLayout->addWidget(renderersNavigationGroupAction->createWidget(&getWidget()));
+        navigationAction.setParent(&_settingsAction);
     }
-    navigationLayout->addStretch(1);
-
-    navigationWidget->setLayout(navigationLayout);
-
-    layout->addWidget(navigationWidget);
 
     getWidget().setLayout(layout);
 
@@ -375,6 +365,19 @@ void ScatterplotPlugin::init()
         return pointIndicesTableWidget;
         });
 #endif
+
+    updateHeadsUpDisplay();
+
+    connect(&_positionDataset, &Dataset<>::changed, this, &ScatterplotPlugin::updateHeadsUpDisplay);
+    connect(&_positionDataset, &Dataset<>::guiNameChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
+    connect(&_settingsAction.getColoringAction(), &ColoringAction::currentColorDatasetChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
+    connect(&_settingsAction.getColoringAction().getColorByAction(), &OptionAction::currentIndexChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
+    connect(&_settingsAction.getPlotAction().getPointPlotAction().getSizeAction(), &ScalarAction::sourceDataChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
+    connect(&_settingsAction.getPlotAction().getPointPlotAction().getOpacityAction(), &ScalarAction::sourceDataChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
+
+    updateHeadsUpDisplayTextColor();
+
+    connect(&_settingsAction.getMiscellaneousAction().getBackgroundColorAction(), &ColorAction::colorChanged, this, &ScatterplotPlugin::updateHeadsUpDisplayTextColor);
 }
 
 void ScatterplotPlugin::loadData(const Datasets& datasets)
@@ -412,8 +415,11 @@ void ScatterplotPlugin::selectPoints()
 
     auto& pixelSelectionTool = _scatterPlotWidget->getPixelSelectionTool();
 
+    auto  renderer = _settingsAction.getRenderModeAction().getCurrentIndex() > 0 ? dynamic_cast<Renderer2D*>(&_scatterPlotWidget->_densityRenderer) : dynamic_cast<Renderer2D*>(&_scatterPlotWidget->_pointRenderer);
+    auto& navigator = renderer->getNavigator();
+
     // Only proceed with a valid points position dataset and when the pixel selection tool is active
-    if (!_positionDataset.isValid() || !pixelSelectionTool.isActive() || _scatterPlotWidget->_pointRenderer.getNavigator().isNavigating() || !pixelSelectionTool.isEnabled())
+    if (!_positionDataset.isValid() || !pixelSelectionTool.isActive() || navigator.isNavigating() || !pixelSelectionTool.isEnabled())
         return;
 
     auto selectionAreaImage = pixelSelectionTool.getAreaPixmap().toImage();
@@ -427,11 +433,8 @@ void ScatterplotPlugin::selectPoints()
 
     _positionDataset->getGlobalIndices(localGlobalIndices);
 
-    auto& pointRenderer = _scatterPlotWidget->_pointRenderer;
-    auto& navigator     = pointRenderer.getNavigator();
-
     const auto zoomRectangleWorld   = navigator.getZoomRectangleWorld();
-    const auto screenRectangle      = QRect(QPoint(), pointRenderer.getRenderSize());
+    const auto screenRectangle      = QRect(QPoint(), renderer->getRenderSize());
 
     float boundaries[4]{
         std::numeric_limits<float>::max(),
@@ -516,7 +519,7 @@ void ScatterplotPlugin::selectPoints()
         }
     }
 
-    auto& navigationAction = _scatterPlotWidget->getPointRendererNavigator().getNavigationAction();
+    auto& navigationAction = navigator.getNavigationAction();
 
     navigationAction.getZoomSelectionAction().setEnabled(!targetSelectionIndices.empty() && !navigationAction.getFreezeNavigation().isChecked());
 
@@ -969,6 +972,42 @@ void ScatterplotPlugin::updateSelection()
     }
 }
 
+void ScatterplotPlugin::updateHeadsUpDisplay()
+{
+    getHeadsUpDisplayAction().removeAllHeadsUpDisplayItems();
+
+    if (_positionDataset.isValid()) {
+        const auto datasetsItem = getHeadsUpDisplayAction().addHeadsUpDisplayItem("Datasets", "", "");
+
+        getHeadsUpDisplayAction().addHeadsUpDisplayItem("Position by:", _positionDataset->getGuiName(), "", datasetsItem);
+
+        auto addMetaDataToHeadsUpDisplay = [this](const QString& metaDataName, const Dataset<> data, const util::HeadsUpDisplayItemSharedPtr& itemPtr) {
+            if (data.isValid())
+                getHeadsUpDisplayAction().addHeadsUpDisplayItem(QString("%1 by:").arg(metaDataName), data->getGuiName(), "", itemPtr);
+            };
+
+        addMetaDataToHeadsUpDisplay("Color",   _settingsAction.getColoringAction().getCurrentColorDataset(), datasetsItem);
+        addMetaDataToHeadsUpDisplay("Size",    _settingsAction.getPlotAction().getPointPlotAction().getSizeAction().getCurrentDataset(), datasetsItem);
+        addMetaDataToHeadsUpDisplay("Opacity", _settingsAction.getPlotAction().getPointPlotAction().getOpacityAction().getCurrentDataset(), datasetsItem);
+
+    } else {
+        getHeadsUpDisplayAction().addHeadsUpDisplayItem("No datasets loaded", "", "");
+    }
+}
+
+void ScatterplotPlugin::updateHeadsUpDisplayTextColor()
+{
+    if (auto headsUpDisplayWidget = getWidget().findChild<QWidget*>("HeadsUpDisplayWidget")) {
+        if (auto headsUpDisplayWidgetTreeView = headsUpDisplayWidget->findChild<QTreeView*>("TreeView")) {
+            QPalette palette = headsUpDisplayWidgetTreeView->palette();
+
+            palette.setColor(QPalette::Text, _settingsAction.getMiscellaneousAction().getBackgroundColorAction().getColor().lightnessF() > .5f ? Qt::black : Qt::white);
+
+            headsUpDisplayWidgetTreeView->setPalette(palette);
+        }
+    }
+}
+
 void ScatterplotPlugin::fromVariantMap(const QVariantMap& variantMap)
 {
     ViewPlugin::fromVariantMap(variantMap);
@@ -982,7 +1021,7 @@ void ScatterplotPlugin::fromVariantMap(const QVariantMap& variantMap)
     _primaryToolbarAction.fromParentVariantMap(variantMap);
     _settingsAction.fromParentVariantMap(variantMap);
 
-    
+    updateHeadsUpDisplay();
 
     if (pointRenderer.getNavigator().getNavigationAction().getSerializationCountFrom() == 0) {
         qDebug() << "Resetting view";
@@ -990,6 +1029,8 @@ void ScatterplotPlugin::fromVariantMap(const QVariantMap& variantMap)
 
         _scatterPlotWidget->update();
     }
+
+    updateHeadsUpDisplayTextColor();
 }
 
 QVariantMap ScatterplotPlugin::toVariantMap() const

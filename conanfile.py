@@ -1,8 +1,10 @@
 from conans import ConanFile
 from conan.tools.cmake import CMakeDeps, CMake, CMakeToolchain
 from conans.tools import save, load
+from conans import tools
 import os
 import pathlib
+import shutil
 import subprocess
 from rules_support import PluginBranchInfo
 
@@ -98,6 +100,7 @@ class ScatterplotOPluginConan(ConanFile):
         # Use the ManiVault .cmake file to find ManiVault with find_package
         mv_core_root = self.deps_cpp_info["hdps-core"].rootpath
         manivault_dir = pathlib.Path(mv_core_root, "cmake", "mv").as_posix()
+        
         print("ManiVault_DIR: ", manivault_dir)
         tc.variables["ManiVault_DIR"] = manivault_dir
 

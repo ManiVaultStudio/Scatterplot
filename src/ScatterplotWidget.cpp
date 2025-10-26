@@ -153,7 +153,7 @@ bool ScatterplotWidget::event(QEvent* event)
     }
 
     auto setIsNavigating = [this](bool isNavigating) -> void {
-        _pixelSelectionTool.setEnabled(getRenderMode() == RenderMode::SCATTERPLOT && !isNavigating);
+        _pixelSelectionTool.setEnabled((getRenderMode() == RenderMode::SCATTERPLOT || getRenderMode() == RenderMode::DENSITY) && !isNavigating);
 
         if (isNavigating) {
             _samplerPixelSelectionTool.setEnabled(false);
