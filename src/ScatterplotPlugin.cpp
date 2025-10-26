@@ -238,12 +238,30 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                         });
                 }
                 else {
+                    if (candidateDataset.isValid())
+                    {
+                        // Check to set whether the number of data points comprised throughout all clusters is the same number
+                        // as the number of data points in the dataset we are trying to color
+                        int totalNumIndices = 0;
+                        for (Cluster cluster : candidateDataset->getClusters())
+                        {
+                            totalNumIndices += cluster.getIndices().size();
+                        }
 
-                    // Use the clusters set for points color
-                    dropRegions << new DropWidget::DropRegion(this, "Color", description, "palette", true, [this, candidateDataset]() {
-                        _settingsAction.getColoringAction().addColorDataset(candidateDataset);
-                        _settingsAction.getColoringAction().setCurrentColorDataset(candidateDataset);
-                        });
+                        if (totalNumIndices == _positionDataset->getNumPoints())
+                        {
+                            // Use the clusters set for points color
+                            dropRegions << new DropWidget::DropRegion(this, "Color", description, "palette", true, [this, candidateDataset]() {
+                                _settingsAction.getColoringAction().addColorDataset(candidateDataset);
+                                _settingsAction.getColoringAction().setCurrentColorDataset(candidateDataset);
+                            });
+                        }
+                        else
+                        {
+                            // Number of indices in clusters doesn't match point dataset
+                            dropRegions << new DropWidget::DropRegion(this, "Incompatible data", "Cluster data does not match number of data points", "exclamation-circle", false);
+                        }
+                    }
                 }
             }
             else {
