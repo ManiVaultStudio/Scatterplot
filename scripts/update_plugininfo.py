@@ -30,33 +30,19 @@ def fetch_contributors():
 
 
 # ---------- Fetch README content ----------
-def fetch_readme_excerpt(max_lines=5):
-    """
-    Fetch the README content and return the first few non-empty lines as a string.
-    Falls back gracefully if README not found.
-    """
+def fetch_readme_excerpt(lines=5):
+    """Fetch first few lines from README.md"""
     url = f"https://raw.githubusercontent.com/{ORG}/{REPO}/master/README.md"
     r = requests.get(url)
     if r.status_code != 200:
-        print("⚠️  No README.md found or couldn't fetch it.")
-        return None
-
-    lines = r.text.splitlines()
-    excerpt = []
-    for line in lines:
-        clean = line.strip()
-        if clean:  # skip empty lines
-            excerpt.append(clean)
-        if len(excerpt) >= max_lines:
-            break
-
-    if not excerpt:
-        return None
-    return " ".join(excerpt)
+        return ""
+    content = r.text.strip().splitlines()
+    snippet = "\n".join(content[:lines])
+    return snippet
 
 # ---------- Write output markdown ----------
 def write_markdown(info, authors, longdescription=None):
-    readme_snippet = fetch_readme_excerpt(max_lines=5)
+    readme_snippet = fetch_readme_excerpt(lines=5)
     
     metadata = {
         "layout": "plugin",
