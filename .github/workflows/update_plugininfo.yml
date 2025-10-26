@@ -50,13 +50,17 @@ jobs:
         run: |
           curl -s -H "Authorization: Bearer ${APP_TOKEN}" -H "Accept: application/vnd.github+json" \
             https://api.github.com/installation/repositories | jq -r '.repositories[].full_name'
-            
-      # quick sanity: token can read the repo
-      - name: Sanity check token can read website repo
+
+      - name: Can token read repo via REST?
         env:
           APP_TOKEN: ${{ steps.app_token.outputs.token }}
         run: |
-          git ls-remote https://x-access-token:${APP_TOKEN}@github.com/ManiVaultStudio/manivaultstudio.github.io.git HEAD
+          set -e
+          curl -sfL -H "Authorization: Bearer ${APP_TOKEN}" \
+                    -H "Accept: application/vnd.github+json" \
+                    https://api.github.com/repos/ManiVaultStudio/manivaultstudio.github.io \
+            | jq '.full_name,.private'
+          echo "✅ REST access OK"
 
       # clone with the app token (note the x-access-token:<token>@ form)
       - name: Clone manivaultstudio.github.io (feature branch)
