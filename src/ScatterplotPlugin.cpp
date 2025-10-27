@@ -810,11 +810,11 @@ void ScatterplotPlugin::loadColors(const Dataset<Clusters>& clusters)
 
     // Generate color buffer for global and local colors
     std::vector<Vector3f> globalColors(totalNumPoints);
-    std::vector<Vector3f> localColors(_positions.size());
+    std::vector<Vector3f> localColors(_numPoints);
 
     const auto& clusterVec = clusters->getClusters();
 
-    if (totalNumPoints == _positions.size() && clusterVec.size() == totalNumPoints)
+    if (totalNumPoints == _numPoints && clusterVec.size() == totalNumPoints)
     {
         for (size_t i = 0; i < static_cast<size_t>(clusterVec.size()); i++)
         {
