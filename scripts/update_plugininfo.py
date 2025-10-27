@@ -78,26 +78,20 @@ def write_markdown(info, authors, readme_text=""):
         "shortname": info["name"].split()[0],
         "key": REPO.lower(),
         "type": info.get("type", "").lower(),
+        
         "version": info["version"]["plugin"],
         "date": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
         "organization": "ManiVault",
         "organization-link": "https://www.manivault.studio",
         "authors": authors,
-        # NOTE: shortdescription intentionally removed (derived on site)
         "repo": f"https://github.com/{OWNER}/{REPO}",
+        "dependencies": info.get("dependencies", []),
     }
 
     # Build page body: README + repo link footer
     body_parts = []
     if readme_text:
         body_parts.append(readme_text)
-    deps = info.get("dependencies", [])
-    if deps:
-        deps_text = "\n\n---\n**Dependencies:** " + ", ".join(deps)
-        body_parts.append(deps_text)
-
-    # Repository link footer
-    body_parts.append(f"\n---\n**Source repository:** https://github.com/{OWNER}/{REPO}\n")
 
     body = "\n".join(body_parts).lstrip("\n")
 
