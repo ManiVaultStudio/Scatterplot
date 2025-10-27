@@ -830,9 +830,10 @@ void ScatterplotPlugin::loadColors(const Dataset<Clusters>& clusters)
         // Loop over all clusters and populate global colors
         for (const auto& cluster : clusterVec)
         {
-            const auto color = cluster.getColor();
+            const auto color  = cluster.getColor();
+            const auto colVec = Vector3f(color.redF(), color.greenF(), color.blueF());
             for (const auto& index : cluster.getIndices())
-                globalColors[index] = Vector3f(color.redF(), color.greenF(), color.blueF());
+                globalColors[index] = colVec;
 
         }
 
