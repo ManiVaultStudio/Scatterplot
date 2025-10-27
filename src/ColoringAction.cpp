@@ -281,7 +281,8 @@ void ColoringAction::updateScatterplotWidgetColorMap()
     {
         case ScatterplotWidget::SCATTERPLOT:
         {
-            if (_colorByAction.getCurrentIndex() == 0) {
+            const int32_t currentIndex = _colorByAction.getCurrentIndex();
+            if (currentIndex == 0) {
                 QPixmap colorPixmap(1, 1);
 
                 colorPixmap.fill(_constantColorAction.getColor());
@@ -290,7 +291,7 @@ void ColoringAction::updateScatterplotWidgetColorMap()
                 scatterplotWidget.setScalarEffect(PointEffect::Color);
                 scatterplotWidget.setColoringMode(ScatterplotWidget::ColoringMode::Constant);
             }
-            else if (_colorByAction.getCurrentIndex() == 1) {
+            else if (currentIndex == 1) {
                 scatterplotWidget.setColorMap(_colorMap2DAction.getColorMapImage());
                 scatterplotWidget.setScalarEffect(PointEffect::Color2D);
                 scatterplotWidget.setColoringMode(ScatterplotWidget::ColoringMode::Scatter);
