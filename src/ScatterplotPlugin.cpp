@@ -243,7 +243,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                         // Check to set whether the number of data points comprised throughout all clusters is the same number
                         // as the number of data points in the dataset we are trying to color
                         int totalNumIndices = 0;
-                        for (Cluster cluster : candidateDataset->getClusters())
+                        for (const Cluster& cluster : candidateDataset->getClusters())
                         {
                             totalNumIndices += cluster.getIndices().size();
                         }
