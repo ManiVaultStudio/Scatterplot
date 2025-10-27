@@ -815,9 +815,6 @@ void ScatterplotPlugin::loadColors(const Dataset<Clusters>& clusters)
     if (!clusters.isValid() || !_positionDataset.isValid())
         return;
 
-    // Mapping from local to global indices
-    std::vector<std::uint32_t> globalIndices;
-
     // Get global indices from the position dataset
     int totalNumPoints = 0;
     if (_positionDataset->isDerivedData())
@@ -825,15 +822,17 @@ void ScatterplotPlugin::loadColors(const Dataset<Clusters>& clusters)
     else
         totalNumPoints = _positionDataset->getFullDataset<Points>()->getNumPoints();
 
+    // Mapping from local to global indices
+    std::vector<std::uint32_t> globalIndices;
     _positionDataset->getGlobalIndices(globalIndices);
 
     // Generate color buffer for global and local colors
     std::vector<Vector3f> globalColors(totalNumPoints);
-    std::vector<Vector3f> localColors(_positions.size());
+    std::vector<Vector3f> localColors(_numPoints);
 
     const auto& clusterVec = clusters->getClusters();
 
-    if (totalNumPoints == _positions.size() && clusterVec.size() == totalNumPoints)
+    if (totalNumPoints == _numPoints && clusterVec.size() == totalNumPoints)
     {
         for (size_t i = 0; i < static_cast<size_t>(clusterVec.size()); i++)
         {
@@ -844,14 +843,15 @@ void ScatterplotPlugin::loadColors(const Dataset<Clusters>& clusters)
         }
 
     }
-    else
+    else if(globalIndices.size() == _numPoints)
     {
         // Loop over all clusters and populate global colors
         for (const auto& cluster : clusterVec)
         {
-            const auto color = cluster.getColor();
+            const auto color  = cluster.getColor();
+            const auto colVec = Vector3f(color.redF(), color.greenF(), color.blueF());
             for (const auto& index : cluster.getIndices())
-                globalColors[index] = Vector3f(color.redF(), color.greenF(), color.blueF());
+                globalColors[index] = colVec;
 
         }
 
