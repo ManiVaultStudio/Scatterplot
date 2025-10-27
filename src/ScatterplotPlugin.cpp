@@ -797,9 +797,6 @@ void ScatterplotPlugin::loadColors(const Dataset<Clusters>& clusters)
     if (!clusters.isValid() || !_positionDataset.isValid())
         return;
 
-    // Mapping from local to global indices
-    std::vector<std::uint32_t> globalIndices;
-
     // Get global indices from the position dataset
     int totalNumPoints = 0;
     if (_positionDataset->isDerivedData())
@@ -807,6 +804,8 @@ void ScatterplotPlugin::loadColors(const Dataset<Clusters>& clusters)
     else
         totalNumPoints = _positionDataset->getFullDataset<Points>()->getNumPoints();
 
+    // Mapping from local to global indices
+    std::vector<std::uint32_t> globalIndices;
     _positionDataset->getGlobalIndices(globalIndices);
 
     // Generate color buffer for global and local colors
