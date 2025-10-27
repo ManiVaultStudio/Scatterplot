@@ -238,12 +238,30 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                         });
                 }
                 else {
+                    if (candidateDataset.isValid())
+                    {
+                        // Check to set whether the number of data points comprised throughout all clusters is the same number
+                        // as the number of data points in the dataset we are trying to color
+                        int totalNumIndices = 0;
+                        for (const Cluster& cluster : candidateDataset->getClusters())
+                        {
+                            totalNumIndices += cluster.getIndices().size();
+                        }
 
-                    // Use the clusters set for points color
-                    dropRegions << new DropWidget::DropRegion(this, "Color", description, "palette", true, [this, candidateDataset]() {
-                        _settingsAction.getColoringAction().addColorDataset(candidateDataset);
-                        _settingsAction.getColoringAction().setCurrentColorDataset(candidateDataset);
-                        });
+                        if (totalNumIndices == _positionDataset->getNumPoints())
+                        {
+                            // Use the clusters set for points color
+                            dropRegions << new DropWidget::DropRegion(this, "Color", description, "palette", true, [this, candidateDataset]() {
+                                _settingsAction.getColoringAction().addColorDataset(candidateDataset);
+                                _settingsAction.getColoringAction().setCurrentColorDataset(candidateDataset);
+                            });
+                        }
+                        else
+                        {
+                            // Number of indices in clusters doesn't match point dataset
+                            dropRegions << new DropWidget::DropRegion(this, "Incompatible data", "Cluster data does not match number of data points", "exclamation-circle", false);
+                        }
+                    }
                 }
             }
             else {
@@ -264,8 +282,6 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     getLearningCenterAction().addVideos(QStringList({ "Practitioner", "Developer" }));
 
     setOverlayActionsTargetWidget(_scatterPlotWidget);
-
-    
 }
 
 ScatterplotPlugin::~ScatterplotPlugin()
@@ -397,6 +413,10 @@ void ScatterplotPlugin::init()
     connect(&_settingsAction.getColoringAction().getColorByAction(), &OptionAction::currentIndexChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
     connect(&_settingsAction.getPlotAction().getPointPlotAction().getSizeAction(), &ScalarAction::sourceDataChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
     connect(&_settingsAction.getPlotAction().getPointPlotAction().getOpacityAction(), &ScalarAction::sourceDataChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
+
+    updateHeadsUpDisplayTextColor();
+
+    connect(&_settingsAction.getMiscellaneousAction().getBackgroundColorAction(), &ColorAction::colorChanged, this, &ScatterplotPlugin::updateHeadsUpDisplayTextColor);
 }
 
 void ScatterplotPlugin::loadData(const Datasets& datasets)
@@ -816,9 +836,6 @@ void ScatterplotPlugin::loadColors(const Dataset<Clusters>& clusters)
     if (!clusters.isValid() || !_positionDataset.isValid())
         return;
 
-    // Mapping from local to global indices
-    std::vector<std::uint32_t> globalIndices;
-
     // Get global indices from the position dataset
     int totalNumPoints = 0;
     if (_positionDataset->isDerivedData())
@@ -826,15 +843,17 @@ void ScatterplotPlugin::loadColors(const Dataset<Clusters>& clusters)
     else
         totalNumPoints = _positionDataset->getFullDataset<Points>()->getNumPoints();
 
+    // Mapping from local to global indices
+    std::vector<std::uint32_t> globalIndices;
     _positionDataset->getGlobalIndices(globalIndices);
 
     // Generate color buffer for global and local colors
     std::vector<Vector3f> globalColors(totalNumPoints);
-    std::vector<Vector3f> localColors(_positions.size());
+    std::vector<Vector3f> localColors(_numPoints);
 
     const auto& clusterVec = clusters->getClusters();
 
-    if (totalNumPoints == _positions.size() && clusterVec.size() == totalNumPoints)
+    if (totalNumPoints == _numPoints && clusterVec.size() == totalNumPoints)
     {
         for (size_t i = 0; i < static_cast<size_t>(clusterVec.size()); i++)
         {
@@ -845,14 +864,15 @@ void ScatterplotPlugin::loadColors(const Dataset<Clusters>& clusters)
         }
 
     }
-    else
+    else if(globalIndices.size() == _numPoints)
     {
         // Loop over all clusters and populate global colors
         for (const auto& cluster : clusterVec)
         {
-            const auto color = cluster.getColor();
+            const auto color  = cluster.getColor();
+            const auto colVec = Vector3f(color.redF(), color.greenF(), color.blueF());
             for (const auto& index : cluster.getIndices())
-                globalColors[index] = Vector3f(color.redF(), color.greenF(), color.blueF());
+                globalColors[index] = colVec;
 
         }
 
@@ -1017,6 +1037,19 @@ void ScatterplotPlugin::updateHeadsUpDisplay()
     }
 }
 
+void ScatterplotPlugin::updateHeadsUpDisplayTextColor()
+{
+    if (auto headsUpDisplayWidget = getWidget().findChild<QWidget*>("HeadsUpDisplayWidget")) {
+        if (auto headsUpDisplayWidgetTreeView = headsUpDisplayWidget->findChild<QTreeView*>("TreeView")) {
+            QPalette palette = headsUpDisplayWidgetTreeView->palette();
+
+            palette.setColor(QPalette::Text, _settingsAction.getMiscellaneousAction().getBackgroundColorAction().getColor().lightnessF() > .5f ? Qt::black : Qt::white);
+
+            headsUpDisplayWidgetTreeView->setPalette(palette);
+        }
+    }
+}
+
 void ScatterplotPlugin::fromVariantMap(const QVariantMap& variantMap)
 {
     ViewPlugin::fromVariantMap(variantMap);
@@ -1038,6 +1071,8 @@ void ScatterplotPlugin::fromVariantMap(const QVariantMap& variantMap)
 
         _scatterPlotWidget->update();
     }
+
+    updateHeadsUpDisplayTextColor();
 }
 
 QVariantMap ScatterplotPlugin::toVariantMap() const

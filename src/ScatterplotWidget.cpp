@@ -41,6 +41,7 @@ ScatterplotWidget::ScatterplotWidget(mv::plugin::ViewPlugin* parentPlugin) :
     _pointRenderer(this),
     _isInitialized(false),
     _renderMode(SCATTERPLOT),
+    _scalarEffect(PointEffect::Color),
     _backgroundColor(255, 255, 255, 255),
     _coloringMode(ColoringMode::Constant),
     _dataRectangleAction(this, "Data rectangle"),
@@ -334,7 +335,7 @@ void ScatterplotWidget::setScalars(const std::vector<float>& scalars)
 void ScatterplotWidget::setColors(const std::vector<Vector3f>& colors)
 {
     _pointRenderer.setColors(colors);
-    _pointRenderer.setScalarEffect(None);
+    setScalarEffect(PointEffect::None);
 
     update();
 }
@@ -367,6 +368,7 @@ void ScatterplotWidget::setPointScaling(mv::gui::PointScaling scalingMode)
 void ScatterplotWidget::setScalarEffect(PointEffect effect)
 {
     _pointRenderer.setScalarEffect(effect);
+    _scalarEffect = effect;
 
     update();
 }
@@ -621,7 +623,7 @@ void ScatterplotWidget::initializeGL()
     _densityRenderer.init();
 
     // Set a default color map for both renderers
-    _pointRenderer.setScalarEffect(PointEffect::Color);
+    _pointRenderer.setScalarEffect(_scalarEffect);
 
     _pointRenderer.setPointScaling(Absolute);
     _pointRenderer.setSelectionOutlineColor(Vector3f(1, 0, 0));

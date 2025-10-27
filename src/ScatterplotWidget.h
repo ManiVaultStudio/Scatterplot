@@ -296,6 +296,7 @@ protected:
 private:
     bool                        _isInitialized;                 /** Boolean determining whether the widget it properly initialized or not */
     RenderMode                  _renderMode;                    /** Current render mode */
+    PointEffect                 _scalarEffect;                  /** Current scalar effect */
     QColor                      _backgroundColor;               /** Background color */
     ColoringMode                _coloringMode;                  /** Type of point/density coloring */
     DecimalRectangleAction      _dataRectangleAction;           /** Rectangle action for the bounds of the loaded data */
