@@ -91,7 +91,14 @@ def write_markdown(info, authors, readme_text=""):
     body_parts = []
     if readme_text:
         body_parts.append(readme_text)
+    deps = info.get("dependencies", [])
+    if deps:
+        deps_text = "\n\n---\n**Dependencies:** " + ", ".join(deps)
+        body_parts.append(deps_text)
+
+    # Repository link footer
     body_parts.append(f"\n---\n**Source repository:** https://github.com/{OWNER}/{REPO}\n")
+
     body = "\n".join(body_parts).lstrip("\n")
 
     with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
