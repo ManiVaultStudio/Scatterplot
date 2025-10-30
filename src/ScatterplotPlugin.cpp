@@ -248,7 +248,13 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                             totalNumIndices += cluster.getIndices().size();
                         }
 
-                        if (totalNumIndices == _positionDataset->getNumPoints())
+                        int totalNumPoints = 0;
+                        if (_positionDataset->isDerivedData())
+                            totalNumPoints = _positionSourceDataset->getFullDataset<Points>()->getNumPoints();
+                        else
+                            totalNumPoints = _positionDataset->getFullDataset<Points>()->getNumPoints();
+
+                        if (totalNumIndices == totalNumPoints)
                         {
                             // Use the clusters set for points color
                             dropRegions << new DropWidget::DropRegion(this, "Color", description, "palette", true, [this, candidateDataset]() {
