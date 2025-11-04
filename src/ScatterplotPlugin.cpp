@@ -394,8 +394,27 @@ void ScatterplotPlugin::init()
 
     connect(&_positionDataset, &Dataset<>::changed, this, &ScatterplotPlugin::updateHeadsUpDisplay);
     connect(&_positionDataset, &Dataset<>::guiNameChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
-    connect(&_settingsAction.getColoringAction(), &ColoringAction::currentColorDatasetChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
-    connect(&_settingsAction.getColoringAction().getColorByAction(), &OptionAction::currentIndexChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
+    connect(&_positionDataset, &Dataset<>::guiNameChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
+
+    const auto currentColorDatasetChanged = [this](Dataset<DatasetImpl> currentColorDataset) -> void {
+        if (_colorDataset == currentColorDataset)
+            return;
+
+        if (_colorDataset.isValid())
+            disconnect(&_colorDataset, &Dataset<>::guiNameChanged, this, nullptr);
+
+        _colorDataset = currentColorDataset;
+
+        connect(&_colorDataset, &Dataset<>::guiNameChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
+
+        updateHeadsUpDisplay();
+	};
+
+	connect(&_settingsAction.getColoringAction(), &ColoringAction::currentColorDatasetChanged, this, currentColorDatasetChanged);
+    connect(&_settingsAction.getColoringAction().getColorByAction(), &OptionAction::currentIndexChanged, this, [this, currentColorDatasetChanged](const std::int32_t& currentIndex) -> void {
+        currentColorDatasetChanged(_settingsAction.getColoringAction().getCurrentColorDataset());
+    });
+
     connect(&_settingsAction.getPlotAction().getPointPlotAction().getSizeAction(), &ScalarAction::sourceDataChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
     connect(&_settingsAction.getPlotAction().getPointPlotAction().getOpacityAction(), &ScalarAction::sourceDataChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
 
@@ -1010,7 +1029,9 @@ void ScatterplotPlugin::updateHeadsUpDisplay()
                 getHeadsUpDisplayAction().addHeadsUpDisplayItem(QString("%1 by:").arg(metaDataName), data->getGuiName(), "", itemPtr);
             };
 
-        addMetaDataToHeadsUpDisplay("Color",   _settingsAction.getColoringAction().getCurrentColorDataset(), datasetsItem);
+        if (_settingsAction.getColoringAction().getColorByAction().getCurrentIndex() >= 2)
+			addMetaDataToHeadsUpDisplay("Color", _colorDataset, datasetsItem);
+
         addMetaDataToHeadsUpDisplay("Size",    _settingsAction.getPlotAction().getPointPlotAction().getSizeAction().getCurrentDataset(), datasetsItem);
         addMetaDataToHeadsUpDisplay("Opacity", _settingsAction.getPlotAction().getPointPlotAction().getOpacityAction().getCurrentDataset(), datasetsItem);
 
