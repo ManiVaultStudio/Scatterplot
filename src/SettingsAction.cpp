@@ -73,6 +73,8 @@ void SettingsAction::fromVariantMap(const QVariantMap& variantMap)
     _renderModeAction.fromParentVariantMap(variantMap);
     _selectionAction.fromParentVariantMap(variantMap);
     _miscellaneousAction.fromParentVariantMap(variantMap);
+    _subsetAction.fromParentVariantMap(variantMap);
+    _clusteringAction.fromParentVariantMap(variantMap);
 
     if (variantMap.contains("PointRendererNavigation"))
 		_scatterplotPlugin->getScatterplotWidget().getPointRendererNavigator().getNavigationAction().fromVariantMap(variantMap["PointRendererNavigation"].toMap());
@@ -92,6 +94,8 @@ QVariantMap SettingsAction::toVariantMap() const
     _coloringAction.insertIntoVariantMap(variantMap);
     _selectionAction.insertIntoVariantMap(variantMap);
     _miscellaneousAction.insertIntoVariantMap(variantMap);
+    _subsetAction.insertIntoVariantMap(variantMap);
+    _clusteringAction.insertIntoVariantMap(variantMap);
 
     variantMap["PointRendererNavigation"]   = _scatterplotPlugin->getScatterplotWidget().getPointRendererNavigator().getNavigationAction().toVariantMap();
     variantMap["DensityRendererNavigation"] = _scatterplotPlugin->getScatterplotWidget().getDensityRendererNavigator().getNavigationAction().toVariantMap();
