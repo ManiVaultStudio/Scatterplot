@@ -70,12 +70,14 @@ void SettingsAction::fromVariantMap(const QVariantMap& variantMap)
     _plotAction.fromParentVariantMap(variantMap);
     _positionAction.fromParentVariantMap(variantMap);
     _coloringAction.fromParentVariantMap(variantMap);
+    _subsetAction.fromParentVariantMap(variantMap);
+    _clusteringAction.fromParentVariantMap(variantMap);
     _renderModeAction.fromParentVariantMap(variantMap);
     _selectionAction.fromParentVariantMap(variantMap);
     _miscellaneousAction.fromParentVariantMap(variantMap);
 
     if (variantMap.contains("PointRendererNavigation"))
-		_scatterplotPlugin->getScatterplotWidget().getPointRendererNavigator().getNavigationAction().fromVariantMap(variantMap["PointRendererNavigation"].toMap());
+        _scatterplotPlugin->getScatterplotWidget().getPointRendererNavigator().getNavigationAction().fromVariantMap(variantMap["PointRendererNavigation"].toMap());
 
     if (variantMap.contains("DensityRendererNavigation"))
         _scatterplotPlugin->getScatterplotWidget().getDensityRendererNavigator().getNavigationAction().fromVariantMap(variantMap["DensityRendererNavigation"].toMap());
@@ -90,6 +92,8 @@ QVariantMap SettingsAction::toVariantMap() const
     _plotAction.insertIntoVariantMap(variantMap);
     _positionAction.insertIntoVariantMap(variantMap);
     _coloringAction.insertIntoVariantMap(variantMap);
+    _subsetAction.insertIntoVariantMap(variantMap);
+    _clusteringAction.insertIntoVariantMap(variantMap);
     _selectionAction.insertIntoVariantMap(variantMap);
     _miscellaneousAction.insertIntoVariantMap(variantMap);
 
