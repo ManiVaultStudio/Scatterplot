@@ -339,6 +339,7 @@ void ScatterplotPlugin::init()
         updateHeadsUpDisplay();
     });
     connect(&_positionDataset, &Dataset<Points>::dataSelectionChanged, this, &ScatterplotPlugin::updateSelection);
+    connect(&_positionDataset, &Dataset<>::guiNameChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
 
     _scatterPlotWidget->installEventFilter(this);
 
@@ -394,8 +395,6 @@ void ScatterplotPlugin::init()
 #endif
 
     updateHeadsUpDisplay();
-
-    connect(&_positionDataset, &Dataset<>::guiNameChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
 
     const auto currentColorDatasetChanged = [this](Dataset<DatasetImpl> currentColorDataset) -> void {
         if (_colorDataset == currentColorDataset)
