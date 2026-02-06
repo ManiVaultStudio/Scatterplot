@@ -394,7 +394,6 @@ void ScatterplotPlugin::init()
 
     connect(&_positionDataset, &Dataset<>::changed, this, &ScatterplotPlugin::updateHeadsUpDisplay);
     connect(&_positionDataset, &Dataset<>::guiNameChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
-    connect(&_positionDataset, &Dataset<>::guiNameChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
 
     const auto currentColorDatasetChanged = [this](Dataset<DatasetImpl> currentColorDataset) -> void {
         if (_colorDataset == currentColorDataset)
