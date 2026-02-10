@@ -334,17 +334,45 @@ void ScatterplotPlugin::init()
     connect(&getSamplerAction(), &ViewPluginSamplerAction::sampleContextRequested, this, &ScatterplotPlugin::samplePoints);
 
     connect(&_positionDataset, &Dataset<Points>::changed, this, &ScatterplotPlugin::positionDatasetChanged);
-    connect(&_positionDataset, &Dataset<Points>::dataChanged, this, &ScatterplotPlugin::updateData);
+    connect(&_positionDataset, &Dataset<Points>::dataChanged, this, [this]() -> void {
+        updateData();
+        updateHeadsUpDisplay();
+    });
     connect(&_positionDataset, &Dataset<Points>::dataSelectionChanged, this, &ScatterplotPlugin::updateSelection);
+    connect(&_positionDataset, &Dataset<>::guiNameChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
 
-    _scatterPlotWidget->installEventFilter(this);
+    const auto currentColorDatasetChanged = [this](Dataset<DatasetImpl> currentColorDataset) -> void {
+        if (_colorDataset == currentColorDataset)
+            return;
 
-    getLearningCenterAction().getViewPluginOverlayWidget()->setTargetWidget(_scatterPlotWidget);
+        if (_colorDataset.isValid())
+            disconnect(&_colorDataset, &Dataset<>::guiNameChanged, this, nullptr);
+
+        _colorDataset = currentColorDataset;
+
+        connect(&_colorDataset, &Dataset<>::guiNameChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
+
+        updateHeadsUpDisplay();
+	};
+
+	connect(&_settingsAction.getColoringAction(), &ColoringAction::currentColorDatasetChanged, this, currentColorDatasetChanged);
+    connect(&_settingsAction.getColoringAction().getColorByAction(), &OptionAction::currentIndexChanged, this, [this, currentColorDatasetChanged](const std::int32_t& currentIndex) -> void {
+        currentColorDatasetChanged(_settingsAction.getColoringAction().getCurrentColorDataset());
+    });
+
+    connect(&_settingsAction.getPlotAction().getPointPlotAction().getSizeAction(), &ScalarAction::sourceDataChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
+    connect(&_settingsAction.getPlotAction().getPointPlotAction().getOpacityAction(), &ScalarAction::sourceDataChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
+
+    connect(&_settingsAction.getMiscellaneousAction().getBackgroundColorAction(), &ColorAction::colorChanged, this, &ScatterplotPlugin::updateHeadsUpDisplayTextColor);
 
     connect(&getScatterplotWidget().getPointRendererNavigator().getNavigationAction().getZoomSelectionAction(), &TriggerAction::triggered, this, [this]() -> void {
         if (_selectionBoundaries.isValid())
             _scatterPlotWidget->getPointRendererNavigator().setZoomRectangleWorld(_selectionBoundaries);
 	});
+
+    _scatterPlotWidget->installEventFilter(this);
+
+    getLearningCenterAction().getViewPluginOverlayWidget()->setTargetWidget(_scatterPlotWidget);
 
 #ifdef VIEW_SAMPLING_HTML
     getSamplerAction().setHtmlViewGeneratorFunction([this](const ViewPluginSamplerAction::SampleContext& toolTipContext) -> QString {
@@ -391,36 +419,7 @@ void ScatterplotPlugin::init()
 #endif
 
     updateHeadsUpDisplay();
-
-    connect(&_positionDataset, &Dataset<>::changed, this, &ScatterplotPlugin::updateHeadsUpDisplay);
-    connect(&_positionDataset, &Dataset<>::guiNameChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
-    connect(&_positionDataset, &Dataset<>::guiNameChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
-
-    const auto currentColorDatasetChanged = [this](Dataset<DatasetImpl> currentColorDataset) -> void {
-        if (_colorDataset == currentColorDataset)
-            return;
-
-        if (_colorDataset.isValid())
-            disconnect(&_colorDataset, &Dataset<>::guiNameChanged, this, nullptr);
-
-        _colorDataset = currentColorDataset;
-
-        connect(&_colorDataset, &Dataset<>::guiNameChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
-
-        updateHeadsUpDisplay();
-	};
-
-	connect(&_settingsAction.getColoringAction(), &ColoringAction::currentColorDatasetChanged, this, currentColorDatasetChanged);
-    connect(&_settingsAction.getColoringAction().getColorByAction(), &OptionAction::currentIndexChanged, this, [this, currentColorDatasetChanged](const std::int32_t& currentIndex) -> void {
-        currentColorDatasetChanged(_settingsAction.getColoringAction().getCurrentColorDataset());
-    });
-
-    connect(&_settingsAction.getPlotAction().getPointPlotAction().getSizeAction(), &ScalarAction::sourceDataChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
-    connect(&_settingsAction.getPlotAction().getPointPlotAction().getOpacityAction(), &ScalarAction::sourceDataChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
-
     updateHeadsUpDisplayTextColor();
-
-    connect(&_settingsAction.getMiscellaneousAction().getBackgroundColorAction(), &ColorAction::colorChanged, this, &ScatterplotPlugin::updateHeadsUpDisplayTextColor);
 }
 
 void ScatterplotPlugin::loadData(const Datasets& datasets)
