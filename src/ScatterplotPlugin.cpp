@@ -344,9 +344,6 @@ void ScatterplotPlugin::init()
     connect(&_positionDataset, &Dataset<>::guiNameChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
 
     const auto currentColorDatasetChanged = [this](Dataset<DatasetImpl> currentColorDataset) -> void {
-        if (_colorDataset == currentColorDataset)
-            return;
-
         if (_colorDataset.isValid())
             disconnect(&_colorDataset, &Dataset<>::guiNameChanged, this, nullptr);
 
@@ -362,8 +359,35 @@ void ScatterplotPlugin::init()
         currentColorDatasetChanged(_settingsAction.getColoringAction().getCurrentColorDataset());
     });
 
-    connect(&_settingsAction.getPlotAction().getPointPlotAction().getSizeAction(), &ScalarAction::sourceDataChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
-    connect(&_settingsAction.getPlotAction().getPointPlotAction().getOpacityAction(), &ScalarAction::sourceDataChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
+    const auto currentPointSizeDatasetChanged = [this]() -> void {
+        auto currentPointSizeDataset = _settingsAction.getPlotAction().getPointPlotAction().getSizeAction().getCurrentDataset();
+
+        if (_pointSizeDataset.isValid())
+            disconnect(&_pointSizeDataset, &Dataset<>::guiNameChanged, this, nullptr);
+
+        _pointSizeDataset = currentPointSizeDataset;
+
+        connect(&_pointSizeDataset, &Dataset<>::guiNameChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
+
+        updateHeadsUpDisplay();
+    };
+
+    connect(&_settingsAction.getPlotAction().getPointPlotAction().getSizeAction(), &ScalarAction::sourceSelectionChanged, this, currentPointSizeDatasetChanged);
+
+    const auto currentPointOpacityDatasetChanged = [this]() -> void {
+        auto currentPointOpacityDataset = _settingsAction.getPlotAction().getPointPlotAction().getOpacityAction().getCurrentDataset();
+
+        if (_pointOpacityDataset.isValid())
+            disconnect(&_pointOpacityDataset, &Dataset<>::guiNameChanged, this, nullptr);
+
+        _pointOpacityDataset = currentPointOpacityDataset;
+
+        connect(&_pointOpacityDataset, &Dataset<>::guiNameChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
+
+        updateHeadsUpDisplay();
+    };
+
+    connect(&_settingsAction.getPlotAction().getPointPlotAction().getOpacityAction(), &ScalarAction::sourceSelectionChanged, this, currentPointOpacityDatasetChanged);
 
     connect(&_settingsAction.getMiscellaneousAction().getBackgroundColorAction(), &ColorAction::colorChanged, this, &ScatterplotPlugin::updateHeadsUpDisplayTextColor);
 
@@ -1038,11 +1062,9 @@ void ScatterplotPlugin::updateHeadsUpDisplay()
 
         addMetaDataToHeadsUpDisplay("Size",    _settingsAction.getPlotAction().getPointPlotAction().getSizeAction().getCurrentDataset(), datasetsItem);
         addMetaDataToHeadsUpDisplay("Opacity", _settingsAction.getPlotAction().getPointPlotAction().getOpacityAction().getCurrentDataset(), datasetsItem);
-
     } else {
         getHeadsUpDisplayAction().addHeadsUpDisplayItem("No datasets loaded", "", "");
     }
-
 }
 
 void ScatterplotPlugin::updateHeadsUpDisplayTextColor()

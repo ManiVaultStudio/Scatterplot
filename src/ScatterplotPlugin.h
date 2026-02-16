@@ -116,7 +116,9 @@ private:
     ScatterplotWidget*              _scatterPlotWidget;         /** The visualization widget */
     Dataset<Points>                 _positionDataset;           /** Smart pointer to points dataset for point position */
     Dataset<Points>                 _positionSourceDataset;     /** Smart pointer to source of the points dataset for point position (if any) */
-    Dataset<DatasetImpl>            _colorDataset;              /** Smart pointer to dataset used for coloring (if any) */   
+    Dataset<DatasetImpl>            _colorDataset;              /** Smart pointer to dataset used for coloring (if any) */
+    Dataset<DatasetImpl>            _pointSizeDataset;          /** Smart pointer to dataset for driving point size (if any) */
+    Dataset<DatasetImpl>            _pointOpacityDataset;       /** Smart pointer to dataset for driving point opacity (if any) */
     std::vector<mv::Vector2f>       _positions;                 /** Point positions */
     unsigned int                    _numPoints;                 /** Number of point positions */
     SettingsAction                  _settingsAction;            /** Group action for all settings */
