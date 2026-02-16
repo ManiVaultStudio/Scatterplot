@@ -1065,6 +1065,7 @@ void ScatterplotPlugin::updateHeadsUpDisplay()
     } else {
         getHeadsUpDisplayAction().addHeadsUpDisplayItem("No datasets loaded", "", "");
     }
+
 }
 
 void ScatterplotPlugin::updateHeadsUpDisplayTextColor()
