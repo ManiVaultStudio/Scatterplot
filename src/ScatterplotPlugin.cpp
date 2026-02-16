@@ -288,6 +288,8 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     getLearningCenterAction().addVideos(QStringList({ "Practitioner", "Developer" }));
 
     setOverlayActionsTargetWidget(_scatterPlotWidget);
+
+    connect(&mv::projects(), &AbstractProjectManager::projectOpened, this, &ScatterplotPlugin::updateHeadsUpDisplay);
 }
 
 ScatterplotPlugin::~ScatterplotPlugin()
@@ -1016,6 +1018,9 @@ void ScatterplotPlugin::updateSelection()
 
 void ScatterplotPlugin::updateHeadsUpDisplay()
 {
+    if (mv::projects().isOpeningProject())
+        return;
+
     getHeadsUpDisplayAction().removeAllHeadsUpDisplayItems();
 
     if (_positionDataset.isValid()) {
@@ -1037,6 +1042,7 @@ void ScatterplotPlugin::updateHeadsUpDisplay()
     } else {
         getHeadsUpDisplayAction().addHeadsUpDisplayItem("No datasets loaded", "", "");
     }
+
 }
 
 void ScatterplotPlugin::updateHeadsUpDisplayTextColor()
@@ -1065,12 +1071,7 @@ void ScatterplotPlugin::fromVariantMap(const QVariantMap& variantMap)
     _primaryToolbarAction.fromParentVariantMap(variantMap);
     _settingsAction.fromParentVariantMap(variantMap);
 
-    updateHeadsUpDisplay();
-
     if (pointRenderer.getNavigator().getNavigationAction().getSerializationCountFrom() == 0) {
-        qDebug() << "Resetting view";
-        
-
         _scatterPlotWidget->update();
     }
 
