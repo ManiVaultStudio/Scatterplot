@@ -65,7 +65,9 @@ DatasetsAction::DatasetsAction(QObject* parent, const QString& title) :
 
     connect(&_colorDatasetPickerAction, &DatasetPickerAction::datasetPicked, [this, &coloringAction](Dataset<DatasetImpl> pickedDataset) -> void {
         coloringAction.getColorByAction().setCurrentIndex(pickedDataset.isValid() ? 2 : 0);
-        coloringAction.setCurrentColorDataset(pickedDataset);
+
+        if (pickedDataset.isValid() && !mv::projects().isOpeningProject())
+			coloringAction.setCurrentColorDataset(pickedDataset);
     });
     
     connect(&scatterplotPlugin->getSettingsAction().getColoringAction(), &ColoringAction::currentColorDatasetChanged, this, [this](Dataset<DatasetImpl> currentColorDataset) -> void {
