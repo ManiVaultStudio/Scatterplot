@@ -292,6 +292,27 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
 
 ScatterplotPlugin::~ScatterplotPlugin()
 {
+    disconnect(this);
+    if (_positionDataset.isValid()) {
+        disconnect(&_positionDataset, nullptr, this, nullptr);
+    }
+    
+    if (_scatterPlotWidget) {
+        disconnect(_scatterPlotWidget, nullptr, this, nullptr);
+        disconnect(&_scatterPlotWidget->getPixelSelectionTool(), nullptr, this, nullptr);
+        disconnect(&_scatterPlotWidget->getPointRendererNavigator().getNavigationAction().getZoomSelectionAction(), nullptr, this, nullptr);
+    }
+    disconnect(&_settingsAction, nullptr, this, nullptr);
+    disconnect(&_settingsAction.getColoringAction(), nullptr, this, nullptr);
+    disconnect(&_settingsAction.getColoringAction().getColorByAction(), nullptr, this, nullptr);
+    disconnect(&_settingsAction.getPlotAction().getPointPlotAction().getFocusSelection(), nullptr, this, nullptr);
+    disconnect(&_settingsAction.getPlotAction().getPointPlotAction().getSizeAction(), nullptr, this, nullptr);
+    disconnect(&_settingsAction.getPlotAction().getPointPlotAction().getOpacityAction(), nullptr, this, nullptr);
+    disconnect(&_settingsAction.getColoringAction(), &ColoringAction::currentColorDatasetChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
+    disconnect(&_settingsAction.getColoringAction().getColorByAction(), &OptionAction::currentIndexChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
+    disconnect(&_settingsAction.getPlotAction().getPointPlotAction().getSizeAction(), &ScalarAction::sourceDataChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
+    disconnect(&_settingsAction.getPlotAction().getPointPlotAction().getOpacityAction(), &ScalarAction::sourceDataChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
+    disconnect(&getSamplerAction(), nullptr, this, nullptr);
 }
 
 void ScatterplotPlugin::init()
@@ -1016,6 +1037,9 @@ void ScatterplotPlugin::updateSelection()
 
 void ScatterplotPlugin::updateHeadsUpDisplay()
 {
+#ifdef __APPLE__
+    return;
+#endif    
     getHeadsUpDisplayAction().removeAllHeadsUpDisplayItems();
 
     if (_positionDataset.isValid()) {

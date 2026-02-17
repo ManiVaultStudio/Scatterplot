@@ -164,6 +164,29 @@ ColoringAction::ColoringAction(QObject* parent, const QString& title) :
     _scatterplotPlugin->getScatterplotWidget().setColoringMode(ScatterplotWidget::ColoringMode::Constant);
 }
 
+ColoringAction::~ColoringAction()
+{
+    // Disconnect all connections to prevent accessing freed memory during destruction
+    if (_scatterplotPlugin) {
+        disconnect(&_scatterplotPlugin->getPositionDataset(), nullptr, this, nullptr);
+        disconnect(&_scatterplotPlugin->getPositionSourceDataset(), nullptr, this, nullptr);
+        disconnect(&_scatterplotPlugin->getScatterplotWidget(), nullptr, this, nullptr);
+    }
+    
+    // Disconnect child action connections
+    disconnect(&_colorByAction, nullptr, this, nullptr);
+    disconnect(&_colorByModel, nullptr, this, nullptr);
+    disconnect(&_dimensionAction, nullptr, this, nullptr);
+    disconnect(&_constantColorAction, nullptr, this, nullptr);
+    disconnect(&_colorMap1DAction, nullptr, this, nullptr);
+    disconnect(&_colorMap2DAction, nullptr, this, nullptr);
+    
+    // Disconnect current dataset if valid
+    if (_currentColorPointsDataset.isValid()) {
+        disconnect(&_currentColorPointsDataset, nullptr, this, nullptr);
+    }
+}
+
 QMenu* ColoringAction::getContextMenu(QWidget* parent /*= nullptr*/)
 {
     auto menu = new QMenu("Color", parent);
