@@ -28,6 +28,10 @@ DatasetsAction::DatasetsAction(QObject* parent, const QString& title) :
     addAction(&_pointSizeDatasetPickerAction);
     addAction(&_pointOpacityDatasetPickerAction);
 
+    _colorDatasetPickerAction.setDefaultWidgetFlag(OptionAction::Clearable);
+    _pointSizeDatasetPickerAction.setDefaultWidgetFlag(OptionAction::Clearable);
+    _pointOpacityDatasetPickerAction.setDefaultWidgetFlag(OptionAction::Clearable);
+
     _positionDatasetPickerAction.setFilterFunction([this](mv::Dataset<DatasetImpl> dataset) -> bool {
         return dataset->getDataType() == PointType;
     });
@@ -56,9 +60,12 @@ DatasetsAction::DatasetsAction(QObject* parent, const QString& title) :
     connect(&scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, [this](DatasetImpl* dataset) -> void {
         _positionDatasetPickerAction.setCurrentDataset(dataset);
     });
-    
-    connect(&_colorDatasetPickerAction, &DatasetPickerAction::datasetPicked, [this, scatterplotPlugin](Dataset<DatasetImpl> pickedDataset) -> void {
-        scatterplotPlugin->getSettingsAction().getColoringAction().setCurrentColorDataset(pickedDataset);
+
+    auto& coloringAction = scatterplotPlugin->getSettingsAction().getColoringAction();
+
+    connect(&_colorDatasetPickerAction, &DatasetPickerAction::datasetPicked, [this, &coloringAction](Dataset<DatasetImpl> pickedDataset) -> void {
+        coloringAction.getColorByAction().setCurrentIndex(pickedDataset.isValid() ? 2 : 0);
+        coloringAction.setCurrentColorDataset(pickedDataset);
     });
     
     connect(&scatterplotPlugin->getSettingsAction().getColoringAction(), &ColoringAction::currentColorDatasetChanged, this, [this](Dataset<DatasetImpl> currentColorDataset) -> void {
@@ -79,11 +86,11 @@ DatasetsAction::DatasetsAction(QObject* parent, const QString& title) :
     connect(&pointSizeAction, &ScalarAction::sourceSelectionChanged, this, pointSizeSourceChanged);
     connect(&pointSizeAction, &ScalarAction::sourceDataChanged, this, pointSizeSourceChanged);
 
-    connect(&_pointSizeDatasetPickerAction, &DatasetPickerAction::datasetPicked, this, [this, &pointSizeAction](Dataset<DatasetImpl> dataset) -> void {
-        if (!dataset.isValid())
-            return;
+    connect(&_pointSizeDatasetPickerAction, &DatasetPickerAction::currentIndexChanged, this, [this, &pointSizeAction](const int32_t& currentIndex) -> void {
+        pointSizeAction.setCurrentDataset(_pointSizeDatasetPickerAction.getCurrentDataset());
 
-        pointSizeAction.setCurrentDataset(dataset);
+        if (currentIndex < 0)
+            pointSizeAction.setCurrentSourceIndex(ScalarSourceModel::DefaultRow::Constant);
     });
 
     const auto pointOpacitySourceChanged = [this, &pointOpacityAction]() -> void {
@@ -96,11 +103,11 @@ DatasetsAction::DatasetsAction(QObject* parent, const QString& title) :
     connect(&pointOpacityAction, &ScalarAction::sourceSelectionChanged, this, pointOpacitySourceChanged);
     connect(&pointOpacityAction, &ScalarAction::sourceDataChanged, this, pointOpacitySourceChanged);
 
-    connect(&_pointOpacityDatasetPickerAction, &DatasetPickerAction::datasetPicked, this, [this, &pointOpacityAction](Dataset<DatasetImpl> dataset) -> void {
-        if (!dataset.isValid())
-            return;
+    connect(&_pointOpacityDatasetPickerAction, &DatasetPickerAction::currentIndexChanged, this, [this, &pointOpacityAction](const int32_t& currentIndex) -> void {
+        pointOpacityAction.setCurrentDataset(_pointOpacityDatasetPickerAction.getCurrentDataset());
 
-        pointOpacityAction.setCurrentDataset(dataset);
+        if (currentIndex < 0)
+            pointOpacityAction.setCurrentSourceIndex(ScalarSourceModel::DefaultRow::Constant);
     });
 }
 
