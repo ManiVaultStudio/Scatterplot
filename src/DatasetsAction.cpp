@@ -116,6 +116,8 @@ void DatasetsAction::connectToPublicAction(WidgetAction* publicAction, bool recu
     if (recursive) {
         actions().connectPrivateActionToPublicAction(&_positionDatasetPickerAction, &publicDatasetsAction->getPositionDatasetPickerAction(), recursive);
         actions().connectPrivateActionToPublicAction(&_colorDatasetPickerAction, &publicDatasetsAction->getColorDatasetPickerAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_pointSizeDatasetPickerAction, &publicDatasetsAction->getPointSizeDatasetPickerAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_pointOpacityDatasetPickerAction, &publicDatasetsAction->getPointOpacityDatasetPickerAction(), recursive);
     }
 
     GroupAction::connectToPublicAction(publicAction, recursive);
@@ -129,6 +131,8 @@ void DatasetsAction::disconnectFromPublicAction(bool recursive)
     if (recursive) {
         actions().disconnectPrivateActionFromPublicAction(&_positionDatasetPickerAction, recursive);
         actions().disconnectPrivateActionFromPublicAction(&_colorDatasetPickerAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_pointSizeDatasetPickerAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_pointOpacityDatasetPickerAction, recursive);
     }
 
     GroupAction::disconnectFromPublicAction(recursive);
