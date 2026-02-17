@@ -53,11 +53,15 @@ public: // Action getters
 
     DatasetPickerAction& getPositionDatasetPickerAction() { return _positionDatasetPickerAction; }
     DatasetPickerAction& getColorDatasetPickerAction() { return _colorDatasetPickerAction; }
+    DatasetPickerAction& getPointSizeDatasetPickerAction() { return _pointSizeDatasetPickerAction; }
+    DatasetPickerAction& getPointOpacityDatasetPickerAction() { return _pointOpacityDatasetPickerAction; }
 
 private:
     ScatterplotPlugin*      _scatterplotPlugin;                 /** Pointer to scatter plot plugin */
     DatasetPickerAction	    _positionDatasetPickerAction;       /** Dataset picker action for position dataset */
     DatasetPickerAction     _colorDatasetPickerAction;          /** Dataset picker action for color dataset */
+    DatasetPickerAction     _pointSizeDatasetPickerAction;      /** Dataset picker action for point size */
+    DatasetPickerAction     _pointOpacityDatasetPickerAction;   /** Dataset picker action for point opacity */
 
     friend class mv::AbstractActionsManager;
 };
