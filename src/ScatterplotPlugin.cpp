@@ -398,6 +398,11 @@ void ScatterplotPlugin::init()
         });
 #endif
 
+    connect(&_settingsAction.getDatasetsAction().getPositionDatasetPickerAction(), &DatasetPickerAction::datasetPicked, this, &ScatterplotPlugin::updateHeadsUpDisplay);
+    connect(&_settingsAction.getDatasetsAction().getColorDatasetPickerAction(), &DatasetPickerAction::datasetPicked, this, &ScatterplotPlugin::updateHeadsUpDisplay);
+    connect(&_settingsAction.getDatasetsAction().getPointSizeDatasetPickerAction(), &DatasetPickerAction::datasetPicked, this, &ScatterplotPlugin::updateHeadsUpDisplay);
+    connect(&_settingsAction.getDatasetsAction().getPointOpacityDatasetPickerAction(), &DatasetPickerAction::datasetPicked, this, &ScatterplotPlugin::updateHeadsUpDisplay);
+
     updateHeadsUpDisplay();
     updateHeadsUpDisplayTextColor();
 }
