@@ -343,52 +343,6 @@ void ScatterplotPlugin::init()
     connect(&_positionDataset, &Dataset<Points>::dataSelectionChanged, this, &ScatterplotPlugin::updateSelection);
     connect(&_positionDataset, &Dataset<>::guiNameChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
 
-    const auto currentColorDatasetChanged = [this](Dataset<DatasetImpl> currentColorDataset) -> void {
-        if (_colorDataset.isValid())
-            disconnect(&_colorDataset, &Dataset<>::guiNameChanged, this, nullptr);
-
-        _colorDataset = currentColorDataset;
-
-        connect(&_colorDataset, &Dataset<>::guiNameChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
-
-        updateHeadsUpDisplay();
-	};
-
-	connect(&_settingsAction.getColoringAction(), &ColoringAction::currentColorDatasetChanged, this, currentColorDatasetChanged);
-    connect(&_settingsAction.getColoringAction().getColorByAction(), &OptionAction::currentIndexChanged, this, [this, currentColorDatasetChanged](const std::int32_t& currentIndex) -> void {
-        currentColorDatasetChanged(_settingsAction.getColoringAction().getCurrentColorDataset());
-    });
-
-    const auto currentPointSizeDatasetChanged = [this]() -> void {
-        auto currentPointSizeDataset = _settingsAction.getPlotAction().getPointPlotAction().getSizeAction().getCurrentDataset();
-
-        if (_pointSizeDataset.isValid())
-            disconnect(&_pointSizeDataset, &Dataset<>::guiNameChanged, this, nullptr);
-
-        _pointSizeDataset = currentPointSizeDataset;
-
-        connect(&_pointSizeDataset, &Dataset<>::guiNameChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
-
-        updateHeadsUpDisplay();
-    };
-
-    connect(&_settingsAction.getPlotAction().getPointPlotAction().getSizeAction(), &ScalarAction::sourceSelectionChanged, this, currentPointSizeDatasetChanged);
-
-    const auto currentPointOpacityDatasetChanged = [this]() -> void {
-        auto currentPointOpacityDataset = _settingsAction.getPlotAction().getPointPlotAction().getOpacityAction().getCurrentDataset();
-
-        if (_pointOpacityDataset.isValid())
-            disconnect(&_pointOpacityDataset, &Dataset<>::guiNameChanged, this, nullptr);
-
-        _pointOpacityDataset = currentPointOpacityDataset;
-
-        connect(&_pointOpacityDataset, &Dataset<>::guiNameChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
-
-        updateHeadsUpDisplay();
-    };
-
-    connect(&_settingsAction.getPlotAction().getPointPlotAction().getOpacityAction(), &ScalarAction::sourceSelectionChanged, this, currentPointOpacityDatasetChanged);
-
     connect(&_settingsAction.getMiscellaneousAction().getBackgroundColorAction(), &ColorAction::colorChanged, this, &ScatterplotPlugin::updateHeadsUpDisplayTextColor);
 
     connect(&getScatterplotWidget().getPointRendererNavigator().getNavigationAction().getZoomSelectionAction(), &TriggerAction::triggered, this, [this]() -> void {
@@ -1047,6 +1001,8 @@ void ScatterplotPlugin::updateHeadsUpDisplay()
 
     getHeadsUpDisplayAction().removeAllHeadsUpDisplayItems();
 
+    auto& coloringAction = _settingsAction.getColoringAction();
+
     if (_positionDataset.isValid()) {
         const auto datasetsItem = getHeadsUpDisplayAction().addHeadsUpDisplayItem("Datasets", "", "");
 
@@ -1057,8 +1013,8 @@ void ScatterplotPlugin::updateHeadsUpDisplay()
                 getHeadsUpDisplayAction().addHeadsUpDisplayItem(QString("%1 by:").arg(metaDataName), data->getGuiName(), "", itemPtr);
             };
 
-        if (_settingsAction.getColoringAction().getColorByAction().getCurrentIndex() >= 2)
-			addMetaDataToHeadsUpDisplay("Color", _colorDataset, datasetsItem);
+        if (coloringAction.getColorByAction().getCurrentIndex() >= 2)
+			addMetaDataToHeadsUpDisplay("Color", coloringAction.getCurrentColorDataset(), datasetsItem);
 
         addMetaDataToHeadsUpDisplay("Size",    _settingsAction.getPlotAction().getPointPlotAction().getSizeAction().getCurrentDataset(), datasetsItem);
         addMetaDataToHeadsUpDisplay("Opacity", _settingsAction.getPlotAction().getPointPlotAction().getOpacityAction().getCurrentDataset(), datasetsItem);

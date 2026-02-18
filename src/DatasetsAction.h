@@ -20,6 +20,10 @@ public:
      */
     Q_INVOKABLE DatasetsAction(QObject* parent, const QString& title);
 
+    mv::Dataset<mv::DatasetImpl> getColorDataset() { return _colorDataset; }
+    mv::Dataset<mv::DatasetImpl> getPointSizeDataset() { return _pointSizeDataset; }
+    mv::Dataset<mv::DatasetImpl> getPointOpacityDataset() { return _pointOpacityDataset; }
+
 protected: // Linking
 
     /**
@@ -39,7 +43,7 @@ public: // Serialization
 
     /**
      * Load widget action from variant map
-     * @param Variant map representation of the widget action
+     * @param variantMap Variant map representation of the widget action
      */
     void fromVariantMap(const QVariantMap& variantMap) override;
 
@@ -49,6 +53,13 @@ public: // Serialization
      */
     QVariantMap toVariantMap() const override;
 
+private:
+
+    void setupPositionDatasetPickerAction(ScatterplotPlugin* scatterplotPlugin);    /** Set up the position dataset picker action */
+    void setupColorDatasetPickerAction(ScatterplotPlugin* scatterplotPlugin);       /** Set up the color dataset picker action */
+    void setupPointSizeDataset(ScatterplotPlugin* scatterplotPlugin);               /** Set up the point size dataset picker action */
+    void setupPointOpacityDataset(ScatterplotPlugin* scatterplotPlugin);            /** Set up the point opacity dataset picker action */
+
 public: // Action getters
 
     DatasetPickerAction& getPositionDatasetPickerAction() { return _positionDatasetPickerAction; }
@@ -57,11 +68,14 @@ public: // Action getters
     DatasetPickerAction& getPointOpacityDatasetPickerAction() { return _pointOpacityDatasetPickerAction; }
 
 private:
-    ScatterplotPlugin*      _scatterplotPlugin;                 /** Pointer to scatter plot plugin */
-    DatasetPickerAction	    _positionDatasetPickerAction;       /** Dataset picker action for position dataset */
-    DatasetPickerAction     _colorDatasetPickerAction;          /** Dataset picker action for color dataset */
-    DatasetPickerAction     _pointSizeDatasetPickerAction;      /** Dataset picker action for point size */
-    DatasetPickerAction     _pointOpacityDatasetPickerAction;   /** Dataset picker action for point opacity */
+    ScatterplotPlugin*              _scatterplotPlugin;               /** Pointer to scatter plot plugin */
+    DatasetPickerAction             _positionDatasetPickerAction;     /** Dataset picker action for position dataset */
+    DatasetPickerAction             _colorDatasetPickerAction;        /** Dataset picker action for color dataset */
+    DatasetPickerAction             _pointSizeDatasetPickerAction;    /** Dataset picker action for point size */
+    DatasetPickerAction             _pointOpacityDatasetPickerAction; /** Dataset picker action for point opacity */
+    mv::Dataset<mv::DatasetImpl>    _colorDataset;                    /** Smart pointer to dataset used for coloring (if any) */
+    mv::Dataset<mv::DatasetImpl>    _pointSizeDataset;                /** Smart pointer to dataset for driving point size (if any) */
+    mv::Dataset<mv::DatasetImpl>    _pointOpacityDataset;             /** Smart pointer to dataset for driving point opacity (if any) */
 
     friend class mv::AbstractActionsManager;
 };
