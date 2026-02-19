@@ -55,10 +55,10 @@ public: // Serialization
 
 private:
 
-    void setupPositionDatasetPickerAction(ScatterplotPlugin* scatterplotPlugin);    /** Set up the position dataset picker action */
-    void setupColorDatasetPickerAction(ScatterplotPlugin* scatterplotPlugin);       /** Set up the color dataset picker action */
-    void setupPointSizeDataset(ScatterplotPlugin* scatterplotPlugin);               /** Set up the point size dataset picker action */
-    void setupPointOpacityDataset(ScatterplotPlugin* scatterplotPlugin);            /** Set up the point opacity dataset picker action */
+    void setupPositionDatasetPickerAction(ScatterplotPlugin* scatterplotPlugin);            /** Set up the position dataset picker action */
+    void setupColorDatasetPickerAction(ScatterplotPlugin* scatterplotPlugin);               /** Set up the color dataset picker action */
+    void setupPointSizeDatasetPickerAction(ScatterplotPlugin* scatterplotPlugin);           /** Set up the point size dataset picker action */
+    void setupPointOpacityDatasetPickerAction(ScatterplotPlugin* scatterplotPlugin);        /** Set up the point opacity dataset picker action */
 
 public: // Action getters
 

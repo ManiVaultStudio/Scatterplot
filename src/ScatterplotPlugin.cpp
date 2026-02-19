@@ -398,10 +398,13 @@ void ScatterplotPlugin::init()
         });
 #endif
 
-    connect(&_settingsAction.getDatasetsAction().getPositionDatasetPickerAction(), &DatasetPickerAction::datasetPicked, this, &ScatterplotPlugin::updateHeadsUpDisplay);
-    connect(&_settingsAction.getDatasetsAction().getColorDatasetPickerAction(), &DatasetPickerAction::datasetPicked, this, &ScatterplotPlugin::updateHeadsUpDisplay);
-    connect(&_settingsAction.getDatasetsAction().getPointSizeDatasetPickerAction(), &DatasetPickerAction::datasetPicked, this, &ScatterplotPlugin::updateHeadsUpDisplay);
-    connect(&_settingsAction.getDatasetsAction().getPointOpacityDatasetPickerAction(), &DatasetPickerAction::datasetPicked, this, &ScatterplotPlugin::updateHeadsUpDisplay);
+    auto& datasetsAction    = _settingsAction.getDatasetsAction();
+    auto& pointPlotAction   = _settingsAction.getPlotAction().getPointPlotAction();
+
+    connect(&datasetsAction.getPositionDatasetPickerAction(), &DatasetPickerAction::currentIndexChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
+    connect(&datasetsAction.getColorDatasetPickerAction(), &DatasetPickerAction::currentIndexChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
+    connect(&datasetsAction.getPointSizeDatasetPickerAction(), &DatasetPickerAction::currentIndexChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
+    connect(&pointPlotAction.getOpacityAction(), &ScalarAction::sourceSelectionChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
 
     updateHeadsUpDisplay();
     updateHeadsUpDisplayTextColor();
@@ -1021,8 +1024,11 @@ void ScatterplotPlugin::updateHeadsUpDisplay()
         if (coloringAction.getColorByAction().getCurrentIndex() >= 2)
 			addMetaDataToHeadsUpDisplay("Color", coloringAction.getCurrentColorDataset(), datasetsItem);
 
-        addMetaDataToHeadsUpDisplay("Size",    _settingsAction.getPlotAction().getPointPlotAction().getSizeAction().getCurrentDataset(), datasetsItem);
-        addMetaDataToHeadsUpDisplay("Opacity", _settingsAction.getPlotAction().getPointPlotAction().getOpacityAction().getCurrentDataset(), datasetsItem);
+        auto& pointPlotAction = _settingsAction.getPlotAction().getPointPlotAction();
+
+        //qDebug() << "ScatterplotPlugin::updateHeadsUpDisplay: point size dataset: " << pointPlotAction.getSizeAction().getCurrentDataset().isValid() << ", opacity dataset: " << pointPlotAction.getOpacityAction().getCurrentDataset().isValid();
+        addMetaDataToHeadsUpDisplay("Size",    pointPlotAction.getSizeAction().getCurrentDataset(), datasetsItem);
+        addMetaDataToHeadsUpDisplay("Opacity", pointPlotAction.getOpacityAction().getCurrentDataset(), datasetsItem);
     } else {
         getHeadsUpDisplayAction().addHeadsUpDisplayItem("No datasets loaded", "", "");
     }

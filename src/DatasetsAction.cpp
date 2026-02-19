@@ -40,6 +40,16 @@ DatasetsAction::DatasetsAction(QObject* parent, const QString& title) :
         return;
 
     setupPositionDatasetPickerAction(scatterplotPlugin);
+    setupColorDatasetPickerAction(scatterplotPlugin);
+    setupPointSizeDatasetPickerAction(scatterplotPlugin);
+    setupPointOpacityDatasetPickerAction(scatterplotPlugin);
+
+    connect(&mv::projects(), &AbstractProjectManager::projectOpened, this, [this, scatterplotPlugin]() -> void {
+        setupPositionDatasetPickerAction(scatterplotPlugin);
+        setupColorDatasetPickerAction(scatterplotPlugin);
+        setupPointSizeDatasetPickerAction(scatterplotPlugin);
+        setupPointOpacityDatasetPickerAction(scatterplotPlugin);
+        });
 }
 
 void DatasetsAction::connectToPublicAction(WidgetAction* publicAction, bool recursive)
@@ -117,42 +127,28 @@ void DatasetsAction::setupColorDatasetPickerAction(ScatterplotPlugin* scatterplo
         return (dataset->getDataType() == PointType || dataset->getDataType() == ColorType || dataset->getDataType() == ClusterType);
     });
 
-    /*
     auto& coloringAction = settingsAction.getColoringAction();
 
-    connect(&_colorDatasetPickerAction, &DatasetPickerAction::datasetPicked, [this, &coloringAction](Dataset<DatasetImpl> pickedDataset) -> void {
-        coloringAction.getColorByAction().setCurrentIndex(pickedDataset.isValid() ? 2 : 0);
-
-        if (pickedDataset.isValid() && !mv::projects().isOpeningProject())
-            coloringAction.setCurrentColorDataset(pickedDataset);
-        });
-
-    connect(&settingsAction.getColoringAction(), &ColoringAction::currentColorDatasetChanged, this, [this](Dataset<DatasetImpl> currentColorDataset) -> void {
-        _colorDatasetPickerAction.setCurrentDataset(currentColorDataset);
-        });
-
-    const auto currentColorDatasetChanged = [this](Dataset<DatasetImpl> currentColorDataset) -> void {
+    connect(&_colorDatasetPickerAction, &DatasetPickerAction::datasetPicked, [this, &coloringAction, scatterplotPlugin](Dataset<DatasetImpl> pickedDataset) -> void {
         if (_colorDataset.isValid())
             disconnect(&_colorDataset, &Dataset<>::guiNameChanged, this, nullptr);
 
-        _colorDataset = currentColorDataset;
+        _colorDataset = pickedDataset;
 
-        connect(&_colorDataset, &Dataset<>::guiNameChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
+        connect(&_colorDataset, &Dataset<>::guiNameChanged, scatterplotPlugin, &ScatterplotPlugin::updateHeadsUpDisplay);
 
-        //updateHeadsUpDisplay();
-    };
+        coloringAction.setCurrentColorDataset(pickedDataset);
 
-    connect(&settingsAction.getColoringAction(), &ColoringAction::currentColorDatasetChanged, this, currentColorDatasetChanged);
-
-    connect(&settingsAction.getColoringAction().getColorByAction(), &OptionAction::currentIndexChanged, this, [this, &settingsAction, currentColorDatasetChanged](const std::int32_t& currentIndex) -> void {
-        _colorDataset = settingsAction.getColoringAction().getCurrentColorDataset();
-
-        updateHeadsUpDisplay();
+        if (!pickedDataset.isValid())
+            coloringAction.getColorByAction().setCurrentIndex(0);
     });
-    */
+
+    connect(&settingsAction.getColoringAction(), &ColoringAction::currentColorDatasetChanged, this, [this](Dataset<DatasetImpl> currentColorDataset) -> void {
+        _colorDatasetPickerAction.setCurrentDataset(currentColorDataset);
+    });
 }
 
-void DatasetsAction::setupPointSizeDataset(ScatterplotPlugin* scatterplotPlugin)
+void DatasetsAction::setupPointSizeDatasetPickerAction(ScatterplotPlugin* scatterplotPlugin)
 {
     auto& settingsAction = scatterplotPlugin->getSettingsAction();
 
@@ -160,84 +156,65 @@ void DatasetsAction::setupPointSizeDataset(ScatterplotPlugin* scatterplotPlugin)
         return dataset->getDataType() == PointType;
 	});
 
-    /*
-        auto& pointPlotAction = scatterplotPlugin->getSettingsAction().getPlotAction().getPointPlotAction();
-    auto& pointSizeAction = pointPlotAction.getSizeAction();
-    auto& pointOpacityAction = pointPlotAction.getOpacityAction();
+    auto& pointPlotAction   = settingsAction.getPlotAction().getPointPlotAction();
+    auto& pointSizeAction   = pointPlotAction.getSizeAction();
 
-    const auto pointSizeSourceChanged = [this, &pointSizeAction]() -> void {
+
+    connect(&pointSizeAction, &ScalarAction::sourceSelectionChanged, this, [this, &pointSizeAction, scatterplotPlugin](const uint32_t& sourceSelectionIndex) -> void {
+        if (_pointSizeDataset.isValid())
+            disconnect(&_pointSizeDataset, &Dataset<>::guiNameChanged, this, nullptr);
+
+        _pointSizeDataset = pointSizeAction.getCurrentDataset();
+
+        connect(&_pointSizeDataset, &Dataset<>::guiNameChanged, scatterplotPlugin, &ScatterplotPlugin::updateHeadsUpDisplay);
+
         _pointSizeDatasetPickerAction.setCurrentDataset(pointSizeAction.isSourceDataset() ? pointSizeAction.getCurrentDataset() : nullptr);
 
         if (!pointSizeAction.isSourceDataset())
             _pointSizeDatasetPickerAction.setCurrentIndex(-1);
-        };
-
-    connect(&pointSizeAction, &ScalarAction::sourceSelectionChanged, this, pointSizeSourceChanged);
-    connect(&pointSizeAction, &ScalarAction::sourceDataChanged, this, pointSizeSourceChanged);
+	});
 
     connect(&_pointSizeDatasetPickerAction, &DatasetPickerAction::currentIndexChanged, this, [this, &pointSizeAction](const int32_t& currentIndex) -> void {
         pointSizeAction.setCurrentDataset(_pointSizeDatasetPickerAction.getCurrentDataset());
 
         if (currentIndex < 0)
             pointSizeAction.setCurrentSourceIndex(ScalarSourceModel::DefaultRow::Constant);
-        });
-
-    const auto pointOpacitySourceChanged = [this, &pointOpacityAction]() -> void {
-        _pointOpacityDatasetPickerAction.setCurrentDataset(pointOpacityAction.isSourceDataset() ? pointOpacityAction.getCurrentDataset() : nullptr);
-
-        if (!pointOpacityAction.isSourceDataset())
-            _pointOpacityDatasetPickerAction.setCurrentIndex(-1);
-        };
-
-    connect(&pointOpacityAction, &ScalarAction::sourceSelectionChanged, this, pointOpacitySourceChanged);
-    connect(&pointOpacityAction, &ScalarAction::sourceDataChanged, this, pointOpacitySourceChanged);
-
-    connect(&_pointOpacityDatasetPickerAction, &DatasetPickerAction::currentIndexChanged, this, [this, &pointOpacityAction](const int32_t& currentIndex) -> void {
-        pointOpacityAction.setCurrentDataset(_pointOpacityDatasetPickerAction.getCurrentDataset());
-
-        if (currentIndex < 0)
-            pointOpacityAction.setCurrentSourceIndex(ScalarSourceModel::DefaultRow::Constant);
-        });
-
-
-
-    const auto currentPointSizeDatasetChanged = [this]() -> void {
-        auto currentPointSizeDataset = _settingsAction.getPlotAction().getPointPlotAction().getSizeAction().getCurrentDataset();
-
-        if (_pointSizeDataset.isValid())
-            disconnect(&_pointSizeDataset, &Dataset<>::guiNameChanged, this, nullptr);
-
-        _pointSizeDataset = currentPointSizeDataset;
-
-        connect(&_pointSizeDataset, &Dataset<>::guiNameChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
-
-        updateHeadsUpDisplay();
-        };
-
-    connect(&_settingsAction.getPlotAction().getPointPlotAction().getSizeAction(), &ScalarAction::sourceSelectionChanged, this, currentPointSizeDatasetChanged);
-
-    const auto currentPointOpacityDatasetChanged = [this]() -> void {
-        auto currentPointOpacityDataset = _settingsAction.getPlotAction().getPointPlotAction().getOpacityAction().getCurrentDataset();
-
-        if (_pointOpacityDataset.isValid())
-            disconnect(&_pointOpacityDataset, &Dataset<>::guiNameChanged, this, nullptr);
-
-        _pointOpacityDataset = currentPointOpacityDataset;
-
-        connect(&_pointOpacityDataset, &Dataset<>::guiNameChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
-
-        updateHeadsUpDisplay();
-        };
-
-    connect(&_settingsAction.getPlotAction().getPointPlotAction().getOpacityAction(), &ScalarAction::sourceSelectionChanged, this, currentPointOpacityDatasetChanged);*/
+    });
 }
 
-void DatasetsAction::setupPointOpacityDataset(ScatterplotPlugin* scatterplotPlugin)
+void DatasetsAction::setupPointOpacityDatasetPickerAction(ScatterplotPlugin* scatterplotPlugin)
 {
-    auto& settingsAction = scatterplotPlugin->getSettingsAction();
+    auto& settingsAction        = scatterplotPlugin->getSettingsAction();
+    auto& pointPlotAction       = settingsAction.getPlotAction().getPointPlotAction();
+    auto& pointOpacityAction    = pointPlotAction.getOpacityAction();
 
-    _pointOpacityDatasetPickerAction.setFilterFunction([this](mv::Dataset<DatasetImpl> dataset) -> bool {
-        return dataset->getDataType() == PointType;
+    _pointOpacityDatasetPickerAction.setFilterFunction([this, scatterplotPlugin](mv::Dataset<DatasetImpl> dataset) -> bool {
+        if (dataset->getDataType() != PointType)
+            return false;
+        
+        const auto positionDataset = scatterplotPlugin->getPositionSourceDataset();
+
+        if (!positionDataset.isValid())
+            return false;
+
+        const mv::Dataset<Points> candidatePoints(dataset);
+
+        if (candidatePoints->getNumPoints() != positionDataset->getNumPoints())
+            return false;
+
+        return true;
     });
 
+    connect(&_pointOpacityDatasetPickerAction, &DatasetPickerAction::datasetPicked, this, [this, &pointPlotAction, &pointOpacityAction, scatterplotPlugin](mv::Dataset<> pickedDataset) -> void {
+        const auto& pointOpacityDataset = _pointOpacityDatasetPickerAction.getCurrentDataset();
+
+        if (pointOpacityDataset.isValid())
+            disconnect(&_pointOpacityDataset, &Dataset<>::guiNameChanged, this, nullptr);
+
+        _pointOpacityDataset = pointOpacityDataset;
+
+        connect(&_pointOpacityDataset, &Dataset<>::guiNameChanged, scatterplotPlugin, &ScatterplotPlugin::updateHeadsUpDisplay);
+
+        pointPlotAction.setCurrentPointOpacityDataset(_pointOpacityDataset);
+    });
 }

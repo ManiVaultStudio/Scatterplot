@@ -93,9 +93,11 @@ public:
 private:
     void updateData();
     void updateSelection();
+    void updateHeadsUpDisplayTextColor();
+
+public:
 
     void updateHeadsUpDisplay();
-    void updateHeadsUpDisplayTextColor();
 
 public: // Serialization
 
