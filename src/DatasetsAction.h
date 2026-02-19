@@ -53,12 +53,37 @@ public: // Serialization
      */
     QVariantMap toVariantMap() const override;
 
-private:
+private: // Dataset picker action setup
 
-    void setupPositionDatasetPickerAction(ScatterplotPlugin* scatterplotPlugin);            /** Set up the position dataset picker action */
-    void setupColorDatasetPickerAction(ScatterplotPlugin* scatterplotPlugin);               /** Set up the color dataset picker action */
-    void setupPointSizeDatasetPickerAction(ScatterplotPlugin* scatterplotPlugin);           /** Set up the point size dataset picker action */
-    void setupPointOpacityDatasetPickerAction(ScatterplotPlugin* scatterplotPlugin);        /** Set up the point opacity dataset picker action */
+    /**
+     * Set up the dataset picker actions with the datasets from the scatter plot plugin
+     * @param scatterplotPlugin Pointer to scatter plot plugin whose datasets are used to populate the dataset picker actions
+     */
+    void setupDatasetPickerActions(ScatterplotPlugin* scatterplotPlugin);
+
+    /**
+     * Set up the position dataset picker action with the position datasets from the scatter plot plugin
+     * @param scatterplotPlugin Pointer to scatter plot plugin whose position datasets are used to populate the dataset picker action
+     */
+    void setupPositionDatasetPickerAction(ScatterplotPlugin* scatterplotPlugin);
+
+    /**
+     * Set up the color dataset picker action with the color datasets from the scatter plot plugin
+     * @param scatterplotPlugin Pointer to scatter plot plugin whose color datasets are used to populate the dataset picker action
+     */
+    void setupColorDatasetPickerAction(ScatterplotPlugin* scatterplotPlugin);
+
+    /**
+     * Set up the point size dataset picker action with the point size datasets from the scatter plot plugin
+     * @param scatterplotPlugin Pointer to scatter plot plugin whose point size datasets are used to populate the dataset picker action
+     */
+    void setupPointSizeDatasetPickerAction(ScatterplotPlugin* scatterplotPlugin);
+
+    /**
+     * Set up the point opacity dataset picker action with the point opacity datasets from the scatter plot plugin
+     * @param scatterplotPlugin Pointer to scatter plot plugin whose point opacity datasets are used to populate the dataset picker action
+     */
+    void setupPointOpacityDatasetPickerAction(ScatterplotPlugin* scatterplotPlugin);
 
 public: // Action getters
 
