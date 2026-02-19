@@ -85,6 +85,9 @@ protected: // Dataset picker action setup
      */
     void setupPointOpacityDatasetPickerAction(ScatterplotPlugin* scatterplotPlugin);
 
+    /** Update the filters of the dataset picker actions based on the current datasets in the scatter plot plugin */
+    void invalidateDatasetPickerActionFilters();
+
 public: // Action getters
 
     DatasetPickerAction& getPositionDatasetPickerAction() { return _positionDatasetPickerAction; }

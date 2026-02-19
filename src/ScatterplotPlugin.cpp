@@ -411,10 +411,10 @@ void ScatterplotPlugin::init()
 
     if (mv::projects().isOpeningProject()) {
         connect(&mv::projects(), &AbstractProjectManager::projectOpened, this, [this, &datasetsAction]() -> void {
-            datasetsAction.setupDatasetPickerActions(this);
+            datasetsAction.invalidateDatasetPickerActionFilters();
         });
     } else {
-        datasetsAction.setupDatasetPickerActions(this);
+        datasetsAction.invalidateDatasetPickerActionFilters();
     }
 }
 

@@ -244,3 +244,11 @@ void DatasetsAction::setupPointOpacityDatasetPickerAction(ScatterplotPlugin* sca
             _pointOpacityDatasetPickerAction.setCurrentIndex(-1);
     });
 }
+
+void DatasetsAction::invalidateDatasetPickerActionFilters()
+{
+    _positionDatasetPickerAction.invalidateFilter();
+    _colorDatasetPickerAction.invalidateFilter();
+    _pointSizeDatasetPickerAction.invalidateFilter();
+    _pointOpacityDatasetPickerAction.invalidateFilter();
+}
