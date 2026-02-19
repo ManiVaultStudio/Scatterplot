@@ -44,10 +44,11 @@ protected:
     public:
 
         /**
-         * Construct with pointer to \p scalarDataset
+         * Construct with reference to \p scalarSourceModel and pointer to \p scalarDataset
+         * @param scalarSourceModel Reference to the scalar source model
          * @param scalarDataset Pointer to scalar dataset (maybe nullptr)
          */
-        Item(const mv::Dataset<DatasetImpl>& scalarDataset);
+        Item(const ScalarSourceModel& scalarSourceModel, const mv::Dataset<DatasetImpl>& scalarDataset);
 
         /**
          * Get model data for \p role
@@ -56,13 +57,20 @@ protected:
         QVariant data(int role = Qt::UserRole + 1) const override;
 
         /**
+         * Get reference to the scalar source model
+         * @return Reference to the scalar source model
+         */
+        const ScalarSourceModel& getScalarSourceModel() const;
+
+        /**
          * Get the scalar dataset associated with this item (if any)
          * @return Pointer to scalar dataset (maybe nullptr)
          */ 
         const mv::Dataset<>& getScalarDataset() const;
 
     private:
-        mv::Dataset<> _scalarDataset;    /** Pointer to scalar dataset (maybe nullptr) */
+        const ScalarSourceModel&    _scalarSourceModel;     /** Reference to the scalar source model */
+        mv::Dataset<>               _scalarDataset;         /** Pointer to scalar dataset (maybe nullptr) */
     };
 
     /** Standard model item class for displaying the dataset GUI name */
@@ -70,10 +78,11 @@ protected:
     public:
 
         /**
-         * Construct with pointer to \p scalarDataset
+         * Construct with reference to \p scalarSourceModel and pointer to \p scalarDataset
+         * @param scalarSourceModel Reference to the scalar source model
          * @param scalarDataset Pointer to scalar dataset (maybe nullptr)
          */
-        NameItem(const mv::Dataset<>& scalarDataset);
+        NameItem(const ScalarSourceModel& scalarSourceModel, const mv::Dataset<>& scalarDataset);
 
         /**
          * Get model data for \p role
@@ -168,7 +177,7 @@ public:
      * Get datasets
      * @return Vector of smart pointers to datasets
      */
-    const Datasets& getDatasets() const;
+    Datasets getDatasets() const;
 
     /**
      * Get dataset at the specified row index
@@ -210,10 +219,11 @@ protected:
          * Construct with pointer to \p scalarDataset
          * @param scalarDataset Pointer to scalar dataset (maybe nullptr)
          */
-        Row(const mv::Dataset<>& scalarDataset) : QList<QStandardItem*>()
+        Row(const ScalarSourceModel& scalarSourceModel, const mv::Dataset<>& scalarDataset) :
+    		QList<QStandardItem*>()
         {
-            append(new NameItem(scalarDataset));
-            append(new IdItem(scalarDataset));
+            append(new NameItem(scalarSourceModel, scalarDataset));
+            append(new IdItem(scalarSourceModel, scalarDataset));
         }
     };
 

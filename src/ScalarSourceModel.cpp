@@ -11,11 +11,12 @@ ScalarSourceModel::ScalarSourceModel(QObject* parent /*= nullptr*/) :
     QStandardItemModel(parent),
     _showFullPathName(true)
 {
-    appendRow(Row({}));     // Constant source
-    appendRow(Row({}));     // Selection source
+    appendRow(Row(*this, {}));  // Constant source
+    appendRow(Row(*this, {}));  // Selection source
 }
 
-ScalarSourceModel::Item::Item(const mv::Dataset<>& scalarDataset) :
+ScalarSourceModel::Item::Item(const ScalarSourceModel& scalarSourceModel, const mv::Dataset<>& scalarDataset) :
+    _scalarSourceModel(scalarSourceModel),
     _scalarDataset(scalarDataset)
 {
 }
@@ -48,8 +49,8 @@ QVariant ScalarSourceModel::Item::data(int role) const
 		    {
 			    if (rowIndex == 2)
 			    	return _scalarDataset->text();
-			    //else
-			    //    return _showFullPathName ? scalarDataset->getLocation() : scalarDataset->text();
+			    else
+			        return getScalarSourceModel().getShowFullPathName() ? getScalarDataset()->getLocation() : getScalarDataset()->getGuiName();
 		    }
 		    else {
 			    if (rowIndex == DefaultRow::Constant)
@@ -67,13 +68,18 @@ QVariant ScalarSourceModel::Item::data(int role) const
     return {};
 }
 
+const ScalarSourceModel& ScalarSourceModel::Item::getScalarSourceModel() const
+{
+	return _scalarSourceModel;
+}
+
 const mv::Dataset<>& ScalarSourceModel::Item::getScalarDataset() const
 {
     return _scalarDataset;
 }
 
-ScalarSourceModel::NameItem::NameItem(const mv::Dataset<>& scalarDataset) :
-    Item(scalarDataset)
+ScalarSourceModel::NameItem::NameItem(const ScalarSourceModel& scalarSourceModel, const mv::Dataset<>& scalarDataset) :
+    Item(scalarSourceModel, scalarDataset)
 {
 	connect(&const_cast<Dataset<>&>(getScalarDataset()), &Dataset<>::guiNameChanged, this, [this]() {
         emitDataChanged();
@@ -158,27 +164,12 @@ QVariant ScalarSourceModel::IdItem::data(int role) const
     return Item::data(role);
 }
 
-/*
-int ScalarSourceModel::rowIndex(const Dataset<DatasetImpl>& dataset) const
-{
-    // Only proceed if we have a valid dataset
-    if (!dataset.isValid())
-        return -1;
-
-    // Return the index of the dataset and add one for the constant point size option
-    return _datasets.indexOf(dataset) + DefaultRow::DatasetStart;
-}
-*/
-
-
-
 void ScalarSourceModel::addDataset(const Dataset<DatasetImpl>& dataset)
 {
-    // Avoid duplicates
     if (hasDataset(dataset))
         return;
 
-    appendRow(Row(dataset));
+    appendRow(Row(*this, dataset));
 }
 
 bool ScalarSourceModel::hasDataset(const Dataset<DatasetImpl>& dataset) const
@@ -205,7 +196,7 @@ void ScalarSourceModel::removeAllDatasets()
     removeRows(DefaultRow::DatasetStart, rowCount() - DefaultRow::DatasetStart);
 }
 
-const Datasets& ScalarSourceModel::getDatasets() const
+Datasets ScalarSourceModel::getDatasets() const
 {
     Datasets datasets;
 
