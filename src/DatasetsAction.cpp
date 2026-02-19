@@ -28,6 +28,7 @@ DatasetsAction::DatasetsAction(QObject* parent, const QString& title) :
     addAction(&_pointSizeDatasetPickerAction);
     addAction(&_pointOpacityDatasetPickerAction);
 
+    _positionDatasetPickerAction.setDefaultWidgetFlag(OptionAction::Clearable);
     _colorDatasetPickerAction.setDefaultWidgetFlag(OptionAction::Clearable);
     _pointSizeDatasetPickerAction.setDefaultWidgetFlag(OptionAction::Clearable);
     _pointOpacityDatasetPickerAction.setDefaultWidgetFlag(OptionAction::Clearable);
@@ -40,6 +41,16 @@ DatasetsAction::DatasetsAction(QObject* parent, const QString& title) :
         return;
 
     setupDatasetPickerActions(scatterplotPlugin);
+
+    connect(&_positionDatasetPickerAction, &DatasetPickerAction::datasetPicked, [this, scatterplotPlugin](Dataset<DatasetImpl> pickedDataset) -> void {
+        _colorDatasetPickerAction.invalidateFilter();
+        _pointSizeDatasetPickerAction.invalidateFilter();
+        _pointOpacityDatasetPickerAction.invalidateFilter();
+    });
+
+    _colorDatasetPickerAction.invalidateFilter();
+    _pointSizeDatasetPickerAction.invalidateFilter();
+    _pointOpacityDatasetPickerAction.invalidateFilter();
 }
 
 void DatasetsAction::connectToPublicAction(WidgetAction* publicAction, bool recursive)
@@ -121,8 +132,16 @@ void DatasetsAction::setupColorDatasetPickerAction(ScatterplotPlugin* scatterplo
 {
     auto& settingsAction = scatterplotPlugin->getSettingsAction();
 
-    _colorDatasetPickerAction.setFilterFunction([this](mv::Dataset<DatasetImpl> dataset) -> bool {
-        return (dataset->getDataType() == PointType || dataset->getDataType() == ColorType || dataset->getDataType() == ClusterType);
+    _colorDatasetPickerAction.setFilterFunction([this, scatterplotPlugin](mv::Dataset<DatasetImpl> dataset) -> bool {
+        if (!(dataset->getDataType() == PointType || dataset->getDataType() == ColorType || dataset->getDataType() == ClusterType))
+            return false;
+
+        const auto positionDataset = scatterplotPlugin->getPositionDataset();
+
+        if (!positionDataset.isValid())
+            return false;
+
+        return true;
     });
 
     auto& coloringAction = settingsAction.getColoringAction();
@@ -157,7 +176,7 @@ void DatasetsAction::setupPointSizeDatasetPickerAction(ScatterplotPlugin* scatte
             return false;
 
         qDebug() << dataset->getGuiName() << "A";
-        const auto positionDataset = scatterplotPlugin->getPositionSourceDataset();
+        const auto positionDataset = scatterplotPlugin->getPositionDataset();
 
         if (!positionDataset.isValid())
             return false;
@@ -208,7 +227,7 @@ void DatasetsAction::setupPointOpacityDatasetPickerAction(ScatterplotPlugin* sca
         if (dataset->getDataType() != PointType)
             return false;
         
-        const auto positionDataset = scatterplotPlugin->getPositionSourceDataset();
+        const auto positionDataset = scatterplotPlugin->getPositionDataset();
 
         if (!positionDataset.isValid())
             return false;

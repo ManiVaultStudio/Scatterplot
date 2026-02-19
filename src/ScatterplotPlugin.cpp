@@ -165,7 +165,8 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                 // Load as point positions when no dataset is currently loaded
                 dropRegions << new DropWidget::DropRegion(this, "Point position", description, "map-marker-alt", true, [this, candidateDataset]() {
                     _positionDataset = candidateDataset;
-                    });
+                    _settingsAction.getColoringAction().setCurrentColorDataset(nullptr);
+                });
             }
             else {
                 if (_positionDataset != candidateDataset && candidateDataset->getNumDimensions() >= 2) {
@@ -173,8 +174,9 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                     // The number of points is equal, so offer the option to replace the existing points dataset
                     dropRegions << new DropWidget::DropRegion(this, "Point position", description, "map-marker-alt", true, [this, candidateDataset]() {
                         _positionDataset = candidateDataset;
-                        });
-                }
+                        _settingsAction.getColoringAction().setCurrentColorDataset(nullptr);
+                    });
+				}
 
                 // Accept for recoloring:
                 //  1. data with the same number of points
