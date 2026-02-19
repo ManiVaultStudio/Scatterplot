@@ -51,7 +51,7 @@ public:
      * Set the current source index
      * @param sourceIndex Source index
      */
-    void setCurrentSourceIndex(bool sourceIndex);
+    void setCurrentSourceIndex(std::int32_t sourceIndex);
 
     /** Determines whether the scalar source is a constant */
     bool isSourceConstant() const;

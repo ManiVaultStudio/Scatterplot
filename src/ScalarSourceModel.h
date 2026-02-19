@@ -2,7 +2,7 @@
 
 #include "Dataset.h"
 
-#include <QAbstractListModel>
+#include <QStandardItemModel>
 
 using namespace mv;
 
@@ -13,7 +13,7 @@ using namespace mv;
  *
  * @author Thomas Kroes
  */
-class ScalarSourceModel : public QAbstractListModel
+class ScalarSourceModel : public QStandardItemModel
 {
 protected:
 
@@ -21,6 +21,7 @@ protected:
     ScalarSourceModel(QObject* parent = nullptr);
 
 public:
+
     /** Default scalar options */
     enum DefaultRow {
         Constant,           /** Scale by constant */
@@ -28,36 +29,118 @@ public:
         DatasetStart        /** Start row of the dataset(s) */
     };
 
+    /** Model columns */
+    enum class Column {
+        Name,       /** Scalar dataset name */
+        Id,         /** Globally unique scalar dataset identifier */
+
+        Count
+    };
+
+protected:
+
+    /** Base standard model item class for a dataset */
+    class Item : public QStandardItem {
+    public:
+
+        /**
+         * Construct with pointer to \p scalarDataset
+         * @param scalarDataset Pointer to scalar dataset (maybe nullptr)
+         */
+        Item(const mv::Dataset<DatasetImpl>& scalarDataset);
+
+        /**
+         * Get model data for \p role
+         * @return Data for \p role in variant form
+         */
+        QVariant data(int role = Qt::UserRole + 1) const override;
+
+        /**
+         * Get the scalar dataset associated with this item (if any)
+         * @return Pointer to scalar dataset (maybe nullptr)
+         */ 
+        const mv::Dataset<>& getScalarDataset() const;
+
+    private:
+        mv::Dataset<> _scalarDataset;    /** Pointer to scalar dataset (maybe nullptr) */
+    };
+
+    /** Standard model item class for displaying the dataset GUI name */
+    class NameItem final : public Item, public QObject {
+    public:
+
+        /**
+         * Construct with pointer to \p scalarDataset
+         * @param scalarDataset Pointer to scalar dataset (maybe nullptr)
+         */
+        NameItem(const mv::Dataset<>& scalarDataset);
+
+        /**
+         * Get model data for \p role
+         * @return Data for \p role in variant form
+         */
+        QVariant data(int role = Qt::UserRole + 1) const override;
+
+        /**
+         * Get header data for \p orientation and \p role
+         * @param orientation Horizontal/vertical
+         * @param role Data role
+         * @return Header data
+         */
+        static QVariant headerData(Qt::Orientation orientation, int role) {
+            switch (role) {
+	            case Qt::DisplayRole:
+	            case Qt::EditRole:
+	                return "Name";
+
+	            case Qt::ToolTipRole:
+	                return "Dataset name";
+
+                default:
+                    break;
+            }
+
+            return {};
+        }
+    };
+
+    /** Standard model item class for displaying the dataset GUI ID */
+    class IdItem final : public Item {
+    public:
+
+        /** No need for specialized constructor */
+        using Item::Item;
+
+        /**
+         * Get model data for \p role
+         * @return Data for \p role in variant form
+         */
+        QVariant data(int role = Qt::UserRole + 1) const override;
+
+        /**
+         * Get header data for \p orientation and \p role
+         * @param orientation Horizontal/vertical
+         * @param role Data role
+         * @return Header data
+         */
+        static QVariant headerData(Qt::Orientation orientation, int role) {
+            switch (role) {
+	            case Qt::DisplayRole:
+	            case Qt::EditRole:
+	                return "ID";
+
+	            case Qt::ToolTipRole:
+	                return "Dataset unique identifier";
+
+	            default:
+	                break;
+            }
+
+            return {};
+        }
+    };
+
 public:
-
-    /**
-     * Get the number of row
-     * @param parent Parent model index
-     * @return Number of rows in the model
-     */
-    int rowCount(const QModelIndex& parent = QModelIndex()) const;
-
-    /**
-     * Get the row index of a dataset
-     * @param parent Parent model index
-     * @return Row index of the dataset
-     */
-    int rowIndex(const Dataset<DatasetImpl>& dataset) const;
-
-    /**
-     * Get the number of columns
-     * @param parent Parent model index
-     * @return Number of columns in the model
-     */
-    int columnCount(const QModelIndex& parent = QModelIndex()) const;
-
-    /**
-     * Get data
-     * @param index Model index to query
-     * @param role Data role
-     * @return Data
-     */
-    QVariant data(const QModelIndex& index, int role) const;
 
     /**
      * Add a dataset
@@ -100,6 +183,13 @@ public:
      */
     void setDatasets(const Datasets& datasets);
 
+    /**
+     * Get row index of the specified \p dataset
+     * @param dataset Smart pointer to dataset
+     * @return Row index of the dataset, or -1 if the dataset is not in the model
+     */
+    std::int32_t getRowIndex(const Dataset<DatasetImpl>& dataset) const;
+
     /** Get whether to show the full path name in the GUI */
     bool getShowFullPathName() const;
 
@@ -109,11 +199,25 @@ public:
      */
     void setShowFullPathName(const bool& showFullPathName);
 
-    /** Updates the model from the datasets */
-    void updateData();
+protected:
+
+    /** Convenience class for combining items in a row */
+    class Row final : public QList<QStandardItem*>
+    {
+    public:
+
+        /**
+         * Construct with pointer to \p scalarDataset
+         * @param scalarDataset Pointer to scalar dataset (maybe nullptr)
+         */
+        Row(const mv::Dataset<>& scalarDataset) : QList<QStandardItem*>()
+        {
+            append(new NameItem(scalarDataset));
+            append(new IdItem(scalarDataset));
+        }
+    };
 
 protected:
-    Datasets    _datasets;              /** Datasets used to size the scatter plot points with */
     bool        _showFullPathName;      /** Whether to show the full path name in the GUI */
 
     friend class ScalarAction;

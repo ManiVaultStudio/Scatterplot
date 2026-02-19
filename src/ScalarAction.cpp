@@ -43,6 +43,7 @@ void ScalarAction::addDataset(const Dataset<DatasetImpl>& dataset)
 
     sourceModel.addDataset(dataset);
 
+    /* TODO: this connection is not removed when the dataset is removed from the model, but that should not cause any issues since the dataset will be invalid and the connection will not do anything in that case
     connect(&sourceModel.getDatasets().last(), &Dataset<DatasetImpl>::dataChanged, this, [this, dataset]() {
         const auto currentDataset = getCurrentDataset();
 
@@ -54,6 +55,8 @@ void ScalarAction::addDataset(const Dataset<DatasetImpl>& dataset)
         if (currentDataset == dataset)
             emit sourceDataChanged(dataset);
     });
+
+*/
 
     connect(&_magnitudeAction, &DecimalAction::valueChanged, this, [this, dataset](const float& value) {
         emit magnitudeChanged(value);
@@ -72,20 +75,20 @@ Dataset<DatasetImpl> ScalarAction::getCurrentDataset()
     const auto currentSourceIndex = _sourceAction.getPickerAction().getCurrentIndex();
 
     if (currentSourceIndex < ScalarSourceModel::DefaultRow::DatasetStart)
-        return Dataset<DatasetImpl>();
+        return {};
 
     return scalarSourceModel.getDataset(currentSourceIndex);
 }
 
 void ScalarAction::setCurrentDataset(const Dataset<DatasetImpl>& dataset)
 {
-    const auto datasetRowIndex = _sourceAction.getModel().rowIndex(dataset);
+    const auto datasetRowIndex = _sourceAction.getModel().getRowIndex(dataset);
 
     if (datasetRowIndex >= 0)
         _sourceAction.getPickerAction().setCurrentIndex(datasetRowIndex);
 }
 
-void ScalarAction::setCurrentSourceIndex(bool sourceIndex)
+void ScalarAction::setCurrentSourceIndex(std::int32_t sourceIndex)
 {
     _sourceAction.getPickerAction().setCurrentIndex(sourceIndex);
 }
