@@ -408,6 +408,14 @@ void ScatterplotPlugin::init()
 
     updateHeadsUpDisplay();
     updateHeadsUpDisplayTextColor();
+
+    if (mv::projects().isOpeningProject()) {
+        connect(&mv::projects(), &AbstractProjectManager::projectOpened, this, [this, &datasetsAction]() -> void {
+            datasetsAction.setupDatasetPickerActions(this);
+        });
+    } else {
+        datasetsAction.setupDatasetPickerActions(this);
+    }
 }
 
 void ScatterplotPlugin::loadData(const Datasets& datasets)

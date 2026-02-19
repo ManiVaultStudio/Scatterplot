@@ -53,7 +53,7 @@ public: // Serialization
      */
     QVariantMap toVariantMap() const override;
 
-private: // Dataset picker action setup
+protected: // Dataset picker action setup
 
     /**
      * Set up the dataset picker actions with the datasets from the scatter plot plugin
@@ -103,6 +103,7 @@ private:
     mv::Dataset<mv::DatasetImpl>    _pointOpacityDataset;             /** Smart pointer to dataset for driving point opacity (if any) */
 
     friend class mv::AbstractActionsManager;
+    friend class ScatterplotPlugin;
 };
 
 Q_DECLARE_METATYPE(DatasetsAction)

@@ -40,10 +40,6 @@ DatasetsAction::DatasetsAction(QObject* parent, const QString& title) :
         return;
 
     setupDatasetPickerActions(scatterplotPlugin);
-
-    connect(&mv::projects(), &AbstractProjectManager::projectOpened, this, [this, scatterplotPlugin]() -> void {
-        setupDatasetPickerActions(scatterplotPlugin);
-    });
 }
 
 void DatasetsAction::connectToPublicAction(WidgetAction* publicAction, bool recursive)
@@ -152,35 +148,53 @@ void DatasetsAction::setupColorDatasetPickerAction(ScatterplotPlugin* scatterplo
 
 void DatasetsAction::setupPointSizeDatasetPickerAction(ScatterplotPlugin* scatterplotPlugin)
 {
-    auto& settingsAction = scatterplotPlugin->getSettingsAction();
+    auto& settingsAction        = scatterplotPlugin->getSettingsAction();
+    auto& pointPlotAction       = settingsAction.getPlotAction().getPointPlotAction();
+    auto& pointSizeAction       = pointPlotAction.getSizeAction();
 
-    _pointSizeDatasetPickerAction.setFilterFunction([this](mv::Dataset<DatasetImpl> dataset) -> bool {
-        return dataset->getDataType() == PointType;
-	});
+    _pointSizeDatasetPickerAction.setFilterFunction([this, scatterplotPlugin](mv::Dataset<DatasetImpl> dataset) -> bool {
+        if (dataset->getDataType() != PointType)
+            return false;
 
-    auto& pointPlotAction   = settingsAction.getPlotAction().getPointPlotAction();
-    auto& pointSizeAction   = pointPlotAction.getSizeAction();
+        qDebug() << dataset->getGuiName() << "A";
+        const auto positionDataset = scatterplotPlugin->getPositionSourceDataset();
 
+        if (!positionDataset.isValid())
+            return false;
 
-    connect(&pointSizeAction, &ScalarAction::sourceSelectionChanged, this, [this, &pointSizeAction, scatterplotPlugin](const uint32_t& sourceSelectionIndex) -> void {
-        if (_pointSizeDataset.isValid())
+        qDebug() << dataset->getGuiName() << "B";
+
+        const mv::Dataset<Points> candidatePoints(dataset);
+
+        if (candidatePoints->getNumPoints() != positionDataset->getNumPoints())
+            return false;
+
+        qDebug() << dataset->getGuiName() << "C";
+
+        return true;
+    });
+
+    connect(&_pointSizeDatasetPickerAction, &DatasetPickerAction::currentIndexChanged, this, [this, &pointPlotAction, &pointSizeAction, scatterplotPlugin](const int32_t& currentIndex) -> void {
+        const auto& pointSizeDataset = _pointSizeDatasetPickerAction.getCurrentDataset();
+
+        if (pointSizeDataset.isValid())
             disconnect(&_pointSizeDataset, &Dataset<>::guiNameChanged, this, nullptr);
 
-        _pointSizeDataset = pointSizeAction.getCurrentDataset();
+        _pointSizeDataset = pointSizeDataset;
 
         connect(&_pointSizeDataset, &Dataset<>::guiNameChanged, scatterplotPlugin, &ScatterplotPlugin::updateHeadsUpDisplay);
 
+        pointPlotAction.setCurrentPointSizeDataset(_pointSizeDataset);
+
+        if (!_pointSizeDataset.isValid())
+            pointSizeAction.setCurrentSourceIndex(ScalarSourceModel::DefaultRow::Constant);
+    });
+
+    connect(&pointSizeAction, &ScalarAction::sourceSelectionChanged, this, [this, &pointSizeAction](const uint32_t& sourceSelectionIndex) -> void {
         _pointSizeDatasetPickerAction.setCurrentDataset(pointSizeAction.isSourceDataset() ? pointSizeAction.getCurrentDataset() : nullptr);
 
         if (!pointSizeAction.isSourceDataset())
             _pointSizeDatasetPickerAction.setCurrentIndex(-1);
-	});
-
-    connect(&_pointSizeDatasetPickerAction, &DatasetPickerAction::currentIndexChanged, this, [this, &pointSizeAction](const int32_t& currentIndex) -> void {
-        pointSizeAction.setCurrentDataset(_pointSizeDatasetPickerAction.getCurrentDataset());
-
-        if (currentIndex < 0)
-            pointSizeAction.setCurrentSourceIndex(ScalarSourceModel::DefaultRow::Constant);
     });
 }
 
