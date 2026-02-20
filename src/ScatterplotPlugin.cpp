@@ -165,7 +165,8 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                 // Load as point positions when no dataset is currently loaded
                 dropRegions << new DropWidget::DropRegion(this, "Point position", description, "map-marker-alt", true, [this, candidateDataset]() {
                     _positionDataset = candidateDataset;
-                    });
+                    _settingsAction.getColoringAction().setCurrentColorDataset(nullptr);
+                });
             }
             else {
                 if (_positionDataset != candidateDataset && candidateDataset->getNumDimensions() >= 2) {
@@ -173,8 +174,9 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                     // The number of points is equal, so offer the option to replace the existing points dataset
                     dropRegions << new DropWidget::DropRegion(this, "Point position", description, "map-marker-alt", true, [this, candidateDataset]() {
                         _positionDataset = candidateDataset;
-                        });
-                }
+                        _settingsAction.getColoringAction().setCurrentColorDataset(nullptr);
+                    });
+				}
 
                 // Accept for recoloring:
                 //  1. data with the same number of points
@@ -288,6 +290,8 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     getLearningCenterAction().addVideos(QStringList({ "Practitioner", "Developer" }));
 
     setOverlayActionsTargetWidget(_scatterPlotWidget);
+
+    connect(&mv::projects(), &AbstractProjectManager::projectOpened, this, &ScatterplotPlugin::updateHeadsUpDisplay);
 }
 
 ScatterplotPlugin::~ScatterplotPlugin()
@@ -340,28 +344,6 @@ void ScatterplotPlugin::init()
     });
     connect(&_positionDataset, &Dataset<Points>::dataSelectionChanged, this, &ScatterplotPlugin::updateSelection);
     connect(&_positionDataset, &Dataset<>::guiNameChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
-
-    const auto currentColorDatasetChanged = [this](Dataset<DatasetImpl> currentColorDataset) -> void {
-        if (_colorDataset == currentColorDataset)
-            return;
-
-        if (_colorDataset.isValid())
-            disconnect(&_colorDataset, &Dataset<>::guiNameChanged, this, nullptr);
-
-        _colorDataset = currentColorDataset;
-
-        connect(&_colorDataset, &Dataset<>::guiNameChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
-
-        updateHeadsUpDisplay();
-	};
-
-	connect(&_settingsAction.getColoringAction(), &ColoringAction::currentColorDatasetChanged, this, currentColorDatasetChanged);
-    connect(&_settingsAction.getColoringAction().getColorByAction(), &OptionAction::currentIndexChanged, this, [this, currentColorDatasetChanged](const std::int32_t& currentIndex) -> void {
-        currentColorDatasetChanged(_settingsAction.getColoringAction().getCurrentColorDataset());
-    });
-
-    connect(&_settingsAction.getPlotAction().getPointPlotAction().getSizeAction(), &ScalarAction::sourceDataChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
-    connect(&_settingsAction.getPlotAction().getPointPlotAction().getOpacityAction(), &ScalarAction::sourceDataChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
 
     connect(&_settingsAction.getMiscellaneousAction().getBackgroundColorAction(), &ColorAction::colorChanged, this, &ScatterplotPlugin::updateHeadsUpDisplayTextColor);
 
@@ -418,8 +400,24 @@ void ScatterplotPlugin::init()
         });
 #endif
 
+    auto& datasetsAction    = _settingsAction.getDatasetsAction();
+    auto& pointPlotAction   = _settingsAction.getPlotAction().getPointPlotAction();
+
+    connect(&datasetsAction.getPositionDatasetPickerAction(), &DatasetPickerAction::currentIndexChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
+    connect(&datasetsAction.getColorDatasetPickerAction(), &DatasetPickerAction::currentIndexChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
+    connect(&datasetsAction.getPointSizeDatasetPickerAction(), &DatasetPickerAction::currentIndexChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
+    connect(&pointPlotAction.getOpacityAction(), &ScalarAction::sourceSelectionChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
+
     updateHeadsUpDisplay();
     updateHeadsUpDisplayTextColor();
+
+    if (mv::projects().isOpeningProject()) {
+        connect(&mv::projects(), &AbstractProjectManager::projectOpened, this, [this, &datasetsAction]() -> void {
+            datasetsAction.invalidateDatasetPickerActionFilters();
+        });
+    } else {
+        datasetsAction.invalidateDatasetPickerActionFilters();
+    }
 }
 
 void ScatterplotPlugin::loadData(const Datasets& datasets)
@@ -1016,7 +1014,12 @@ void ScatterplotPlugin::updateSelection()
 
 void ScatterplotPlugin::updateHeadsUpDisplay()
 {
+    if (mv::projects().isOpeningProject())
+        return;
+
     getHeadsUpDisplayAction().removeAllHeadsUpDisplayItems();
+
+    auto& coloringAction = _settingsAction.getColoringAction();
 
     if (_positionDataset.isValid()) {
         const auto datasetsItem = getHeadsUpDisplayAction().addHeadsUpDisplayItem("Datasets", "", "");
@@ -1028,12 +1031,14 @@ void ScatterplotPlugin::updateHeadsUpDisplay()
                 getHeadsUpDisplayAction().addHeadsUpDisplayItem(QString("%1 by:").arg(metaDataName), data->getGuiName(), "", itemPtr);
             };
 
-        if (_settingsAction.getColoringAction().getColorByAction().getCurrentIndex() >= 2)
-			addMetaDataToHeadsUpDisplay("Color", _colorDataset, datasetsItem);
+        if (coloringAction.getColorByAction().getCurrentIndex() >= 2)
+			addMetaDataToHeadsUpDisplay("Color", coloringAction.getCurrentColorDataset(), datasetsItem);
 
-        addMetaDataToHeadsUpDisplay("Size",    _settingsAction.getPlotAction().getPointPlotAction().getSizeAction().getCurrentDataset(), datasetsItem);
-        addMetaDataToHeadsUpDisplay("Opacity", _settingsAction.getPlotAction().getPointPlotAction().getOpacityAction().getCurrentDataset(), datasetsItem);
+        auto& pointPlotAction = _settingsAction.getPlotAction().getPointPlotAction();
 
+        //qDebug() << "ScatterplotPlugin::updateHeadsUpDisplay: point size dataset: " << pointPlotAction.getSizeAction().getCurrentDataset().isValid() << ", opacity dataset: " << pointPlotAction.getOpacityAction().getCurrentDataset().isValid();
+        addMetaDataToHeadsUpDisplay("Size",    pointPlotAction.getSizeAction().getCurrentDataset(), datasetsItem);
+        addMetaDataToHeadsUpDisplay("Opacity", pointPlotAction.getOpacityAction().getCurrentDataset(), datasetsItem);
     } else {
         getHeadsUpDisplayAction().addHeadsUpDisplayItem("No datasets loaded", "", "");
     }
@@ -1065,12 +1070,7 @@ void ScatterplotPlugin::fromVariantMap(const QVariantMap& variantMap)
     _primaryToolbarAction.fromParentVariantMap(variantMap);
     _settingsAction.fromParentVariantMap(variantMap);
 
-    updateHeadsUpDisplay();
-
     if (pointRenderer.getNavigator().getNavigationAction().getSerializationCountFrom() == 0) {
-        qDebug() << "Resetting view";
-        
-
         _scatterPlotWidget->update();
     }
 
