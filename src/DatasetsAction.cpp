@@ -175,20 +175,15 @@ void DatasetsAction::setupPointSizeDatasetPickerAction(ScatterplotPlugin* scatte
         if (dataset->getDataType() != PointType)
             return false;
 
-        qDebug() << dataset->getGuiName() << "A";
         const auto positionDataset = scatterplotPlugin->getPositionDataset();
 
         if (!positionDataset.isValid())
             return false;
 
-        qDebug() << dataset->getGuiName() << "B";
-
         const mv::Dataset<Points> candidatePoints(dataset);
 
         if (candidatePoints->getNumPoints() != positionDataset->getNumPoints())
             return false;
-
-        qDebug() << dataset->getGuiName() << "C";
 
         return true;
     });
