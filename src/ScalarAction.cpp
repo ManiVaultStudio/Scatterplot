@@ -24,11 +24,13 @@ ScalarAction::ScalarAction(QObject* parent, const QString& title, const float& m
             if (auto scatterplotPlugin = dynamic_cast<ScatterplotPlugin*>(findPluginAncestor())) {
                 auto positionDataset            = scatterplotPlugin->getPositionDataset();
                 auto scalarSourcePointsDataset  = Dataset<Points>(getCurrentDataset());
+                const auto numScalars           = scalarSourcePointsDataset->getNumPoints();
+                const auto numPositions         = positionDataset->getNumPoints();
 
-                if (scalarSourcePointsDataset->getNumPoints() != positionDataset->getNumPoints()) {
+                if (numScalars != numPositions) {
                     emitSourceSelectionChanged = false;
 
-                    scatterplotPlugin->addNotification("The number of points in the scalar source dataset does not match the number of points in the position dataset.");
+                    scatterplotPlugin->addNotification(QString("The number of points in the scalar source dataset does not match the number of points in the position dataset. (numPositions=%1, numScalars:%2)").arg(QString::number(numPositions), QString::number(numScalars)));
                 }
             }
         }
