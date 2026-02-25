@@ -42,15 +42,24 @@ DatasetsAction::DatasetsAction(QObject* parent, const QString& title) :
 
     setupDatasetPickerActions(scatterplotPlugin);
 
-    connect(&_positionDatasetPickerAction, &DatasetPickerAction::datasetPicked, [this, scatterplotPlugin](Dataset<DatasetImpl> pickedDataset) -> void {
+    const auto invalidateFilters = [this, scatterplotPlugin]() -> void {
         _colorDatasetPickerAction.invalidateFilter();
         _pointSizeDatasetPickerAction.invalidateFilter();
         _pointOpacityDatasetPickerAction.invalidateFilter();
+    };
+
+    connect(&_positionDatasetPickerAction, &DatasetPickerAction::datasetPicked, [this, scatterplotPlugin, invalidateFilters](Dataset<DatasetImpl> pickedDataset) -> void {
+        invalidateFilters();
     });
 
-    _colorDatasetPickerAction.invalidateFilter();
-    _pointSizeDatasetPickerAction.invalidateFilter();
-    _pointOpacityDatasetPickerAction.invalidateFilter();
+    const auto resetAuxilliaryDatasets = [this]() -> void {
+        _colorDatasetPickerAction.setCurrentIndex(-1);
+		_pointSizeDatasetPickerAction.setCurrentIndex(-1);
+		_pointOpacityDatasetPickerAction.setCurrentIndex(-1);
+	};
+
+    connect(&scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, resetAuxilliaryDatasets);
+    connect(&scatterplotPlugin->getPositionSourceDataset(), &Dataset<Points>::changed, this, resetAuxilliaryDatasets);
 }
 
 void DatasetsAction::connectToPublicAction(WidgetAction* publicAction, bool recursive)
