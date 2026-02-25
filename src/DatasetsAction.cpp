@@ -172,17 +172,10 @@ void DatasetsAction::setupPointSizeDatasetPickerAction(ScatterplotPlugin* scatte
     auto& pointSizeAction       = pointPlotAction.getSizeAction();
 
     _pointSizeDatasetPickerAction.setFilterFunction([this, scatterplotPlugin](mv::Dataset<DatasetImpl> dataset) -> bool {
-        if (dataset->getDataType() != PointType)
+        if (!scatterplotPlugin->getPositionDataset().isValid())
             return false;
 
-        const auto positionDataset = scatterplotPlugin->getPositionDataset();
-
-        if (!positionDataset.isValid())
-            return false;
-
-        const mv::Dataset<Points> candidatePoints(dataset);
-
-        if (candidatePoints->getNumPoints() != positionDataset->getNumPoints())
+    	if (dataset->getDataType() != PointType)
             return false;
 
         return true;
@@ -219,19 +212,12 @@ void DatasetsAction::setupPointOpacityDatasetPickerAction(ScatterplotPlugin* sca
     auto& pointOpacityAction    = pointPlotAction.getOpacityAction();
 
     _pointOpacityDatasetPickerAction.setFilterFunction([this, scatterplotPlugin](mv::Dataset<DatasetImpl> dataset) -> bool {
-        if (dataset->getDataType() != PointType)
+        if (!scatterplotPlugin->getPositionDataset().isValid())
+            return false;
+
+    	if (dataset->getDataType() != PointType)
             return false;
         
-        const auto positionDataset = scatterplotPlugin->getPositionDataset();
-
-        if (!positionDataset.isValid())
-            return false;
-
-        const mv::Dataset<Points> candidatePoints(dataset);
-
-        if (candidatePoints->getNumPoints() != positionDataset->getNumPoints())
-            return false;
-
         return true;
     });
 
