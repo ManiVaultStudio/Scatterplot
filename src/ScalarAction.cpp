@@ -18,7 +18,23 @@ ScalarAction::ScalarAction(QObject* parent, const QString& title, const float& m
     addAction(&_sourceAction);
 
     connect(&_sourceAction.getPickerAction(), &OptionAction::currentIndexChanged, this, [this](const std::uint32_t& currentIndex) {
-        emit sourceSelectionChanged(currentIndex);
+        bool emitSourceSelectionChanged = true;
+
+        if (currentIndex >= ScalarSourceModel::DefaultRow::DatasetStart) {
+            if (auto scatterplotPlugin = dynamic_cast<ScatterplotPlugin*>(findPluginAncestor())) {
+                auto positionDataset            = scatterplotPlugin->getPositionDataset();
+                auto scalarSourcePointsDataset  = Dataset<Points>(getCurrentDataset());
+
+                if (scalarSourcePointsDataset->getNumPoints() != positionDataset->getNumPoints()) {
+                    emitSourceSelectionChanged = false;
+
+                    scatterplotPlugin->addNotification("The number of points in the scalar source dataset does not match the number of points in the position dataset.");
+                }
+            }
+        }
+
+        if (emitSourceSelectionChanged)
+            emit sourceSelectionChanged(currentIndex);
     });
 
     connect(&_magnitudeAction, &DecimalAction::valueChanged, this, [this](const float& value) {
