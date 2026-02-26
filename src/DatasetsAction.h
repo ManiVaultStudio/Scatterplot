@@ -71,18 +71,6 @@ protected: // Dataset picker action setup
      */
     void setupColorDatasetPickerAction(ScatterplotPlugin* scatterplotPlugin);
 
-    /**
-     * Set up the point size dataset picker action with the point size datasets from the scatter plot plugin
-     * @param scatterplotPlugin Pointer to scatter plot plugin whose point size datasets are used to populate the dataset picker action
-     */
-    void setupPointSizeDatasetPickerAction(ScatterplotPlugin* scatterplotPlugin);
-
-    /**
-     * Set up the point opacity dataset picker action with the point opacity datasets from the scatter plot plugin
-     * @param scatterplotPlugin Pointer to scatter plot plugin whose point opacity datasets are used to populate the dataset picker action
-     */
-    void setupPointOpacityDatasetPickerAction(ScatterplotPlugin* scatterplotPlugin);
-
     /** Update the filters of the dataset picker actions based on the current datasets in the scatter plot plugin */
     void invalidateDatasetPickerActionFilters();
 
