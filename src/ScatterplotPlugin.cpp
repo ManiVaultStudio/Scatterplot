@@ -405,7 +405,7 @@ void ScatterplotPlugin::init()
 
     connect(&datasetsAction.getPositionDatasetPickerAction(), &DatasetPickerAction::currentIndexChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
     connect(&datasetsAction.getColorDatasetPickerAction(), &DatasetPickerAction::currentIndexChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
-    connect(&datasetsAction.getPointSizeDatasetPickerAction(), &DatasetPickerAction::currentIndexChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
+    connect(&pointPlotAction.getSizeAction(), &ScalarAction::sourceSelectionChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
     connect(&pointPlotAction.getOpacityAction(), &ScalarAction::sourceSelectionChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
 
     updateHeadsUpDisplay();
@@ -418,6 +418,14 @@ void ScatterplotPlugin::init()
     } else {
         datasetsAction.invalidateDatasetPickerActionFilters();
     }
+
+    connect(&_settingsAction.getPlotAction().getPointPlotAction().getSizeAction(), &ScalarAction::sourceDataChanged, this, [this]() -> void {
+	    _scatterPlotWidget->update();
+    });
+
+    connect(&_settingsAction.getPlotAction().getPointPlotAction().getOpacityAction(), &ScalarAction::sourceDataChanged, this, [this]() -> void {
+        _scatterPlotWidget->update();
+        });
 }
 
 void ScatterplotPlugin::loadData(const Datasets& datasets)
