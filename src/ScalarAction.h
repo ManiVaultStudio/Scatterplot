@@ -81,7 +81,7 @@ public: // Serialization
 
     /**
      * Load widget action from variant map
-     * @param Variant map representation of the widget action
+     * @param variantMap Variant map representation of the widget action
      */
     void fromVariantMap(const QVariantMap& variantMap) override;
 
@@ -100,7 +100,7 @@ signals:
 
     /**
      * Signals that the source selection changed
-     * @param sourceIndex Index of the selected source (0 is constant, 1 is selection, above is a dataset)
+     * @param sourceSelectionIndex Index of the selected source (0 is constant, 1 is selection, above is a dataset)
      */
     void sourceSelectionChanged(const std::uint32_t& sourceSelectionIndex);
 
@@ -125,13 +125,14 @@ signals:
 
     /**
      * Signals that the scalar offset changed
-     * @param magnitude Scalar magnitude
+     * @param offset Scalar offset
      */
     void offsetChanged(const float& offset);
 
 private:
     DecimalAction           _magnitudeAction;   /** Scalar magnitude action */
     ScalarSourceAction      _sourceAction;      /** Scalar source action */
+    Dataset<>               _currentDataset;    /** Cached current dataset (if any) */
 
     friend class mv::AbstractActionsManager;
 };

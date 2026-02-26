@@ -33,6 +33,14 @@ ScalarAction::ScalarAction(QObject* parent, const QString& title, const float& m
                     scatterplotPlugin->addNotification(QString("The number of points in the scalar source dataset does not match the number of points in the position dataset. (numPositions=%1, numScalars:%2)").arg(QString::number(numPositions), QString::number(numScalars)));
                 }
             }
+
+            if (_currentDataset.isValid()) {
+                disconnect(&_currentDataset, &Dataset<>::dataChanged, this, nullptr);
+            }
+
+            connect(&_currentDataset, &Dataset<>::dataChanged, this, [this]() -> void {
+                sourceDataChanged(getCurrentDataset());
+            });
         }
 
         if (emitSourceSelectionChanged)
