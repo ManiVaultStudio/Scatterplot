@@ -9,7 +9,8 @@ using namespace mv::gui;
 ScalarAction::ScalarAction(QObject* parent, const QString& title, const float& minimum /*= 0.0f*/, const float& maximum /*= 100.0f*/, const float& value /*= 0.0f*/) :
     GroupAction(parent, title),
     _magnitudeAction(this, title, minimum, maximum, value),
-    _sourceAction(this, QString("%1 source").arg(title))
+    _sourceAction(this, QString("%1 source").arg(title)),
+    _sourceDatasetPickerAction(this, "Source dataset")
 {
     setDefaultWidgetFlags(GroupAction::Horizontal);
     setShowLabels(false);
@@ -17,10 +18,14 @@ ScalarAction::ScalarAction(QObject* parent, const QString& title, const float& m
     addAction(&_magnitudeAction);
     addAction(&_sourceAction);
 
+	_sourceDatasetPickerAction.setDefaultWidgetFlag(OptionAction::Clearable);
+
     connect(&_sourceAction.getPickerAction(), &OptionAction::currentIndexChanged, this, [this](const std::uint32_t& currentIndex) {
         bool emitSourceSelectionChanged = true;
 
         if (currentIndex >= ScalarSourceModel::DefaultRow::DatasetStart) {
+            _sourceDatasetPickerAction.setCurrentDataset(_sourceAction.getModel().getDataset(currentIndex));
+
             if (auto scatterplotPlugin = dynamic_cast<ScatterplotPlugin*>(findPluginAncestor())) {
                 auto positionDataset            = scatterplotPlugin->getPositionDataset();
                 auto scalarSourcePointsDataset  = Dataset<Points>(getCurrentDataset());
@@ -33,18 +38,37 @@ ScalarAction::ScalarAction(QObject* parent, const QString& title, const float& m
                     scatterplotPlugin->addNotification(QString("The number of points in the scalar source dataset does not match the number of points in the position dataset. (numPositions=%1, numScalars:%2)").arg(QString::number(numPositions), QString::number(numScalars)));
                 }
             }
-
-            if (_currentDataset.isValid()) {
-                disconnect(&_currentDataset, &Dataset<>::dataChanged, this, nullptr);
-            }
-
-            connect(&_currentDataset, &Dataset<>::dataChanged, this, [this]() -> void {
-                sourceDataChanged(getCurrentDataset());
-            });
+        } else {
+            _sourceDatasetPickerAction.setCurrentIndex(-1);
         }
 
         if (emitSourceSelectionChanged)
             emit sourceSelectionChanged(currentIndex);
+    });
+
+    connect(&_sourceDatasetPickerAction, &DatasetPickerAction::datasetPicked, this, [this](const Dataset<>& dataset) {
+        if (_currentDataset.isValid()) {
+            disconnect(&_currentDataset, &Dataset<>::dataChanged, this, nullptr);
+            disconnect(&_currentDataset, &Dataset<>::guiNameChanged, this, nullptr);
+        }
+            
+        _currentDataset = dataset;
+
+        const auto datasetRowIndex = _sourceAction.getModel().getRowIndex(_currentDataset);
+
+        _sourceAction.getPickerAction().setCurrentIndex(_currentDataset.isValid() ? datasetRowIndex : ScalarSourceModel::DefaultRow::Constant);
+
+        if (!_currentDataset.isValid())
+            return;
+
+        connect(&_currentDataset, &Dataset<>::dataChanged, this, [this]() -> void {
+            emit sourceDataChanged(getCurrentDataset());
+        });
+
+        connect(&_currentDataset, &Dataset<>::guiNameChanged, this, [this]() -> void {
+            if (auto scatterplotPlugin = dynamic_cast<ScatterplotPlugin*>(findPluginAncestor()))
+                scatterplotPlugin->updateHeadsUpDisplay();
+        });
     });
 
     connect(&_magnitudeAction, &DecimalAction::valueChanged, this, [this](const float& value) {
@@ -96,22 +120,12 @@ void ScalarAction::removeAllDatasets()
 
 Dataset<DatasetImpl> ScalarAction::getCurrentDataset()
 {
-    auto& scalarSourceModel = _sourceAction.getModel();
-
-    const auto currentSourceIndex = _sourceAction.getPickerAction().getCurrentIndex();
-
-    if (currentSourceIndex < ScalarSourceModel::DefaultRow::DatasetStart)
-        return {};
-
-    return scalarSourceModel.getDataset(currentSourceIndex);
+    return _sourceDatasetPickerAction.getCurrentDataset();
 }
 
 void ScalarAction::setCurrentDataset(const Dataset<DatasetImpl>& dataset)
 {
-    const auto datasetRowIndex = _sourceAction.getModel().getRowIndex(dataset);
-
-    if (datasetRowIndex >= 0)
-        _sourceAction.getPickerAction().setCurrentIndex(datasetRowIndex);
+    _sourceDatasetPickerAction.setCurrentDataset(dataset);
 }
 
 void ScalarAction::setCurrentSourceIndex(std::int32_t sourceIndex)
@@ -170,6 +184,7 @@ void ScalarAction::fromVariantMap(const QVariantMap& variantMap)
 
     _magnitudeAction.fromParentVariantMap(variantMap);
     _sourceAction.fromParentVariantMap(variantMap);
+    _sourceDatasetPickerAction.fromParentVariantMap(variantMap);
 }
 
 QVariantMap ScalarAction::toVariantMap() const
@@ -178,6 +193,7 @@ QVariantMap ScalarAction::toVariantMap() const
 
     _magnitudeAction.insertIntoVariantMap(variantMap);
     _sourceAction.insertIntoVariantMap(variantMap);
+    _sourceDatasetPickerAction.insertIntoVariantMap(variantMap);
 
     return variantMap;
 }

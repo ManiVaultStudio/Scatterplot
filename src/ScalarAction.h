@@ -1,6 +1,7 @@
 #pragma once
 
 #include <actions/GroupAction.h>
+#include <actions/DatasetPickerAction.h>
 
 #include "ScalarSourceAction.h"
 
@@ -96,6 +97,8 @@ public: // Action getters
     DecimalAction& getMagnitudeAction() { return _magnitudeAction; }
     ScalarSourceAction& getSourceAction() { return _sourceAction; }
 
+	const DatasetPickerAction& getSourceDatasetPickerAction() { return _sourceDatasetPickerAction; }
+
 signals:
 
     /**
@@ -130,9 +133,10 @@ signals:
     void offsetChanged(const float& offset);
 
 private:
-    DecimalAction           _magnitudeAction;   /** Scalar magnitude action */
-    ScalarSourceAction      _sourceAction;      /** Scalar source action */
-    Dataset<>               _currentDataset;    /** Cached current dataset (if any) */
+    DatasetPickerAction     _sourceDatasetPickerAction;     /** Dataset picker action for source dataset selection */
+    DecimalAction           _magnitudeAction;               /** Scalar magnitude action */
+    ScalarSourceAction      _sourceAction;                  /** Scalar source action */
+    Dataset<>               _currentDataset;                /** Cached current dataset (if any) */
 
     friend class mv::AbstractActionsManager;
 };

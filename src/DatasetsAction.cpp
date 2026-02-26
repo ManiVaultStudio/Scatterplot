@@ -14,24 +14,12 @@ DatasetsAction::DatasetsAction(QObject* parent, const QString& title) :
     GroupAction(parent, title),
     _scatterplotPlugin(dynamic_cast<ScatterplotPlugin*>(parent->parent())),
     _positionDatasetPickerAction(this, "Position"),
-    _colorDatasetPickerAction(this, "Color"),
-    _pointSizeDatasetPickerAction(this, "Point size"),
-    _pointOpacityDatasetPickerAction(this, "Point opacity")
+    _colorDatasetPickerAction(this, "Color")
 {
     setIconByName("database");
     setToolTip("Manage loaded datasets for position and color");
     setConfigurationFlag(WidgetAction::ConfigurationFlag::ForceCollapsedInGroup);
     setLabelSizingType(LabelSizingType::Auto);
-
-    addAction(&_positionDatasetPickerAction);
-    addAction(&_colorDatasetPickerAction);
-    addAction(&_pointSizeDatasetPickerAction);
-    addAction(&_pointOpacityDatasetPickerAction);
-
-    _positionDatasetPickerAction.setDefaultWidgetFlag(OptionAction::Clearable);
-    _colorDatasetPickerAction.setDefaultWidgetFlag(OptionAction::Clearable);
-    _pointSizeDatasetPickerAction.setDefaultWidgetFlag(OptionAction::Clearable);
-    _pointOpacityDatasetPickerAction.setDefaultWidgetFlag(OptionAction::Clearable);
 
     auto scatterplotPlugin = dynamic_cast<ScatterplotPlugin*>(parent->parent());
 
@@ -40,22 +28,35 @@ DatasetsAction::DatasetsAction(QObject* parent, const QString& title) :
     if (scatterplotPlugin == nullptr)
         return;
 
+    auto& settingsAction    = scatterplotPlugin->getSettingsAction();
+    auto& plotAction        = settingsAction.getPlotAction();
+    auto& pointPlotAction   = plotAction.getPointPlotAction();
+
+	addAction(&_positionDatasetPickerAction);
+    addAction(&_colorDatasetPickerAction);
+    addAction(const_cast<DatasetPickerAction*>(&pointPlotAction.getSizeAction().getSourceDatasetPickerAction()));
+    addAction(const_cast<DatasetPickerAction*>(&pointPlotAction.getOpacityAction().getSourceDatasetPickerAction()));
+
+    _positionDatasetPickerAction.setDefaultWidgetFlag(OptionAction::Clearable);
+    _colorDatasetPickerAction.setDefaultWidgetFlag(OptionAction::Clearable);
+    
     setupDatasetPickerActions(scatterplotPlugin);
 
     const auto invalidateFilters = [this, scatterplotPlugin]() -> void {
         _colorDatasetPickerAction.invalidateFilter();
-        _pointSizeDatasetPickerAction.invalidateFilter();
-        _pointOpacityDatasetPickerAction.invalidateFilter();
+        //_pointSizeDatasetPickerAction.invalidateFilter();
+        //_pointOpacityDatasetPickerAction.invalidateFilter();
     };
 
     connect(&_positionDatasetPickerAction, &DatasetPickerAction::datasetPicked, [this, scatterplotPlugin, invalidateFilters](Dataset<DatasetImpl> pickedDataset) -> void {
         invalidateFilters();
     });
 
-    const auto resetAuxilliaryDatasets = [this]() -> void {
+    const auto resetAuxilliaryDatasets = [this, &pointPlotAction]() -> void {
         _colorDatasetPickerAction.setCurrentIndex(-1);
-		_pointSizeDatasetPickerAction.setCurrentIndex(-1);
-		_pointOpacityDatasetPickerAction.setCurrentIndex(-1);
+
+        pointPlotAction.getSizeAction().setCurrentSourceIndex(ScalarSourceModel::DefaultRow::Constant);
+		pointPlotAction.getOpacityAction().setCurrentSourceIndex(ScalarSourceModel::DefaultRow::Constant);
 	};
 
     connect(&scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, resetAuxilliaryDatasets);
@@ -74,8 +75,6 @@ void DatasetsAction::connectToPublicAction(WidgetAction* publicAction, bool recu
     if (recursive) {
         actions().connectPrivateActionToPublicAction(&_positionDatasetPickerAction, &publicDatasetsAction->getPositionDatasetPickerAction(), recursive);
         actions().connectPrivateActionToPublicAction(&_colorDatasetPickerAction, &publicDatasetsAction->getColorDatasetPickerAction(), recursive);
-        actions().connectPrivateActionToPublicAction(&_pointSizeDatasetPickerAction, &publicDatasetsAction->getPointSizeDatasetPickerAction(), recursive);
-        actions().connectPrivateActionToPublicAction(&_pointOpacityDatasetPickerAction, &publicDatasetsAction->getPointOpacityDatasetPickerAction(), recursive);
     }
 
     GroupAction::connectToPublicAction(publicAction, recursive);
@@ -89,8 +88,6 @@ void DatasetsAction::disconnectFromPublicAction(bool recursive)
     if (recursive) {
         actions().disconnectPrivateActionFromPublicAction(&_positionDatasetPickerAction, recursive);
         actions().disconnectPrivateActionFromPublicAction(&_colorDatasetPickerAction, recursive);
-        actions().disconnectPrivateActionFromPublicAction(&_pointSizeDatasetPickerAction, recursive);
-        actions().disconnectPrivateActionFromPublicAction(&_pointOpacityDatasetPickerAction, recursive);
     }
 
     GroupAction::disconnectFromPublicAction(recursive);
@@ -179,7 +176,7 @@ void DatasetsAction::setupPointSizeDatasetPickerAction(ScatterplotPlugin* scatte
     auto& settingsAction        = scatterplotPlugin->getSettingsAction();
     auto& pointPlotAction       = settingsAction.getPlotAction().getPointPlotAction();
     auto& pointSizeAction       = pointPlotAction.getSizeAction();
-
+    /*
     _pointSizeDatasetPickerAction.setFilterFunction([this, scatterplotPlugin](mv::Dataset<DatasetImpl> dataset) -> bool {
         if (!scatterplotPlugin->getPositionDataset().isValid())
             return false;
@@ -212,6 +209,7 @@ void DatasetsAction::setupPointSizeDatasetPickerAction(ScatterplotPlugin* scatte
         if (!pointSizeAction.isSourceDataset())
             _pointSizeDatasetPickerAction.setCurrentIndex(-1);
     });
+    */
 }
 
 void DatasetsAction::setupPointOpacityDatasetPickerAction(ScatterplotPlugin* scatterplotPlugin)
@@ -220,6 +218,7 @@ void DatasetsAction::setupPointOpacityDatasetPickerAction(ScatterplotPlugin* sca
     auto& pointPlotAction       = settingsAction.getPlotAction().getPointPlotAction();
     auto& pointOpacityAction    = pointPlotAction.getOpacityAction();
 
+    /*
     _pointOpacityDatasetPickerAction.setFilterFunction([this, scatterplotPlugin](mv::Dataset<DatasetImpl> dataset) -> bool {
         if (!scatterplotPlugin->getPositionDataset().isValid())
             return false;
@@ -252,12 +251,11 @@ void DatasetsAction::setupPointOpacityDatasetPickerAction(ScatterplotPlugin* sca
     	if (!pointOpacityAction.isSourceDataset())
             _pointOpacityDatasetPickerAction.setCurrentIndex(-1);
     });
+    */
 }
 
 void DatasetsAction::invalidateDatasetPickerActionFilters()
 {
     _positionDatasetPickerAction.invalidateFilter();
     _colorDatasetPickerAction.invalidateFilter();
-    _pointSizeDatasetPickerAction.invalidateFilter();
-    _pointOpacityDatasetPickerAction.invalidateFilter();
 }

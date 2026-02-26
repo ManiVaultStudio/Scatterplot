@@ -21,8 +21,6 @@ public:
     Q_INVOKABLE DatasetsAction(QObject* parent, const QString& title);
 
     mv::Dataset<mv::DatasetImpl> getColorDataset() { return _colorDataset; }
-    mv::Dataset<mv::DatasetImpl> getPointSizeDataset() { return _pointSizeDataset; }
-    mv::Dataset<mv::DatasetImpl> getPointOpacityDataset() { return _pointOpacityDataset; }
 
 protected: // Linking
 
@@ -92,18 +90,12 @@ public: // Action getters
 
     DatasetPickerAction& getPositionDatasetPickerAction() { return _positionDatasetPickerAction; }
     DatasetPickerAction& getColorDatasetPickerAction() { return _colorDatasetPickerAction; }
-    DatasetPickerAction& getPointSizeDatasetPickerAction() { return _pointSizeDatasetPickerAction; }
-    DatasetPickerAction& getPointOpacityDatasetPickerAction() { return _pointOpacityDatasetPickerAction; }
 
 private:
     ScatterplotPlugin*              _scatterplotPlugin;               /** Pointer to scatter plot plugin */
     DatasetPickerAction             _positionDatasetPickerAction;     /** Dataset picker action for position dataset */
     DatasetPickerAction             _colorDatasetPickerAction;        /** Dataset picker action for color dataset */
-    DatasetPickerAction             _pointSizeDatasetPickerAction;    /** Dataset picker action for point size */
-    DatasetPickerAction             _pointOpacityDatasetPickerAction; /** Dataset picker action for point opacity */
     mv::Dataset<mv::DatasetImpl>    _colorDataset;                    /** Smart pointer to dataset used for coloring (if any) */
-    mv::Dataset<mv::DatasetImpl>    _pointSizeDataset;                /** Smart pointer to dataset for driving point size (if any) */
-    mv::Dataset<mv::DatasetImpl>    _pointOpacityDataset;             /** Smart pointer to dataset for driving point opacity (if any) */
 
     friend class mv::AbstractActionsManager;
     friend class ScatterplotPlugin;
