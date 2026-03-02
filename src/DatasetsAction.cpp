@@ -28,7 +28,7 @@ DatasetsAction::DatasetsAction(QObject* parent, const QString& title) :
     if (scatterplotPlugin == nullptr)
         return;
 
-    auto& settingsAction    = scatterplotPlugin->getSettingsAction();
+    auto& settingsAction    = *dynamic_cast<SettingsAction*>(parent);
     auto& plotAction        = settingsAction.getPlotAction();
     auto& pointPlotAction   = plotAction.getPointPlotAction();
 
@@ -132,7 +132,7 @@ void DatasetsAction::setupPositionDatasetPickerAction(ScatterplotPlugin* scatter
 
 void DatasetsAction::setupColorDatasetPickerAction(ScatterplotPlugin* scatterplotPlugin)
 {
-    auto& settingsAction = scatterplotPlugin->getSettingsAction();
+    auto& settingsAction = *dynamic_cast<SettingsAction*>(parent());
 
     _colorDatasetPickerAction.setFilterFunction([this, scatterplotPlugin](mv::Dataset<DatasetImpl> dataset) -> bool {
         if (!(dataset->getDataType() == PointType || dataset->getDataType() == ColorType || dataset->getDataType() == ClusterType))

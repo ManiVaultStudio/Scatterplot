@@ -50,8 +50,8 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     _dropWidget(nullptr),
     _scatterPlotWidget(new ScatterplotWidget(this)),
     _numPoints(0),
-    _settingsAction(this, "Settings"),
-    _primaryToolbarAction(this, "Primary Toolbar")
+    _settingsAction(new SettingsAction(this, "Settings")),
+    _primaryToolbarAction(new HorizontalToolbarAction(this, "Primary Toolbar"))
 {
     setObjectName("Scatterplot");
 
@@ -83,25 +83,25 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
 
     getWidget().setFocusPolicy(Qt::ClickFocus);
 
-    _primaryToolbarAction.addAction(&_settingsAction.getDatasetsAction());
-    _primaryToolbarAction.addAction(&_settingsAction.getRenderModeAction(), 3, GroupAction::Horizontal);
-    _primaryToolbarAction.addAction(&_settingsAction.getPositionAction(), 1, GroupAction::Horizontal);
-    _primaryToolbarAction.addAction(&_settingsAction.getPlotAction(), 2, GroupAction::Horizontal);
-    _primaryToolbarAction.addAction(&_settingsAction.getColoringAction());
-    _primaryToolbarAction.addAction(&_settingsAction.getSubsetAction());
-    _primaryToolbarAction.addAction(&_settingsAction.getClusteringAction());
-    _primaryToolbarAction.addAction(&_settingsAction.getSelectionAction());
-    _primaryToolbarAction.addAction(&getSamplerAction());
+    _primaryToolbarAction->addAction(&_settingsAction->getDatasetsAction());
+    _primaryToolbarAction->addAction(&_settingsAction->getRenderModeAction(), 3, GroupAction::Horizontal);
+    _primaryToolbarAction->addAction(&_settingsAction->getPositionAction(), 1, GroupAction::Horizontal);
+    _primaryToolbarAction->addAction(&_settingsAction->getPlotAction(), 2, GroupAction::Horizontal);
+    _primaryToolbarAction->addAction(&_settingsAction->getColoringAction());
+    _primaryToolbarAction->addAction(&_settingsAction->getSubsetAction());
+    _primaryToolbarAction->addAction(&_settingsAction->getClusteringAction());
+    _primaryToolbarAction->addAction(&_settingsAction->getSelectionAction());
+    _primaryToolbarAction->addAction(&getSamplerAction());
 
     auto focusSelectionAction = new ToggleAction(this, "Focus selection");
 
     focusSelectionAction->setIconByName("mouse-pointer");
 
     connect(focusSelectionAction, &ToggleAction::toggled, this, [this](bool toggled) -> void {
-        _settingsAction.getPlotAction().getPointPlotAction().getFocusSelection().setChecked(toggled);
+        _settingsAction->getPlotAction().getPointPlotAction().getFocusSelection().setChecked(toggled);
     });
 
-    connect(&_settingsAction.getPlotAction().getPointPlotAction().getFocusSelection(), &ToggleAction::toggled, this, [this, focusSelectionAction](bool toggled) -> void {
+    connect(&_settingsAction->getPlotAction().getPointPlotAction().getFocusSelection(), &ToggleAction::toggled, this, [this, focusSelectionAction](bool toggled) -> void {
         focusSelectionAction->setChecked(toggled);
     });
 
@@ -114,13 +114,13 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     connect(_scatterPlotWidget, &ScatterplotWidget::renderModeChanged, this, updateReadOnly);
     connect(&_positionDataset, &Dataset<Points>::changed, this, updateReadOnly);
 
-    //_secondaryToolbarAction.addAction(&_settingsAction.getMiscellaneousAction());
+    //_secondaryToolbarAction.addAction(&_settingsAction->getMiscellaneousAction());
 
     connect(_scatterPlotWidget, &ScatterplotWidget::customContextMenuRequested, this, [this](const QPoint& point) {
         if (!_positionDataset.isValid())
             return;
 
-        auto contextMenu = _settingsAction.getContextMenu();
+        auto contextMenu = _settingsAction->getContextMenu();
 
         contextMenu->addSeparator();
 
@@ -165,7 +165,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                 // Load as point positions when no dataset is currently loaded
                 dropRegions << new DropWidget::DropRegion(this, "Point position", description, "map-marker-alt", true, [this, candidateDataset]() {
                     _positionDataset = candidateDataset;
-                    _settingsAction.getColoringAction().setCurrentColorDataset(nullptr);
+                    _settingsAction->getColoringAction().setCurrentColorDataset(nullptr);
                 });
             }
             else {
@@ -174,7 +174,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                     // The number of points is equal, so offer the option to replace the existing points dataset
                     dropRegions << new DropWidget::DropRegion(this, "Point position", description, "map-marker-alt", true, [this, candidateDataset]() {
                         _positionDataset = candidateDataset;
-                        _settingsAction.getColoringAction().setCurrentColorDataset(nullptr);
+                        _settingsAction->getColoringAction().setCurrentColorDataset(nullptr);
                     });
 				}
 
@@ -200,7 +200,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                 if (hasSameNumPoints || hasSameNumPointsAsFull || hasSelectionMapping) {
                     // Offer the option to use the points dataset as source for points colors
                     dropRegions << new DropWidget::DropRegion(this, "Point color", QString("Colorize %1 points with %2").arg(_positionDataset->text(), candidateDataset->text()), "palette", true, [this, candidateDataset]() {
-                        _settingsAction.getColoringAction().setCurrentColorDataset(candidateDataset);   // calls addColorDataset internally
+                        _settingsAction->getColoringAction().setCurrentColorDataset(candidateDataset);   // calls addColorDataset internally
                         });
 
                 }
@@ -209,12 +209,12 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                 if (hasSameNumPoints) {
                     // Offer the option to use the points dataset as source for points size
                     dropRegions << new DropWidget::DropRegion(this, "Point size", QString("Size %1 points with %2").arg(_positionDataset->text(), candidateDataset->text()), "ruler-horizontal", true, [this, candidateDataset]() {
-                        _settingsAction.getPlotAction().getPointPlotAction().setCurrentPointSizeDataset(candidateDataset);
+                        _settingsAction->getPlotAction().getPointPlotAction().setCurrentPointSizeDataset(candidateDataset);
                         });
 
                     // Offer the option to use the points dataset as source for points opacity
                     dropRegions << new DropWidget::DropRegion(this, "Point opacity", QString("Set %1 points opacity with %2").arg(_positionDataset->text(), candidateDataset->text()), "brush", true, [this, candidateDataset]() {
-                        _settingsAction.getPlotAction().getPointPlotAction().setCurrentPointOpacityDataset(candidateDataset);
+                        _settingsAction->getPlotAction().getPointPlotAction().setCurrentPointOpacityDataset(candidateDataset);
                         });
                 }
             }
@@ -232,11 +232,11 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
             // Only allow user to color by clusters when there is a positions dataset loaded
             if (_positionDataset.isValid()) {
 
-                if (_settingsAction.getColoringAction().hasColorDataset(candidateDataset)) {
+                if (_settingsAction->getColoringAction().hasColorDataset(candidateDataset)) {
 
                     // The clusters dataset is already loaded
                     dropRegions << new DropWidget::DropRegion(this, "Color", description, "palette", true, [this, candidateDataset]() {
-                        _settingsAction.getColoringAction().setCurrentColorDataset(candidateDataset);
+                        _settingsAction->getColoringAction().setCurrentColorDataset(candidateDataset);
                         });
                 }
                 else {
@@ -260,8 +260,8 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                         {
                             // Use the clusters set for points color
                             dropRegions << new DropWidget::DropRegion(this, "Color", description, "palette", true, [this, candidateDataset]() {
-                                _settingsAction.getColoringAction().addColorDataset(candidateDataset);
-                                _settingsAction.getColoringAction().setCurrentColorDataset(candidateDataset);
+                                _settingsAction->getColoringAction().addColorDataset(candidateDataset);
+                                _settingsAction->getColoringAction().setCurrentColorDataset(candidateDataset);
                             });
                         }
                         else
@@ -282,7 +282,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
         return dropRegions;
     });
 
-    auto& selectionAction = _settingsAction.getSelectionAction();
+    auto& selectionAction = _settingsAction->getSelectionAction();
 
     getSamplerAction().initialize(this, &selectionAction.getPixelSelectionAction(), &selectionAction.getSamplerPixelSelectionAction());
     getSamplerAction().getEnabledAction().setChecked(false);
@@ -306,7 +306,7 @@ void ScatterplotPlugin::init()
 
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
-    layout->addWidget(_primaryToolbarAction.createWidget(&getWidget()));
+    layout->addWidget(_primaryToolbarAction->createWidget(&getWidget()));
     layout->addWidget(_scatterPlotWidget, 100);
 
     auto& navigationAction = _scatterPlotWidget->getPointRendererNavigator().getNavigationAction();
@@ -315,7 +315,7 @@ void ScatterplotPlugin::init()
         layout->addWidget(navigationWidget);
         layout->setAlignment(navigationWidget, Qt::AlignCenter);
 
-        navigationAction.setParent(&_settingsAction);
+        navigationAction.setParent(_settingsAction);
     }
 
     getWidget().setLayout(layout);
@@ -345,7 +345,7 @@ void ScatterplotPlugin::init()
     connect(&_positionDataset, &Dataset<Points>::dataSelectionChanged, this, &ScatterplotPlugin::updateSelection);
     connect(&_positionDataset, &Dataset<>::guiNameChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
 
-    connect(&_settingsAction.getMiscellaneousAction().getBackgroundColorAction(), &ColorAction::colorChanged, this, &ScatterplotPlugin::updateHeadsUpDisplayTextColor);
+    connect(&_settingsAction->getMiscellaneousAction().getBackgroundColorAction(), &ColorAction::colorChanged, this, &ScatterplotPlugin::updateHeadsUpDisplayTextColor);
 
     connect(&getScatterplotWidget().getPointRendererNavigator().getNavigationAction().getZoomSelectionAction(), &TriggerAction::triggered, this, [this]() -> void {
         if (_selectionBoundaries.isValid())
@@ -400,8 +400,8 @@ void ScatterplotPlugin::init()
         });
 #endif
 
-    auto& datasetsAction    = _settingsAction.getDatasetsAction();
-    auto& pointPlotAction   = _settingsAction.getPlotAction().getPointPlotAction();
+    auto& datasetsAction    = _settingsAction->getDatasetsAction();
+    auto& pointPlotAction   = _settingsAction->getPlotAction().getPointPlotAction();
 
     connect(&datasetsAction.getPositionDatasetPickerAction(), &DatasetPickerAction::currentIndexChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
     connect(&datasetsAction.getColorDatasetPickerAction(), &DatasetPickerAction::currentIndexChanged, this, &ScatterplotPlugin::updateHeadsUpDisplay);
@@ -419,11 +419,11 @@ void ScatterplotPlugin::init()
         datasetsAction.invalidateDatasetPickerActionFilters();
     }
 
-    connect(&_settingsAction.getPlotAction().getPointPlotAction().getSizeAction(), &ScalarAction::sourceDataChanged, this, [this]() -> void {
+    connect(&_settingsAction->getPlotAction().getPointPlotAction().getSizeAction(), &ScalarAction::sourceDataChanged, this, [this]() -> void {
 	    _scatterPlotWidget->update();
     });
 
-    connect(&_settingsAction.getPlotAction().getPointPlotAction().getOpacityAction(), &ScalarAction::sourceDataChanged, this, [this]() -> void {
+    connect(&_settingsAction->getPlotAction().getPointPlotAction().getOpacityAction(), &ScalarAction::sourceDataChanged, this, [this]() -> void {
         _scatterPlotWidget->update();
         });
 }
@@ -438,7 +438,7 @@ void ScatterplotPlugin::loadData(const Datasets& datasets)
     _positionDataset = datasets.first();
 
     // And set the coloring mode to constant
-    _settingsAction.getColoringAction().getColorByAction().setCurrentIndex(0);
+    _settingsAction->getColoringAction().getColorByAction().setCurrentIndex(0);
 }
 
 void ScatterplotPlugin::createSubset(const bool& fromSourceData /*= false*/, const QString& name /*= ""*/)
@@ -463,7 +463,7 @@ void ScatterplotPlugin::selectPoints()
 
     auto& pixelSelectionTool = _scatterPlotWidget->getPixelSelectionTool();
 
-    auto  renderer = _settingsAction.getRenderModeAction().getCurrentIndex() > 0 ? dynamic_cast<Renderer2D*>(&_scatterPlotWidget->_densityRenderer) : dynamic_cast<Renderer2D*>(&_scatterPlotWidget->_pointRenderer);
+    auto  renderer = _settingsAction->getRenderModeAction().getCurrentIndex() > 0 ? dynamic_cast<Renderer2D*>(&_scatterPlotWidget->_densityRenderer) : dynamic_cast<Renderer2D*>(&_scatterPlotWidget->_pointRenderer);
     auto& navigator = renderer->getNavigator();
 
     // Only proceed with a valid points position dataset and when the pixel selection tool is active
@@ -662,11 +662,11 @@ void ScatterplotPlugin::samplePoints()
 
     _scatterPlotWidget->update();
 
-    auto& coloringAction = _settingsAction.getColoringAction();
+    auto& coloringAction = _settingsAction->getColoringAction();
 
     getSamplerAction().setSampleContext({
         { "PositionDatasetID", _positionDataset.getDatasetId() },
-        { "ColorDatasetID", _settingsAction.getColoringAction().getCurrentColorDataset().getDatasetId() },
+        { "ColorDatasetID", _settingsAction->getColoringAction().getCurrentColorDataset().getDatasetId() },
         { "LocalPointIndices", localPointIndices },
         { "GlobalPointIndices", globalPointIndices },
         { "Distances", distances },
@@ -675,7 +675,7 @@ void ScatterplotPlugin::samplePoints()
         { "ColorMap1D", coloringAction.getColorMap1DAction().getColorMapImage() },
         { "ColorMap2D", coloringAction.getColorMap2DAction().getColorMapImage() },
         { "ColorDimensionIndex", coloringAction.getDimensionAction().getCurrentDimensionAction().getCurrentIndex() },
-        { "RenderMode", _settingsAction.getRenderModeAction().getCurrentText() }
+        { "RenderMode", _settingsAction->getRenderModeAction().getCurrentText() }
     });
 }
 
@@ -815,12 +815,12 @@ void ScatterplotPlugin::loadColors(const Dataset<Points>& pointsColor, const std
         }
         catch (const std::exception& e) {
             qDebug() << "ScatterplotPlugin::loadColors: mapping failed -> " << e.what();
-            _settingsAction.getColoringAction().getColorByAction().setCurrentIndex(0);  // reset to color by constant
+            _settingsAction->getColoringAction().getColorByAction().setCurrentIndex(0);  // reset to color by constant
             return;
         }
         catch (...) {
             qDebug() << "ScatterplotPlugin::loadColors: mapping failed for an unknown reason.";
-            _settingsAction.getColoringAction().getColorByAction().setCurrentIndex(0);  // reset to color by constant
+            _settingsAction->getColoringAction().getColorByAction().setCurrentIndex(0);  // reset to color by constant
             return;
         }
 
@@ -833,7 +833,7 @@ void ScatterplotPlugin::loadColors(const Dataset<Points>& pointsColor, const std
     _scatterPlotWidget->setScalars(colorScalars);
     _scatterPlotWidget->setScalarEffect(PointEffect::Color);
 
-    _settingsAction.getColoringAction().updateColorMapActionScalarRange();
+    _settingsAction->getColoringAction().updateColorMapActionScalarRange();
 
     // Render
     getWidget().update();
@@ -913,8 +913,8 @@ void ScatterplotPlugin::updateData()
     if (_positionDataset.isValid()) {
 
         // Get the selected dimensions to use as X and Y dimension in the plot
-        const auto xDim = _settingsAction.getPositionAction().getDimensionX();
-        const auto yDim = _settingsAction.getPositionAction().getDimensionY();
+        const auto xDim = _settingsAction->getPositionAction().getDimensionX();
+        const auto yDim = _settingsAction->getPositionAction().getDimensionY();
 
         // If one of the dimensions was not set, do not draw anything
         if (xDim < 0 || yDim < 0)
@@ -923,8 +923,8 @@ void ScatterplotPlugin::updateData()
         // Ensure that if positionDataset has now more points, the additional points are plotted
         if (_numPoints != _positionDataset->getNumPoints())
         {
-            _settingsAction.getPlotAction().getPointPlotAction().updateScatterPlotWidgetPointSizeScalars();
-            _settingsAction.getPlotAction().getPointPlotAction().updateScatterPlotWidgetPointOpacityScalars();
+            _settingsAction->getPlotAction().getPointPlotAction().updateScatterPlotWidgetPointSizeScalars();
+            _settingsAction->getPlotAction().getPointPlotAction().updateScatterPlotWidgetPointOpacityScalars();
         }
 
         // Determine number of points depending on if its a full dataset or a subset
@@ -1002,11 +1002,11 @@ void ScatterplotPlugin::updateSelection()
 
         _scatterPlotWidget->update();
 
-        auto& coloringAction = _settingsAction.getColoringAction();
+        auto& coloringAction = _settingsAction->getColoringAction();
 
         getSamplerAction().setSampleContext({
             { "PositionDatasetID", _positionDataset.getDatasetId() },
-            { "ColorDatasetID", _settingsAction.getColoringAction().getCurrentColorDataset().getDatasetId() },
+            { "ColorDatasetID", _settingsAction->getColoringAction().getCurrentColorDataset().getDatasetId() },
             { "LocalPointIndices", localPointIndices },
             { "GlobalPointIndices", globalPointIndices },
             { "Distances", QVariantList()},
@@ -1015,7 +1015,7 @@ void ScatterplotPlugin::updateSelection()
             { "ColorMap1D", coloringAction.getColorMap1DAction().getColorMapImage() },
             { "ColorMap2D", coloringAction.getColorMap2DAction().getColorMapImage() },
             { "ColorDimensionIndex", coloringAction.getDimensionAction().getCurrentDimensionAction().getCurrentIndex() },
-            { "RenderMode", _settingsAction.getRenderModeAction().getCurrentText() }
+            { "RenderMode", _settingsAction->getRenderModeAction().getCurrentText() }
 		});
     }
 }
@@ -1027,7 +1027,7 @@ void ScatterplotPlugin::updateHeadsUpDisplay()
 
     getHeadsUpDisplayAction().removeAllHeadsUpDisplayItems();
 
-    auto& coloringAction = _settingsAction.getColoringAction();
+    auto& coloringAction = _settingsAction->getColoringAction();
 
     if (_positionDataset.isValid()) {
         const auto datasetsItem = getHeadsUpDisplayAction().addHeadsUpDisplayItem("Datasets", "", "");
@@ -1042,7 +1042,7 @@ void ScatterplotPlugin::updateHeadsUpDisplay()
         if (coloringAction.getColorByAction().getCurrentIndex() >= 2)
 			addMetaDataToHeadsUpDisplay("Color", coloringAction.getCurrentColorDataset(), datasetsItem);
 
-        auto& pointPlotAction = _settingsAction.getPlotAction().getPointPlotAction();
+        auto& pointPlotAction = _settingsAction->getPlotAction().getPointPlotAction();
 
         //qDebug() << "ScatterplotPlugin::updateHeadsUpDisplay: point size dataset: " << pointPlotAction.getSizeAction().getCurrentDataset().isValid() << ", opacity dataset: " << pointPlotAction.getOpacityAction().getCurrentDataset().isValid();
         addMetaDataToHeadsUpDisplay("Size",    pointPlotAction.getSizeAction().getCurrentDataset(), datasetsItem);
@@ -1058,7 +1058,7 @@ void ScatterplotPlugin::updateHeadsUpDisplayTextColor()
         if (auto headsUpDisplayWidgetTreeView = headsUpDisplayWidget->findChild<QTreeView*>("TreeView")) {
             QPalette palette = headsUpDisplayWidgetTreeView->palette();
 
-            palette.setColor(QPalette::Text, _settingsAction.getMiscellaneousAction().getBackgroundColorAction().getColor().lightnessF() > .5f ? Qt::black : Qt::white);
+            palette.setColor(QPalette::Text, _settingsAction->getMiscellaneousAction().getBackgroundColorAction().getColor().lightnessF() > .5f ? Qt::black : Qt::white);
 
             headsUpDisplayWidgetTreeView->setPalette(palette);
         }
@@ -1075,8 +1075,8 @@ void ScatterplotPlugin::fromVariantMap(const QVariantMap& variantMap)
 
     pointRenderer.getNavigator().resetView(true);
 
-    _primaryToolbarAction.fromParentVariantMap(variantMap);
-    _settingsAction.fromParentVariantMap(variantMap);
+    _primaryToolbarAction->fromParentVariantMap(variantMap);
+    _settingsAction->fromParentVariantMap(variantMap);
 
     if (pointRenderer.getNavigator().getNavigationAction().getSerializationCountFrom() == 0) {
         _scatterPlotWidget->update();
@@ -1089,8 +1089,8 @@ QVariantMap ScatterplotPlugin::toVariantMap() const
 {
     QVariantMap variantMap = ViewPlugin::toVariantMap();
 
-    _primaryToolbarAction.insertIntoVariantMap(variantMap);
-    _settingsAction.insertIntoVariantMap(variantMap);
+    _primaryToolbarAction->insertIntoVariantMap(variantMap);
+    _settingsAction->insertIntoVariantMap(variantMap);
 
     return variantMap;
 }
