@@ -88,7 +88,7 @@ public:
     /** Get reference to the scatter plot widget */
     ScatterplotWidget& getScatterplotWidget();
 
-    SettingsAction& getSettingsAction() { return _settingsAction; }
+    SettingsAction& getSettingsAction() { return *_settingsAction; }
 
 private:
     void updateData();
@@ -114,15 +114,15 @@ public: // Serialization
     QVariantMap toVariantMap() const override;
 
 private:
-    mv::gui::DropWidget*            _dropWidget;                /** Widget for dropping datasets */
-    ScatterplotWidget*              _scatterPlotWidget;         /** The visualization widget */
-    Dataset<Points>                 _positionDataset;           /** Smart pointer to points dataset for point position */
-    Dataset<Points>                 _positionSourceDataset;     /** Smart pointer to source of the points dataset for point position (if any) */
-    std::vector<mv::Vector2f>       _positions;                 /** Point positions */
-    unsigned int                    _numPoints;                 /** Number of point positions */
-    SettingsAction                  _settingsAction;            /** Group action for all settings */
-    HorizontalToolbarAction         _primaryToolbarAction;      /** Horizontal toolbar for primary content */
-    QRectF                          _selectionBoundaries;       /** Boundaries of the selection */
+    mv::gui::DropWidget*                _dropWidget;                /** Widget for dropping datasets */
+    ScatterplotWidget*                  _scatterPlotWidget;         /** The visualization widget */
+    Dataset<Points>                     _positionDataset;           /** Smart pointer to points dataset for point position */
+    Dataset<Points>                     _positionSourceDataset;     /** Smart pointer to source of the points dataset for point position (if any) */
+    std::vector<mv::Vector2f>           _positions;                 /** Point positions */
+    unsigned int                        _numPoints;                 /** Number of point positions */
+    QPointer<SettingsAction>            _settingsAction;            /** Group action for all settings */
+    QPointer<HorizontalToolbarAction>   _primaryToolbarAction;      /** Horizontal toolbar for primary content */
+    QRectF                              _selectionBoundaries;       /** Boundaries of the selection */
 
     static const std::int32_t LAZY_UPDATE_INTERVAL = 2;
 
