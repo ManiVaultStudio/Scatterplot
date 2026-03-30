@@ -244,13 +244,13 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                     {
                         // Check to set whether the number of data points comprised throughout all clusters is the same number
                         // as the number of data points in the dataset we are trying to color
-                        int totalNumIndices = 0;
+                        std::uint64_t totalNumIndices = 0;
                         for (const Cluster& cluster : candidateDataset->getClusters())
                         {
                             totalNumIndices += cluster.getIndices().size();
                         }
 
-                        int totalNumPoints = 0;
+                        std::uint64_t totalNumPoints = 0;
                         if (_positionDataset->isDerivedData())
                             totalNumPoints = _positionSourceDataset->getFullDataset<Points>()->getNumPoints();
                         else
