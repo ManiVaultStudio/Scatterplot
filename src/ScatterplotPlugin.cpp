@@ -846,7 +846,7 @@ void ScatterplotPlugin::loadColors(const Dataset<Clusters>& clusters)
         return;
 
     // Get global indices from the position dataset
-    int totalNumPoints = 0;
+    std::uint64_t totalNumPoints = 0;
     if (_positionDataset->isDerivedData())
         totalNumPoints = _positionSourceDataset->getFullDataset<Points>()->getNumPoints();
     else
