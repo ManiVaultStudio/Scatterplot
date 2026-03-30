@@ -138,10 +138,10 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
         if (datasetsMimeData == nullptr)
             return dropRegions;
 
-        if (datasetsMimeData->getDatasets().count() > 1)
+        if (datasetsMimeData->getDatasetsCount() > 1)
             return dropRegions;
 
-        const auto dataset          = datasetsMimeData->getDatasets().first();
+        const auto& dataset         = datasetsMimeData->getDatasetsRef().first();
         const auto datasetGuiName   = dataset->text();
         const auto datasetId        = dataset->getId();
         const auto dataType         = dataset->getDataType();
