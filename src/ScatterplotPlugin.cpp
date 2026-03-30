@@ -138,10 +138,10 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
         if (datasetsMimeData == nullptr)
             return dropRegions;
 
-        if (datasetsMimeData->getDatasets().count() > 1)
+        if (datasetsMimeData->getDatasetsCount() != 1)
             return dropRegions;
 
-        const auto dataset          = datasetsMimeData->getDatasets().first();
+        const auto& dataset         = datasetsMimeData->getDatasetsRef().first();
         const auto datasetGuiName   = dataset->text();
         const auto datasetId        = dataset->getId();
         const auto dataType         = dataset->getDataType();
@@ -244,13 +244,13 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                     {
                         // Check to set whether the number of data points comprised throughout all clusters is the same number
                         // as the number of data points in the dataset we are trying to color
-                        int totalNumIndices = 0;
+                        std::uint64_t totalNumIndices = 0;
                         for (const Cluster& cluster : candidateDataset->getClusters())
                         {
                             totalNumIndices += cluster.getIndices().size();
                         }
 
-                        int totalNumPoints = 0;
+                        std::uint64_t totalNumPoints = 0;
                         if (_positionDataset->isDerivedData())
                             totalNumPoints = _positionSourceDataset->getFullDataset<Points>()->getNumPoints();
                         else
@@ -755,7 +755,7 @@ void ScatterplotPlugin::loadColors(const Dataset<Points>& pointsColor, const std
                 const mv::SelectionMap::Map& mapColorsToPositions = selectionMapping->getMapping().getMap();
 
                 for (const auto& [fromColorID, vecOfPositionIDs] : mapColorsToPositions) {
-                    for (std::uint32_t toPositionID : vecOfPositionIDs) {
+                    for (const std::uint32_t toPositionID : vecOfPositionIDs) {
                         mappedColorScalars[toPositionID] = colorScalars[fromColorID];
                     }
                 }
@@ -775,7 +775,7 @@ void ScatterplotPlugin::loadColors(const Dataset<Points>& pointsColor, const std
                 for (const auto& [fromPositionID, vecOfColorIDs] : mapPositionsToColors) {
                     if (mappedColorScalars[fromPositionID] != std::numeric_limits<float>::lowest())
                         continue;
-                    for (std::uint32_t toColorID : vecOfColorIDs) {
+                    for (const std::uint32_t toColorID : vecOfColorIDs) {
                         mappedColorScalars[fromPositionID] = colorScalars[toColorID];
                     }
                 }
@@ -846,7 +846,7 @@ void ScatterplotPlugin::loadColors(const Dataset<Clusters>& clusters)
         return;
 
     // Get global indices from the position dataset
-    int totalNumPoints = 0;
+    std::uint64_t totalNumPoints = 0;
     if (_positionDataset->isDerivedData())
         totalNumPoints = _positionSourceDataset->getFullDataset<Points>()->getNumPoints();
     else
