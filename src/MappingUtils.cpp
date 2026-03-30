@@ -35,17 +35,17 @@ std::pair<const mv::LinkedData*, std::uint64_t> getSelectionMapping(const mv::Da
 }
 
 std::pair<const mv::LinkedData*, std::uint64_t> getSelectionMappingColorsToPositions(const mv::Dataset<Points>& colors, const mv::Dataset<Points>& positions) {
-    auto testTargetAndParent = [](const mv::LinkedData& linkedData, const mv::Dataset<Points>& positions) -> bool {
+    auto testTargetAndParent = [](const mv::LinkedData& linkedData, const mv::Dataset<Points>& positions_) -> bool {
         const mv::Dataset<mv::DatasetImpl> mapTargetData = linkedData.getTargetDataset();
-        return mapTargetData == positions || parentHasSameNumPoints(mapTargetData, positions);
+        return mapTargetData == positions_ || parentHasSameNumPoints(mapTargetData, positions_);
         };
 
     return getSelectionMapping(colors, positions, testTargetAndParent);
 }
 
 std::pair<const mv::LinkedData*, std::uint64_t> getSelectionMappingPositionsToColors(const mv::Dataset<Points>& positions, const mv::Dataset<Points>& colors) {
-    auto testTarget = [](const mv::LinkedData& linkedData, const mv::Dataset<Points>& colors) -> bool {
-        return linkedData.getTargetDataset() == colors;
+    auto testTarget = [](const mv::LinkedData& linkedData, const mv::Dataset<Points>& colors_) -> bool {
+        return linkedData.getTargetDataset() == colors_;
         };
 
     auto [mapping, numTargetPoints] = getSelectionMapping(positions, colors, testTarget);
