@@ -755,7 +755,7 @@ void ScatterplotPlugin::loadColors(const Dataset<Points>& pointsColor, const std
                 const mv::SelectionMap::Map& mapColorsToPositions = selectionMapping->getMapping().getMap();
 
                 for (const auto& [fromColorID, vecOfPositionIDs] : mapColorsToPositions) {
-                    for (std::uint32_t toPositionID : vecOfPositionIDs) {
+                    for (const std::uint32_t toPositionID : vecOfPositionIDs) {
                         mappedColorScalars[toPositionID] = colorScalars[fromColorID];
                     }
                 }
@@ -775,7 +775,7 @@ void ScatterplotPlugin::loadColors(const Dataset<Points>& pointsColor, const std
                 for (const auto& [fromPositionID, vecOfColorIDs] : mapPositionsToColors) {
                     if (mappedColorScalars[fromPositionID] != std::numeric_limits<float>::lowest())
                         continue;
-                    for (std::uint32_t toColorID : vecOfColorIDs) {
+                    for (const std::uint32_t toColorID : vecOfColorIDs) {
                         mappedColorScalars[fromPositionID] = colorScalars[toColorID];
                     }
                 }

@@ -77,7 +77,7 @@ bool checkSurjectiveMapping(const mv::LinkedData& linkedData, const std::uint32_
     std::uint32_t count = 0;
 
     for (const auto& [key, vec] : linkedMap) {
-        for (std::uint32_t val : vec) {
+        for (const std::uint32_t val : vec) {
             if (val >= numPointsInTarget) continue; // Skip values that are too large
 
             if (!found[val]) {
