@@ -12,6 +12,7 @@
 #include <ClusterData/ClusterData.h>
 #include <ColorData/ColorData.h>
 #include <PointData/PointData.h>
+#include <SelectionGroup.h>
 
 #include <graphics/Vector3f.h>
 
@@ -44,6 +45,17 @@ Q_PLUGIN_METADATA(IID "studio.manivault.ScatterplotPlugin")
 
 using namespace mv;
 using namespace mv::util;
+
+namespace
+{
+    Dataset<DatasetImpl> getTopDataset(const Dataset<DatasetImpl> dataset)
+    {
+        Dataset<DatasetImpl> topDataset = dataset;
+        while (topDataset->getParent().isValid())
+            topDataset = topDataset->getParent();
+        return topDataset;
+    }
+}
 
 ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     ViewPlugin(factory),
@@ -231,7 +243,6 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
 
             // Only allow user to color by clusters when there is a positions dataset loaded
             if (_positionDataset.isValid()) {
-
                 if (_settingsAction->getColoringAction().hasColorDataset(candidateDataset)) {
 
                     // The clusters dataset is already loaded
@@ -256,7 +267,16 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                         else
                             totalNumPoints = _positionDataset->getFullDataset<Points>()->getNumPoints();
 
-                        if (totalNumIndices == totalNumPoints)
+                        // First check if cross-dataset metadata coloring is possible
+                        if (events().areDatasetsPartOfSelectionGroup(getTopDataset(_positionDataset), getTopDataset(candidateDataset)))
+                        {
+                            // Use the clusters set for points color
+                            dropRegions << new DropWidget::DropRegion(this, "Color", description, "palette", true, [this, candidateDataset]() {
+                                _settingsAction->getColoringAction().addColorDataset(candidateDataset);
+                                _settingsAction->getColoringAction().setCurrentColorDataset(candidateDataset);
+                            });
+                        }
+                        else if (totalNumIndices == totalNumPoints)
                         {
                             // Use the clusters set for points color
                             dropRegions << new DropWidget::DropRegion(this, "Color", description, "palette", true, [this, candidateDataset]() {
@@ -844,6 +864,40 @@ void ScatterplotPlugin::loadColors(const Dataset<Clusters>& clusters)
     // Only proceed with valid clusters and position dataset
     if (!clusters.isValid() || !_positionDataset.isValid())
         return;
+
+    // First check if cross-dataset metadata coloring is possible
+    std::vector<KeyBasedSelectionGroup>& selectionGroups = events().getSelectionGroups();
+    for (int i = 0; i < selectionGroups.size(); i++)
+    {
+        KeyBasedSelectionGroup& selectionGroup = selectionGroups[i];
+        if (selectionGroup.areDatasetsPartOfGroup(_positionDataset->getParent(), clusters->getParent()))
+        {
+            const auto& clusterVec = clusters->getClusters();
+            std::vector<Vector3f> localColors(_numPoints, Vector3f(1, 0, 1));
+
+            std::vector<int> mappedIndices = selectionGroup.getMappingBetweenDatasets(getTopDataset(clusters), getTopDataset(_positionDataset));
+
+            for (int j = 0; j < mappedIndices.size(); j++)
+            {
+                int localIndex = mappedIndices[j];
+                if (localIndex == -1) continue;
+                for (const auto& cluster : clusterVec)
+                {
+                    if (std::find(cluster.getIndices().begin(), cluster.getIndices().end(), j) != cluster.getIndices().end())
+                    {
+                        const auto color = cluster.getColor();
+                        localColors[localIndex] = Vector3f(color.redF(), color.greenF(), color.blueF());
+                    }
+                }
+            }
+            // Apply colors to scatter plot widget without modification
+            _scatterPlotWidget->setColors(localColors);
+
+            // Render
+            getWidget().update();
+            return;
+        }
+    }
 
     // Get global indices from the position dataset
     int totalNumPoints = 0;
