@@ -870,7 +870,7 @@ void ScatterplotPlugin::loadColors(const Dataset<Clusters>& clusters)
     for (int i = 0; i < selectionGroups.size(); i++)
     {
         KeyBasedSelectionGroup& selectionGroup = selectionGroups[i];
-        if (selectionGroup.areDatasetsPartOfGroup(_positionDataset->getParent(), clusters->getParent()))
+        if (selectionGroup.areDatasetsPartOfGroup(getTopDataset(_positionDataset), getTopDataset(clusters)))
         {
             const auto& clusterVec = clusters->getClusters();
             std::vector<Vector3f> localColors(_numPoints, Vector3f(1, 0, 1));
