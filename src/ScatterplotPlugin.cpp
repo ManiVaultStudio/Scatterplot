@@ -875,7 +875,11 @@ void ScatterplotPlugin::loadColors(const Dataset<Clusters>& clusters)
             const auto& clusterVec = clusters->getClusters();
             std::vector<Vector3f> localColors(_numPoints, Vector3f(1, 0, 1));
 
-            std::vector<int> mappedIndices = selectionGroup.getMappingBetweenDatasets(getTopDataset(clusters), getTopDataset(_positionDataset));
+            // If the clusters belong to the same dataset as we're dropping them on, then skip to other path
+            if (clusters->getParent() == _positionDataset)
+                continue;
+
+            std::vector<int> mappedIndices = selectionGroup.getMappingBetweenDatasets(getTopDataset(clusters), _positionDataset);
 
             for (int j = 0; j < mappedIndices.size(); j++)
             {
