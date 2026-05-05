@@ -108,9 +108,9 @@ target_include_directories(${PROJECT} PRIVATE "${ManiVault_INCLUDE_DIR}")
 # -----------------------------------------------------------------------------
 target_compile_features(${PROJECT} PRIVATE cxx_std_20)
 
-if(MV_UNITY_BUILD)
-    set_target_properties(${PROJECT} PROPERTIES UNITY_BUILD ON)
-endif()
+set_target_properties(${PROJECT} PROPERTIES 
+    UNITY_BUILD ${MV_UNITY_BUILD}
+)
 
 # -----------------------------------------------------------------------------
 # Target library linking
