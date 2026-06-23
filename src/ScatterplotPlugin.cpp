@@ -8,6 +8,7 @@
 
 #include <util/PixelSelectionTool.h>
 #include <util/Timer.h>
+#include <util/Serialization.h>
 
 #include <ClusterData/ClusterData.h>
 #include <ColorData/ColorData.h>

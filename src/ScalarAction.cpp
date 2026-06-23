@@ -184,7 +184,7 @@ void ScalarAction::fromVariantMap(const QVariantMap& variantMap)
 
     _magnitudeAction.fromParentVariantMap(variantMap);
     _sourceAction.fromParentVariantMap(variantMap);
-    _sourceDatasetPickerAction.fromParentVariantMap(variantMap);
+    //_sourceDatasetPickerAction.fromParentVariantMap(variantMap);
 }
 
 QVariantMap ScalarAction::toVariantMap() const
@@ -193,7 +193,7 @@ QVariantMap ScalarAction::toVariantMap() const
 
     _magnitudeAction.insertIntoVariantMap(variantMap);
     _sourceAction.insertIntoVariantMap(variantMap);
-    _sourceDatasetPickerAction.insertIntoVariantMap(variantMap);
+    //_sourceDatasetPickerAction.insertIntoVariantMap(variantMap);
 
     return variantMap;
 }
