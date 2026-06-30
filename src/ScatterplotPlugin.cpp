@@ -8,6 +8,7 @@
 
 #include <util/PixelSelectionTool.h>
 #include <util/Timer.h>
+#include <util/Serialization.h>
 
 #include <ClusterData/ClusterData.h>
 #include <ColorData/ColorData.h>
@@ -569,7 +570,7 @@ void ScatterplotPlugin::selectPoints()
 
     auto& navigationAction = navigator.getNavigationAction();
 
-    navigationAction.getZoomSelectionAction().setEnabled(!targetSelectionIndices.empty() && !navigationAction.getFreezeNavigation().isChecked());
+    navigationAction.getZoomSelectionAction().setEnabled(!targetSelectionIndices.empty() && navigationAction.isNavigationActive());
 
     _positionDataset->setSelectionIndices(targetSelectionIndices);
 

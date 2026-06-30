@@ -15,17 +15,7 @@ PROJECT(${PROJECT}
 # -----------------------------------------------------------------------------
 # CMake Options
 # -----------------------------------------------------------------------------
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CMAKE_AUTORCC ON)
-set(CMAKE_AUTOMOC ON)
-
-if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DWIN32 /EHsc /W3 /MP /permissive- /Zc:__cplusplus")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MDd")
-    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /MD")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MD")
-endif()
 
 # -----------------------------------------------------------------------------
 # Dependencies
@@ -33,6 +23,7 @@ endif()
 find_package(Qt6 COMPONENTS Widgets WebEngineWidgets OpenGL OpenGLWidgets REQUIRED)
 
 find_package(ManiVault COMPONENTS Core PointData ClusterData ColorData ImageData CONFIG QUIET)
+mv_project_defaults()
 
 # -----------------------------------------------------------------------------
 # Source files
@@ -116,9 +107,10 @@ target_include_directories(${PROJECT} PRIVATE "${ManiVault_INCLUDE_DIR}")
 # -----------------------------------------------------------------------------
 target_compile_features(${PROJECT} PRIVATE cxx_std_20)
 
-if(MV_UNITY_BUILD)
-    set_target_properties(${PROJECT} PROPERTIES UNITY_BUILD ON)
-endif()
+set_target_properties(${PROJECT} PROPERTIES 
+    AUTOMOC ON
+    UNITY_BUILD ${MV_UNITY_BUILD}
+)
 
 # -----------------------------------------------------------------------------
 # Target library linking
