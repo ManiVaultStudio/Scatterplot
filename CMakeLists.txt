@@ -57,10 +57,6 @@ set(Actions
     src/PositionAction.cpp
     src/RenderModeAction.h
     src/RenderModeAction.cpp
-    src/ScalarAction.h
-    src/ScalarAction.cpp
-    src/ScalarSourceAction.h
-    src/ScalarSourceAction.cpp
     src/SelectionAction.h
     src/SelectionAction.cpp
     src/SettingsAction.h
@@ -73,13 +69,6 @@ set(Actions
     src/DatasetsAction.cpp
 )
 
-set(Models
-    src/ColorSourceModel.h
-    src/ColorSourceModel.cpp
-    src/ScalarSourceModel.h
-    src/ScalarSourceModel.cpp
-)
-
 set(AUX
     PluginInfo.json
 )
@@ -89,7 +78,6 @@ set(SOURCES ${PLUGIN} ${UI} ${Actions} ${Models})
 source_group(Plugin FILES ${PLUGIN})
 source_group(UI FILES ${UI})
 source_group(Actions FILES ${Actions})
-source_group(Models FILES ${Models})
 source_group(Aux FILES ${AUX})
 
 # -----------------------------------------------------------------------------

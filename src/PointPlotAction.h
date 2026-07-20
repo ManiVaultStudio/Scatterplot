@@ -1,8 +1,7 @@
 #pragma once
 
 #include <actions/VerticalGroupAction.h>
-
-#include "ScalarAction.h"
+#include <actions/ScalarAction.h>
 
 class ScatterplotPlugin;
 
