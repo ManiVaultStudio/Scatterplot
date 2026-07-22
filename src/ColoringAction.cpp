@@ -379,9 +379,11 @@ void ColoringAction::updateScatterplotWidgetColorMap()
                 const bool isDuo = currentColorDataset.isValid() && currentColorDataset->getDataType() == PointType && _colorSpaceAction.getCurrentIndex() == 1;
 
                 if (isDuo)
-                    scatterplotWidget.setColorMap(_colorMap2DAction.getColorMapImage().mirrored(false, true));
+                    //scatterplotWidget.setColorMap(_colorMap2DAction.getColorMapImage().mirrored(false, true));
+                    scatterplotWidget.setColorMap(_colorMap2DAction.getColorMapImage().flipped(Qt::Vertical));
                 else
-                    scatterplotWidget.setColorMap(_colorMap1DAction.getColorMapImage().mirrored(false, true));
+                    //scatterplotWidget.setColorMap(_colorMap1DAction.getColorMapImage().mirrored(false, true));
+                    scatterplotWidget.setColorMap(_colorMap1DAction.getColorMapImage().flipped(Qt::Vertical));
             }
 
             break;
@@ -575,13 +577,29 @@ void ColoringAction::disconnectFromPublicAction(bool recursive)
 
 void ColoringAction::fromVariantMap(const QVariantMap& variantMap)
 {
+    // Suppress auto color-space selection and default channels so the saved values are honored
+    _restoringState = true;
+
     GroupAction::fromVariantMap(variantMap);
 
+    // Restore the color source first so the dimension pickers are targeted at the right dataset,
+    // then restore the color space and channels, and finally the color maps.
     _colorByAction.fromParentVariantMap(variantMap);
     _constantColorAction.fromParentVariantMap(variantMap);
     _dimensionAction.fromParentVariantMap(variantMap);
+    _dimensionAction2.fromParentVariantMap(variantMap);
+    _dimensionAction3.fromParentVariantMap(variantMap);
+    _colorSpaceAction.fromParentVariantMap(variantMap);
     _colorMap1DAction.fromParentVariantMap(variantMap);
     _colorMap2DAction.fromParentVariantMap(variantMap);
+
+    _restoringState = false;
+
+    // Apply the fully-restored coloring state
+    updateChannelActionsReadOnly();
+    updateScatterPlotWidgetColors();
+    updateScatterplotWidgetColorMap();
+    updateColorMapActionsReadOnly();
 }
 
 QVariantMap ColoringAction::toVariantMap() const
@@ -590,7 +608,10 @@ QVariantMap ColoringAction::toVariantMap() const
 
     _colorByAction.insertIntoVariantMap(variantMap);
     _constantColorAction.insertIntoVariantMap(variantMap);
+    _colorSpaceAction.insertIntoVariantMap(variantMap);
     _dimensionAction.insertIntoVariantMap(variantMap);
+    _dimensionAction2.insertIntoVariantMap(variantMap);
+    _dimensionAction3.insertIntoVariantMap(variantMap);
     _colorMap1DAction.insertIntoVariantMap(variantMap);
     _colorMap2DAction.insertIntoVariantMap(variantMap);
 
