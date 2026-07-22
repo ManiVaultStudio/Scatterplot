@@ -358,15 +358,7 @@ void ColoringAction::updateScatterplotWidgetColorMap()
                 scatterplotWidget.setColoringMode(ScatterplotWidget::ColoringMode::Scatter);
             }
             else {
-                // Data-driven coloring: the color space determines which color map to use.
-                // Duo uses the 2D color map; Scalar (and RGB, which ignores the color map) uses the 1D color map.
-                const auto currentColorDataset = getCurrentColorDataset();
-                const bool isDuo = currentColorDataset.isValid() && currentColorDataset->getDataType() == PointType && _colorSpaceAction.getCurrentIndex() == 1;
-
-                if (isDuo)
-                    scatterplotWidget.setColorMap(_colorMap2DAction.getColorMapImage());
-                else
-                    scatterplotWidget.setColorMap(_colorMap1DAction.getColorMapImage().mirrored(false, true));
+                scatterplotWidget.setColorMap(_colorMap1DAction.getColorMapImage().mirrored(false, true));
             }
 
             break;
