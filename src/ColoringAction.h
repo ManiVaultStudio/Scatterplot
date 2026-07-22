@@ -66,6 +66,9 @@ protected:
     /** Update the color by action options */
     void updateColorByActionOptions();
 
+    /** Enable/disable the color space and channel picker actions for the current coloring mode */
+    void updateChannelActionsReadOnly();
+
     /** Update the colors of the points in the scatter plot widget */
     void updateScatterPlotWidgetColors();
 
@@ -119,7 +122,10 @@ public: // Action getters
 
     OptionAction& getColorByAction() { return _colorByAction; }
     ColorAction& getConstantColorAction() { return _constantColorAction; }
+    OptionAction& getColorSpaceAction() { return _colorSpaceAction; }
     DimensionPickerAction& getDimensionAction() { return _dimensionAction; }
+    DimensionPickerAction& getDimensionAction2() { return _dimensionAction2; }
+    DimensionPickerAction& getDimensionAction3() { return _dimensionAction3; }
     ColorMapAction& getColorMap1DAction() { return _colorMap1DAction; }
     ColorMapAction& getColorMap2DAction() { return _colorMap2DAction; }
 
@@ -131,7 +137,10 @@ private:
     ColorSourceModel        _colorByModel;                  /** Color by model (model input for the color by action) */
     OptionAction            _colorByAction;                 /** Action for picking the coloring type */
     ColorAction             _constantColorAction;           /** Action for picking the constant color */
-    DimensionPickerAction   _dimensionAction;               /** Dimension picker action */
+    OptionAction            _colorSpaceAction;              /** Color space for data coloring (Scalar 1D / Duo 2D / RGB) */
+    DimensionPickerAction   _dimensionAction;               /** Dimension picker action (color channel 1) */
+    DimensionPickerAction   _dimensionAction2;              /** Dimension picker action (color channel 2, for Duo/RGB) */
+    DimensionPickerAction   _dimensionAction3;              /** Dimension picker action (color channel 3, for RGB) */
     ColorMap1DAction        _colorMap1DAction;              /** One-dimensional color map action */
     ColorMap2DAction        _colorMap2DAction;              /** Two-dimensional color map action */
     Dataset<Points>         _currentColorPointsDataset;     /** Current color dataset */

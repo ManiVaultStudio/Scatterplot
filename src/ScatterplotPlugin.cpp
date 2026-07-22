@@ -713,16 +713,16 @@ void ScatterplotPlugin::positionDatasetChanged()
     updateData();
 }
 
-void ScatterplotPlugin::loadColors(const Dataset<Points>& pointsColor, const std::uint32_t& dimensionIndex)
+bool ScatterplotPlugin::mapColorScalars(const Dataset<Points>& pointsColor, const std::uint32_t& dimensionIndex, std::vector<float>& colorScalars)
 {
     // Only proceed with valid points dataset
     if (!pointsColor.isValid())
-        return;
+        return false;
 
     const auto numColorPoints = pointsColor->getNumPoints();
 
     // Generate point colorScalars for color mapping
-    std::vector<float> colorScalars = {};
+    colorScalars.clear();
     pointsColor->extractDataForDimension(colorScalars, dimensionIndex);
 
     // If number of points do not match, use a mapping
@@ -815,14 +815,12 @@ void ScatterplotPlugin::loadColors(const Dataset<Points>& pointsColor, const std
 
         }
         catch (const std::exception& e) {
-            qDebug() << "ScatterplotPlugin::loadColors: mapping failed -> " << e.what();
-            _settingsAction->getColoringAction().getColorByAction().setCurrentIndex(0);  // reset to color by constant
-            return;
+            qDebug() << "ScatterplotPlugin::mapColorScalars: mapping failed -> " << e.what();
+            return false;
         }
         catch (...) {
-            qDebug() << "ScatterplotPlugin::loadColors: mapping failed for an unknown reason.";
-            _settingsAction->getColoringAction().getColorByAction().setCurrentIndex(0);  // reset to color by constant
-            return;
+            qDebug() << "ScatterplotPlugin::mapColorScalars: mapping failed for an unknown reason.";
+            return false;
         }
 
         std::swap(mappedColorScalars, colorScalars);
@@ -830,11 +828,66 @@ void ScatterplotPlugin::loadColors(const Dataset<Points>& pointsColor, const std
 
     assert(colorScalars.size() == _numPoints);
 
+    return true;
+}
+
+void ScatterplotPlugin::loadColors(const Dataset<Points>& pointsColor, const std::uint32_t& dimensionIndex)
+{
+    std::vector<float> colorScalars = {};
+
+    if (!mapColorScalars(pointsColor, dimensionIndex, colorScalars)) {
+        _settingsAction->getColoringAction().getColorByAction().setCurrentIndex(0);  // reset to color by constant
+        return;
+    }
+
     // Assign colorScalars and scalar effect
     _scatterPlotWidget->setScalars(colorScalars);
     _scatterPlotWidget->setScalarEffect(PointEffect::Color);
 
     _settingsAction->getColoringAction().updateColorMapActionScalarRange();
+
+    // Render
+    getWidget().update();
+}
+
+void ScatterplotPlugin::loadColors2D(const Dataset<Points>& pointsColor, const std::uint32_t& dimensionIndexX, const std::uint32_t& dimensionIndexY)
+{
+    std::vector<float> colorScalarsX = {};
+    std::vector<float> colorScalarsY = {};
+
+    if (!mapColorScalars(pointsColor, dimensionIndexX, colorScalarsX) ||
+        !mapColorScalars(pointsColor, dimensionIndexY, colorScalarsY)) {
+        _settingsAction->getColoringAction().getColorByAction().setCurrentIndex(0);  // reset to color by constant
+        return;
+    }
+
+    // Assign both channels and the two-channel 2D coloring effect
+    _scatterPlotWidget->setScalars(colorScalarsX);
+    _scatterPlotWidget->setScalars2(colorScalarsY);
+    _scatterPlotWidget->setScalarEffect(PointEffect::Color2DChannels);
+
+    // Render
+    getWidget().update();
+}
+
+void ScatterplotPlugin::loadColorsRGB(const Dataset<Points>& pointsColor, const std::uint32_t& dimensionIndexR, const std::uint32_t& dimensionIndexG, const std::uint32_t& dimensionIndexB)
+{
+    std::vector<float> colorScalarsR = {};
+    std::vector<float> colorScalarsG = {};
+    std::vector<float> colorScalarsB = {};
+
+    if (!mapColorScalars(pointsColor, dimensionIndexR, colorScalarsR) ||
+        !mapColorScalars(pointsColor, dimensionIndexG, colorScalarsG) ||
+        !mapColorScalars(pointsColor, dimensionIndexB, colorScalarsB)) {
+        _settingsAction->getColoringAction().getColorByAction().setCurrentIndex(0);  // reset to color by constant
+        return;
+    }
+
+    // Assign the three channels and the RGB coloring effect
+    _scatterPlotWidget->setScalars(colorScalarsR);
+    _scatterPlotWidget->setScalars2(colorScalarsG);
+    _scatterPlotWidget->setScalars3(colorScalarsB);
+    _scatterPlotWidget->setScalarEffect(PointEffect::ColorRGB);
 
     // Render
     getWidget().update();
