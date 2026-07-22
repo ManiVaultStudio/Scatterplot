@@ -103,6 +103,20 @@ ColoringAction::ColoringAction(QObject* parent, const QString& title) :
                     _dimensionAction.setPointsDataset(_currentColorPointsDataset);
                     _dimensionAction2.setPointsDataset(_currentColorPointsDataset);
                     _dimensionAction3.setPointsDataset(_currentColorPointsDataset);
+
+                    // Auto-select the color space for datasets with exactly two or three channels
+                    if (!_restoringState) {
+                        const auto numDimensions = static_cast<std::int32_t>(_currentColorPointsDataset->getNumDimensions());
+
+                        if (numDimensions == 2) {
+                            _colorSpaceAction.setCurrentIndex(1);   // Duo (2D)
+                            applyDefaultChannels();                 // also apply defaults when the index was already Duo
+                        }
+                        else if (numDimensions == 3) {
+                            _colorSpaceAction.setCurrentIndex(2);   // RGB
+                            applyDefaultChannels();                 // also apply defaults when the index was already RGB
+                        }
+                    }
                 }
                 else {
                     _dimensionAction.setPointsDataset(Dataset<Points>());
@@ -169,6 +183,9 @@ ColoringAction::ColoringAction(QObject* parent, const QString& title) :
         });
 
     connect(&_colorSpaceAction, &OptionAction::currentIndexChanged, this, [this](const std::int32_t& currentIndex) {
+        if (!_restoringState)
+            applyDefaultChannels();
+
         updateChannelActionsReadOnly();
         updateScatterPlotWidgetColors();
         updateScatterplotWidgetColorMap();
@@ -358,7 +375,13 @@ void ColoringAction::updateScatterplotWidgetColorMap()
                 scatterplotWidget.setColoringMode(ScatterplotWidget::ColoringMode::Scatter);
             }
             else {
-                scatterplotWidget.setColorMap(_colorMap1DAction.getColorMapImage().mirrored(false, true));
+                const auto currentColorDataset = getCurrentColorDataset();
+                const bool isDuo = currentColorDataset.isValid() && currentColorDataset->getDataType() == PointType && _colorSpaceAction.getCurrentIndex() == 1;
+
+                if (isDuo)
+                    scatterplotWidget.setColorMap(_colorMap2DAction.getColorMapImage().mirrored(false, true));
+                else
+                    scatterplotWidget.setColorMap(_colorMap1DAction.getColorMapImage().mirrored(false, true));
             }
 
             break;
@@ -385,9 +408,22 @@ void ColoringAction::updateScatterplotWidgetColorMap()
 
 void ColoringAction::updateScatterPlotWidgetColorMapRange()
 {
+    auto& scatterplotWidget = _scatterplotPlugin->getScatterplotWidget();
+
+    // The adjustable 1D color-map range only drives the (channel 1) scalar range for 1D scalar coloring.
+    // In Duo/RGB the color channels each use their own automatically-computed range, so leave channel 1
+    // untouched here (otherwise identical channels would normalize differently and produce a color tint).
+    if (scatterplotWidget.getRenderMode() == ScatterplotWidget::SCATTERPLOT) {
+        const auto currentColorDataset = getCurrentColorDataset();
+        const bool isPointsSource = currentColorDataset.isValid() && currentColorDataset->getDataType() == PointType;
+
+        if (isPointsSource && _colorSpaceAction.getCurrentIndex() != 0)   // Duo (1) or RGB (2)
+            return;
+    }
+
     const auto& rangeAction = _colorMap1DAction.getRangeAction(ColorMapAction::Axis::X);
 
-    _scatterplotPlugin->getScatterplotWidget().setColorMapRange(rangeAction.getMinimum(), rangeAction.getMaximum());
+    scatterplotWidget.setColorMapRange(rangeAction.getMinimum(), rangeAction.getMaximum());
 }
 
 bool ColoringAction::shouldEnableColorMap() const
@@ -458,6 +494,41 @@ void ColoringAction::updateChannelActionsReadOnly()
         _dimensionAction.setText("Dimension");
         _dimensionAction2.setText("Dimension 2");
         _dimensionAction3.setText("Dimension 3");
+    }
+}
+
+void ColoringAction::applyDefaultChannels()
+{
+    if (!_currentColorPointsDataset.isValid())
+        return;
+
+    const auto numDimensions = static_cast<std::int32_t>(_currentColorPointsDataset->getNumDimensions());
+
+    switch (_colorSpaceAction.getCurrentIndex())
+    {
+        case 1: // Duo (2D): default to the first two channels
+        {
+            if (numDimensions >= 2) {
+                _dimensionAction.setCurrentDimensionIndex(0);
+                _dimensionAction2.setCurrentDimensionIndex(1);
+            }
+
+            break;
+        }
+
+        case 2: // RGB: default to the first three channels
+        {
+            if (numDimensions >= 3) {
+                _dimensionAction.setCurrentDimensionIndex(0);
+                _dimensionAction2.setCurrentDimensionIndex(1);
+                _dimensionAction3.setCurrentDimensionIndex(2);
+            }
+
+            break;
+        }
+
+        default:
+            break;
     }
 }
 

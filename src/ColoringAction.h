@@ -69,6 +69,9 @@ protected:
     /** Enable/disable the color space and channel picker actions for the current coloring mode */
     void updateChannelActionsReadOnly();
 
+    /** Set the dimension pickers to sensible defaults (the first channels) for the current color space */
+    void applyDefaultChannels();
+
     /** Update the colors of the points in the scatter plot widget */
     void updateScatterPlotWidgetColors();
 
@@ -144,6 +147,7 @@ private:
     ColorMap1DAction        _colorMap1DAction;              /** One-dimensional color map action */
     ColorMap2DAction        _colorMap2DAction;              /** Two-dimensional color map action */
     Dataset<Points>         _currentColorPointsDataset;     /** Current color dataset */
+    bool                    _restoringState = false;        /** Guards auto color-space selection and default channels during state restore */
 
     /** Default constant color */
     static const QColor DEFAULT_CONSTANT_COLOR;
