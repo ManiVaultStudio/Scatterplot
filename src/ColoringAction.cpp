@@ -105,7 +105,7 @@ ColoringAction::ColoringAction(QObject* parent, const QString& title) :
                     _dimensionAction3.setPointsDataset(_currentColorPointsDataset);
 
                     // Auto-select the color space for datasets with exactly two or three channels
-                    if (!_restoringState) {
+                    if (!mv::projects().isOpeningProject()) {
                         const auto numDimensions = static_cast<std::int32_t>(_currentColorPointsDataset->getNumDimensions());
 
                         if (numDimensions == 2) {
@@ -183,7 +183,7 @@ ColoringAction::ColoringAction(QObject* parent, const QString& title) :
         });
 
     connect(&_colorSpaceAction, &OptionAction::currentIndexChanged, this, [this](const std::int32_t& currentIndex) {
-        if (!_restoringState)
+        if (!mv::projects().isOpeningProject())
             applyDefaultChannels();
 
         updateChannelActionsReadOnly();
@@ -561,9 +561,6 @@ void ColoringAction::disconnectFromPublicAction(bool recursive)
 
 void ColoringAction::fromVariantMap(const QVariantMap& variantMap)
 {
-    // Suppress auto color-space selection and default channels so the saved values are honored
-    _restoringState = true;
-
     GroupAction::fromVariantMap(variantMap);
 
     // Restore the color source first so the dimension pickers are targeted at the right dataset,
@@ -576,8 +573,6 @@ void ColoringAction::fromVariantMap(const QVariantMap& variantMap)
     _colorSpaceAction.fromParentVariantMap(variantMap);
     _colorMap1DAction.fromParentVariantMap(variantMap);
     _colorMap2DAction.fromParentVariantMap(variantMap);
-
-    _restoringState = false;
 
     // Apply the fully-restored coloring state
     updateChannelActionsReadOnly();
