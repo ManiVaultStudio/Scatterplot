@@ -17,7 +17,7 @@ ColoringAction::ColoringAction(QObject* parent, const QString& title) :
     _colorByAction(this, "Color by"),
     _constantColorAction(this, "Constant color", DEFAULT_CONSTANT_COLOR),
     _colorSpaceAction(this, "Color space", { "Scalar (1D)", "Duo (2D)", "RGB" }, "Scalar (1D)"),
-    _dimensionAction(this, "Dimension"),
+    _dimensionAction(this, "Dimension 1"),
     _dimensionAction2(this, "Dimension 2"),
     _dimensionAction3(this, "Dimension 3"),
     _colorMap1DAction(this, "1D Color map"),
@@ -30,8 +30,8 @@ ColoringAction::ColoringAction(QObject* parent, const QString& title) :
     addAction(&_colorByAction);
     addAction(&_constantColorAction);
     addAction(&_colorSpaceAction);
-    addAction(&_colorMap2DAction);
     addAction(&_colorMap1DAction);
+    addAction(&_colorMap2DAction);
     addAction(&_dimensionAction);
     addAction(&_dimensionAction2);
     addAction(&_dimensionAction3);
@@ -481,23 +481,6 @@ void ColoringAction::updateChannelActionsReadOnly()
     _dimensionAction.setEnabled(isPointsSource);
     _dimensionAction2.setEnabled(isDuo || isRGB);
     _dimensionAction3.setEnabled(isRGB);
-
-    // Dimension picker labels reflect their role in the current color space
-    if (isRGB) {
-        _dimensionAction.setText("Red");
-        _dimensionAction2.setText("Green");
-        _dimensionAction3.setText("Blue");
-    }
-    else if (isDuo) {
-        _dimensionAction.setText("Dimension 1 (x)");
-        _dimensionAction2.setText("Dimension 2 (y)");
-        _dimensionAction3.setText("Dimension 3");
-    }
-    else {
-        _dimensionAction.setText("Dimension");
-        _dimensionAction2.setText("Dimension 2");
-        _dimensionAction3.setText("Dimension 3");
-    }
 }
 
 void ColoringAction::applyDefaultChannels()
