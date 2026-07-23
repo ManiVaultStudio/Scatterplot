@@ -16,7 +16,10 @@ ColoringAction::ColoringAction(QObject* parent, const QString& title) :
     _colorByModel(this),
     _colorByAction(this, "Color by"),
     _constantColorAction(this, "Constant color", DEFAULT_CONSTANT_COLOR),
-    _dimensionAction(this, "Dimension"),
+    _colorSpaceAction(this, "Color space", { "Scalar (1D)", "Duo (2D)", "RGB" }, "Scalar (1D)"),
+    _dimensionAction(this, "Dimension 1"),
+    _dimensionAction2(this, "Dimension 2"),
+    _dimensionAction3(this, "Dimension 3"),
     _colorMap1DAction(this, "1D Color map"),
     _colorMap2DAction(this, "2D Color map")
 {
@@ -26,9 +29,14 @@ ColoringAction::ColoringAction(QObject* parent, const QString& title) :
 
     addAction(&_colorByAction);
     addAction(&_constantColorAction);
-    addAction(&_colorMap2DAction);
+    addAction(&_colorSpaceAction);
     addAction(&_colorMap1DAction);
+    addAction(&_colorMap2DAction);
     addAction(&_dimensionAction);
+    addAction(&_dimensionAction2);
+    addAction(&_dimensionAction3);
+
+    _colorSpaceAction.setToolTip("Color space for data-driven coloring");
 
     _scatterplotPlugin->getWidget().addAction(&_colorByAction);
     _scatterplotPlugin->getWidget().addAction(&_dimensionAction);
@@ -86,28 +94,51 @@ ColoringAction::ColoringAction(QObject* parent, const QString& title) :
                     connect(&_currentColorPointsDataset, &Dataset<Points>::dataDimensionsChanged, this, [this]() {
                         if (_currentColorPointsDataset.isValid()) {
                             _dimensionAction.setPointsDataset(_currentColorPointsDataset);
+                            _dimensionAction2.setPointsDataset(_currentColorPointsDataset);
+                            _dimensionAction3.setPointsDataset(_currentColorPointsDataset);
                             updateScatterPlotWidgetColors();
                         }
 					});
 
                     _dimensionAction.setPointsDataset(_currentColorPointsDataset);
+                    _dimensionAction2.setPointsDataset(_currentColorPointsDataset);
+                    _dimensionAction3.setPointsDataset(_currentColorPointsDataset);
+
+                    // Auto-select the color space for datasets with exactly two or three channels
+                    if (!mv::projects().isOpeningProject()) {
+                        const auto numDimensions = static_cast<std::int32_t>(_currentColorPointsDataset->getNumDimensions());
+
+                        if (numDimensions == 2) {
+                            _colorSpaceAction.setCurrentIndex(1);   // Duo (2D)
+                            applyDefaultChannels();                 // also apply defaults when the index was already Duo
+                        }
+                        else if (numDimensions == 3) {
+                            _colorSpaceAction.setCurrentIndex(2);   // RGB
+                            applyDefaultChannels();                 // also apply defaults when the index was already RGB
+                        }
+                    }
                 }
                 else {
                     _dimensionAction.setPointsDataset(Dataset<Points>());
+                    _dimensionAction2.setPointsDataset(Dataset<Points>());
+                    _dimensionAction3.setPointsDataset(Dataset<Points>());
                 }
             }
             else {
                 _dimensionAction.setPointsDataset(Dataset<Points>());
+                _dimensionAction2.setPointsDataset(Dataset<Points>());
+                _dimensionAction3.setPointsDataset(Dataset<Points>());
             }
-            //_dimensionAction.setVisible(currentColorDatasetTypeIsPointType);
 
             emit currentColorDatasetChanged(currentColorDataset);
         }
         else {
             _dimensionAction.setPointsDataset(Dataset<Points>());
-            //_dimensionAction.setVisible(false);
+            _dimensionAction2.setPointsDataset(Dataset<Points>());
+            _dimensionAction3.setPointsDataset(Dataset<Points>());
         }
 
+        updateChannelActionsReadOnly();
         updateScatterPlotWidgetColors();
         updateScatterplotWidgetColorMap();
         updateColorMapActionScalarRange();
@@ -142,7 +173,25 @@ ColoringAction::ColoringAction(QObject* parent, const QString& title) :
         updateColorMapActionsReadOnly();
         updateColorMapActionScalarRange();
         });
-    
+
+    connect(&_dimensionAction2, &DimensionPickerAction::currentDimensionIndexChanged, this, [this](const int32_t& currentDimensionIndex) {
+        updateScatterPlotWidgetColors();
+        });
+
+    connect(&_dimensionAction3, &DimensionPickerAction::currentDimensionIndexChanged, this, [this](const int32_t& currentDimensionIndex) {
+        updateScatterPlotWidgetColors();
+        });
+
+    connect(&_colorSpaceAction, &OptionAction::currentIndexChanged, this, [this](const std::int32_t& currentIndex) {
+        if (!mv::projects().isOpeningProject())
+            applyDefaultChannels();
+
+        updateChannelActionsReadOnly();
+        updateScatterPlotWidgetColors();
+        updateScatterplotWidgetColorMap();
+        updateColorMapActionsReadOnly();
+        });
+
     connect(&_constantColorAction, &ColorAction::colorChanged, this, &ColoringAction::updateScatterplotWidgetColorMap);
     connect(&_colorMap1DAction, &ColorMapAction::imageChanged, this, &ColoringAction::updateScatterplotWidgetColorMap);
     connect(&_colorMap2DAction, &ColorMapAction::imageChanged, this, &ColoringAction::updateScatterplotWidgetColorMap);
@@ -160,6 +209,7 @@ ColoringAction::ColoringAction(QObject* parent, const QString& title) :
 
     updateScatterplotWidgetColorMap();
     updateColorMapActionScalarRange();
+    updateChannelActionsReadOnly();
 
     _scatterplotPlugin->getScatterplotWidget().setColoringMode(ScatterplotWidget::ColoringMode::Constant);
 }
@@ -251,10 +301,38 @@ void ColoringAction::updateScatterPlotWidgetColors()
     if (currentColorDataset->getDataType() == ClusterType)
         _scatterplotPlugin->loadColors(currentColorDataset.get<Clusters>());
     else {
-        const auto currentDimensionIndex = _dimensionAction.getCurrentDimensionIndex();
+        const auto dimension1 = _dimensionAction.getCurrentDimensionIndex();
 
-        if (currentDimensionIndex >= 0)
-            _scatterplotPlugin->loadColors(currentColorDataset.get<Points>(), _dimensionAction.getCurrentDimensionIndex());
+        if (dimension1 < 0)
+            return;
+
+        switch (_colorSpaceAction.getCurrentIndex())
+        {
+            case 1: // Duo (2D)
+            {
+                const auto dimension2 = _dimensionAction2.getCurrentDimensionIndex();
+
+                if (dimension2 >= 0)
+                    _scatterplotPlugin->loadColors2D(currentColorDataset.get<Points>(), dimension1, dimension2);
+
+                break;
+            }
+
+            case 2: // RGB
+            {
+                const auto dimension2 = _dimensionAction2.getCurrentDimensionIndex();
+                const auto dimension3 = _dimensionAction3.getCurrentDimensionIndex();
+
+                if (dimension2 >= 0 && dimension3 >= 0)
+                    _scatterplotPlugin->loadColorsRGB(currentColorDataset.get<Points>(), dimension1, dimension2, dimension3);
+
+                break;
+            }
+
+            default: // Scalar (1D)
+                _scatterplotPlugin->loadColors(currentColorDataset.get<Points>(), dimension1);
+                break;
+        }
     }
 
     updateScatterplotWidgetColorMap();
@@ -297,7 +375,16 @@ void ColoringAction::updateScatterplotWidgetColorMap()
                 scatterplotWidget.setColoringMode(ScatterplotWidget::ColoringMode::Scatter);
             }
             else {
-                scatterplotWidget.setColorMap(_colorMap1DAction.getColorMapImage().mirrored(false, true));
+                const auto currentColorDataset = getCurrentColorDataset();
+                const bool isDuo = currentColorDataset.isValid() && currentColorDataset->getDataType() == PointType && _colorSpaceAction.getCurrentIndex() == 1;
+
+                if (isDuo)
+                    // mirrored is deprecated in Qt 6.9, flipped can replace it
+                    scatterplotWidget.setColorMap(_colorMap2DAction.getColorMapImage().mirrored(false, true));
+                    //scatterplotWidget.setColorMap(_colorMap2DAction.getColorMapImage().flipped(Qt::Vertical));
+                else
+                    scatterplotWidget.setColorMap(_colorMap1DAction.getColorMapImage().mirrored(false, true));
+                    //scatterplotWidget.setColorMap(_colorMap1DAction.getColorMapImage().flipped(Qt::Vertical));
             }
 
             break;
@@ -324,9 +411,22 @@ void ColoringAction::updateScatterplotWidgetColorMap()
 
 void ColoringAction::updateScatterPlotWidgetColorMapRange()
 {
+    auto& scatterplotWidget = _scatterplotPlugin->getScatterplotWidget();
+
+    // The adjustable 1D color-map range only drives the (channel 1) scalar range for 1D scalar coloring.
+    // In Duo/RGB the color channels each use their own automatically-computed range, so leave channel 1
+    // untouched here (otherwise identical channels would normalize differently and produce a color tint).
+    if (scatterplotWidget.getRenderMode() == ScatterplotWidget::SCATTERPLOT) {
+        const auto currentColorDataset = getCurrentColorDataset();
+        const bool isPointsSource = currentColorDataset.isValid() && currentColorDataset->getDataType() == PointType;
+
+        if (isPointsSource && _colorSpaceAction.getCurrentIndex() != 0)   // Duo (1) or RGB (2)
+            return;
+    }
+
     const auto& rangeAction = _colorMap1DAction.getRangeAction(ColorMapAction::Axis::X);
 
-    _scatterplotPlugin->getScatterplotWidget().setColorMapRange(rangeAction.getMinimum(), rangeAction.getMaximum());
+    scatterplotWidget.setColorMapRange(rangeAction.getMinimum(), rangeAction.getMaximum());
 }
 
 bool ColoringAction::shouldEnableColorMap() const
@@ -351,9 +451,71 @@ bool ColoringAction::shouldEnableColorMap() const
 void ColoringAction::updateColorMapActionsReadOnly()
 {
     const auto currentIndex = _colorByAction.getCurrentIndex();
+    const bool isPointsSource = currentIndex >= 2 && _currentColorPointsDataset.isValid();
+    const bool isDuo = isPointsSource && _colorSpaceAction.getCurrentIndex() == 1;
+    const bool isRGB = isPointsSource && _colorSpaceAction.getCurrentIndex() == 2;
 
-    _colorMap1DAction.setEnabled(shouldEnableColorMap() && (currentIndex >= 2));
-    _colorMap2DAction.setEnabled(shouldEnableColorMap() && (currentIndex == 1));
+    _colorMap1DAction.setEnabled(shouldEnableColorMap() && (currentIndex >= 2) && !isDuo && !isRGB);
+    _colorMap2DAction.setEnabled(shouldEnableColorMap() && (currentIndex == 1 || isDuo));
+}
+
+void ColoringAction::updateChannelActionsReadOnly()
+{
+    const auto currentIndex = _colorByAction.getCurrentIndex();
+    const auto colorSpace   = _colorSpaceAction.getCurrentIndex();
+
+    const bool isPointsSource = currentIndex >= 2 && _currentColorPointsDataset.isValid();
+
+    const bool isDuo = isPointsSource && colorSpace == 1;   // Duo (2D)
+    const bool isRGB = isPointsSource && colorSpace == 2;   // RGB
+
+    // All actions remain visible; only their enabled state reflects the current coloring mode.
+
+    // Constant color: only usable in constant mode
+    _constantColorAction.setEnabled(currentIndex == 0);
+
+    // Color space selector: only usable for a points color source
+    _colorSpaceAction.setEnabled(isPointsSource);
+
+    // Dimension pickers: channel 1 for any points source, channel 2 for Duo/RGB, channel 3 for RGB only
+    _dimensionAction.setEnabled(isPointsSource);
+    _dimensionAction2.setEnabled(isDuo || isRGB);
+    _dimensionAction3.setEnabled(isRGB);
+}
+
+void ColoringAction::applyDefaultChannels()
+{
+    if (!_currentColorPointsDataset.isValid())
+        return;
+
+    const auto numDimensions = static_cast<std::int32_t>(_currentColorPointsDataset->getNumDimensions());
+
+    switch (_colorSpaceAction.getCurrentIndex())
+    {
+        case 1: // Duo (2D): default to the first two channels
+        {
+            if (numDimensions >= 2) {
+                _dimensionAction.setCurrentDimensionIndex(0);
+                _dimensionAction2.setCurrentDimensionIndex(1);
+            }
+
+            break;
+        }
+
+        case 2: // RGB: default to the first three channels
+        {
+            if (numDimensions >= 3) {
+                _dimensionAction.setCurrentDimensionIndex(0);
+                _dimensionAction2.setCurrentDimensionIndex(1);
+                _dimensionAction3.setCurrentDimensionIndex(2);
+            }
+
+            break;
+        }
+
+        default:
+            break;
+    }
 }
 
 void ColoringAction::connectToPublicAction(WidgetAction* publicAction, bool recursive)
@@ -368,7 +530,10 @@ void ColoringAction::connectToPublicAction(WidgetAction* publicAction, bool recu
     if (recursive) {
         actions().connectPrivateActionToPublicAction(&_colorByAction, &publicColoringAction->getColorByAction(), recursive);
         actions().connectPrivateActionToPublicAction(&_constantColorAction, &publicColoringAction->getConstantColorAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_colorSpaceAction, &publicColoringAction->getColorSpaceAction(), recursive);
         actions().connectPrivateActionToPublicAction(&_dimensionAction, &publicColoringAction->getDimensionAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_dimensionAction2, &publicColoringAction->getDimensionAction2(), recursive);
+        actions().connectPrivateActionToPublicAction(&_dimensionAction3, &publicColoringAction->getDimensionAction3(), recursive);
         actions().connectPrivateActionToPublicAction(&_colorMap1DAction, &publicColoringAction->getColorMap1DAction(), recursive);
         actions().connectPrivateActionToPublicAction(&_colorMap2DAction, &publicColoringAction->getColorMap2DAction(), recursive);
     }
@@ -384,7 +549,10 @@ void ColoringAction::disconnectFromPublicAction(bool recursive)
     if (recursive) {
         actions().disconnectPrivateActionFromPublicAction(&_colorByAction, recursive);
         actions().disconnectPrivateActionFromPublicAction(&_constantColorAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_colorSpaceAction, recursive);
         actions().disconnectPrivateActionFromPublicAction(&_dimensionAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_dimensionAction2, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_dimensionAction3, recursive);
         actions().disconnectPrivateActionFromPublicAction(&_colorMap2DAction, recursive);
     }
 
@@ -395,11 +563,22 @@ void ColoringAction::fromVariantMap(const QVariantMap& variantMap)
 {
     GroupAction::fromVariantMap(variantMap);
 
+    // Restore the color source first so the dimension pickers are targeted at the right dataset,
+    // then restore the color space and channels, and finally the color maps.
     _colorByAction.fromParentVariantMap(variantMap);
     _constantColorAction.fromParentVariantMap(variantMap);
     _dimensionAction.fromParentVariantMap(variantMap);
+    _dimensionAction2.fromParentVariantMap(variantMap);
+    _dimensionAction3.fromParentVariantMap(variantMap);
+    _colorSpaceAction.fromParentVariantMap(variantMap);
     _colorMap1DAction.fromParentVariantMap(variantMap);
     _colorMap2DAction.fromParentVariantMap(variantMap);
+
+    // Apply the fully-restored coloring state
+    updateChannelActionsReadOnly();
+    updateScatterPlotWidgetColors();
+    updateScatterplotWidgetColorMap();
+    updateColorMapActionsReadOnly();
 }
 
 QVariantMap ColoringAction::toVariantMap() const
@@ -408,7 +587,10 @@ QVariantMap ColoringAction::toVariantMap() const
 
     _colorByAction.insertIntoVariantMap(variantMap);
     _constantColorAction.insertIntoVariantMap(variantMap);
+    _colorSpaceAction.insertIntoVariantMap(variantMap);
     _dimensionAction.insertIntoVariantMap(variantMap);
+    _dimensionAction2.insertIntoVariantMap(variantMap);
+    _dimensionAction3.insertIntoVariantMap(variantMap);
     _colorMap1DAction.insertIntoVariantMap(variantMap);
     _colorMap2DAction.insertIntoVariantMap(variantMap);
 
