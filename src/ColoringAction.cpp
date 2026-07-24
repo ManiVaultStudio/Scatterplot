@@ -379,12 +379,9 @@ void ColoringAction::updateScatterplotWidgetColorMap()
                 const bool isDuo = currentColorDataset.isValid() && currentColorDataset->getDataType() == PointType && _colorSpaceAction.getCurrentIndex() == 1;
 
                 if (isDuo)
-                    // mirrored is deprecated in Qt 6.9, flipped can replace it
-                    scatterplotWidget.setColorMap(_colorMap2DAction.getColorMapImage().mirrored(false, true));
-                    //scatterplotWidget.setColorMap(_colorMap2DAction.getColorMapImage().flipped(Qt::Vertical));
+                    scatterplotWidget.setColorMap(_colorMap2DAction.getColorMapImage().flipped(Qt::Vertical));
                 else
-                    scatterplotWidget.setColorMap(_colorMap1DAction.getColorMapImage().mirrored(false, true));
-                    //scatterplotWidget.setColorMap(_colorMap1DAction.getColorMapImage().flipped(Qt::Vertical));
+                    scatterplotWidget.setColorMap(_colorMap1DAction.getColorMapImage().flipped(Qt::Vertical));
             }
 
             break;
