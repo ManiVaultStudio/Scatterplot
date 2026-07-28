@@ -17,7 +17,7 @@ ColoringAction::ColoringAction(QObject* parent, const QString& title) :
     _colorByAction(this, "Color by"),
     _constantColorAction(this, "Constant color", DEFAULT_CONSTANT_COLOR),
     _colorSpaceAction(this, "Color space", { "Scalar (1D)", "Duo (2D)", "RGB" }, "Scalar (1D)"),
-    _dimensionAction(this, "Dimension 1"),
+    _dimensionAction(this, "Dimension"),
     _dimensionAction2(this, "Dimension 2"),
     _dimensionAction3(this, "Dimension 3"),
     _colorMap1DAction(this, "1D Color map"),
@@ -565,9 +565,9 @@ void ColoringAction::fromVariantMap(const QVariantMap& variantMap)
     _colorByAction.fromParentVariantMap(variantMap);
     _constantColorAction.fromParentVariantMap(variantMap);
     _dimensionAction.fromParentVariantMap(variantMap);
-    _dimensionAction2.fromParentVariantMap(variantMap);
-    _dimensionAction3.fromParentVariantMap(variantMap);
-    _colorSpaceAction.fromParentVariantMap(variantMap);
+    _dimensionAction2.fromParentVariantMap(variantMap, true);
+    _dimensionAction3.fromParentVariantMap(variantMap, true);
+    _colorSpaceAction.fromParentVariantMap(variantMap, true);
     _colorMap1DAction.fromParentVariantMap(variantMap);
     _colorMap2DAction.fromParentVariantMap(variantMap);
 
