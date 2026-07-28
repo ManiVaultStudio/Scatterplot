@@ -17,7 +17,7 @@ ColoringAction::ColoringAction(QObject* parent, const QString& title) :
     _colorByAction(this, "Color by"),
     _constantColorAction(this, "Constant color", DEFAULT_CONSTANT_COLOR),
     _colorSpaceAction(this, "Color space", { "Scalar (1D)", "Duo (2D)", "RGB" }, "Scalar (1D)"),
-    _dimensionAction(this, "Dimension 1"),
+    _dimensionAction(this, "Dimension"),
     _dimensionAction2(this, "Dimension 2"),
     _dimensionAction3(this, "Dimension 3"),
     _colorMap1DAction(this, "1D Color map"),
