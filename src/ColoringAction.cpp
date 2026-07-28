@@ -565,9 +565,9 @@ void ColoringAction::fromVariantMap(const QVariantMap& variantMap)
     _colorByAction.fromParentVariantMap(variantMap);
     _constantColorAction.fromParentVariantMap(variantMap);
     _dimensionAction.fromParentVariantMap(variantMap);
-    _dimensionAction2.fromParentVariantMap(variantMap);
-    _dimensionAction3.fromParentVariantMap(variantMap);
-    _colorSpaceAction.fromParentVariantMap(variantMap);
+    _dimensionAction2.fromParentVariantMap(variantMap, true);
+    _dimensionAction3.fromParentVariantMap(variantMap, true);
+    _colorSpaceAction.fromParentVariantMap(variantMap, true);
     _colorMap1DAction.fromParentVariantMap(variantMap);
     _colorMap2DAction.fromParentVariantMap(variantMap);
 
