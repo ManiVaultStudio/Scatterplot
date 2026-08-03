@@ -20,6 +20,8 @@ public:
      */
     Q_INVOKABLE DatasetsAction(QObject* parent, const QString& title);
 
+    mv::Dataset<mv::DatasetImpl> getColorDataset() { return _colorDataset; }
+
 protected: // Linking
 
     /**
@@ -39,7 +41,7 @@ public: // Serialization
 
     /**
      * Load widget action from variant map
-     * @param Variant map representation of the widget action
+     * @param variantMap Variant map representation of the widget action
      */
     void fromVariantMap(const QVariantMap& variantMap) override;
 
@@ -49,17 +51,42 @@ public: // Serialization
      */
     QVariantMap toVariantMap() const override;
 
+protected: // Dataset picker action setup
+
+    /**
+     * Set up the dataset picker actions with the datasets from the scatter plot plugin
+     * @param scatterplotPlugin Pointer to scatter plot plugin whose datasets are used to populate the dataset picker actions
+     */
+    void setupDatasetPickerActions(ScatterplotPlugin* scatterplotPlugin);
+
+    /**
+     * Set up the position dataset picker action with the position datasets from the scatter plot plugin
+     * @param scatterplotPlugin Pointer to scatter plot plugin whose position datasets are used to populate the dataset picker action
+     */
+    void setupPositionDatasetPickerAction(ScatterplotPlugin* scatterplotPlugin);
+
+    /**
+     * Set up the color dataset picker action with the color datasets from the scatter plot plugin
+     * @param scatterplotPlugin Pointer to scatter plot plugin whose color datasets are used to populate the dataset picker action
+     */
+    void setupColorDatasetPickerAction(ScatterplotPlugin* scatterplotPlugin);
+
+    /** Update the filters of the dataset picker actions based on the current datasets in the scatter plot plugin */
+    void invalidateDatasetPickerActionFilters();
+
 public: // Action getters
 
     DatasetPickerAction& getPositionDatasetPickerAction() { return _positionDatasetPickerAction; }
     DatasetPickerAction& getColorDatasetPickerAction() { return _colorDatasetPickerAction; }
 
 private:
-    ScatterplotPlugin*      _scatterplotPlugin;                 /** Pointer to scatter plot plugin */
-    DatasetPickerAction	    _positionDatasetPickerAction;       /** Dataset picker action for position dataset */
-    DatasetPickerAction     _colorDatasetPickerAction;          /** Dataset picker action for color dataset */
+    ScatterplotPlugin*              _scatterplotPlugin;               /** Pointer to scatter plot plugin */
+    DatasetPickerAction             _positionDatasetPickerAction;     /** Dataset picker action for position dataset */
+    DatasetPickerAction             _colorDatasetPickerAction;        /** Dataset picker action for color dataset */
+    mv::Dataset<mv::DatasetImpl>    _colorDataset;                    /** Smart pointer to dataset used for coloring (if any) */
 
     friend class mv::AbstractActionsManager;
+    friend class ScatterplotPlugin;
 };
 
 Q_DECLARE_METATYPE(DatasetsAction)

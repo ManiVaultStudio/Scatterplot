@@ -5,7 +5,7 @@
 #include <ClusterData/ClusterData.h>
 #include <ColorData/ColorData.h>
 
-#include <QMenu>
+#include <actions/LabelProxyAction.h>
 
 using namespace mv;
 using namespace mv::gui;
@@ -21,38 +21,44 @@ DatasetsAction::DatasetsAction(QObject* parent, const QString& title) :
     setConfigurationFlag(WidgetAction::ConfigurationFlag::ForceCollapsedInGroup);
     setLabelSizingType(LabelSizingType::Auto);
 
-    addAction(&_positionDatasetPickerAction);
-    addAction(&_colorDatasetPickerAction);
-
-    _positionDatasetPickerAction.setFilterFunction([this](mv::Dataset<DatasetImpl> dataset) -> bool {
-        return dataset->getDataType() == PointType;
-        });
-
-    _colorDatasetPickerAction.setFilterFunction([this](mv::Dataset<DatasetImpl> dataset) -> bool {
-        return (dataset->getDataType() == PointType || dataset->getDataType() == ColorType || dataset->getDataType() == ClusterType);
-        });
-
-
     auto scatterplotPlugin = dynamic_cast<ScatterplotPlugin*>(parent->parent());
+
+    Q_ASSERT(scatterplotPlugin);
 
     if (scatterplotPlugin == nullptr)
         return;
 
-    connect(&_positionDatasetPickerAction, &DatasetPickerAction::datasetPicked, [this, scatterplotPlugin](Dataset<DatasetImpl> pickedDataset) -> void {
-        scatterplotPlugin->getPositionDataset() = pickedDataset;
+    auto& settingsAction    = *dynamic_cast<SettingsAction*>(parent);
+    auto& plotAction        = settingsAction.getPlotAction();
+    auto& pointPlotAction   = plotAction.getPointPlotAction();
+
+	addAction(&_positionDatasetPickerAction);
+    addAction(&_colorDatasetPickerAction);
+    addAction(new LabelProxyAction(this, "Size", const_cast<DatasetPickerAction*>(&pointPlotAction.getSizeAction().getSourceDatasetPickerAction())));
+    addAction(new LabelProxyAction(this, "Opacity", const_cast<DatasetPickerAction*>(&pointPlotAction.getOpacityAction().getSourceDatasetPickerAction())));
+
+    _positionDatasetPickerAction.setDefaultWidgetFlag(OptionAction::Clearable);
+    _colorDatasetPickerAction.setDefaultWidgetFlag(OptionAction::Clearable);
+    
+    setupDatasetPickerActions(scatterplotPlugin);
+
+    const auto invalidateFilters = [this, scatterplotPlugin]() -> void {
+        _colorDatasetPickerAction.invalidateFilter();
+    };
+
+    connect(&_positionDatasetPickerAction, &DatasetPickerAction::datasetPicked, [this, scatterplotPlugin, invalidateFilters](Dataset<DatasetImpl> pickedDataset) -> void {
+        invalidateFilters();
     });
 
-    connect(&scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, [this](DatasetImpl* dataset) -> void {
-        _positionDatasetPickerAction.setCurrentDataset(dataset);
-    });
-    
-    connect(&_colorDatasetPickerAction, &DatasetPickerAction::datasetPicked, [this, scatterplotPlugin](Dataset<DatasetImpl> pickedDataset) -> void {
-        scatterplotPlugin->getSettingsAction().getColoringAction().setCurrentColorDataset(pickedDataset);
-    });
-    
-    connect(&scatterplotPlugin->getSettingsAction().getColoringAction(), &ColoringAction::currentColorDatasetChanged, this, [this](Dataset<DatasetImpl> currentColorDataset) -> void {
-        _colorDatasetPickerAction.setCurrentDataset(currentColorDataset);
-    });
+    const auto resetAuxilliaryDatasets = [this, &pointPlotAction]() -> void {
+        _colorDatasetPickerAction.setCurrentIndex(-1);
+
+        pointPlotAction.getSizeAction().setCurrentSourceIndex(ScalarSourceModel::DefaultRow::Constant);
+		pointPlotAction.getOpacityAction().setCurrentSourceIndex(ScalarSourceModel::DefaultRow::Constant);
+	};
+
+    connect(&scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, resetAuxilliaryDatasets);
+    connect(&scatterplotPlugin->getPositionSourceDataset(), &Dataset<Points>::changed, this, resetAuxilliaryDatasets);
 }
 
 void DatasetsAction::connectToPublicAction(WidgetAction* publicAction, bool recursive)
@@ -101,4 +107,68 @@ QVariantMap DatasetsAction::toVariantMap() const
     _colorDatasetPickerAction.insertIntoVariantMap(variantMap);
 
     return variantMap;
+}
+
+void DatasetsAction::setupDatasetPickerActions(ScatterplotPlugin* scatterplotPlugin)
+{
+    setupPositionDatasetPickerAction(scatterplotPlugin);
+    setupColorDatasetPickerAction(scatterplotPlugin);
+}
+
+void DatasetsAction::setupPositionDatasetPickerAction(ScatterplotPlugin* scatterplotPlugin)
+{
+    _positionDatasetPickerAction.setFilterFunction([this](mv::Dataset<DatasetImpl> dataset) -> bool {
+        return dataset->getDataType() == PointType;
+    });
+
+    connect(&_positionDatasetPickerAction, &DatasetPickerAction::datasetPicked, [this, scatterplotPlugin](Dataset<DatasetImpl> pickedDataset) -> void {
+        scatterplotPlugin->getPositionDataset() = pickedDataset;
+    });
+
+    connect(&scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, [this](DatasetImpl* dataset) -> void {
+        _positionDatasetPickerAction.setCurrentDataset(dataset);
+    });
+}
+
+void DatasetsAction::setupColorDatasetPickerAction(ScatterplotPlugin* scatterplotPlugin)
+{
+    auto& settingsAction = *dynamic_cast<SettingsAction*>(parent());
+
+    _colorDatasetPickerAction.setFilterFunction([this, scatterplotPlugin](mv::Dataset<DatasetImpl> dataset) -> bool {
+        if (!(dataset->getDataType() == PointType || dataset->getDataType() == ColorType || dataset->getDataType() == ClusterType))
+            return false;
+
+        const auto positionDataset = scatterplotPlugin->getPositionDataset();
+
+        if (!positionDataset.isValid())
+            return false;
+
+        return true;
+    });
+
+    auto& coloringAction = settingsAction.getColoringAction();
+
+    connect(&_colorDatasetPickerAction, &DatasetPickerAction::datasetPicked, [this, &coloringAction, scatterplotPlugin](Dataset<DatasetImpl> pickedDataset) -> void {
+        if (_colorDataset.isValid())
+            disconnect(&_colorDataset, &Dataset<>::guiNameChanged, this, nullptr);
+
+        _colorDataset = pickedDataset;
+
+        connect(&_colorDataset, &Dataset<>::guiNameChanged, scatterplotPlugin, &ScatterplotPlugin::updateHeadsUpDisplay);
+
+        coloringAction.setCurrentColorDataset(pickedDataset);
+
+        if (!pickedDataset.isValid())
+            coloringAction.getColorByAction().setCurrentIndex(0);
+    });
+
+    connect(&settingsAction.getColoringAction(), &ColoringAction::currentColorDatasetChanged, this, [this](Dataset<DatasetImpl> currentColorDataset) -> void {
+        _colorDatasetPickerAction.setCurrentDataset(currentColorDataset);
+    });
+}
+
+void DatasetsAction::invalidateDatasetPickerActionFilters()
+{
+    _positionDatasetPickerAction.invalidateFilter();
+    _colorDatasetPickerAction.invalidateFilter();
 }

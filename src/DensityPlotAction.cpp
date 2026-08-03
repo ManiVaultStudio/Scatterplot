@@ -30,7 +30,7 @@ void DensityPlotAction::initialize(ScatterplotPlugin* scatterplotPlugin)
     _scatterplotPlugin = scatterplotPlugin;
 
     const auto computeDensity = [this]() -> void {
-        if (static_cast<std::int32_t>(_scatterplotPlugin->getSettingsAction().getRenderModeAction().getCurrentIndex()) == ScatterplotWidget::RenderMode::SCATTERPLOT)
+        if (static_cast<std::int32_t>(dynamic_cast<SettingsAction*>(parent()->parent())->getRenderModeAction().getCurrentIndex()) == ScatterplotWidget::RenderMode::SCATTERPLOT)
             return;
 
         _scatterplotPlugin->getScatterplotWidget().setSigma(_sigmaAction.getValue());
@@ -38,7 +38,7 @@ void DensityPlotAction::initialize(ScatterplotPlugin* scatterplotPlugin)
         const auto maxDensity = _scatterplotPlugin->getScatterplotWidget().getDensityRenderer().getMaxDensity();
 
         if (maxDensity > 0)
-            _scatterplotPlugin->getSettingsAction().getColoringAction().getColorMap1DAction().getRangeAction(ColorMapAction::Axis::X).setRange({ 0.0f, maxDensity });
+            dynamic_cast<SettingsAction*>(parent()->parent())->getColoringAction().getColorMap1DAction().getRangeAction(ColorMapAction::Axis::X).setRange({ 0.0f, maxDensity });
     };
 
     connect(&_sigmaAction, &DecimalAction::valueChanged, this, computeDensity);
@@ -59,7 +59,7 @@ void DensityPlotAction::initialize(ScatterplotPlugin* scatterplotPlugin)
         computeDensity();
     });
 
-    connect(&_scatterplotPlugin->getSettingsAction().getRenderModeAction(), &OptionAction::currentIndexChanged, this, computeDensity);
+    connect(&dynamic_cast<SettingsAction*>(parent()->parent())->getRenderModeAction(), &OptionAction::currentIndexChanged, this, computeDensity);
 
     updateSigmaAction();
     computeDensity();

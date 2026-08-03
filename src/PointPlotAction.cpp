@@ -162,6 +162,10 @@ void PointPlotAction::initialize(ScatterplotPlugin* scatterplotPlugin)
     connect(&_opacityAction, &ScalarAction::magnitudeChanged, this, &PointPlotAction::updateScatterPlotWidgetPointOpacityScalars);
     connect(&_opacityAction, &ScalarAction::offsetChanged, this, &PointPlotAction::updateScatterPlotWidgetPointOpacityScalars);
     connect(&_opacityAction, &ScalarAction::sourceSelectionChanged, this, &PointPlotAction::updateScatterPlotWidgetPointOpacityScalars);
+    connect(&_opacityAction.getSourceDatasetPickerAction(), &DatasetPickerAction::datasetPicked, this, [this](Dataset<> picked) -> void {
+        setCurrentPointOpacityDataset(Dataset<DatasetImpl>(picked));
+    });
+
     connect(&_opacityAction, &ScalarAction::sourceDataChanged, this, &PointPlotAction::updateScatterPlotWidgetPointOpacityScalars);
     connect(&_opacityAction, &ScalarAction::scalarRangeChanged, this, &PointPlotAction::updateScatterPlotWidgetPointOpacityScalars);
 }
