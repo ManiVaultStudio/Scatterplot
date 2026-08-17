@@ -148,6 +148,7 @@ private:
     Dataset<Points>                     _positionSourceDataset;     /** Smart pointer to source of the points dataset for point position (if any) */
     std::vector<mv::Vector2f>           _positions;                 /** Point positions */
     std::uint64_t                       _numPoints;                 /** Number of point positions */
+    std::uint64_t                       _numTotalPoints;            /** Number of points in positions data set (might be more than _numPoints) */
     QPointer<SettingsAction>            _settingsAction;            /** Group action for all settings */
     QPointer<HorizontalToolbarAction>   _primaryToolbarAction;      /** Horizontal toolbar for primary content */
     QRectF                              _selectionBoundaries;       /** Boundaries of the selection */
