@@ -262,14 +262,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                 else {
                     if (candidateDataset.isValid())
                     {
-                        // Check to set whether the number of data points comprised throughout all clusters is the same number
-                        // as the number of data points in the dataset we are trying to color
-                        //std::uint64_t totalNumIndices = 0;
-                        //for (const Cluster& cluster : candidateDataset->getClusters())
-                        //{
-                        //    totalNumIndices += cluster.getIndices().size();
-                        //}
-
+                        // Check that the max index in the cluster data does not exceed the max index of the shown point data
                         auto getMaxIndex = [](const QVector<Cluster>& clusters) -> std::uint32_t
                             {
                                 if (clusters.empty())
