@@ -918,11 +918,10 @@ void ScatterplotPlugin::loadColors(const Dataset<Clusters>& clusters)
 
     if (totalNumPoints == _numPoints && clusterVec.size() == totalNumPoints)
     {
-        for (size_t i = 0; i < static_cast<size_t>(clusterVec.size()); i++)
+        // Each cluster corresponds to one point
+        for (const auto& cluster : clusterVec)
         {
-            const auto& cluster = clusterVec[i];
             const auto color    = cluster.getColor();
-
             localColors[cluster.getIndices()[0]] = Vector3f(color.redF(), color.greenF(), color.blueF());
         }
 
