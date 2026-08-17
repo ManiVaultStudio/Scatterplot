@@ -34,27 +34,9 @@
 #include <algorithm>
 #include <cassert>
 #include <exception>
-#include <limits>
 #include <map>
 #include <stdexcept>
 #include <vector>
-
-#ifdef __cpp_lib_execution
-#ifdef __GNUC__  // both TBB and Qt define emit keyword: undef
-#undef emit
-#endif
-#include <execution>
-#ifdef __GNUC__ // both TBB and Qt define emit keyword: def again
-#define emit
-#endif
-#ifdef NDEBUG
-#define MV_SCATTER_PARALLEL_EXECUTION std::execution::par,
-#else
-#define MV_SCATTER_PARALLEL_EXECUTION std::execution::seq,
-#endif
-#else
-#define MV_SCATTER_PARALLEL_EXECUTION
-#endif
 
 #define VIEW_SAMPLING_HTML
 //#define VIEW_SAMPLING_WIDGET
@@ -69,7 +51,6 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     _dropWidget(nullptr),
     _scatterPlotWidget(new ScatterplotWidget(this)),
     _numPoints(0),
-    _numTotalPoints(0),
     _settingsAction(new SettingsAction(this, "Settings")),
     _primaryToolbarAction(new HorizontalToolbarAction(this, "Primary Toolbar"))
 {
@@ -264,39 +245,19 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                     {
                         // Check to set whether the number of data points comprised throughout all clusters is the same number
                         // as the number of data points in the dataset we are trying to color
-                        //std::uint64_t totalNumIndices = 0;
-                        //for (const Cluster& cluster : candidateDataset->getClusters())
-                        //{
-                        //    totalNumIndices += cluster.getIndices().size();
-                        //}
+                        std::uint64_t totalNumIndices = 0;
+                        for (const Cluster& cluster : candidateDataset->getClusters())
+                        {
+                            totalNumIndices += cluster.getIndices().size();
+                        }
 
-                        auto getMaxIndex = [](const QVector<Cluster>& clusters) -> std::uint32_t
-                            {
-                                if (clusters.empty())
-                                    return std::numeric_limits<std::uint32_t>::lowest();
+                        std::uint64_t totalNumPoints = 0;
+                        if (_positionDataset->isDerivedData())
+                            totalNumPoints = _positionSourceDataset->getFullDataset<Points>()->getNumPoints();
+                        else
+                            totalNumPoints = _positionDataset->getFullDataset<Points>()->getNumPoints();
 
-                                std::vector<std::uint32_t> clusterIndicesMax(clusters.size());
-
-                                std::transform(
-                                    MV_SCATTER_PARALLEL_EXECUTION
-                                    clusters.cbegin(), clusters.cend(),
-                                    clusterIndicesMax.begin(),
-                                    [](const Cluster& cluster) -> std::uint32_t {
-                                        const std::vector<std::uint32_t>& indices = cluster.getIndices();
-                                        if (indices.empty())
-                                            return std::numeric_limits<std::uint32_t>::lowest();
-
-                                        return *std::ranges::max_element(indices);
-                                    });
-
-                                return *std::max_element(
-                                    MV_SCATTER_PARALLEL_EXECUTION
-                                    clusterIndicesMax.cbegin(), clusterIndicesMax.cend());
-                            };
-
-                        const auto maxIndex = getMaxIndex(candidateDataset->getClusters());
-
-                        if (maxIndex < _numTotalPoints)
+                        if (totalNumIndices == totalNumPoints)
                         {
                             // Use the clusters set for points color
                             dropRegions << new DropWidget::DropRegion(this, "Color", description, "palette", true, [this, candidateDataset]() {
@@ -746,10 +707,6 @@ void ScatterplotPlugin::positionDatasetChanged()
 
     _numPoints = _positionDataset->getNumPoints();
 
-    _numTotalPoints = _positionDataset->isDerivedData()
-        ? _positionSourceDataset->getFullDataset<Points>()->getNumPoints()
-        : _positionDataset->getFullDataset<Points>()->getNumPoints();
-
     _scatterPlotWidget->getPointRendererNavigator().resetView(true);
     _scatterPlotWidget->getDensityRendererNavigator().resetView(true);
 
@@ -942,27 +899,35 @@ void ScatterplotPlugin::loadColors(const Dataset<Clusters>& clusters)
     if (!clusters.isValid() || !_positionDataset.isValid())
         return;
 
+    // Get global indices from the position dataset
+    std::uint64_t totalNumPoints = 0;
+    if (_positionDataset->isDerivedData())
+        totalNumPoints = _positionSourceDataset->getFullDataset<Points>()->getNumPoints();
+    else
+        totalNumPoints = _positionDataset->getFullDataset<Points>()->getNumPoints();
+
     // Mapping from local to global indices
     std::vector<std::uint32_t> globalIndices;
     _positionDataset->getGlobalIndices(globalIndices);
 
     // Generate color buffer for global and local colors
-    std::vector<Vector3f> globalColors(_numTotalPoints);
+    std::vector<Vector3f> globalColors(totalNumPoints);
     std::vector<Vector3f> localColors(_numPoints);
 
     const auto& clusterVec = clusters->getClusters();
 
-    if (_numTotalPoints == _numPoints && static_cast<uint64_t>(clusterVec.size()) == _numTotalPoints)
+    if (totalNumPoints == _numPoints && clusterVec.size() == totalNumPoints)
     {
-        // Each cluster corresponds to one point
-        for (const auto& cluster : clusterVec)
+        for (size_t i = 0; i < static_cast<size_t>(clusterVec.size()); i++)
         {
+            const auto& cluster = clusterVec[i];
             const auto color    = cluster.getColor();
+
             localColors[cluster.getIndices()[0]] = Vector3f(color.redF(), color.greenF(), color.blueF());
         }
 
     }
-    else
+    else if(globalIndices.size() == _numPoints)
     {
         // Loop over all clusters and populate global colors
         for (const auto& cluster : clusterVec)
