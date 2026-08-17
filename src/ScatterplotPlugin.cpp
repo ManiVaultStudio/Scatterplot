@@ -51,6 +51,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     _dropWidget(nullptr),
     _scatterPlotWidget(new ScatterplotWidget(this)),
     _numPoints(0),
+    _numTotalPoints(0),
     _settingsAction(new SettingsAction(this, "Settings")),
     _primaryToolbarAction(new HorizontalToolbarAction(this, "Primary Toolbar"))
 {
@@ -707,6 +708,10 @@ void ScatterplotPlugin::positionDatasetChanged()
 
     _numPoints = _positionDataset->getNumPoints();
 
+    _numTotalPoints = _positionDataset->isDerivedData()
+        ? _positionSourceDataset->getFullDataset<Points>()->getNumPoints()
+        : _positionDataset->getFullDataset<Points>()->getNumPoints();
+
     _scatterPlotWidget->getPointRendererNavigator().resetView(true);
     _scatterPlotWidget->getDensityRendererNavigator().resetView(true);
 
@@ -899,24 +904,17 @@ void ScatterplotPlugin::loadColors(const Dataset<Clusters>& clusters)
     if (!clusters.isValid() || !_positionDataset.isValid())
         return;
 
-    // Get global indices from the position dataset
-    std::uint64_t totalNumPoints = 0;
-    if (_positionDataset->isDerivedData())
-        totalNumPoints = _positionSourceDataset->getFullDataset<Points>()->getNumPoints();
-    else
-        totalNumPoints = _positionDataset->getFullDataset<Points>()->getNumPoints();
-
     // Mapping from local to global indices
     std::vector<std::uint32_t> globalIndices;
     _positionDataset->getGlobalIndices(globalIndices);
 
     // Generate color buffer for global and local colors
-    std::vector<Vector3f> globalColors(totalNumPoints);
+    std::vector<Vector3f> globalColors(_numTotalPoints);
     std::vector<Vector3f> localColors(_numPoints);
 
     const auto& clusterVec = clusters->getClusters();
 
-    if (totalNumPoints == _numPoints && clusterVec.size() == totalNumPoints)
+    if (_numTotalPoints == _numPoints && static_cast<uint64_t>(clusterVec.size()) == _numTotalPoints)
     {
         // Each cluster corresponds to one point
         for (const auto& cluster : clusterVec)
