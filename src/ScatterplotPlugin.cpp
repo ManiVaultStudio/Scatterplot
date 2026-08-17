@@ -34,9 +34,27 @@
 #include <algorithm>
 #include <cassert>
 #include <exception>
+#include <limits>
 #include <map>
 #include <stdexcept>
 #include <vector>
+
+#ifdef __cpp_lib_execution
+#ifdef __GNUC__  // both TBB and Qt define emit keyword: undef
+#undef emit
+#endif
+#include <execution>
+#ifdef __GNUC__ // both TBB and Qt define emit keyword: def again
+#define emit
+#endif
+#ifdef NDEBUG
+#define MV_SCATTER_PARALLEL_EXECUTION std::execution::par,
+#else
+#define MV_SCATTER_PARALLEL_EXECUTION std::execution::seq,
+#endif
+#else
+#define MV_SCATTER_PARALLEL_EXECUTION
+#endif
 
 #define VIEW_SAMPLING_HTML
 //#define VIEW_SAMPLING_WIDGET
@@ -246,19 +264,39 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                     {
                         // Check to set whether the number of data points comprised throughout all clusters is the same number
                         // as the number of data points in the dataset we are trying to color
-                        std::uint64_t totalNumIndices = 0;
-                        for (const Cluster& cluster : candidateDataset->getClusters())
-                        {
-                            totalNumIndices += cluster.getIndices().size();
-                        }
+                        //std::uint64_t totalNumIndices = 0;
+                        //for (const Cluster& cluster : candidateDataset->getClusters())
+                        //{
+                        //    totalNumIndices += cluster.getIndices().size();
+                        //}
 
-                        std::uint64_t totalNumPoints = 0;
-                        if (_positionDataset->isDerivedData())
-                            totalNumPoints = _positionSourceDataset->getFullDataset<Points>()->getNumPoints();
-                        else
-                            totalNumPoints = _positionDataset->getFullDataset<Points>()->getNumPoints();
+                        auto getMaxIndex = [](const QVector<Cluster>& clusters) -> std::uint32_t
+                            {
+                                if (clusters.empty())
+                                    return std::numeric_limits<std::uint32_t>::lowest();
 
-                        if (totalNumIndices == totalNumPoints)
+                                std::vector<std::uint32_t> clusterIndicesMax(clusters.size());
+
+                                std::transform(
+                                    MV_SCATTER_PARALLEL_EXECUTION
+                                    clusters.cbegin(), clusters.cend(),
+                                    clusterIndicesMax.begin(),
+                                    [](const Cluster& cluster) -> std::uint32_t {
+                                        const std::vector<std::uint32_t>& indices = cluster.getIndices();
+                                        if (indices.empty())
+                                            return std::numeric_limits<std::uint32_t>::lowest();
+
+                                        return *std::ranges::max_element(indices);
+                                    });
+
+                                return *std::max_element(
+                                    MV_SCATTER_PARALLEL_EXECUTION
+                                    clusterIndicesMax.cbegin(), clusterIndicesMax.cend());
+                            };
+
+                        const auto maxIndex = getMaxIndex(candidateDataset->getClusters());
+
+                        if (maxIndex < _numTotalPoints)
                         {
                             // Use the clusters set for points color
                             dropRegions << new DropWidget::DropRegion(this, "Color", description, "palette", true, [this, candidateDataset]() {
