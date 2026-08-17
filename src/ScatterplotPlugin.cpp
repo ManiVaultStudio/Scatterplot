@@ -927,7 +927,7 @@ void ScatterplotPlugin::loadColors(const Dataset<Clusters>& clusters)
         }
 
     }
-    else if(globalIndices.size() == _numPoints)
+    else
     {
         // Loop over all clusters and populate global colors
         for (const auto& cluster : clusterVec)
