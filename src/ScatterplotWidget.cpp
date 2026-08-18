@@ -613,6 +613,25 @@ void ScatterplotWidget::setRandomizedDepthEnabled(bool randomizedDepth)
     update();
 }
 
+PointZOrderMode ScatterplotWidget::getZOrderMode() const
+{
+    return _pointRenderer.getZOrderMode();
+}
+
+void ScatterplotWidget::setZOrderMode(PointZOrderMode zOrderMode)
+{
+    _pointRenderer.setZOrderMode(zOrderMode);
+
+    update();
+}
+
+void ScatterplotWidget::setZOrderScalars(const std::vector<float>& zOrderScalars)
+{
+    _pointRenderer.setZOrderChannelScalars(zOrderScalars);
+
+    update();
+}
+
 bool ScatterplotWidget::getRandomizedDepthEnabled() const
 {
     return _pointRenderer.getRandomizedDepthEnabled();
@@ -679,8 +698,10 @@ void ScatterplotWidget::paintGL()
             // Reset the blending function
             glEnable(GL_BLEND);
 
-            if (getRandomizedDepthEnabled())
+            if (_renderMode == SCATTERPLOT && getZOrderMode() != PointZOrderMode::InsertionOrder)
                 glEnable(GL_DEPTH_TEST);
+            else
+                glDisable(GL_DEPTH_TEST);
 
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                

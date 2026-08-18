@@ -67,6 +67,8 @@ set(Actions
     src/SettingsAction.cpp
     src/SubsetAction.h
     src/SubsetAction.cpp
+    src/ZOrderingAction.h
+    src/ZOrderingAction.cpp
     src/ExportAction.h
     src/ExportAction.cpp
     src/DatasetsAction.h

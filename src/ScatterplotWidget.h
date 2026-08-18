@@ -104,6 +104,13 @@ public:
      */
     void setPointOpacityScalars(const std::vector<float>& pointOpacityScalars);
 
+    /** Get/set how point depth is determined. */
+    PointZOrderMode getZOrderMode() const;
+    void setZOrderMode(PointZOrderMode zOrderMode);
+
+    /** Set the scalar channel used by data-driven z ordering. */
+    void setZOrderScalars(const std::vector<float>& zOrderScalars);
+
     void setScalarEffect(PointEffect effect);
     void setPointScaling(PointScaling scalingMode);
 
@@ -203,15 +210,12 @@ public: // Selection
 
     /**
      * Set whether the selection outline halo is enabled or not
-     * @param randomizedDepth Boolean determining whether the selection outline halo is enabled or not
-     */
-    void setRandomizedDepthEnabled(bool randomizedDepth);
-
-    /**
-     * Set whether the z-order of each point is to be randomized or not
-     * @param selectionOutlineHaloEnabled Boolean determining whether the z-order of each point is to be randomized or not
+     * @param selectionOutlineHaloEnabled Boolean determining whether the selection outline halo is enabled or not
      */
     void setSelectionOutlineHaloEnabled(bool selectionOutlineHaloEnabled);
+
+    /** Compatibility wrapper for selecting randomized or insertion-order depth. */
+    void setRandomizedDepthEnabled(bool randomizedDepth);
 
     /**
      * Get whether the z-order of each point is to be randomized or not

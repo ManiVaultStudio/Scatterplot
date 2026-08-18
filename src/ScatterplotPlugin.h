@@ -48,6 +48,7 @@ public:
 public: // Dimension picking
     void setXDimension(const std::int32_t& dimensionIndex);
     void setYDimension(const std::int32_t& dimensionIndex);
+    void setZOrderDimension(const std::int32_t& dimensionIndex);
 
 protected: // Data loading
 

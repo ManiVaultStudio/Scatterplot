@@ -87,6 +87,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     _primaryToolbarAction->addAction(&_settingsAction->getDatasetsAction());
     _primaryToolbarAction->addAction(&_settingsAction->getRenderModeAction(), 3, GroupAction::Horizontal);
     _primaryToolbarAction->addAction(&_settingsAction->getPositionAction(), 1, GroupAction::Horizontal);
+    _primaryToolbarAction->addAction(&_settingsAction->getZOrderingAction(), 1, GroupAction::Horizontal);
     _primaryToolbarAction->addAction(&_settingsAction->getPlotAction(), 2, GroupAction::Horizontal);
     _primaryToolbarAction->addAction(&_settingsAction->getColoringAction());
     _primaryToolbarAction->addAction(&_settingsAction->getSubsetAction());
@@ -957,6 +958,16 @@ ScatterplotWidget& ScatterplotPlugin::getScatterplotWidget()
     return *_scatterPlotWidget;
 }
 
+void ScatterplotPlugin::setZOrderDimension(const std::int32_t& dimensionIndex)
+{
+    std::vector<float> zOrderScalars;
+
+    if (_positionDataset.isValid() && dimensionIndex >= 0 && dimensionIndex < static_cast<std::int32_t>(_positionDataset->getNumDimensions()))
+        _positionDataset->extractDataForDimension(zOrderScalars, dimensionIndex);
+
+    _scatterPlotWidget->setZOrderScalars(zOrderScalars);
+}
+
 void ScatterplotPlugin::updateData()
 {
     // Check if the scatter plot is initialized, if not, don't do anything
@@ -989,6 +1000,7 @@ void ScatterplotPlugin::updateData()
 
         // Pass the 2D points to the scatter plot widget
         _scatterPlotWidget->setData(&_positions);
+        _settingsAction->getZOrderingAction().updateScatterplotWidget();
 
         updateSelection();
     }
@@ -996,6 +1008,7 @@ void ScatterplotPlugin::updateData()
         _numPoints = 0;
         _positions.clear();
         _scatterPlotWidget->setData(&_positions);
+        _settingsAction->getZOrderingAction().updateScatterplotWidget();
     }
 }
 
