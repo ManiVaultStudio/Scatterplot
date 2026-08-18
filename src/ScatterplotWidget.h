@@ -80,6 +80,17 @@ public:
     void setHighlights(const std::vector<char>& highlights, const std::int32_t& numSelectedPoints);
     void setScalars(const std::vector<float>& scalars);
 
+    /**
+     * Exclude local point indices from selection in this scatterplot.
+     * Exclusions are applied to both interactive and externally supplied selections.
+     */
+    void setSelectionExcludedIndices(const std::vector<std::uint32_t>& excludedIndices);
+    void clearSelectionExcludedIndices();
+    const std::vector<std::uint32_t>& getSelectionExcludedIndices() const;
+    bool isSelectionExcluded(std::uint32_t localPointIndex) const;
+    std::uint32_t getNumberOfSelectablePoints() const;
+    std::uint32_t getNumberOfEffectivelySelectedPoints() const;
+
     /** Set the second color scalar channel (used for 2D and RGB coloring) */
     void setScalars2(const std::vector<float>& scalars);
 
@@ -299,6 +310,9 @@ public slots:
 private slots:
     void updatePixelRatio();
 
+private:
+    void updateEffectiveHighlights();
+
 protected:
     PointRenderer               _pointRenderer;                 /** For rendering point data as points */
     DensityRenderer             _densityRenderer;               /** For rendering point data as a density plot */
@@ -315,6 +329,9 @@ private:
     PixelSelectionTool          _samplerPixelSelectionTool;     /** 2D pixel selection tool */
     float                       _pixelRatio;                    /** Current pixel ratio */
     bool                        _weightDensity;                 /** Use point scalar sizes to weight density */
+    std::vector<char>           _selectionHighlights;          /** Selection highlights before local exclusions */
+    std::vector<std::uint32_t>  _selectionExcludedIndices;     /** Local point indices excluded from selection */
+    std::vector<char>           _selectionExclusionMask;       /** Mask of points excluded from selection */
 
     mv::plugin::ViewPlugin*     _parentPlugin = nullptr;
 

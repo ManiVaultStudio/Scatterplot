@@ -286,6 +286,10 @@ void ScatterplotWidget::setData(const std::vector<Vector2f>* points)
     _pointRenderer.setData(*points);
     _densityRenderer.setData(points);
 
+    _selectionExcludedIndices.clear();
+    _selectionExclusionMask.assign(points->size(), 0);
+    updateEffectiveHighlights();
+
     switch (_renderMode)
     {
         case ScatterplotWidget::SCATTERPLOT:
@@ -320,9 +324,82 @@ void ScatterplotWidget::setBackgroundColor(QColor color)
 
 void ScatterplotWidget::setHighlights(const std::vector<char>& highlights, const std::int32_t& numSelectedPoints)
 {
-    _pointRenderer.setHighlights(highlights, numSelectedPoints);
+    Q_UNUSED(numSelectedPoints);
+
+    _selectionHighlights = highlights;
+    updateEffectiveHighlights();
 
     update();
+}
+
+void ScatterplotWidget::setSelectionExcludedIndices(const std::vector<std::uint32_t>& excludedIndices)
+{
+    _selectionExcludedIndices.clear();
+    _selectionExcludedIndices.reserve(excludedIndices.size());
+    _selectionExclusionMask.assign(_pointRenderer.getGpuPoints().getPositions().size(), 0);
+
+    for (const auto index : excludedIndices) {
+        if (index < _selectionExclusionMask.size() && _selectionExclusionMask[index] == 0) {
+            _selectionExcludedIndices.push_back(index);
+            _selectionExclusionMask[index] = 1;
+        }
+    }
+
+    updateEffectiveHighlights();
+
+    update();
+}
+
+void ScatterplotWidget::clearSelectionExcludedIndices()
+{
+    _selectionExcludedIndices.clear();
+    _selectionExclusionMask.assign(_pointRenderer.getGpuPoints().getPositions().size(), 0);
+    updateEffectiveHighlights();
+
+    update();
+}
+
+const std::vector<std::uint32_t>& ScatterplotWidget::getSelectionExcludedIndices() const
+{
+    return _selectionExcludedIndices;
+}
+
+bool ScatterplotWidget::isSelectionExcluded(std::uint32_t localPointIndex) const
+{
+    return localPointIndex < _selectionExclusionMask.size() && _selectionExclusionMask[localPointIndex] != 0;
+}
+
+std::uint32_t ScatterplotWidget::getNumberOfSelectablePoints() const
+{
+    return static_cast<std::uint32_t>(_selectionExclusionMask.size() - _selectionExcludedIndices.size());
+}
+
+std::uint32_t ScatterplotWidget::getNumberOfEffectivelySelectedPoints() const
+{
+    std::uint32_t numberOfSelectedPoints = 0;
+
+    for (std::uint32_t index = 0; index < _selectionHighlights.size(); ++index) {
+        if (_selectionHighlights[index] != 0 && !isSelectionExcluded(index))
+            ++numberOfSelectedPoints;
+    }
+
+    return numberOfSelectedPoints;
+}
+
+void ScatterplotWidget::updateEffectiveHighlights()
+{
+    auto effectiveHighlights = _selectionHighlights;
+    std::int32_t numberOfEffectiveHighlights = 0;
+
+    for (std::size_t index = 0; index < effectiveHighlights.size(); ++index) {
+        if (isSelectionExcluded(static_cast<std::uint32_t>(index)))
+            effectiveHighlights[index] = -1;
+
+        if (effectiveHighlights[index] > 0)
+            ++numberOfEffectiveHighlights;
+    }
+
+    _pointRenderer.setHighlights(effectiveHighlights, numberOfEffectiveHighlights);
 }
 
 void ScatterplotWidget::setScalars(const std::vector<float>& scalars)

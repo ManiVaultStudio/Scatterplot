@@ -44,11 +44,13 @@ public:
 
 public:
     void createSubset(const bool& fromSourceData = false, const QString& name = "");
+    void selectAllEligiblePoints();
+    void invertEligiblePointSelection();
+    void refreshSelection();
 
 public: // Dimension picking
     void setXDimension(const std::int32_t& dimensionIndex);
     void setYDimension(const std::int32_t& dimensionIndex);
-    void setZOrderDimension(const std::int32_t& dimensionIndex);
 
 protected: // Data loading
 
@@ -112,6 +114,7 @@ private:
     void updateData();
     void updateSelection();
     void updateHeadsUpDisplayTextColor();
+    void filterSelectionExcludedIndices(std::vector<std::uint32_t>& globalIndices) const;
 
 public:
 
