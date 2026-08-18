@@ -1,8 +1,7 @@
 #pragma once
 
 #include <actions/OptionAction.h>
-#include <actions/DecimalAction.h>
-#include <actions/ToggleAction.h>
+#include <actions/TriggerAction.h>
 #include <actions/VerticalGroupAction.h>
 
 #include <PointData/DimensionPickerAction.h>
@@ -26,7 +25,6 @@ public:
 
     void initialize(ScatterplotPlugin* scatterplotPlugin);
     void updateScatterplotWidget();
-    void updateSelectionExclusions();
 
     QMenu* getContextMenu(QWidget* parent = nullptr) override;
 
@@ -41,17 +39,15 @@ public: // Serialization
 public: // Action getters
     OptionAction& getModeAction() { return _modeAction; }
     DimensionPickerAction& getDimensionPickerAction() { return _dimensionPickerAction; }
-    ToggleAction& getSelectionThresholdEnabledAction() { return _selectionThresholdEnabledAction; }
-    DecimalAction& getSelectionThresholdAction() { return _selectionThresholdAction; }
+    TriggerAction& getUseZOrderDimensionForSelectionAction() { return _useZOrderDimensionForSelectionAction; }
 
 private:
-    void updateZOrderScalars(bool resetThreshold);
+    void updateZOrderScalars();
 
     ScatterplotPlugin*      _scatterplotPlugin = nullptr;
     OptionAction            _modeAction;
     DimensionPickerAction   _dimensionPickerAction;
-    ToggleAction            _selectionThresholdEnabledAction;
-    DecimalAction           _selectionThresholdAction;
+    TriggerAction           _useZOrderDimensionForSelectionAction;
     std::vector<float>      _zOrderScalars;
 
     friend class mv::AbstractActionsManager;

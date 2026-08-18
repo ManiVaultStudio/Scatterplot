@@ -63,6 +63,8 @@ set(Actions
     src/ScalarSourceAction.cpp
     src/SelectionAction.h
     src/SelectionAction.cpp
+    src/SelectionRestrictionAction.h
+    src/SelectionRestrictionAction.cpp
     src/SettingsAction.h
     src/SettingsAction.cpp
     src/SubsetAction.h

@@ -16,8 +16,7 @@ SelectionAction::SelectionAction(QObject* parent, const QString& title) :
     _outlineOpacityAction(this, "Opacity", 0.0f, 100.0f, 100.0f, 1),
     _outlineHaloEnabledAction(this, "Halo"),
     _freezeSelectionAction(this, "Freeze selection"),
-    _zOrderSelectionThresholdEnabledAction(this, "Restrict selection by Z order", false),
-    _zOrderSelectionThresholdAction(this, "Minimum selectable value", 0.0f, 1.0f, 0.0f, 3)
+    _selectionRestrictionAction(this, "Selection restriction")
 {
     setIconByName("mouse-pointer");
     
@@ -38,8 +37,7 @@ SelectionAction::SelectionAction(QObject* parent, const QString& title) :
     addAction(&getOutlineOpacityAction());
     addAction(&getOutlineHaloEnabledAction());
     addAction(&getFreezeSelectionAction());
-    addAction(&_zOrderSelectionThresholdEnabledAction);
-    addAction(&_zOrderSelectionThresholdAction);
+    addAction(&_selectionRestrictionAction);
 
     _pixelSelectionAction.getOverlayColorAction().setText("Color");
 
@@ -47,8 +45,6 @@ SelectionAction::SelectionAction(QObject* parent, const QString& title) :
 
     _outlineScaleAction.setSuffix("%");
     _outlineOpacityAction.setSuffix("%");
-    _zOrderSelectionThresholdEnabledAction.setToolTip("Mirror of the selection restriction configured by Z ordering");
-    _zOrderSelectionThresholdAction.setToolTip("Points below this Z-order dimension value are excluded from selection");
 
     const auto updateActionsReadOnly = [this]() -> void {
         const auto isOutline = static_cast<PointSelectionDisplayMode>(_displayModeAction.getCurrentIndex()) == PointSelectionDisplayMode::Outline;
@@ -72,9 +68,6 @@ void SelectionAction::initialize(ScatterplotPlugin* scatterplotPlugin)
         return;
 
     auto& scatterplotWidget = scatterplotPlugin->getScatterplotWidget();
-    auto& zOrderingAction   = dynamic_cast<SettingsAction*>(parent())->getZOrderingAction();
-    auto& thresholdEnabled  = zOrderingAction.getSelectionThresholdEnabledAction();
-    auto& threshold         = zOrderingAction.getSelectionThresholdAction();
 
     getPixelSelectionAction().initialize(&scatterplotWidget, &scatterplotWidget.getPixelSelectionTool(), {
         PixelSelectionType::Rectangle,
@@ -97,44 +90,7 @@ void SelectionAction::initialize(ScatterplotPlugin* scatterplotPlugin)
     _outlineHaloEnabledAction.setChecked(scatterplotPlugin->getScatterplotWidget().getSelectionOutlineHaloEnabled());
     _outlineOverrideColorAction.setChecked(scatterplotPlugin->getScatterplotWidget().getSelectionOutlineOverrideColor());
 
-    if (threshold.getMinimum() > _zOrderSelectionThresholdAction.getMaximum()) {
-        _zOrderSelectionThresholdAction.setMaximum(threshold.getMaximum());
-        _zOrderSelectionThresholdAction.setMinimum(threshold.getMinimum());
-    }
-    else {
-        _zOrderSelectionThresholdAction.setMinimum(threshold.getMinimum());
-        _zOrderSelectionThresholdAction.setMaximum(threshold.getMaximum());
-    }
-    _zOrderSelectionThresholdAction.setValue(threshold.getValue());
-    _zOrderSelectionThresholdAction.setEnabled(threshold.isEnabled());
-    _zOrderSelectionThresholdEnabledAction.setChecked(thresholdEnabled.isChecked());
-    _zOrderSelectionThresholdEnabledAction.setEnabled(thresholdEnabled.isEnabled());
-
-    connect(&thresholdEnabled, &ToggleAction::toggled, this, [this](bool checked) {
-        _zOrderSelectionThresholdEnabledAction.setChecked(checked);
-    });
-    connect(&_zOrderSelectionThresholdEnabledAction, &ToggleAction::toggled, this, [thresholdEnabledAction = &thresholdEnabled](bool checked) {
-        thresholdEnabledAction->setChecked(checked);
-    });
-    connect(&thresholdEnabled, &QAction::enabledChanged, this, [this](bool enabled) {
-        _zOrderSelectionThresholdEnabledAction.setEnabled(enabled);
-    });
-
-    connect(&threshold, &DecimalAction::valueChanged, this, [this](float value) {
-        _zOrderSelectionThresholdAction.setValue(value);
-    });
-    connect(&_zOrderSelectionThresholdAction, &DecimalAction::valueChanged, this, [thresholdAction = &threshold](float value) {
-        thresholdAction->setValue(value);
-    });
-    connect(&threshold, &DecimalAction::minimumChanged, this, [this](float minimum) {
-        _zOrderSelectionThresholdAction.setMinimum(minimum);
-    });
-    connect(&threshold, &DecimalAction::maximumChanged, this, [this](float maximum) {
-        _zOrderSelectionThresholdAction.setMaximum(maximum);
-    });
-    connect(&threshold, &QAction::enabledChanged, this, [this](bool enabled) {
-        _zOrderSelectionThresholdAction.setEnabled(enabled);
-    });
+    _selectionRestrictionAction.initialize(scatterplotPlugin);
 
     connect(&_pixelSelectionAction.getSelectAllAction(), &QAction::triggered, [this, scatterplotPlugin]() {
         if (scatterplotPlugin->getPositionDataset().isValid())
@@ -201,8 +157,7 @@ void SelectionAction::connectToPublicAction(WidgetAction* publicAction, bool rec
         actions().connectPrivateActionToPublicAction(&_outlineOpacityAction, &publicSelectionAction->getOutlineOpacityAction(), recursive);
         actions().connectPrivateActionToPublicAction(&_outlineHaloEnabledAction, &publicSelectionAction->getOutlineHaloEnabledAction(), recursive);
         actions().connectPrivateActionToPublicAction(&_freezeSelectionAction, &publicSelectionAction->getFreezeSelectionAction(), recursive);
-        actions().connectPrivateActionToPublicAction(&_zOrderSelectionThresholdEnabledAction, &publicSelectionAction->getZOrderSelectionThresholdEnabledAction(), recursive);
-        actions().connectPrivateActionToPublicAction(&_zOrderSelectionThresholdAction, &publicSelectionAction->getZOrderSelectionThresholdAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_selectionRestrictionAction, &publicSelectionAction->getSelectionRestrictionAction(), recursive);
     }
 
     GroupAction::connectToPublicAction(publicAction, recursive);
@@ -221,8 +176,7 @@ void SelectionAction::disconnectFromPublicAction(bool recursive)
         actions().disconnectPrivateActionFromPublicAction(&_outlineOpacityAction, recursive);
         actions().disconnectPrivateActionFromPublicAction(&_outlineHaloEnabledAction, recursive);
         actions().disconnectPrivateActionFromPublicAction(&_freezeSelectionAction, recursive);
-        actions().disconnectPrivateActionFromPublicAction(&_zOrderSelectionThresholdEnabledAction, recursive);
-        actions().disconnectPrivateActionFromPublicAction(&_zOrderSelectionThresholdAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_selectionRestrictionAction, recursive);
     }
 
     GroupAction::disconnectFromPublicAction(recursive);
@@ -240,6 +194,7 @@ void SelectionAction::fromVariantMap(const QVariantMap& variantMap)
     _outlineOpacityAction.fromParentVariantMap(variantMap);
     _outlineHaloEnabledAction.fromParentVariantMap(variantMap);
     _freezeSelectionAction.fromParentVariantMap(variantMap);
+    _selectionRestrictionAction.fromParentVariantMap(variantMap, true);
 }
 
 QVariantMap SelectionAction::toVariantMap() const
@@ -254,6 +209,7 @@ QVariantMap SelectionAction::toVariantMap() const
     _outlineOpacityAction.insertIntoVariantMap(variantMap);
     _outlineHaloEnabledAction.insertIntoVariantMap(variantMap);
     _freezeSelectionAction.insertIntoVariantMap(variantMap);
+    _selectionRestrictionAction.insertIntoVariantMap(variantMap);
 
     return variantMap;
 }
