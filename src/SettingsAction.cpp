@@ -70,8 +70,8 @@ void SettingsAction::fromVariantMap(const QVariantMap& variantMap)
     _plotAction.fromParentVariantMap(variantMap);
     _positionAction.fromParentVariantMap(variantMap);
     _coloringAction.fromParentVariantMap(variantMap);
-    _subsetAction.fromParentVariantMap(variantMap);
-    _clusteringAction.fromParentVariantMap(variantMap);
+    _subsetAction.fromParentVariantMap(variantMap, true);
+    _clusteringAction.fromParentVariantMap(variantMap, true);
     _renderModeAction.fromParentVariantMap(variantMap);
     _selectionAction.fromParentVariantMap(variantMap);
     _miscellaneousAction.fromParentVariantMap(variantMap);

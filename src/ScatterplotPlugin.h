@@ -64,6 +64,23 @@ public: // Point colors
     void loadColors(const Dataset<Points>& points, const std::uint32_t& dimensionIndex);
 
     /**
+     * Load 2D color from two dimensions of a points dataset (mapped through the 2D color map)
+     * @param points Smart pointer to points dataset
+     * @param dimensionIndexX Index of the dimension mapped to the color map x-axis
+     * @param dimensionIndexY Index of the dimension mapped to the color map y-axis
+     */
+    void loadColors2D(const Dataset<Points>& points, const std::uint32_t& dimensionIndexX, const std::uint32_t& dimensionIndexY);
+
+    /**
+     * Load RGB color from three dimensions of a points dataset
+     * @param points Smart pointer to points dataset
+     * @param dimensionIndexR Index of the dimension mapped to red
+     * @param dimensionIndexG Index of the dimension mapped to green
+     * @param dimensionIndexB Index of the dimension mapped to blue
+     */
+    void loadColorsRGB(const Dataset<Points>& points, const std::uint32_t& dimensionIndexR, const std::uint32_t& dimensionIndexG, const std::uint32_t& dimensionIndexB);
+
+    /**
      * Load color from clusters dataset
      * @param clusters Smart pointer to clusters dataset
      */
@@ -114,12 +131,29 @@ public: // Serialization
     QVariantMap toVariantMap() const override;
 
 private:
+
+    /**
+     * Extract dimension \p dimensionIndex from \p pointsColor and map it into the position dataset's point space
+     * @param pointsColor Smart pointer to the color points dataset
+     * @param dimensionIndex Index of the dimension to extract
+     * @param colorScalars Output vector of scalars, sized to the number of position points on success
+     * @return Boolean determining whether the mapping succeeded
+     */
+    bool mapColorScalars(const Dataset<Points>& pointsColor, const std::uint32_t& dimensionIndex, std::vector<float>& colorScalars);
+
+    /**
+     * Number of points in positions data set (might be more than _numPoints)
+     * @return Number of points in positions data set (might be more than _numPoints)
+     */
+    std::uint64_t numTotalPoints() const;
+
+private:
     mv::gui::DropWidget*                _dropWidget;                /** Widget for dropping datasets */
     ScatterplotWidget*                  _scatterPlotWidget;         /** The visualization widget */
     Dataset<Points>                     _positionDataset;           /** Smart pointer to points dataset for point position */
     Dataset<Points>                     _positionSourceDataset;     /** Smart pointer to source of the points dataset for point position (if any) */
     std::vector<mv::Vector2f>           _positions;                 /** Point positions */
-    unsigned int                        _numPoints;                 /** Number of point positions */
+    std::uint64_t                       _numPoints;                 /** Number of point positions */
     QPointer<SettingsAction>            _settingsAction;            /** Group action for all settings */
     QPointer<HorizontalToolbarAction>   _primaryToolbarAction;      /** Horizontal toolbar for primary content */
     QRectF                              _selectionBoundaries;       /** Boundaries of the selection */

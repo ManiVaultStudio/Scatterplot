@@ -39,17 +39,17 @@ using LinkedDataCondition = std::function<bool(const mv::LinkedData& linkedData,
         };
     This function will return the first match of the condition
 */
-std::pair<const mv::LinkedData*, unsigned int> getSelectionMapping(const mv::Dataset<Points>& source, const mv::Dataset<Points>& target, LinkedDataCondition checkMapping);
+std::pair<const mv::LinkedData*, std::uint64_t> getSelectionMapping(const mv::Dataset<Points>& source, const mv::Dataset<Points>& target, LinkedDataCondition checkMapping);
 
 // Returns a mapping (linked data) from colors whose target is positions or whose target's parent has the same number of points as positions
-std::pair<const mv::LinkedData*, unsigned int> getSelectionMappingColorsToPositions(const mv::Dataset<Points>& colors, const mv::Dataset<Points>& positions);
+std::pair<const mv::LinkedData*, std::uint64_t> getSelectionMappingColorsToPositions(const mv::Dataset<Points>& colors, const mv::Dataset<Points>& positions);
 
 // Returns a mapping (linked data) from positions whose target is colors or 
 //  a mapping from positions' parent whose target is colors if the number of data points match 
-std::pair<const mv::LinkedData*, unsigned int> getSelectionMappingPositionsToColors(const mv::Dataset<Points>& positions, const mv::Dataset<Points>& colors);
+std::pair<const mv::LinkedData*, std::uint64_t> getSelectionMappingPositionsToColors(const mv::Dataset<Points>& positions, const mv::Dataset<Points>& colors);
 
 // Returns a mapping (linked data) from positions' source data whose target is colors 
-std::pair<const mv::LinkedData*, unsigned int> getSelectionMappingPositionSourceToColors(const mv::Dataset<Points>& positions, const mv::Dataset<Points>& colors);
+std::pair<const mv::LinkedData*, std::uint64_t> getSelectionMappingPositionSourceToColors(const mv::Dataset<Points>& positions, const mv::Dataset<Points>& colors);
 
 // Check if the mapping is surjective, i.e. hits all elements in the target
 bool checkSurjectiveMapping(const mv::LinkedData& linkedData, const std::uint32_t numPointsInTarget);

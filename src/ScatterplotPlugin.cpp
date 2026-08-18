@@ -8,6 +8,7 @@
 
 #include <util/PixelSelectionTool.h>
 #include <util/Timer.h>
+#include <util/Serialization.h>
 
 #include <ClusterData/ClusterData.h>
 #include <ColorData/ColorData.h>
@@ -34,9 +35,27 @@
 #include <algorithm>
 #include <cassert>
 #include <exception>
+#include <limits>
 #include <map>
 #include <stdexcept>
 #include <vector>
+
+#ifdef __cpp_lib_execution
+#ifdef __GNUC__  // both TBB and Qt define emit keyword: undef
+#undef emit
+#endif
+#include <execution>
+#ifdef __GNUC__ // both TBB and Qt define emit keyword: def again
+#define emit
+#endif
+#ifdef NDEBUG
+#define MV_SCATTER_PARALLEL_EXECUTION std::execution::par,
+#else
+#define MV_SCATTER_PARALLEL_EXECUTION std::execution::seq,
+#endif
+#else
+#define MV_SCATTER_PARALLEL_EXECUTION
+#endif
 
 #define VIEW_SAMPLING_HTML
 //#define VIEW_SAMPLING_WIDGET
@@ -150,10 +169,10 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
         if (datasetsMimeData == nullptr)
             return dropRegions;
 
-        if (datasetsMimeData->getDatasets().count() > 1)
+        if (datasetsMimeData->getDatasetsCount() != 1)
             return dropRegions;
 
-        const auto dataset          = datasetsMimeData->getDatasets().first();
+        const auto& dataset         = datasetsMimeData->getDatasetsRef().first();
         const auto datasetGuiName   = dataset->text();
         const auto datasetId        = dataset->getId();
         const auto dataType         = dataset->getDataType();
@@ -253,30 +272,34 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
                 else {
                     if (candidateDataset.isValid())
                     {
-                        // Check to set whether the number of data points comprised throughout all clusters is the same number
-                        // as the number of data points in the dataset we are trying to color
-                        int totalNumIndices = 0;
-                        for (const Cluster& cluster : candidateDataset->getClusters())
-                        {
-                            totalNumIndices += cluster.getIndices().size();
-                        }
+                        // Check that the max index in the cluster data does not exceed the max index of the shown point data
+                        auto getMaxIndex = [](const QVector<Cluster>& clusters) -> std::uint32_t
+                            {
+                                if (clusters.empty())
+                                    return std::numeric_limits<std::uint32_t>::lowest();
 
-                        int totalNumPoints = 0;
-                        if (_positionDataset->isDerivedData())
-                            totalNumPoints = _positionSourceDataset->getFullDataset<Points>()->getNumPoints();
-                        else
-                            totalNumPoints = _positionDataset->getFullDataset<Points>()->getNumPoints();
+                                std::vector<std::uint32_t> clusterIndicesMax(clusters.size());
 
-                        // First check if cross-dataset metadata coloring is possible
-                        if (events().areDatasetsPartOfSelectionGroup(getTopDataset(_positionDataset), getTopDataset(candidateDataset)))
-                        {
-                            // Use the clusters set for points color
-                            dropRegions << new DropWidget::DropRegion(this, "Color", description, "palette", true, [this, candidateDataset]() {
-                                _settingsAction->getColoringAction().addColorDataset(candidateDataset);
-                                _settingsAction->getColoringAction().setCurrentColorDataset(candidateDataset);
-                            });
-                        }
-                        else if (totalNumIndices == totalNumPoints)
+                                std::transform(
+                                    MV_SCATTER_PARALLEL_EXECUTION
+                                    clusters.cbegin(), clusters.cend(),
+                                    clusterIndicesMax.begin(),
+                                    [](const Cluster& cluster) -> std::uint32_t {
+                                        const std::vector<std::uint32_t>& indices = cluster.getIndices();
+                                        if (indices.empty())
+                                            return std::numeric_limits<std::uint32_t>::lowest();
+
+                                        return *std::ranges::max_element(indices);
+                                    });
+
+                                return *std::max_element(
+                                    MV_SCATTER_PARALLEL_EXECUTION
+                                    clusterIndicesMax.cbegin(), clusterIndicesMax.cend());
+                            };
+
+                        const auto maxIndex = getMaxIndex(candidateDataset->getClusters());
+
+                        if (maxIndex < numTotalPoints())
                         {
                             // Use the clusters set for points color
                             dropRegions << new DropWidget::DropRegion(this, "Color", description, "palette", true, [this, candidateDataset]() {
@@ -589,7 +612,7 @@ void ScatterplotPlugin::selectPoints()
 
     auto& navigationAction = navigator.getNavigationAction();
 
-    navigationAction.getZoomSelectionAction().setEnabled(!targetSelectionIndices.empty() && !navigationAction.getFreezeNavigation().isChecked());
+    navigationAction.getZoomSelectionAction().setEnabled(!targetSelectionIndices.empty() && navigationAction.isNavigationActive());
 
     _positionDataset->setSelectionIndices(targetSelectionIndices);
 
@@ -717,13 +740,8 @@ void ScatterplotPlugin::positionDatasetChanged()
     if (!_positionDataset.isValid())
         return;
      
-    // Reset dataset references
-    //_positionSourceDataset.reset();
-
-    // Set position source dataset reference when the position dataset is derived
-    //if (_positionDataset->isDerivedData())
     _positionSourceDataset = _positionDataset->getSourceDataset<Points>();
-
+    
     _numPoints = _positionDataset->getNumPoints();
 
     _scatterPlotWidget->getPointRendererNavigator().resetView(true);
@@ -732,16 +750,26 @@ void ScatterplotPlugin::positionDatasetChanged()
     updateData();
 }
 
-void ScatterplotPlugin::loadColors(const Dataset<Points>& pointsColor, const std::uint32_t& dimensionIndex)
+std::uint64_t ScatterplotPlugin::numTotalPoints() const
+{
+    if (!_positionDataset.isValid())
+        return 0;
+
+    return _positionDataset->isDerivedData()
+        ? _positionSourceDataset->getFullDataset<Points>()->getNumPoints()
+        : _positionDataset->getFullDataset<Points>()->getNumPoints();
+}
+
+bool ScatterplotPlugin::mapColorScalars(const Dataset<Points>& pointsColor, const std::uint32_t& dimensionIndex, std::vector<float>& colorScalars)
 {
     // Only proceed with valid points dataset
     if (!pointsColor.isValid())
-        return;
+        return false;
 
     const auto numColorPoints = pointsColor->getNumPoints();
 
     // Generate point colorScalars for color mapping
-    std::vector<float> colorScalars = {};
+    colorScalars.clear();
     pointsColor->extractDataForDimension(colorScalars, dimensionIndex);
 
     // If number of points do not match, use a mapping
@@ -775,7 +803,7 @@ void ScatterplotPlugin::loadColors(const Dataset<Points>& pointsColor, const std
                 const mv::SelectionMap::Map& mapColorsToPositions = selectionMapping->getMapping().getMap();
 
                 for (const auto& [fromColorID, vecOfPositionIDs] : mapColorsToPositions) {
-                    for (std::uint32_t toPositionID : vecOfPositionIDs) {
+                    for (const std::uint32_t toPositionID : vecOfPositionIDs) {
                         mappedColorScalars[toPositionID] = colorScalars[fromColorID];
                     }
                 }
@@ -795,7 +823,7 @@ void ScatterplotPlugin::loadColors(const Dataset<Points>& pointsColor, const std
                 for (const auto& [fromPositionID, vecOfColorIDs] : mapPositionsToColors) {
                     if (mappedColorScalars[fromPositionID] != std::numeric_limits<float>::lowest())
                         continue;
-                    for (std::uint32_t toColorID : vecOfColorIDs) {
+                    for (const std::uint32_t toColorID : vecOfColorIDs) {
                         mappedColorScalars[fromPositionID] = colorScalars[toColorID];
                     }
                 }
@@ -834,14 +862,12 @@ void ScatterplotPlugin::loadColors(const Dataset<Points>& pointsColor, const std
 
         }
         catch (const std::exception& e) {
-            qDebug() << "ScatterplotPlugin::loadColors: mapping failed -> " << e.what();
-            _settingsAction->getColoringAction().getColorByAction().setCurrentIndex(0);  // reset to color by constant
-            return;
+            qDebug() << "ScatterplotPlugin::mapColorScalars: mapping failed -> " << e.what();
+            return false;
         }
         catch (...) {
-            qDebug() << "ScatterplotPlugin::loadColors: mapping failed for an unknown reason.";
-            _settingsAction->getColoringAction().getColorByAction().setCurrentIndex(0);  // reset to color by constant
-            return;
+            qDebug() << "ScatterplotPlugin::mapColorScalars: mapping failed for an unknown reason.";
+            return false;
         }
 
         std::swap(mappedColorScalars, colorScalars);
@@ -849,11 +875,66 @@ void ScatterplotPlugin::loadColors(const Dataset<Points>& pointsColor, const std
 
     assert(colorScalars.size() == _numPoints);
 
+    return true;
+}
+
+void ScatterplotPlugin::loadColors(const Dataset<Points>& pointsColor, const std::uint32_t& dimensionIndex)
+{
+    std::vector<float> colorScalars = {};
+
+    if (!mapColorScalars(pointsColor, dimensionIndex, colorScalars)) {
+        _settingsAction->getColoringAction().getColorByAction().setCurrentIndex(0);  // reset to color by constant
+        return;
+    }
+
     // Assign colorScalars and scalar effect
     _scatterPlotWidget->setScalars(colorScalars);
     _scatterPlotWidget->setScalarEffect(PointEffect::Color);
 
     _settingsAction->getColoringAction().updateColorMapActionScalarRange();
+
+    // Render
+    getWidget().update();
+}
+
+void ScatterplotPlugin::loadColors2D(const Dataset<Points>& pointsColor, const std::uint32_t& dimensionIndexX, const std::uint32_t& dimensionIndexY)
+{
+    std::vector<float> colorScalarsX = {};
+    std::vector<float> colorScalarsY = {};
+
+    if (!mapColorScalars(pointsColor, dimensionIndexX, colorScalarsX) ||
+        !mapColorScalars(pointsColor, dimensionIndexY, colorScalarsY)) {
+        _settingsAction->getColoringAction().getColorByAction().setCurrentIndex(0);  // reset to color by constant
+        return;
+    }
+
+    // Assign both channels and the two-channel 2D coloring effect
+    _scatterPlotWidget->setScalars(colorScalarsX);
+    _scatterPlotWidget->setScalars2(colorScalarsY);
+    _scatterPlotWidget->setScalarEffect(PointEffect::Color2DChannels);
+
+    // Render
+    getWidget().update();
+}
+
+void ScatterplotPlugin::loadColorsRGB(const Dataset<Points>& pointsColor, const std::uint32_t& dimensionIndexR, const std::uint32_t& dimensionIndexG, const std::uint32_t& dimensionIndexB)
+{
+    std::vector<float> colorScalarsR = {};
+    std::vector<float> colorScalarsG = {};
+    std::vector<float> colorScalarsB = {};
+
+    if (!mapColorScalars(pointsColor, dimensionIndexR, colorScalarsR) ||
+        !mapColorScalars(pointsColor, dimensionIndexG, colorScalarsG) ||
+        !mapColorScalars(pointsColor, dimensionIndexB, colorScalarsB)) {
+        _settingsAction->getColoringAction().getColorByAction().setCurrentIndex(0);  // reset to color by constant
+        return;
+    }
+
+    // Assign the three channels and the RGB coloring effect
+    _scatterPlotWidget->setScalars(colorScalarsR);
+    _scatterPlotWidget->setScalars2(colorScalarsG);
+    _scatterPlotWidget->setScalars3(colorScalarsB);
+    _scatterPlotWidget->setScalarEffect(PointEffect::ColorRGB);
 
     // Render
     getWidget().update();
@@ -904,11 +985,7 @@ void ScatterplotPlugin::loadColors(const Dataset<Clusters>& clusters)
     }
 
     // Get global indices from the position dataset
-    int totalNumPoints = 0;
-    if (_positionDataset->isDerivedData())
-        totalNumPoints = _positionSourceDataset->getFullDataset<Points>()->getNumPoints();
-    else
-        totalNumPoints = _positionDataset->getFullDataset<Points>()->getNumPoints();
+    const std::uint64_t totalNumPoints = numTotalPoints();
 
     // Mapping from local to global indices
     std::vector<std::uint32_t> globalIndices;
@@ -920,18 +997,17 @@ void ScatterplotPlugin::loadColors(const Dataset<Clusters>& clusters)
 
     const auto& clusterVec = clusters->getClusters();
 
-    if (totalNumPoints == _numPoints && clusterVec.size() == totalNumPoints)
+    if (totalNumPoints == _numPoints && static_cast<uint64_t>(clusterVec.size()) == totalNumPoints)
     {
-        for (size_t i = 0; i < static_cast<size_t>(clusterVec.size()); i++)
+        // Each cluster corresponds to one point
+        for (const auto& cluster : clusterVec)
         {
-            const auto& cluster = clusterVec[i];
             const auto color    = cluster.getColor();
-
             localColors[cluster.getIndices()[0]] = Vector3f(color.redF(), color.greenF(), color.blueF());
         }
 
     }
-    else if(globalIndices.size() == _numPoints)
+    else
     {
         // Loop over all clusters and populate global colors
         for (const auto& cluster : clusterVec)

@@ -29,13 +29,16 @@ ScalarAction::ScalarAction(QObject* parent, const QString& title, const float& m
             if (auto scatterplotPlugin = dynamic_cast<ScatterplotPlugin*>(findPluginAncestor())) {
                 auto positionDataset            = scatterplotPlugin->getPositionDataset();
                 auto scalarSourcePointsDataset  = Dataset<Points>(getCurrentDataset());
-                const auto numScalars           = scalarSourcePointsDataset->getNumPoints();
-                const auto numPositions         = positionDataset->getNumPoints();
 
-                if (numScalars != numPositions) {
-                    emitSourceSelectionChanged = false;
+                if (scalarSourcePointsDataset.isValid() && positionDataset.isValid()) {
+	                const auto numScalars   = scalarSourcePointsDataset->getNumPoints();
+					const auto numPositions = positionDataset->getNumPoints();
 
-                    scatterplotPlugin->addNotification(QString("The number of points in the scalar source dataset does not match the number of points in the position dataset. (numPositions=%1, numScalars:%2)").arg(QString::number(numPositions), QString::number(numScalars)));
+					if (numScalars != numPositions) {
+						emitSourceSelectionChanged = false;
+
+						scatterplotPlugin->addNotification(QString("The number of points in the scalar source dataset does not match the number of points in the position dataset. (numPositions=%1, numScalars:%2)").arg(QString::number(numPositions), QString::number(numScalars)));
+					}
                 }
             }
         } else {
@@ -184,7 +187,7 @@ void ScalarAction::fromVariantMap(const QVariantMap& variantMap)
 
     _magnitudeAction.fromParentVariantMap(variantMap);
     _sourceAction.fromParentVariantMap(variantMap);
-    _sourceDatasetPickerAction.fromParentVariantMap(variantMap);
+    //_sourceDatasetPickerAction.fromParentVariantMap(variantMap);
 }
 
 QVariantMap ScalarAction::toVariantMap() const
@@ -193,7 +196,7 @@ QVariantMap ScalarAction::toVariantMap() const
 
     _magnitudeAction.insertIntoVariantMap(variantMap);
     _sourceAction.insertIntoVariantMap(variantMap);
-    _sourceDatasetPickerAction.insertIntoVariantMap(variantMap);
+    //_sourceDatasetPickerAction.insertIntoVariantMap(variantMap);
 
     return variantMap;
 }

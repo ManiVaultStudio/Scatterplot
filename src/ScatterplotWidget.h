@@ -80,6 +80,12 @@ public:
     void setHighlights(const std::vector<char>& highlights, const std::int32_t& numSelectedPoints);
     void setScalars(const std::vector<float>& scalars);
 
+    /** Set the second color scalar channel (used for 2D and RGB coloring) */
+    void setScalars2(const std::vector<float>& scalars);
+
+    /** Set the third color scalar channel (used for RGB coloring) */
+    void setScalars3(const std::vector<float>& scalars);
+
     /**
      * Set colors for each individual data point
      * @param colors Vector of colors (size must match that of the loaded points dataset)
