@@ -69,7 +69,6 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     _dropWidget(nullptr),
     _scatterPlotWidget(new ScatterplotWidget(this)),
     _numPoints(0),
-    _numTotalPoints(0),
     _settingsAction(new SettingsAction(this, "Settings")),
     _primaryToolbarAction(new HorizontalToolbarAction(this, "Primary Toolbar"))
 {
@@ -289,7 +288,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
 
                         const auto maxIndex = getMaxIndex(candidateDataset->getClusters());
 
-                        if (maxIndex < _numTotalPoints)
+                        if (maxIndex < numTotalPoints())
                         {
                             // Use the clusters set for points color
                             dropRegions << new DropWidget::DropRegion(this, "Color", description, "palette", true, [this, candidateDataset]() {
@@ -739,14 +738,20 @@ void ScatterplotPlugin::positionDatasetChanged()
 
     _numPoints = _positionDataset->getNumPoints();
 
-    _numTotalPoints = _positionDataset->isDerivedData()
-        ? _positionSourceDataset->getFullDataset<Points>()->getNumPoints()
-        : _positionDataset->getFullDataset<Points>()->getNumPoints();
-
     _scatterPlotWidget->getPointRendererNavigator().resetView(true);
     _scatterPlotWidget->getDensityRendererNavigator().resetView(true);
 
     updateData();
+}
+
+std::uint64_t ScatterplotPlugin::numTotalPoints() const
+{
+    if (!_positionDataset.isValid())
+        return 0;
+
+    return _positionDataset->isDerivedData()
+        ? _positionSourceDataset->getFullDataset<Points>()->getNumPoints()
+        : _positionDataset->getFullDataset<Points>()->getNumPoints();
 }
 
 bool ScatterplotPlugin::mapColorScalars(const Dataset<Points>& pointsColor, const std::uint32_t& dimensionIndex, std::vector<float>& colorScalars)
@@ -935,17 +940,20 @@ void ScatterplotPlugin::loadColors(const Dataset<Clusters>& clusters)
     if (!clusters.isValid() || !_positionDataset.isValid())
         return;
 
+    // Get global indices from the position dataset
+    const std::uint64_t totalNumPoints = numTotalPoints();
+
     // Mapping from local to global indices
     std::vector<std::uint32_t> globalIndices;
     _positionDataset->getGlobalIndices(globalIndices);
 
     // Generate color buffer for global and local colors
-    std::vector<Vector3f> globalColors(_numTotalPoints);
+    std::vector<Vector3f> globalColors(totalNumPoints);
     std::vector<Vector3f> localColors(_numPoints);
 
     const auto& clusterVec = clusters->getClusters();
 
-    if (_numTotalPoints == _numPoints && static_cast<uint64_t>(clusterVec.size()) == _numTotalPoints)
+    if (totalNumPoints == _numPoints && static_cast<uint64_t>(clusterVec.size()) == totalNumPoints)
     {
         // Each cluster corresponds to one point
         for (const auto& cluster : clusterVec)
