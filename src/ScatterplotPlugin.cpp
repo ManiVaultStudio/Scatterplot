@@ -729,14 +729,7 @@ void ScatterplotPlugin::positionDatasetChanged()
     if (!_positionDataset.isValid())
         return;
      
-    // Reset dataset references
-    //_positionSourceDataset.reset();
-
-    // Set position source dataset reference when the position dataset is derived
-    //if (_positionDataset->isDerivedData())
     _positionSourceDataset = _positionDataset->getSourceDataset<Points>();
-
-    _numPoints = _positionDataset->getNumPoints();
 
     _scatterPlotWidget->getPointRendererNavigator().resetView(true);
     _scatterPlotWidget->getDensityRendererNavigator().resetView(true);
