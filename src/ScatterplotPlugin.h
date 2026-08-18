@@ -141,6 +141,12 @@ private:
      */
     bool mapColorScalars(const Dataset<Points>& pointsColor, const std::uint32_t& dimensionIndex, std::vector<float>& colorScalars);
 
+    /**
+     * Number of points in positions data set (might be more than _numPoints)
+     * @return Number of points in positions data set (might be more than _numPoints)
+     */
+    std::uint64_t numTotalPoints() const;
+
 private:
     mv::gui::DropWidget*                _dropWidget;                /** Widget for dropping datasets */
     ScatterplotWidget*                  _scatterPlotWidget;         /** The visualization widget */

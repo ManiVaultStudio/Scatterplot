@@ -1,6 +1,7 @@
 from conans import ConanFile
 from conan.tools.cmake import CMakeDeps, CMake, CMakeToolchain
 from conans.tools import save, load
+from conans.tools import os_info
 from conans import tools
 import os
 import pathlib
@@ -72,8 +73,8 @@ class ScatterplotOPluginConan(ConanFile):
         pass
 
     def system_requirements(self):
-        #  May be needed for macOS or Linux
-        pass
+        if os_info.is_linux:
+            self.run("sudo apt update && sudo apt install -y libtbb-dev")
 
     def config_options(self):
         if self.settings.os == "Windows":

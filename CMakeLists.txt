@@ -25,6 +25,10 @@ find_package(Qt6 COMPONENTS Widgets WebEngineWidgets OpenGL OpenGLWidgets REQUIR
 find_package(ManiVault COMPONENTS Core PointData ClusterData ColorData ImageData CONFIG QUIET)
 mv_project_defaults()
 
+if(UNIX AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    find_package(TBB REQUIRED)
+endif()
+
 # -----------------------------------------------------------------------------
 # Source files
 # -----------------------------------------------------------------------------
@@ -125,6 +129,10 @@ target_link_libraries(${PROJECT} PRIVATE ManiVault::PointData)
 target_link_libraries(${PROJECT} PRIVATE ManiVault::ClusterData)
 target_link_libraries(${PROJECT} PRIVATE ManiVault::ImageData)
 target_link_libraries(${PROJECT} PRIVATE ManiVault::ColorData)
+
+if(UNIX AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_link_libraries(${PROJECT} PRIVATE TBB::tbb)
+endif()
 
 # -----------------------------------------------------------------------------
 # Target installation
