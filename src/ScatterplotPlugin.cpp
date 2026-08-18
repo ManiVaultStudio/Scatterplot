@@ -730,6 +730,8 @@ void ScatterplotPlugin::positionDatasetChanged()
         return;
      
     _positionSourceDataset = _positionDataset->getSourceDataset<Points>();
+    
+    _numPoints = _positionDataset->getNumPoints();
 
     _scatterPlotWidget->getPointRendererNavigator().resetView(true);
     _scatterPlotWidget->getDensityRendererNavigator().resetView(true);
