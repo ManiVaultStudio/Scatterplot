@@ -18,6 +18,7 @@ SelectionRestrictionAction::SelectionRestrictionAction(QObject* parent, const QS
     setIconByName("filter");
     setLabelSizingType(LabelSizingType::Auto);
     setConfigurationFlag(WidgetAction::ConfigurationFlag::ForceCollapsedInGroup);
+    setShowLabels(false);
 
     addAction(&_enabledAction);
     addAction(&_dimensionPickerAction);

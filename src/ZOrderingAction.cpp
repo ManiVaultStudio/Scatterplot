@@ -7,27 +7,44 @@
 #include "SettingsAction.h"
 
 #include <QMenu>
+#include <QSignalBlocker>
 
 ZOrderingAction::ZOrderingAction(QObject* parent, const QString& title) :
     VerticalGroupAction(parent, title),
     _modeAction(this, "Mode", { "Insertion order", "Dimension", "Randomized" }),
     _dimensionPickerAction(this, "Dimension"),
-    _useZOrderDimensionForSelectionAction(this, "Use Z-order dimension for selection")
+    _restrictSelectionByZOrderAction(this, "Restrict selection by Z-order dimension", false)
 {
-    setIconByName("layer-group");
+    setIconByName("sort");
     setLabelSizingType(LabelSizingType::Auto);
     setConfigurationFlag(WidgetAction::ConfigurationFlag::ForceCollapsedInGroup);
 
     addAction(&_modeAction, OptionAction::HorizontalButtons);
     addAction(&_dimensionPickerAction);
-    addAction(&dynamic_cast<SettingsAction*>(parent)->getSelectionAction().getSelectionRestrictionAction());
-    addAction(&_useZOrderDimensionForSelectionAction);
+    addAction(&_restrictSelectionByZOrderAction);
+
+    auto& selectionRangeAction = dynamic_cast<SettingsAction*>(parent)->getSelectionAction().getSelectionRestrictionAction().getRangeAction();
+
+    addAction(&selectionRangeAction, -1, [this, &selectionRangeAction](WidgetAction*, QWidget* widget) {
+        const auto updateReadOnly = [this, &selectionRangeAction, widget]() {
+            widget->setEnabled(
+                selectionRangeAction.isEnabled() &&
+                _restrictSelectionByZOrderAction.isEnabled() &&
+                _restrictSelectionByZOrderAction.isChecked());
+        };
+
+        connect(&_restrictSelectionByZOrderAction, &ToggleAction::toggled, widget, updateReadOnly);
+        connect(&_restrictSelectionByZOrderAction, &QAction::enabledChanged, widget, updateReadOnly);
+        connect(&selectionRangeAction, &QAction::enabledChanged, widget, updateReadOnly);
+
+        updateReadOnly();
+    });
 
     _modeAction.setToolTip("Choose how overlapping points are ordered");
     _dimensionPickerAction.setToolTip("Dimension whose numerical values determine point depth");
-    _useZOrderDimensionForSelectionAction.setToolTip("Use the current Z-order dimension as the selection restriction dimension");
+    _restrictSelectionByZOrderAction.setToolTip("Restrict selection using the current Z-order dimension and the selectable range below");
     _dimensionPickerAction.setEnabled(false);
-    _useZOrderDimensionForSelectionAction.setEnabled(false);
+    _restrictSelectionByZOrderAction.setEnabled(false);
 }
 
 void ZOrderingAction::initialize(ScatterplotPlugin* scatterplotPlugin)
@@ -59,6 +76,7 @@ void ZOrderingAction::initialize(ScatterplotPlugin* scatterplotPlugin)
 
         _dimensionPickerAction.setPointsDataset(positionDataset);
         _dimensionPickerAction.setCurrentDimensionIndex(dimensionIndex);
+
         updateZOrderScalars();
         updateScatterplotWidget();
     };
@@ -67,14 +85,85 @@ void ZOrderingAction::initialize(ScatterplotPlugin* scatterplotPlugin)
         updateScatterplotWidget();
     });
 
-    connect(&_dimensionPickerAction, &DimensionPickerAction::currentDimensionIndexChanged, this, [this]() {
+    connect(&_dimensionPickerAction, &DimensionPickerAction::currentDimensionIndexChanged, this, [this, selectionRestriction = &selectionRestrictionAction]() {
         updateZOrderScalars();
+
+        if (_restrictSelectionByZOrderAction.isChecked() && !_updatingCoupledRestriction) {
+            _updatingCoupledRestriction = true;
+            {
+	            selectionRestriction->getDimensionPickerAction().setCurrentDimensionIndex(_dimensionPickerAction.getCurrentDimensionIndex());
+            }
+            _updatingCoupledRestriction = false;
+        }
+
         updateScatterplotWidget();
     });
 
-    connect(&_useZOrderDimensionForSelectionAction, &TriggerAction::triggered, this, [this, selectionRestriction = &selectionRestrictionAction]() {
-        selectionRestriction->getDimensionPickerAction().setCurrentDimensionIndex(_dimensionPickerAction.getCurrentDimensionIndex());
-        selectionRestriction->getEnabledAction().setChecked(true);
+    connect(&_restrictSelectionByZOrderAction, &ToggleAction::toggled, this, [this, selectionRestriction = &selectionRestrictionAction](bool checked) {
+        if (_updatingCoupledRestriction)
+            return;
+
+        const auto restrictionAvailable = _scatterplotPlugin->getPositionDataset().isValid() &&
+            static_cast<Mode>(_modeAction.getCurrentIndex()) == Mode::Dimension;
+
+        if (checked && !restrictionAvailable) {
+            _updatingCoupledRestriction = true;
+            {
+	            _restrictSelectionByZOrderAction.setChecked(false);
+            }
+            _updatingCoupledRestriction = false;
+
+            return;
+        }
+
+        _updatingCoupledRestriction = true;
+
+        if (checked) {
+            selectionRestriction->getDimensionPickerAction().setCurrentDimensionIndex(_dimensionPickerAction.getCurrentDimensionIndex());
+            selectionRestriction->getEnabledAction().setChecked(true);
+        } else {
+            selectionRestriction->getEnabledAction().setChecked(false);
+        }
+
+        _updatingCoupledRestriction = false;
+    });
+
+    connect(&selectionRestrictionAction.getEnabledAction(), &ToggleAction::toggled, this, [this, selectionRestriction = &selectionRestrictionAction](bool checked) {
+        if (_updatingCoupledRestriction)
+            return;
+
+        const auto restrictionAvailable = _scatterplotPlugin->getPositionDataset().isValid() &&
+            static_cast<Mode>(_modeAction.getCurrentIndex()) == Mode::Dimension;
+
+        _updatingCoupledRestriction = true;
+
+        if (checked && restrictionAvailable) {
+            const QSignalBlocker dimensionBlocker(&_dimensionPickerAction);
+            _dimensionPickerAction.setCurrentDimensionIndex(selectionRestriction->getDimensionPickerAction().getCurrentDimensionIndex());
+            updateZOrderScalars();
+        }
+
+        _restrictSelectionByZOrderAction.setChecked(checked && restrictionAvailable);
+
+        _updatingCoupledRestriction = false;
+    });
+
+    connect(&selectionRestrictionAction.getDimensionPickerAction(), &DimensionPickerAction::currentDimensionIndexChanged, this, [this, selectionRestriction = &selectionRestrictionAction](std::int32_t dimensionIndex) {
+        if (_updatingCoupledRestriction || !selectionRestriction->getEnabledAction().isChecked() ||
+            static_cast<Mode>(_modeAction.getCurrentIndex()) != Mode::Dimension)
+            return;
+
+        _updatingCoupledRestriction = true;
+
+        {
+            const QSignalBlocker dimensionBlocker(&_dimensionPickerAction);
+            _dimensionPickerAction.setCurrentDimensionIndex(dimensionIndex);
+        }
+
+        _restrictSelectionByZOrderAction.setChecked(true);
+
+        updateZOrderScalars();
+        _updatingCoupledRestriction = false;
     });
 
     connect(&_scatterplotPlugin->getPositionDataset(), &Dataset<Points>::changed, this, updateDataset);
@@ -99,7 +188,21 @@ void ZOrderingAction::updateScatterplotWidget()
     setEnabled(hasDataset);
 	
     _dimensionPickerAction.setEnabled(hasDataset && mode == Mode::Dimension);
-    _useZOrderDimensionForSelectionAction.setEnabled(hasDataset && mode == Mode::Dimension);
+    _restrictSelectionByZOrderAction.setEnabled(hasDataset && mode == Mode::Dimension);
+
+    auto& selectionRestriction = dynamic_cast<SettingsAction*>(parent())->getSelectionAction().getSelectionRestrictionAction();
+    const auto restrictionCoupled = hasDataset && mode == Mode::Dimension && selectionRestriction.getEnabledAction().isChecked();
+
+    _updatingCoupledRestriction = true;
+
+    if (restrictionCoupled) {
+        const QSignalBlocker dimensionBlocker(&_dimensionPickerAction);
+        _dimensionPickerAction.setCurrentDimensionIndex(selectionRestriction.getDimensionPickerAction().getCurrentDimensionIndex());
+    }
+
+    _restrictSelectionByZOrderAction.setChecked(restrictionCoupled);
+
+    _updatingCoupledRestriction = false;
     
 	switch (mode) {
         case Mode::InsertionOrder:
@@ -146,10 +249,8 @@ QMenu* ZOrderingAction::getContextMenu(QWidget* parent)
         auto& selectionRestriction = dynamic_cast<SettingsAction*>(this->parent())->getSelectionAction().getSelectionRestrictionAction();
 
         menu->addSeparator();
-        menu->addAction(&selectionRestriction.getEnabledAction());
-        menu->addAction(&selectionRestriction.getDimensionPickerAction());
+        menu->addAction(&_restrictSelectionByZOrderAction);
         menu->addAction(&selectionRestriction.getRangeAction());
-        menu->addAction(&_useZOrderDimensionForSelectionAction);
     }
 
     return menu;
@@ -167,7 +268,7 @@ void ZOrderingAction::connectToPublicAction(WidgetAction* publicAction, bool rec
     if (recursive) {
         actions().connectPrivateActionToPublicAction(&_modeAction, &publicZOrderingAction->getModeAction(), recursive);
         actions().connectPrivateActionToPublicAction(&_dimensionPickerAction, &publicZOrderingAction->getDimensionPickerAction(), recursive);
-        actions().connectPrivateActionToPublicAction(&_useZOrderDimensionForSelectionAction, &publicZOrderingAction->getUseZOrderDimensionForSelectionAction(), recursive);
+        actions().connectPrivateActionToPublicAction(&_restrictSelectionByZOrderAction, &publicZOrderingAction->getRestrictSelectionByZOrderAction(), recursive);
     }
 
     GroupAction::connectToPublicAction(publicAction, recursive);
@@ -181,7 +282,7 @@ void ZOrderingAction::disconnectFromPublicAction(bool recursive)
     if (recursive) {
         actions().disconnectPrivateActionFromPublicAction(&_modeAction, recursive);
         actions().disconnectPrivateActionFromPublicAction(&_dimensionPickerAction, recursive);
-        actions().disconnectPrivateActionFromPublicAction(&_useZOrderDimensionForSelectionAction, recursive);
+        actions().disconnectPrivateActionFromPublicAction(&_restrictSelectionByZOrderAction, recursive);
     }
 
     GroupAction::disconnectFromPublicAction(recursive);

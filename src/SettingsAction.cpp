@@ -75,12 +75,12 @@ void SettingsAction::fromVariantMap(const QVariantMap& variantMap)
     _datasetsAction.fromParentVariantMap(variantMap);
     _plotAction.fromParentVariantMap(variantMap);
     _positionAction.fromParentVariantMap(variantMap);
+    _selectionAction.fromParentVariantMap(variantMap);
     _zOrderingAction.fromParentVariantMap(variantMap, true);
     _coloringAction.fromParentVariantMap(variantMap);
     _subsetAction.fromParentVariantMap(variantMap, true);
     _clusteringAction.fromParentVariantMap(variantMap, true);
     _renderModeAction.fromParentVariantMap(variantMap);
-    _selectionAction.fromParentVariantMap(variantMap);
     _miscellaneousAction.fromParentVariantMap(variantMap);
 
     // Migrate projects saved before z ordering became a dedicated action.

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <actions/OptionAction.h>
-#include <actions/TriggerAction.h>
+#include <actions/ToggleAction.h>
 #include <actions/VerticalGroupAction.h>
 
 #include <PointData/DimensionPickerAction.h>
@@ -39,7 +39,7 @@ public: // Serialization
 public: // Action getters
     OptionAction& getModeAction() { return _modeAction; }
     DimensionPickerAction& getDimensionPickerAction() { return _dimensionPickerAction; }
-    TriggerAction& getUseZOrderDimensionForSelectionAction() { return _useZOrderDimensionForSelectionAction; }
+    ToggleAction& getRestrictSelectionByZOrderAction() { return _restrictSelectionByZOrderAction; }
 
 private:
     void updateZOrderScalars();
@@ -47,8 +47,9 @@ private:
     ScatterplotPlugin*      _scatterplotPlugin = nullptr;
     OptionAction            _modeAction;
     DimensionPickerAction   _dimensionPickerAction;
-    TriggerAction           _useZOrderDimensionForSelectionAction;
+    ToggleAction            _restrictSelectionByZOrderAction;
     std::vector<float>      _zOrderScalars;
+    bool                    _updatingCoupledRestriction = false;
 
     friend class mv::AbstractActionsManager;
 };
