@@ -117,6 +117,7 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
     _primaryToolbarAction->addAction(&_settingsAction->getDatasetsAction());
     _primaryToolbarAction->addAction(&_settingsAction->getRenderModeAction(), 3, GroupAction::Horizontal);
     _primaryToolbarAction->addAction(&_settingsAction->getPositionAction(), 1, GroupAction::Horizontal);
+    _primaryToolbarAction->addAction(&_settingsAction->getZOrderingAction(), 1, GroupAction::Horizontal);
     _primaryToolbarAction->addAction(&_settingsAction->getPlotAction(), 2, GroupAction::Horizontal);
     _primaryToolbarAction->addAction(&_settingsAction->getColoringAction());
     _primaryToolbarAction->addAction(&_settingsAction->getSubsetAction());
@@ -499,6 +500,78 @@ void ScatterplotPlugin::createSubset(const bool& fromSourceData /*= false*/, con
     subset->getDataHierarchyItem().select();
 }
 
+void ScatterplotPlugin::selectAllEligiblePoints()
+{
+    if (!_positionDataset.isValid())
+        return;
+
+    std::vector<std::uint32_t> globalIndices;
+    _positionDataset->getGlobalIndices(globalIndices);
+
+    std::vector<std::uint32_t> eligibleIndices;
+    eligibleIndices.reserve(globalIndices.size());
+
+    for (std::uint32_t localIndex = 0; localIndex < globalIndices.size(); ++localIndex) {
+        if (!_scatterPlotWidget->isSelectionExcluded(localIndex))
+            eligibleIndices.push_back(globalIndices[localIndex]);
+    }
+
+    _positionDataset->setSelectionIndices(eligibleIndices);
+    events().notifyDatasetDataSelectionChanged(_positionDataset->getSourceDataset<Points>());
+}
+
+void ScatterplotPlugin::invertEligiblePointSelection()
+{
+    if (!_positionDataset.isValid())
+        return;
+
+    const auto selection = _positionDataset->getSelection<Points>();
+
+    std::vector<bool> selected;
+    _positionDataset->selectedLocalIndices(selection->indices, selected);
+
+    std::vector<std::uint32_t> globalIndices;
+    _positionDataset->getGlobalIndices(globalIndices);
+
+    std::vector<std::uint32_t> invertedIndices;
+    invertedIndices.reserve(globalIndices.size());
+
+    for (std::uint32_t localIndex = 0; localIndex < globalIndices.size(); ++localIndex) {
+        if (!_scatterPlotWidget->isSelectionExcluded(localIndex) && (localIndex >= selected.size() || !selected[localIndex]))
+            invertedIndices.push_back(globalIndices[localIndex]);
+    }
+
+    _positionDataset->setSelectionIndices(invertedIndices);
+    events().notifyDatasetDataSelectionChanged(_positionDataset->getSourceDataset<Points>());
+}
+
+void ScatterplotPlugin::filterSelectionExcludedIndices(std::vector<std::uint32_t>& globalIndices) const
+{
+    if (!_positionDataset.isValid()) {
+        globalIndices.clear();
+        return;
+    }
+
+    std::vector<bool> selected;
+    _positionDataset->selectedLocalIndices(globalIndices, selected);
+
+    std::vector<std::uint32_t> localGlobalIndices;
+    _positionDataset->getGlobalIndices(localGlobalIndices);
+
+    globalIndices.clear();
+    globalIndices.reserve(localGlobalIndices.size());
+
+    for (std::uint32_t localIndex = 0; localIndex < localGlobalIndices.size(); ++localIndex) {
+        if (localIndex < selected.size() && selected[localIndex] && !_scatterPlotWidget->isSelectionExcluded(localIndex))
+            globalIndices.push_back(localGlobalIndices[localIndex]);
+    }
+}
+
+void ScatterplotPlugin::refreshSelection()
+{
+    updateSelection();
+}
+
 void ScatterplotPlugin::selectPoints()
 {
     if (getSettingsAction().getSelectionAction().getFreezeSelectionAction().isChecked())
@@ -536,6 +609,9 @@ void ScatterplotPlugin::selectPoints()
 
     // Go over all points in the dataset to see if they are selected
     for (std::uint32_t localPointIndex = 0; localPointIndex < _positions.size(); localPointIndex++) {
+	    if (_scatterPlotWidget->isSelectionExcluded(localPointIndex))
+	        continue;
+
 	    const auto& point = _positions[localPointIndex];
 
     	// Compute the offset of the point in the world space
@@ -610,6 +686,8 @@ void ScatterplotPlugin::selectPoints()
         }
     }
 
+    filterSelectionExcludedIndices(targetSelectionIndices);
+
     auto& navigationAction = navigator.getNavigationAction();
 
     navigationAction.getZoomSelectionAction().setEnabled(!targetSelectionIndices.empty() && navigationAction.isNavigationActive());
@@ -649,6 +727,9 @@ void ScatterplotPlugin::samplePoints()
 
     // Go over all points in the dataset to see if they should be sampled
     for (std::uint32_t localPointIndex = 0; localPointIndex < _positions.size(); localPointIndex++) {
+
+        if (_scatterPlotWidget->isSelectionExcluded(localPointIndex))
+            continue;
 
         // Compute the offset of the point in the world space
         const auto pointOffsetWorld = QPointF(_positions[localPointIndex].x - zoomRectangleWorld.left(), _positions[localPointIndex].y - zoomRectangleWorld.top());
@@ -1069,6 +1150,7 @@ void ScatterplotPlugin::updateData()
 
         // Pass the 2D points to the scatter plot widget
         _scatterPlotWidget->setData(&_positions);
+        _settingsAction->getZOrderingAction().updateScatterplotWidget();
 
         updateSelection();
     }
@@ -1076,6 +1158,7 @@ void ScatterplotPlugin::updateData()
         _numPoints = 0;
         _positions.clear();
         _scatterPlotWidget->setData(&_positions);
+        _settingsAction->getZOrderingAction().updateScatterplotWidget();
     }
 }
 
@@ -1109,14 +1192,16 @@ void ScatterplotPlugin::updateSelection()
 
         sampledPoints.reserve(_positions.size());
 
-        for (auto selectionIndex : selection->indices)
-            sampledPoints.push_back(selectionIndex);
+        for (std::uint32_t localIndex = 0; localIndex < selected.size(); ++localIndex) {
+            if (selected[localIndex] && !_scatterPlotWidget->isSelectionExcluded(localIndex))
+                sampledPoints.push_back(localIndex);
+        }
 
         std::int32_t numberOfPoints = 0;
 
         QVariantList localPointIndices, globalPointIndices;
 
-        const auto numberOfSelectedPoints = selection->indices.size();
+        const auto numberOfSelectedPoints = sampledPoints.size();
 
         localPointIndices.reserve(static_cast<std::int32_t>(numberOfSelectedPoints));
         globalPointIndices.reserve(static_cast<std::int32_t>(numberOfSelectedPoints));
@@ -1152,6 +1237,8 @@ void ScatterplotPlugin::updateSelection()
             { "RenderMode", _settingsAction->getRenderModeAction().getCurrentText() }
 		});
     }
+
+    updateHeadsUpDisplay();
 }
 
 void ScatterplotPlugin::updateHeadsUpDisplay()
@@ -1181,6 +1268,16 @@ void ScatterplotPlugin::updateHeadsUpDisplay()
         //qDebug() << "ScatterplotPlugin::updateHeadsUpDisplay: point size dataset: " << pointPlotAction.getSizeAction().getCurrentDataset().isValid() << ", opacity dataset: " << pointPlotAction.getOpacityAction().getCurrentDataset().isValid();
         addMetaDataToHeadsUpDisplay("Size",    pointPlotAction.getSizeAction().getCurrentDataset(), datasetsItem);
         addMetaDataToHeadsUpDisplay("Opacity", pointPlotAction.getOpacityAction().getCurrentDataset(), datasetsItem);
+
+        const auto selectionItem = getHeadsUpDisplayAction().addHeadsUpDisplayItem("Selection", "", "");
+        const auto numberOfSelectedPoints   = _scatterPlotWidget->getNumberOfEffectivelySelectedPoints();
+        const auto numberOfSelectablePoints = _scatterPlotWidget->getNumberOfSelectablePoints();
+
+        getHeadsUpDisplayAction().addHeadsUpDisplayItem(
+            "Selected:",
+            QString("%1 of %2 selectable points").arg(numberOfSelectedPoints).arg(numberOfSelectablePoints),
+            "",
+            selectionItem);
     } else {
         getHeadsUpDisplayAction().addHeadsUpDisplayItem("No datasets loaded", "", "");
     }

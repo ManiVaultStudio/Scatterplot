@@ -12,6 +12,7 @@
 #include "RenderModeAction.h"
 #include "SelectionAction.h"
 #include "SubsetAction.h"
+#include "ZOrderingAction.h"
 
 using namespace mv::gui;
 
@@ -59,6 +60,7 @@ public: // Action getters
     
     RenderModeAction& getRenderModeAction() { return _renderModeAction; }
     PositionAction& getPositionAction() { return _positionAction; }
+    ZOrderingAction& getZOrderingAction() { return _zOrderingAction; }
     PlotAction& getPlotAction() { return _plotAction; }
     ColoringAction& getColoringAction() { return _coloringAction; }
     SubsetAction& getSubsetAction() { return _subsetAction; }
@@ -72,11 +74,12 @@ protected:
     ScatterplotPlugin*          _scatterplotPlugin;         /** Pointer to scatter plot plugin */
     RenderModeAction            _renderModeAction;          /** Action for configuring render mode */
     PositionAction              _positionAction;            /** Action for configuring point positions */
+    SelectionAction             _selectionAction;           /** Action for selecting points */
+    ZOrderingAction             _zOrderingAction;           /** Action for configuring point z ordering */
     PlotAction                  _plotAction;                /** Action for configuring plot settings */
     ColoringAction              _coloringAction;            /** Action for configuring point coloring */
     SubsetAction                _subsetAction;              /** Action for creating subset(s) */
     ClusteringAction            _clusteringAction;          /** Action for creating clusters */
-    SelectionAction             _selectionAction;           /** Action for selecting points */
     ExportAction                _exportAction;              /** Action for exporting */
     MiscellaneousAction         _miscellaneousAction;       /** Action for miscellaneous settings */
     DatasetsAction              _datasetsAction;            /** Action for picking dataset(s) */
