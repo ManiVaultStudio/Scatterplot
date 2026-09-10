@@ -67,10 +67,14 @@ set(Actions
     src/ScalarSourceAction.cpp
     src/SelectionAction.h
     src/SelectionAction.cpp
+    src/SelectionRestrictionAction.h
+    src/SelectionRestrictionAction.cpp
     src/SettingsAction.h
     src/SettingsAction.cpp
     src/SubsetAction.h
     src/SubsetAction.cpp
+    src/ZOrderingAction.h
+    src/ZOrderingAction.cpp
     src/ExportAction.h
     src/ExportAction.cpp
     src/DatasetsAction.h
