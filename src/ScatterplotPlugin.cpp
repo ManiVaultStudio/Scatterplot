@@ -300,7 +300,16 @@ ScatterplotPlugin::ScatterplotPlugin(const PluginFactory* factory) :
 
                         const auto maxIndex = getMaxIndex(candidateDataset->getClusters());
 
-                        if (maxIndex < numTotalPoints())
+                        // First check if cross-dataset metadata coloring is possible
+                        if (events().areDatasetsPartOfSelectionGroup(getTopDataset(_positionDataset), getTopDataset(candidateDataset)))
+                        {
+                            // Use the clusters set for points color
+                            dropRegions << new DropWidget::DropRegion(this, "Color", description, "palette", true, [this, candidateDataset]() {
+                                _settingsAction->getColoringAction().addColorDataset(candidateDataset);
+                                _settingsAction->getColoringAction().setCurrentColorDataset(candidateDataset);
+                            });
+                        }
+                        else if (maxIndex < numTotalPoints())
                         {
                             // Use the clusters set for points color
                             dropRegions << new DropWidget::DropRegion(this, "Color", description, "palette", true, [this, candidateDataset]() {
