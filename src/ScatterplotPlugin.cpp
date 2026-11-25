@@ -34,6 +34,8 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstdint>
+#include <cstring>
 #include <exception>
 #include <limits>
 #include <map>
@@ -67,6 +69,23 @@ using namespace mv::util;
 
 namespace
 {
+    float readPointDataValue(const PointDataAccessView& view, const std::uint64_t row, const std::uint64_t column)
+    {
+        const auto* bytes = view.rowData(row) + column * view.elementSizeBytes;
+        switch (view.elementTypeIndex)
+        {
+            case 0: { float value; std::memcpy(&value, bytes, sizeof(value)); return value; }
+            case 1: { biovault::bfloat16_t value; std::memcpy(&value, bytes, sizeof(value)); return static_cast<float>(value); }
+            case 2: { std::int32_t value; std::memcpy(&value, bytes, sizeof(value)); return static_cast<float>(value); }
+            case 3: { std::uint32_t value; std::memcpy(&value, bytes, sizeof(value)); return static_cast<float>(value); }
+            case 4: { std::int16_t value; std::memcpy(&value, bytes, sizeof(value)); return static_cast<float>(value); }
+            case 5: { std::uint16_t value; std::memcpy(&value, bytes, sizeof(value)); return static_cast<float>(value); }
+            case 6: { std::int8_t value; std::memcpy(&value, bytes, sizeof(value)); return static_cast<float>(value); }
+            case 7: { std::uint8_t value; std::memcpy(&value, bytes, sizeof(value)); return static_cast<float>(value); }
+            default: throw std::invalid_argument("Unsupported point-data access value type");
+        }
+    }
+
     Dataset<DatasetImpl> getTopDataset(const Dataset<DatasetImpl> dataset)
     {
         Dataset<DatasetImpl> topDataset = dataset;
@@ -1145,11 +1164,38 @@ void ScatterplotPlugin::updateData()
         // Determine number of points depending on if its a full dataset or a subset
         _numPoints = _positionDataset->getNumPoints();
 
-        // Extract 2-dimensional points from the data set based on the selected dimensions
-        _positionDataset->extractDataForDimensions(_positions, xDim, yDim);
+        // Read only the selected columns through the storage backend's range API.
+        _positions.resize(static_cast<std::size_t>(_numPoints));
+        const std::vector<std::uint64_t> dimensions { static_cast<std::uint64_t>(xDim), static_cast<std::uint64_t>(yDim) };
+        std::uint64_t pointIndex = 0;
+        std::size_t componentIndex = 0;
+        _positionDataset->visitColumns(dimensions, [this, &pointIndex, &componentIndex](const PointDataAccessView& view) {
+            for (std::uint64_t row = 0; row < view.rows; ++row)
+                for (std::uint64_t column = 0; column < view.columns; ++column)
+                {
+                    if (pointIndex >= _positions.size())
+                        throw std::runtime_error("Point-data column access returned more values than expected");
+
+                    const auto value = readPointDataValue(view, row, column);
+                    if (componentIndex == 0)
+                        _positions[static_cast<std::size_t>(pointIndex)].x = value;
+                    else
+                        _positions[static_cast<std::size_t>(pointIndex)].y = value;
+
+                    if (++componentIndex == 2)
+                    {
+                        componentIndex = 0;
+                        ++pointIndex;
+                    }
+                }
+        });
+
+        if (pointIndex != _positions.size() || componentIndex != 0)
+            throw std::runtime_error("Point-data column access returned fewer values than expected");
 
         // Pass the 2D points to the scatter plot widget
         _scatterPlotWidget->setData(&_positions);
+
         _settingsAction->getZOrderingAction().updateScatterplotWidget();
 
         updateSelection();
